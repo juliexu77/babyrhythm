@@ -11,11 +11,14 @@ import { YesterdaysSummary } from "@/components/YesterdaysSummary";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { InviteCollaborator } from "@/components/InviteCollaborator";
 import { InlineInsights } from "@/components/InlineInsights";
+import { PatternInsights } from "@/components/PatternInsights";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
 import { useAuth } from "@/hooks/useAuth";
 import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { offlineSync } from "@/utils/offlineSync";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -129,6 +132,9 @@ const Index = () => {
       id: Date.now().toString(),
     };
     setActivities(prev => [activity, ...prev]);
+    
+    // Store offline and attempt sync
+    offlineSync.storeOfflineActivity(newActivity);
   };
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -169,6 +175,9 @@ const Index = () => {
           <div className="space-y-6">
             {/* Next Activity Prediction */}
             <NextActivityPrediction activities={activities} />
+            
+            {/* Pattern Insights */}
+            <PatternInsights activities={activities} />
             
             {/* Inline Insights */}
             <InlineInsights activities={activities} />
@@ -260,6 +269,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background font-sans pb-20">
+      {/* Offline Indicator */}
+      <OfflineIndicator />
+      
       {/* Header */}
       <div className="bg-gradient-primary px-6 py-8 text-white">
         <div className="max-w-md mx-auto">
