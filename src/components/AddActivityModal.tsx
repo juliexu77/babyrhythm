@@ -42,23 +42,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   const [endTime, setEndTime] = useState("");
   const [note, setNote] = useState("");
 
-  // First-time tooltip state
-  const [showTooltip, setShowTooltip] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    // Check if this is the first time user is seeing the app
-    const hasSeenTooltip = localStorage.getItem('hasSeenAddActivityTooltip');
-    
-    // For testing - always show tooltip (remove this line in production)
-    localStorage.removeItem('hasSeenAddActivityTooltip');
-    
-    if (!hasSeenTooltip && !isOpen) {
-      // Show tooltip after a short delay to ensure button is rendered
-      setTimeout(() => setShowTooltip(true), 2000);
-    }
-  }, [isOpen]);
-
   const resetForm = () => {
     // Reset to current time
     const now = new Date();
@@ -146,11 +129,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
     });
   };
 
-  const handleTooltipDismiss = () => {
-    setShowTooltip(false);
-    localStorage.setItem('hasSeenAddActivityTooltip', 'true');
-  };
-
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "feed": return <Baby className="h-4 w-4" />;
@@ -167,7 +145,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
         {!isOpen && (
           <DialogTrigger asChild>
             <Button 
-              ref={buttonRef}
               className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-primary shadow-soft hover:shadow-lg transition-all duration-300" 
               size="icon"
             >
@@ -297,14 +274,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* First-time tooltip */}
-      {showTooltip && buttonRef.current && (
-        <FirstTimeTooltip 
-          target={buttonRef.current} 
-          onDismiss={handleTooltipDismiss}
-        />
-      )}
     </>
   );
 };
