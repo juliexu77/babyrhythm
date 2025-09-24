@@ -61,37 +61,10 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // Check if user has completed onboarding
+  // No more onboarding - just set profile as complete
   useEffect(() => {
-    const checkProfile = async () => {
-      const skipOnboarding = localStorage.getItem('skipOnboarding');
-      
-      if (skipOnboarding) {
-        setHasProfile(true);
-        return;
-      }
-      
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('baby_name')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        setHasProfile(!!data?.baby_name);
-      } else {
-        // Guest users who haven't been through demo should be redirected
-        const hasSeenDemo = localStorage.getItem('onboardingCompleted');
-        if (!hasSeenDemo) {
-          navigate('/');
-          return;
-        }
-        setHasProfile(true);
-      }
-    };
-
     if (!loading) {
-      checkProfile();
+      setHasProfile(true);
     }
   }, [user, loading]);
 
@@ -109,7 +82,7 @@ const Index = () => {
     }
   }, []);
 
-  if (loading || hasProfile === null) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -118,12 +91,6 @@ const Index = () => {
         </div>
       </div>
     );
-  }
-
-  // Redirect to onboarding if profile not complete
-  if (!hasProfile) {
-    navigate('/onboarding');
-    return null;
   }
 
   const handleAddActivity = (newActivity: Omit<Activity, "id">) => {
