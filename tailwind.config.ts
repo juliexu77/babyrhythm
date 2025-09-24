@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'archivo': ['Archivo', 'sans-serif'],
+        'sans': ['Archivo', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -51,6 +55,7 @@ export default {
         diaper: "hsl(var(--diaper-color))",
         nap: "hsl(var(--nap-color))",
         note: "hsl(var(--note-color))",
+        chat: "hsl(var(--chat-color))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -68,6 +73,7 @@ export default {
         'gradient-diaper': 'var(--gradient-diaper)',
         'gradient-nap': 'var(--gradient-nap)',
         'gradient-note': 'var(--gradient-note)',
+        'gradient-chat': 'var(--gradient-chat)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
