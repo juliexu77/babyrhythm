@@ -13,7 +13,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity }: Bott
   ];
   
   const rightTabs = [
-    { id: "calendar", label: "Calendar", icon: Calendar },
+    { id: "trends", label: "Trends", icon: Calendar },
     { id: "profile", label: "Profile", icon: User },
   ];
 

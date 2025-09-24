@@ -7,6 +7,9 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { SummaryCards } from "@/components/SummaryCards";
 import { TrendChart } from "@/components/TrendChart";
 import { DailySummary } from "@/components/DailySummary";
+import { YesterdaysSummary } from "@/components/YesterdaysSummary";
+import { NextActivityPrediction } from "@/components/NextActivityPrediction";
+import { InviteCollaborator } from "@/components/InviteCollaborator";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
 import { useAuth } from "@/hooks/useAuth";
@@ -146,13 +149,15 @@ const Index = () => {
       case "home":
         return (
           <div className="space-y-6">
-            <TrendChart activities={activities} />
-            <DailySummary activities={activities} date={today} />
+            <YesterdaysSummary activities={activities} />
           </div>
         );
       case "timeline":
         return (
           <div className="space-y-6">
+            {/* Next Activity Prediction */}
+            <NextActivityPrediction activities={activities} />
+            
             {/* Summary Cards */}
             <SummaryCards activities={activities} />
 
@@ -175,6 +180,13 @@ const Index = () => {
             </div>
           </div>
         );
+      case "trends":
+        return (
+          <div className="space-y-6">
+            <TrendChart activities={activities} />
+            <DailySummary activities={activities} date={today} />
+          </div>
+        );
       case "calendar":
         return (
           <div className="text-center py-16">
@@ -185,42 +197,45 @@ const Index = () => {
         );
       case "profile":
         return (
-          <div className="text-center py-16">
-            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
-            <p className="text-muted-foreground font-medium mb-4">Profile & Settings</p>
-            <div className="space-y-4 max-w-sm mx-auto">
-              {user ? (
-                <>
-                  <div className="p-4 bg-card rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">Signed in as:</p>
-                    <p className="font-medium text-foreground">{user.email}</p>
-                  </div>
-                  <Button
-                    onClick={signOut}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="p-4 bg-card rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-2">Using as:</p>
-                    <p className="font-medium text-foreground">Guest User</p>
-                    <p className="text-xs text-muted-foreground mt-1">Sign in to save your data across devices</p>
-                  </div>
-                  <Button
-                    onClick={() => navigate("/auth")}
-                    className="w-full"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Sign In
-                  </Button>
-                </>
-              )}
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <User className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
+              <p className="text-muted-foreground font-medium mb-4">Profile & Settings</p>
+              <div className="max-w-sm mx-auto mb-6">
+                {user ? (
+                  <>
+                    <div className="p-4 bg-card rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-2">Signed in as:</p>
+                      <p className="font-medium text-foreground">{user.email}</p>
+                    </div>
+                    <Button
+                      onClick={signOut}
+                      variant="outline"
+                      className="w-full mt-4"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-4 bg-card rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-2">Using as:</p>
+                      <p className="font-medium text-foreground">Guest User</p>
+                      <p className="text-xs text-muted-foreground mt-1">Sign in to save your data across devices</p>
+                    </div>
+                    <Button
+                      onClick={() => navigate("/auth")}
+                      className="w-full mt-4"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Sign In
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
+            <InviteCollaborator />
           </div>
         );
       default:
@@ -238,7 +253,7 @@ const Index = () => {
             <h1 className="text-2xl font-semibold">
               {activeTab === "home" ? "Home" : 
                activeTab === "timeline" ? "Timeline" :
-               activeTab === "calendar" ? "Calendar" : "Profile"}
+               activeTab === "trends" ? "Trends" : "Profile"}
             </h1>
           </div>
           {activeTab === "home" && (
