@@ -8,57 +8,57 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Neutral color palette */
-    --background: 0 0% 98%;
-    --foreground: 0 0% 15%;
+    /* Warm taupe and cream palette */
+    --background: 30 15% 97%;
+    --foreground: 25 8% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 15%;
+    --card: 30 20% 99%;
+    --card-foreground: 25 8% 20%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 15%;
+    --popover: 30 20% 99%;
+    --popover-foreground: 25 8% 20%;
 
-    /* Neutral gray primary */
-    --primary: 0 0% 25%;
-    --primary-foreground: 0 0% 98%;
-    --primary-light: 0 0% 35%;
+    /* Rich taupe primary */
+    --primary: 25 12% 35%;
+    --primary-foreground: 30 15% 97%;
+    --primary-light: 25 15% 45%;
 
-    /* Light gray secondary */
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 25%;
+    /* Soft cream secondary */
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 25 10% 25%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 30 20% 94%;
+    --muted-foreground: 25 8% 50%;
 
-    /* Subtle accent */
-    --accent: 0 0% 92%;
-    --accent-foreground: 0 0% 25%;
+    /* Warm tan accent */
+    --accent: 35 20% 88%;
+    --accent-foreground: 25 10% 25%;
 
-    --destructive: 0 70% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 30 15% 97%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 25%;
+    --border: 30 15% 88%;
+    --input: 30 15% 88%;
+    --ring: 25 12% 35%;
 
-    /* Activity colors - muted */
-    --feed-color: 0 0% 65%;
-    --diaper-color: 0 0% 70%;
-    --nap-color: 0 0% 60%;
-    --note-color: 0 0% 75%;
-    --chat-color: 0 0% 50%;
+    /* Activity colors - warm muted tones */
+    --feed-color: 20 25% 65%;
+    --diaper-color: 40 20% 70%;
+    --nap-color: 220 15% 70%;
+    --note-color: 280 15% 75%;
+    --chat-color: 25 20% 55%;
 
-    /* Subtle gradients */
+    /* Warm gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--feed-color)), hsl(0 0% 75%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--diaper-color)), hsl(0 0% 80%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--nap-color)), hsl(0 0% 70%));
-    --gradient-note: linear-gradient(135deg, hsl(var(--note-color)), hsl(0 0% 85%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--chat-color)), hsl(0 0% 60%));
+    --gradient-feed: linear-gradient(135deg, hsl(var(--feed-color)), hsl(20 30% 75%));
+    --gradient-diaper: linear-gradient(135deg, hsl(var(--diaper-color)), hsl(40 25% 80%));
+    --gradient-nap: linear-gradient(135deg, hsl(var(--nap-color)), hsl(220 20% 80%));
+    --gradient-note: linear-gradient(135deg, hsl(var(--note-color)), hsl(280 20% 85%));
+    --gradient-chat: linear-gradient(135deg, hsl(var(--chat-color)), hsl(25 25% 65%));
 
     /* Refined shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.08);
-    --shadow-card: 0 2px 15px -3px hsl(0 0% 0% / 0.06);
+    --shadow-soft: 0 4px 20px -4px hsl(25 8% 20% / 0.08);
+    --shadow-card: 0 2px 15px -3px hsl(25 8% 20% / 0.06);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
