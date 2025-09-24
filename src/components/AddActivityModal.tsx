@@ -23,6 +23,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note">("feed");
   const [time, setTime] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [unit, setUnit] = useState<"oz" | "ml">("oz");
   const [diaperType, setDiaperType] = useState<"pee" | "poop" | "both">("pee");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -31,6 +32,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   const resetForm = () => {
     setTime("");
     setQuantity("");
+    setUnit("oz");
     setDiaperType("pee");
     setStartTime("");
     setEndTime("");
@@ -60,7 +62,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
     
     switch (activityType) {
       case "feed":
-        if (quantity) details.quantity = quantity;
+        if (quantity) {
+          details.quantity = quantity;
+          details.unit = unit;
+        }
         break;
       case "diaper":
         details.diaperType = diaperType;
@@ -162,14 +167,29 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
           )}
 
           {activityType === "feed" && (
-            <div>
+            <div className="space-y-3">
               <Label htmlFor="quantity">Quantity (optional)</Label>
-              <Input
-                id="quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="e.g., 4 oz"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="quantity"
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  placeholder="4"
+                  className="flex-1"
+                  min="0"
+                  step="0.5"
+                />
+                <Select value={unit} onValueChange={(value: "oz" | "ml") => setUnit(value)}>
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="oz">oz</SelectItem>
+                    <SelectItem value="ml">ml</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 

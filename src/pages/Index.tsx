@@ -51,7 +51,7 @@ const Index = () => {
   ]);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("today");
+  const [activeTab, setActiveTab] = useState("home");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Check if user has completed onboarding
@@ -143,7 +143,7 @@ const Index = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "today":
+      case "home":
         return (
           <div className="space-y-6">
             {/* Summary Cards */}
@@ -168,7 +168,7 @@ const Index = () => {
             </div>
           </div>
         );
-      case "trends":
+      case "timeline":
         return (
           <div className="space-y-6">
             <TrendChart activities={activities} />
@@ -236,12 +236,12 @@ const Index = () => {
           <div className="flex items-center gap-3 mb-2">
             <BarChart3 className="h-6 w-6" />
             <h1 className="text-2xl font-semibold">
-              {activeTab === "today" ? "Today" : 
-               activeTab === "trends" ? "Trends" :
+              {activeTab === "home" ? "Home" : 
+               activeTab === "timeline" ? "Timeline" :
                activeTab === "calendar" ? "Calendar" : "Profile"}
             </h1>
           </div>
-          {activeTab === "today" && (
+          {activeTab === "home" && (
             <>
               {user && <BabyAge />}
               <div className="flex items-center gap-2 text-white/90">
