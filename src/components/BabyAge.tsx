@@ -17,7 +17,7 @@ export const BabyAge = () => {
         .from("profiles")
         .select("baby_name, baby_birth_date")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (data && !error) {
         setBabyData({
