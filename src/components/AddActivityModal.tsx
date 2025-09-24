@@ -12,10 +12,14 @@ import { toast } from "@/hooks/use-toast";
 
 interface AddActivityModalProps {
   onAddActivity: (activity: Omit<Activity, "id">) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export const AddActivityModal = ({ onAddActivity }: AddActivityModalProps) => {
-  const [open, setOpen] = useState(false);
+export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivityModalProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isOpen !== undefined ? isOpen : internalOpen;
+  const setOpen = onClose ? onClose : setInternalOpen;
   const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note">("feed");
   const [time, setTime] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -78,7 +82,11 @@ export const AddActivityModal = ({ onAddActivity }: AddActivityModalProps) => {
 
     onAddActivity(newActivity);
     resetForm();
-    setOpen(false);
+    if (onClose) {
+      onClose();
+    } else {
+      setInternalOpen(false);
+    }
 
     toast({
       title: "Activity added!",
@@ -97,12 +105,14 @@ export const AddActivityModal = ({ onAddActivity }: AddActivityModalProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-primary shadow-soft hover:shadow-lg transition-all duration-300" size="icon">
-          <Plus className="h-6 w-6" />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={isOpen !== undefined ? (open) => !open && onClose?.() : setInternalOpen}>
+      {!isOpen && (
+        <DialogTrigger asChild>
+          <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-primary shadow-soft hover:shadow-lg transition-all duration-300" size="icon">
+            <Plus className="h-6 w-6" />
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -200,7 +210,7 @@ export const AddActivityModal = ({ onAddActivity }: AddActivityModalProps) => {
           )}
 
           <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
+            <Button variant="outline" onClick={() => onClose ? onClose() : setInternalOpen(false)} className="flex-1">
               Cancel
             </Button>
             <Button onClick={handleSubmit} className="flex-1 bg-gradient-primary">

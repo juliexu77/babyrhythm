@@ -7,6 +7,7 @@ import { SummaryCards } from "@/components/SummaryCards";
 import { TrendChart } from "@/components/TrendChart";
 import { DailySummary } from "@/components/DailySummary";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { BabyAge } from "@/components/BabyAge";
 import { useAuth } from "@/hooks/useAuth";
 import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ const Index = () => {
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("today");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -179,17 +181,20 @@ const Index = () => {
         <div className="max-w-md mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <BarChart3 className="h-6 w-6" />
-            <h1 className="text-2xl font-serif font-semibold">
+            <h1 className="text-2xl font-semibold">
               {activeTab === "today" ? "Today" : 
                activeTab === "trends" ? "Trends" :
                activeTab === "calendar" ? "Calendar" : "Profile"}
             </h1>
           </div>
           {activeTab === "today" && (
-            <div className="flex items-center gap-2 text-white/90">
-              <Calendar className="h-4 w-4" />
-              <p className="text-sm font-medium">{today}</p>
-            </div>
+            <>
+              <BabyAge />
+              <div className="flex items-center gap-2 text-white/90">
+                <Calendar className="h-4 w-4" />
+                <p className="text-sm font-medium">{today}</p>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -199,8 +204,12 @@ const Index = () => {
         {renderContent()}
       </div>
 
-      {/* Add Activity Button - only show on Today tab */}
-      {activeTab === "today" && <AddActivityModal onAddActivity={handleAddActivity} />}
+      {/* Add Activity Modal */}
+      <AddActivityModal 
+        onAddActivity={handleAddActivity} 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+      />
 
       {/* Chat Panel */}
       <ChatPanel 
@@ -210,7 +219,11 @@ const Index = () => {
       />
 
       {/* Bottom Navigation */}
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNavigation 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        onAddActivity={() => setIsAddModalOpen(true)}
+      />
     </div>
   );
 };
