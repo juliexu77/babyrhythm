@@ -67,13 +67,19 @@ const getActivityDetails = (activity: Activity) => {
 
 export const ActivityCard = ({ activity }: ActivityCardProps) => {
   return (
-    <Card className="p-4 shadow-card hover:shadow-soft transition-all duration-300">
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-full ${getActivityGradient(activity.type)} text-white`}>
-          {getActivityIcon(activity.type)}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
+    <div className="relative flex items-start gap-4 pb-8 last:pb-0">
+      {/* Timeline line */}
+      <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-border last:hidden"></div>
+      
+      {/* Timeline marker */}
+      <div className={`relative z-10 flex-shrink-0 w-12 h-12 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white shadow-soft`}>
+        {getActivityIcon(activity.type)}
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1 min-w-0 pt-2">
+        <div className="bg-card rounded-lg p-4 shadow-card border border-border">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="font-medium capitalize text-foreground">
               {activity.type}
             </h3>
@@ -83,12 +89,12 @@ export const ActivityCard = ({ activity }: ActivityCardProps) => {
             </span>
           </div>
           {getActivityDetails(activity) && (
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground">
               {getActivityDetails(activity)}
             </p>
           )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
