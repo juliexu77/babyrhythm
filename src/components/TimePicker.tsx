@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TimePickerProps {
@@ -8,8 +8,8 @@ interface TimePickerProps {
 }
 
 export const TimePicker = ({ value, onChange, label }: TimePickerProps) => {
-  // Initialize with current time by default
-  const getCurrentTime = () => {
+  // Initialize with current time only once
+  const initialTime = useMemo(() => {
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
@@ -21,19 +21,19 @@ export const TimePicker = ({ value, onChange, label }: TimePickerProps) => {
       minute: currentMinute.toString().padStart(2, "0"),
       period: currentPeriod
     };
-  };
+  }, []);
 
-  const currentTime = getCurrentTime();
-  const [hour, setHour] = useState(currentTime.hour);
-  const [minute, setMinute] = useState(currentTime.minute);
-  const [period, setPeriod] = useState(currentTime.period);
+  const [hour, setHour] = useState(initialTime.hour);
+  const [minute, setMinute] = useState(initialTime.minute);
+  const [period, setPeriod] = useState(initialTime.period);
 
+  // Only update from external value if it's different
   useEffect(() => {
     if (value) {
       const [time, periodPart] = value.split(" ");
       if (time && periodPart) {
         const [h, m] = time.split(":");
-        if (h && m) {
+        if (h && m && (h !== hour || m !== minute || periodPart !== period)) {
           setHour(h);
           setMinute(m);
           setPeriod(periodPart);
@@ -42,10 +42,13 @@ export const TimePicker = ({ value, onChange, label }: TimePickerProps) => {
     }
   }, [value]);
 
+  // Notify parent of changes
   useEffect(() => {
     const timeString = `${hour}:${minute} ${period}`;
-    onChange(timeString);
-  }, [hour, minute, period, onChange]);
+    if (timeString !== value) {
+      onChange(timeString);
+    }
+  }, [hour, minute, period]);
 
   const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, "0"));
