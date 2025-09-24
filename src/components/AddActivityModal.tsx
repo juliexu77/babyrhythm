@@ -20,19 +20,37 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
-  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note">("feed");
-  const [time, setTime] = useState("");
+  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "">(""); // No default
+  const [time, setTime] = useState(() => {
+    // Default to current time
+    const now = new Date();
+    return now.toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    });
+  });
   const [quantity, setQuantity] = useState("");
-  const [unit, setUnit] = useState<"oz" | "ml">("oz");
+  const [unit, setUnit] = useState<"oz" | "ml">(() => {
+    // Remember last used unit
+    const lastUnit = localStorage.getItem('lastUsedUnit');
+    return (lastUnit as "oz" | "ml") || "oz";
+  });
   const [diaperType, setDiaperType] = useState<"pee" | "poop" | "both">("pee");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [note, setNote] = useState("");
 
   const resetForm = () => {
-    setTime("");
+    // Reset to current time
+    const now = new Date();
+    setTime(now.toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    }));
     setQuantity("");
-    setUnit("oz");
+    // Keep the last used unit
     setDiaperType("pee");
     setStartTime("");
     setEndTime("");
@@ -40,6 +58,15 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   };
 
   const handleSubmit = () => {
+    if (!activityType) {
+      toast({
+        title: "Activity type required",
+        description: "Please select an activity type.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!time && activityType !== "nap") {
       toast({
         title: "Time required",
@@ -65,6 +92,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
         if (quantity) {
           details.quantity = quantity;
           details.unit = unit;
+          // Remember the unit for next time
+          localStorage.setItem('lastUsedUnit', unit);
         }
         break;
       case "diaper":
@@ -80,7 +109,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
     }
 
     const newActivity: Omit<Activity, "id"> = {
-      type: activityType,
+      type: activityType as "feed" | "diaper" | "nap" | "note", // Cast to exclude empty string
       time: activityType === "nap" ? startTime : time,
       details,
     };
@@ -130,8 +159,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
           <div>
             <Label htmlFor="activity-type">Activity Type</Label>
             <Select value={activityType} onValueChange={(value: any) => setActivityType(value)}>
-              <SelectTrigger>
-                <SelectValue />
+              <SelectTrigger className={!activityType ? "border-red-200 bg-red-50" : ""}>
+                <SelectValue placeholder="Select activity type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="feed">

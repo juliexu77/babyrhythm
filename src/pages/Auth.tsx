@@ -284,6 +284,7 @@ const Auth = () => {
                 variant="ghost"
                 onClick={() => {
                   localStorage.setItem('skipOnboarding', 'true');
+                  localStorage.setItem('hasSeenDemo', 'true');
                   navigate("/app");
                 }}
                 className="w-full text-muted-foreground hover:text-foreground"

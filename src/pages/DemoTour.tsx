@@ -179,7 +179,10 @@ const DemoTour = () => {
               <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="p-4">
                     <Button 
-                      onClick={() => navigate("/auth")}
+                      onClick={() => {
+                        localStorage.setItem('hasSeenDemo', 'true');
+                        navigate("/auth");
+                      }}
                       className="w-full mb-3"
                     >
                       <UserPlus className="h-4 w-4 mr-2" />
@@ -197,6 +200,7 @@ const DemoTour = () => {
                       variant="outline"
                       onClick={() => {
                         localStorage.setItem('skipOnboarding', 'true');
+                        localStorage.setItem('hasSeenDemo', 'true');
                         navigate('/app');
                       }}
                       className="w-full mb-3"
@@ -283,7 +287,10 @@ const DemoTour = () => {
           <div className="text-center mt-6">
             <Button 
               variant="ghost" 
-              onClick={() => navigate("/auth")}
+              onClick={() => {
+                localStorage.setItem('hasSeenDemo', 'true');
+                navigate("/auth");
+              }}
               className="text-muted-foreground"
             >
               Skip tour and sign up
