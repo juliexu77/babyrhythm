@@ -6,14 +6,11 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
-    // Check if this is a first-time user
-    const hasSeenDemo = localStorage.getItem('skipOnboarding') || 
-                       localStorage.getItem('onboardingCompleted') ||
-                       localStorage.getItem('hasSeenDemo');
-
-    // If user hasn't seen demo and is not already on demo tour, redirect them
-    if (!hasSeenDemo && location.pathname !== '/') {
-      navigate('/');
+    // Check if user is authenticated and not on auth page
+    // Just let them go to /app directly, no onboarding needed
+    if (location.pathname === '/' && !localStorage.getItem('hasSeenDemo')) {
+      // Still show demo tour on first visit to landing page
+      localStorage.setItem('hasSeenDemo', 'true');
     }
   }, [navigate, location]);
 

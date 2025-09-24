@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { TimePicker } from "./TimePicker";
 import { Activity } from "./ActivityCard";
 import { Plus, Baby, Palette, Moon, StickyNote } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { FirstTimeTooltip } from "./FirstTimeTooltip";
 
 interface AddActivityModalProps {
   onAddActivity: (activity: Omit<Activity, "id">) => void;
@@ -40,6 +41,21 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [note, setNote] = useState("");
+
+  // First-time tooltip state
+  const [showTooltip, setShowTooltip] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    // Check if this is the first time user is seeing the app
+    const hasSeenTooltip = localStorage.getItem('hasSeenAddActivityTooltip');
+    const isAuthenticated = localStorage.getItem('sb-nctqyatowgbfnqaowscv-auth-token'); // Check if user is logged in
+    
+    if (!hasSeenTooltip && isAuthenticated && !isOpen) {
+      // Show tooltip after a short delay to ensure button is rendered
+      setTimeout(() => setShowTooltip(true), 1000);
+    }
+  }, [isOpen]);
 
   const resetForm = () => {
     // Reset to current time
@@ -128,6 +144,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
     });
   };
 
+  const handleTooltipDismiss = () => {
+    setShowTooltip(false);
+    localStorage.setItem('hasSeenAddActivityTooltip', 'true');
+  };
+
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "feed": return <Baby className="h-4 w-4" />;
@@ -139,135 +160,149 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   };
 
   return (
-    <Dialog open={open} onOpenChange={isOpen !== undefined ? (open) => !open && onClose?.() : setInternalOpen}>
-      {!isOpen && (
-        <DialogTrigger asChild>
-          <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-primary shadow-soft hover:shadow-lg transition-all duration-300" size="icon">
-            <Plus className="h-6 w-6" />
-          </Button>
-        </DialogTrigger>
-      )}
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {getActivityIcon(activityType)}
-            Add Activity
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="activity-type">Activity Type</Label>
-            <Select value={activityType} onValueChange={(value: any) => setActivityType(value)}>
-              <SelectTrigger className={!activityType ? "border-red-200 bg-red-50" : ""}>
-                <SelectValue placeholder="Select activity type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="feed">
-                  <div className="flex items-center gap-2">
-                    <Baby className="h-4 w-4" />
-                    Feed
-                  </div>
-                </SelectItem>
-                <SelectItem value="diaper">
-                  <div className="flex items-center gap-2">
-                    <Palette className="h-4 w-4" />
-                    Diaper
-                  </div>
-                </SelectItem>
-                <SelectItem value="nap">
-                  <div className="flex items-center gap-2">
-                    <Moon className="h-4 w-4" />
-                    Nap
-                  </div>
-                </SelectItem>
-                <SelectItem value="note">
-                  <div className="flex items-center gap-2">
-                    <StickyNote className="h-4 w-4" />
-                    Note
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {activityType !== "nap" && (
-            <TimePicker value={time} onChange={setTime} label="Time" />
-          )}
-
-          {activityType === "feed" && (
-            <div className="space-y-3">
-              <Label htmlFor="quantity">Quantity (optional)</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="quantity"
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  placeholder="4"
-                  className="flex-1"
-                  min="0"
-                  step="0.5"
-                />
-                <Select value={unit} onValueChange={(value: "oz" | "ml") => setUnit(value)}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="oz">oz</SelectItem>
-                    <SelectItem value="ml">ml</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-
-          {activityType === "diaper" && (
+    <>
+      <Dialog open={open} onOpenChange={isOpen !== undefined ? (open) => !open && onClose?.() : setInternalOpen}>
+        {!isOpen && (
+          <DialogTrigger asChild>
+            <Button 
+              ref={buttonRef}
+              className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-primary shadow-soft hover:shadow-lg transition-all duration-300" 
+              size="icon"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </DialogTrigger>
+        )}
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {getActivityIcon(activityType)}
+              Add Activity
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="diaper-type">Type</Label>
-              <Select value={diaperType} onValueChange={(value: any) => setDiaperType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
+              <Label htmlFor="activity-type">Activity Type</Label>
+              <Select value={activityType} onValueChange={(value: any) => setActivityType(value)}>
+                <SelectTrigger className={!activityType ? "border-red-200 bg-red-50" : ""}>
+                  <SelectValue placeholder="Select activity type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pee">Pee</SelectItem>
-                  <SelectItem value="poop">Poop</SelectItem>
-                  <SelectItem value="both">Both</SelectItem>
+                  <SelectItem value="feed">
+                    <div className="flex items-center gap-2">
+                      <Baby className="h-4 w-4" />
+                      Feed
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="diaper">
+                    <div className="flex items-center gap-2">
+                      <Palette className="h-4 w-4" />
+                      Diaper
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="nap">
+                    <div className="flex items-center gap-2">
+                      <Moon className="h-4 w-4" />
+                      Nap
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="note">
+                    <div className="flex items-center gap-2">
+                      <StickyNote className="h-4 w-4" />
+                      Note
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          )}
 
-          {activityType === "nap" && (
-            <div className="space-y-3">
-              <TimePicker value={startTime} onChange={setStartTime} label="Start Time" />
-              <TimePicker value={endTime} onChange={setEndTime} label="End Time" />
+            {activityType !== "nap" && (
+              <TimePicker value={time} onChange={setTime} label="Time" />
+            )}
+
+            {activityType === "feed" && (
+              <div className="space-y-3">
+                <Label htmlFor="quantity">Quantity (optional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="quantity"
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    placeholder="4"
+                    className="flex-1"
+                    min="0"
+                    step="0.5"
+                  />
+                  <Select value={unit} onValueChange={(value: "oz" | "ml") => setUnit(value)}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="oz">oz</SelectItem>
+                      <SelectItem value="ml">ml</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {activityType === "diaper" && (
+              <div>
+                <Label htmlFor="diaper-type">Type</Label>
+                <Select value={diaperType} onValueChange={(value: any) => setDiaperType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pee">Pee</SelectItem>
+                    <SelectItem value="poop">Poop</SelectItem>
+                    <SelectItem value="both">Both</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {activityType === "nap" && (
+              <div className="space-y-3">
+                <TimePicker value={startTime} onChange={setStartTime} label="Start Time" />
+                <TimePicker value={endTime} onChange={setEndTime} label="End Time" />
+              </div>
+            )}
+
+            {activityType === "note" && (
+              <div>
+                <Label htmlFor="note">Note</Label>
+                <Textarea
+                  id="note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Enter your note here..."
+                  rows={3}
+                />
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => onClose ? onClose() : setInternalOpen(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} className="flex-1 bg-gradient-primary">
+                Add Activity
+              </Button>
             </div>
-          )}
-
-          {activityType === "note" && (
-            <div>
-              <Label htmlFor="note">Note</Label>
-              <Textarea
-                id="note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Enter your note here..."
-                rows={3}
-              />
-            </div>
-          )}
-
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => onClose ? onClose() : setInternalOpen(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit} className="flex-1 bg-gradient-primary">
-              Add Activity
-            </Button>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* First-time tooltip */}
+      {showTooltip && buttonRef.current && (
+        <FirstTimeTooltip 
+          target={buttonRef.current} 
+          onDismiss={handleTooltipDismiss}
+        />
+      )}
+    </>
   );
 };
