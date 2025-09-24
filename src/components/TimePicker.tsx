@@ -8,33 +8,43 @@ interface TimePickerProps {
 }
 
 export const TimePicker = ({ value, onChange, label }: TimePickerProps) => {
-  const [hour, setHour] = useState("12");
-  const [minute, setMinute] = useState("00");
-  const [period, setPeriod] = useState("AM");
+  // Initialize with current time by default
+  const getCurrentTime = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentPeriod = currentHour >= 12 ? "PM" : "AM";
+    const displayHour = currentHour === 0 ? 12 : currentHour > 12 ? currentHour - 12 : currentHour;
+    
+    return {
+      hour: displayHour.toString(),
+      minute: currentMinute.toString().padStart(2, "0"),
+      period: currentPeriod
+    };
+  };
+
+  const currentTime = getCurrentTime();
+  const [hour, setHour] = useState(currentTime.hour);
+  const [minute, setMinute] = useState(currentTime.minute);
+  const [period, setPeriod] = useState(currentTime.period);
 
   useEffect(() => {
     if (value) {
       const [time, periodPart] = value.split(" ");
-      const [h, m] = time.split(":");
-      setHour(h);
-      setMinute(m);
-      setPeriod(periodPart);
-    } else {
-      // Set to current time
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      const currentPeriod = currentHour >= 12 ? "PM" : "AM";
-      const displayHour = currentHour === 0 ? 12 : currentHour > 12 ? currentHour - 12 : currentHour;
-      
-      setHour(displayHour.toString());
-      setMinute(currentMinute.toString().padStart(2, "0"));
-      setPeriod(currentPeriod);
+      if (time && periodPart) {
+        const [h, m] = time.split(":");
+        if (h && m) {
+          setHour(h);
+          setMinute(m);
+          setPeriod(periodPart);
+        }
+      }
     }
   }, [value]);
 
   useEffect(() => {
-    onChange(`${hour}:${minute} ${period}`);
+    const timeString = `${hour}:${minute} ${period}`;
+    onChange(timeString);
   }, [hour, minute, period, onChange]);
 
   const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
