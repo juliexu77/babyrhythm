@@ -8,62 +8,62 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Warm taupe and cream palette */
-    --background: 30 15% 97%;
-    --foreground: 25 8% 20%;
+    /* Feminine, classy palette inspired by design guidelines */
+    --background: 35 40% 98%; /* #FDFBF8 - neutral-100 */
+    --foreground: 0 0% 20%; /* #333333 - text-primary */
 
-    --card: 30 20% 99%;
-    --card-foreground: 25 8% 20%;
+    --card: 35 40% 98%; /* #FDFBF8 - neutral-100 */
+    --card-foreground: 0 0% 20%;
 
-    --popover: 30 20% 99%;
-    --popover-foreground: 25 8% 20%;
+    --popover: 35 40% 98%;
+    --popover-foreground: 0 0% 20%;
 
-    /* Rich taupe primary */
-    --primary: 25 12% 35%;
-    --primary-foreground: 30 15% 97%;
-    --primary-light: 25 15% 45%;
+    /* Rose accent as primary */
+    --primary: 8 25% 70%; /* #D8A29E - accent-rose */
+    --primary-foreground: 35 40% 98%;
+    --primary-light: 8 30% 75%;
 
-    /* Soft cream secondary */
-    --secondary: 35 25% 92%;
-    --secondary-foreground: 25 10% 25%;
+    /* Soft neutral secondary */
+    --secondary: 30 25% 94%; /* #F5F1ED - neutral-200 */
+    --secondary-foreground: 0 0% 40%;
 
-    --muted: 30 20% 94%;
-    --muted-foreground: 25 8% 50%;
+    --muted: 25 20% 90%; /* #E8E2DD - neutral-300 */
+    --muted-foreground: 0 0% 40%; /* #666666 - text-secondary */
 
-    /* Warm tan accent */
-    --accent: 35 20% 88%;
-    --accent-foreground: 25 10% 25%;
+    /* Sage accent */
+    --accent: 120 15% 70%; /* #A3B3A6 - accent-sage */
+    --accent-foreground: 0 0% 20%;
 
     --destructive: 0 65% 55%;
-    --destructive-foreground: 30 15% 97%;
+    --destructive-foreground: 35 40% 98%;
 
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 25 12% 35%;
+    --border: 25 20% 90%;
+    --input: 25 20% 90%;
+    --ring: 8 25% 70%;
 
-    /* Activity colors - warm muted tones */
-    --feed-color: 20 25% 65%;
-    --diaper-color: 40 20% 70%;
-    --nap-color: 220 15% 70%;
-    --note-color: 280 15% 75%;
-    --chat-color: 25 20% 55%;
+    /* Activity colors - soft, feminine palette */
+    --feed-color: 8 25% 70%; /* Rose for feeding */
+    --diaper-color: 45 30% 75%; /* Gold tone for diapers */
+    --nap-color: 220 25% 75%; /* Soft blue for naps */
+    --note-color: 300 20% 75%; /* Soft lavender for notes */
+    --chat-color: 120 15% 70%; /* Sage for chat */
 
-    /* Warm gradients */
+    /* Elegant gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--feed-color)), hsl(20 30% 75%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--diaper-color)), hsl(40 25% 80%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--nap-color)), hsl(220 20% 80%));
-    --gradient-note: linear-gradient(135deg, hsl(var(--note-color)), hsl(280 20% 85%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--chat-color)), hsl(25 25% 65%));
+    --gradient-feed: linear-gradient(135deg, hsl(8 25% 70%), hsl(8 30% 80%));
+    --gradient-diaper: linear-gradient(135deg, hsl(45 30% 75%), hsl(45 35% 85%));
+    --gradient-nap: linear-gradient(135deg, hsl(220 25% 75%), hsl(220 30% 85%));
+    --gradient-note: linear-gradient(135deg, hsl(300 20% 75%), hsl(300 25% 85%));
+    --gradient-chat: linear-gradient(135deg, hsl(120 15% 70%), hsl(120 20% 80%));
 
-    /* Refined shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(25 8% 20% / 0.08);
-    --shadow-card: 0 2px 15px -3px hsl(25 8% 20% / 0.06);
+    /* Sophisticated shadows */
+    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.1); /* floating shadow */
+    --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.05); /* card shadow */
 
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Refined animations */
+    --transition-smooth: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem; /* 12px - medium border radius */
 
     --sidebar-background: 0 0% 98%;
 
