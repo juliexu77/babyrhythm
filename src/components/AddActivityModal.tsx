@@ -190,55 +190,58 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
         {!isOpen && (
           <DialogTrigger asChild>
             <Button 
-              className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-primary shadow-soft hover:shadow-lg transition-all duration-300" 
+              className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-soft hover:shadow-lg hover:bg-primary/90 transition-all duration-300" 
               size="icon"
             >
               <Plus className="h-6 w-6" />
             </Button>
           </DialogTrigger>
         )}
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {getActivityIcon(activityType)}
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-lg font-medium">
               Add Activity
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
-            {/* Activity Type Selection - Big Buttons */}
-            <div>
-              <Label className="text-sm font-medium mb-3 block">Activity Type</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { type: "feed", icon: Baby, label: "Feed" },
-                  { type: "diaper", icon: Palette, label: "Diaper" },
-                  { type: "nap", icon: Moon, label: "Nap" },
-                  { type: "note", icon: StickyNote, label: "Note" }
-                ].map(({ type, icon: Icon, label }) => (
-                  <Button
-                    key={type}
-                    variant={activityType === type ? "default" : "outline"}
-                    className={`h-16 flex-col gap-2 ${activityType === type ? 'bg-gradient-primary' : ''}`}
-                    onClick={() => setActivityType(type as any)}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="text-sm">{label}</span>
-                  </Button>
-                ))}
-              </div>
+            {/* Activity Type Selection - Clean Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { type: "feed", icon: Baby, label: "Feed" },
+                { type: "diaper", icon: Palette, label: "Diaper" },
+                { type: "nap", icon: Moon, label: "Nap" },
+                { type: "note", icon: StickyNote, label: "Note" }
+              ].map(({ type, icon: Icon, label }) => (
+                <Button
+                  key={type}
+                  variant={activityType === type ? "default" : "outline"}
+                  className={`h-14 flex-col gap-1.5 ${
+                    activityType === type 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'hover:bg-muted'
+                  }`}
+                  onClick={() => setActivityType(type as any)}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{label}</span>
+                </Button>
+              ))}
             </div>
 
             {/* Time Picker - Only for non-nap activities */}
             {activityType && activityType !== "nap" && (
-              <TimePicker value={time} onChange={setTime} label="Time" />
+              <div>
+                <Label className="text-sm font-medium mb-2 block text-muted-foreground">Time</Label>
+                <TimePicker value={time} onChange={setTime} />
+              </div>
             )}
 
             {/* Feed Details */}
             {activityType === "feed" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <Label className="text-sm font-medium mb-3 block">Type</Label>
+                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Type</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { type: "bottle", icon: Coffee, label: "Bottle" },
@@ -248,7 +251,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                       <Button
                         key={type}
                         variant={feedType === type ? "default" : "outline"}
-                        className={`h-12 flex-col gap-1 text-xs ${feedType === type ? 'bg-gradient-primary' : ''}`}
+                        className={`h-12 flex-col gap-1 text-xs ${
+                          feedType === type 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-muted'
+                        }`}
                         onClick={() => setFeedType(type as any)}
                       >
                         <Icon className="h-4 w-4" />
@@ -259,14 +266,18 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-3 block">Quantity (optional)</Label>
-                  <div className="space-y-2">
+                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Quantity</Label>
+                  <div className="space-y-3">
                     <div className="grid grid-cols-4 gap-2">
                       {["2", "4", "6", "8"].map((amount) => (
                         <Button
                           key={amount}
                           variant={quantity === amount ? "default" : "outline"}
-                          className={`h-10 ${quantity === amount ? 'bg-gradient-primary' : ''}`}
+                          className={`h-10 ${
+                            quantity === amount 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'hover:bg-muted'
+                          }`}
                           onClick={() => handleQuantityShortcut(amount)}
                         >
                           {amount}
@@ -278,18 +289,22 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                         type="number"
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
-                        placeholder="Custom"
-                        className="flex-1"
+                        placeholder="Custom amount"
+                        className="flex-1 h-10"
                         min="0"
                         step="0.5"
                       />
-                      <div className="flex gap-1">
+                      <div className="flex border rounded-md">
                         {["oz", "ml"].map((u) => (
                           <Button
                             key={u}
-                            variant={unit === u ? "default" : "outline"}
+                            variant="ghost"
                             size="sm"
-                            className={unit === u ? 'bg-gradient-primary' : ''}
+                            className={`h-10 px-3 rounded-none border-0 ${
+                              unit === u 
+                                ? 'bg-muted text-foreground' 
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
                             onClick={() => setUnit(u as any)}
                           >
                             {u}
@@ -301,7 +316,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-3 block">Baby's Reaction</Label>
+                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Reaction</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { type: "happy", icon: Smile, label: "Happy" },
@@ -311,7 +326,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                       <Button
                         key={type}
                         variant={reaction === type ? "default" : "outline"}
-                        className={`h-12 flex-col gap-1 text-xs ${reaction === type ? 'bg-gradient-primary' : ''}`}
+                        className={`h-12 flex-col gap-1 text-xs ${
+                          reaction === type 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-muted'
+                        }`}
                         onClick={() => setReaction(type as any)}
                       >
                         <Icon className="h-4 w-4" />
@@ -325,9 +344,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
 
             {/* Diaper Details */}
             {activityType === "diaper" && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <Label className="text-sm font-medium mb-3 block">Type</Label>
+                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Type</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { type: "wet", label: "Wet" },
@@ -337,7 +356,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                       <Button
                         key={type}
                         variant={diaperType === type ? "default" : "outline"}
-                        className={`h-12 ${diaperType === type ? 'bg-gradient-primary' : ''}`}
+                        className={`h-12 ${
+                          diaperType === type 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-muted'
+                        }`}
                         onClick={() => setDiaperType(type as any)}
                       >
                         {label}
@@ -347,23 +370,31 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <Label className="text-sm">Leak</Label>
+                  <div className="flex items-center justify-between py-3">
+                    <Label className="text-sm text-muted-foreground">Leak</Label>
                     <Button
                       variant={hasLeak ? "default" : "outline"}
                       size="sm"
-                      className={hasLeak ? 'bg-gradient-primary' : ''}
+                      className={`h-8 px-4 ${
+                        hasLeak 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-muted'
+                      }`}
                       onClick={() => setHasLeak(!hasLeak)}
                     >
                       {hasLeak ? "Yes" : "No"}
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <Label className="text-sm">Diaper Cream</Label>
+                  <div className="flex items-center justify-between py-3">
+                    <Label className="text-sm text-muted-foreground">Diaper Cream</Label>
                     <Button
                       variant={hasCream ? "default" : "outline"}
                       size="sm"
-                      className={hasCream ? 'bg-gradient-primary' : ''}
+                      className={`h-8 px-4 ${
+                        hasCream 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-muted'
+                      }`}
                       onClick={() => setHasCream(!hasCream)}
                     >
                       {hasCream ? "Yes" : "No"}
@@ -372,13 +403,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                 </div>
 
                 <div>
-                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block">Notes (optional)</Label>
+                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block text-muted-foreground">Notes</Label>
                   <Textarea
                     id="diaper-note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Color, consistency, rash notes..."
-                    rows={2}
+                    rows={3}
+                    className="resize-none"
                   />
                 </div>
               </div>
@@ -386,20 +418,28 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
 
             {/* Nap Details */}
             {activityType === "nap" && (
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Button
-                    variant={isTimerActive ? "destructive" : "default"}
-                    className={!isTimerActive ? 'bg-gradient-primary' : ''}
-                    onClick={isTimerActive ? stopNapTimer : startNapTimer}
-                  >
-                    <Clock className="h-4 w-4 mr-2" />
-                    {isTimerActive ? "Stop Nap" : "Start Nap Timer"}
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  <TimePicker value={startTime} onChange={setStartTime} label="Start Time" />
-                  <TimePicker value={endTime} onChange={setEndTime} label="End Time" />
+              <div className="space-y-5">
+                <Button
+                  variant={isTimerActive ? "destructive" : "default"}
+                  className={`w-full h-12 ${
+                    !isTimerActive 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                      : ''
+                  }`}
+                  onClick={isTimerActive ? stopNapTimer : startNapTimer}
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  {isTimerActive ? "Stop Nap" : "Start Nap Timer"}
+                </Button>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block text-muted-foreground">Start Time</Label>
+                    <TimePicker value={startTime} onChange={setStartTime} />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block text-muted-foreground">End Time</Label>
+                    <TimePicker value={endTime} onChange={setEndTime} />
+                  </div>
                 </div>
               </div>
             )}
@@ -407,13 +447,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
             {/* Note Details */}
             {activityType === "note" && (
               <div>
-                <Label htmlFor="note" className="text-sm font-medium mb-2 block">Note</Label>
+                <Label htmlFor="note" className="text-sm font-medium mb-2 block text-muted-foreground">Note</Label>
                 <Textarea
                   id="note"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Enter your note here..."
-                  rows={3}
+                  rows={4}
+                  className="resize-none"
                 />
               </div>
             )}
@@ -421,11 +462,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
             {/* Photo Attachment - For all types */}
             {activityType && (
               <div>
-                <Label className="text-sm font-medium mb-2 block">Photo (optional)</Label>
+                <Label className="text-sm font-medium mb-2 block text-muted-foreground">Photo</Label>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 h-12 hover:bg-muted"
                     onClick={() => document.getElementById('photo-input')?.click()}
                   >
                     <Camera className="h-4 w-4 mr-2" />
@@ -435,6 +476,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                     <Button
                       variant="outline"
                       size="sm"
+                      className="h-12 px-4 hover:bg-muted"
                       onClick={() => setPhoto(null)}
                     >
                       Remove
@@ -449,18 +491,25 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                   onChange={(e) => setPhoto(e.target.files?.[0] || null)}
                 />
                 {photo && (
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-2">
                     {photo.name}
                   </p>
                 )}
               </div>
             )}
 
-            <div className="flex gap-2 pt-4">
-              <Button variant="outline" onClick={() => onClose ? onClose() : setInternalOpen(false)} className="flex-1">
+            <div className="flex gap-3 pt-6 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => onClose ? onClose() : setInternalOpen(false)} 
+                className="flex-1 h-12"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} className="flex-1 bg-gradient-primary">
+              <Button 
+                onClick={handleSubmit} 
+                className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+              >
                 Add Activity
               </Button>
             </div>
