@@ -172,25 +172,13 @@ const Index = () => {
         );
       case "timeline":
         return (
-          <div className="space-y-6">
-            {/* Next Activity Prediction */}
-            <NextActivityPrediction activities={activities} />
-            
-            {/* Pattern Insights */}
-            <PatternInsights activities={activities} />
-            
-            {/* Inline Insights */}
-            <InlineInsights activities={activities} />
-            
-            {/* Summary Cards */}
-            <SummaryCards activities={activities} />
-
-            {/* Activity Timeline */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-serif font-medium text-foreground">Activity Timeline</h2>
+          <div className="space-y-4">
+            {/* Activity Timeline - Priority above fold */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-serif font-medium text-foreground">Today's Activities</h2>
               {sortedActivities.length === 0 ? (
-                <div className="text-center py-16">
-                  <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
+                <div className="text-center py-12">
+                  <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-60" />
                   <p className="text-muted-foreground font-medium mb-1">No activities yet today</p>
                   <p className="text-sm text-muted-foreground">Tap the + button to add your first activity</p>
                 </div>
@@ -201,6 +189,14 @@ const Index = () => {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Insights and predictions below timeline */}
+            <div className="space-y-4 pt-2">
+              <InlineInsights activities={activities} />
+              <NextActivityPrediction activities={activities} />
+              <PatternInsights activities={activities} />
+              <SummaryCards activities={activities} />
             </div>
           </div>
         );
@@ -273,16 +269,8 @@ const Index = () => {
       <OfflineIndicator />
       
       {/* Header */}
-      <div className="bg-gradient-primary px-6 py-8 text-white">
+      <div className="bg-gradient-primary px-6 py-4 text-white">
         <div className="max-w-md mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <BarChart3 className="h-6 w-6" />
-            <h1 className="text-2xl font-semibold">
-              {activeTab === "home" ? "Home" : 
-               activeTab === "timeline" ? "Timeline" :
-               activeTab === "trends" ? "Trends" : "Profile"}
-            </h1>
-          </div>
           {activeTab === "home" && (
             <>
               {user && <BabyAge />}
