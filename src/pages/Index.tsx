@@ -2,7 +2,11 @@ import { useState } from "react";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { ChatPanel } from "@/components/ChatPanel";
-import { Calendar, BarChart3 } from "lucide-react";
+import { SummaryCards } from "@/components/SummaryCards";
+import { TrendChart } from "@/components/TrendChart";
+import { DailySummary } from "@/components/DailySummary";
+import { BottomNavigation } from "@/components/BottomNavigation";
+import { Calendar, BarChart3, TrendingUp, User } from "lucide-react";
 
 const Index = () => {
   const [activities, setActivities] = useState<Activity[]>([
@@ -39,6 +43,7 @@ const Index = () => {
   ]);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("today");
 
   const handleAddActivity = (newActivity: Omit<Activity, "id">) => {
     const activity: Activity = {
@@ -73,78 +78,90 @@ const Index = () => {
     return getTimeValue(b.time) - getTimeValue(a.time);
   });
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "today":
+        return (
+          <div className="space-y-6">
+            {/* Summary Cards */}
+            <SummaryCards activities={activities} />
+
+            {/* Activity Timeline */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-serif font-medium text-foreground">Activity Timeline</h2>
+              {sortedActivities.length === 0 ? (
+                <div className="text-center py-16">
+                  <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
+                  <p className="text-muted-foreground font-medium mb-1">No activities yet today</p>
+                  <p className="text-sm text-muted-foreground">Tap the + button to add your first activity</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {sortedActivities.map((activity) => (
+                    <ActivityCard key={activity.id} activity={activity} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      case "trends":
+        return (
+          <div className="space-y-6">
+            <TrendChart activities={activities} />
+            <DailySummary activities={activities} date={today} />
+          </div>
+        );
+      case "calendar":
+        return (
+          <div className="text-center py-16">
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
+            <p className="text-muted-foreground font-medium mb-1">Calendar View</p>
+            <p className="text-sm text-muted-foreground">Coming soon</p>
+          </div>
+        );
+      case "profile":
+        return (
+          <div className="text-center py-16">
+            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
+            <p className="text-muted-foreground font-medium mb-1">Profile & Settings</p>
+            <p className="text-sm text-muted-foreground">Coming soon</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <div className="min-h-screen bg-background font-sans pb-20">
       {/* Header */}
       <div className="bg-gradient-primary px-6 py-8 text-white">
         <div className="max-w-md mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <BarChart3 className="h-6 w-6" />
-            <h1 className="text-2xl font-serif font-semibold">Today</h1>
+            <h1 className="text-2xl font-serif font-semibold">
+              {activeTab === "today" ? "Today" : 
+               activeTab === "trends" ? "Trends" :
+               activeTab === "calendar" ? "Calendar" : "Profile"}
+            </h1>
           </div>
-          <div className="flex items-center gap-2 text-white/90">
-            <Calendar className="h-4 w-4" />
-            <p className="text-sm font-medium">{today}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-md mx-auto px-6 py-8">
-        {/* Daily Summary */}
-        <div className="mb-8">
-          <h2 className="text-xl font-serif font-medium text-foreground mb-4">Today's Summary</h2>
-          <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-            <div className="grid grid-cols-4 gap-6 text-center">
-              <div>
-                <div className="text-2xl font-semibold text-feed mb-1">
-                  {sortedActivities.filter(a => a.type === "feed").length}
-                </div>
-                <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Feeds</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold text-diaper mb-1">
-                  {sortedActivities.filter(a => a.type === "diaper").length}
-                </div>
-                <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Diapers</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold text-nap mb-1">
-                  {sortedActivities.filter(a => a.type === "nap").length}
-                </div>
-                <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Naps</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold text-note mb-1">
-                  {sortedActivities.filter(a => a.type === "note").length}
-                </div>
-                <div className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Notes</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Activity Timeline */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-serif font-medium text-foreground">Activity Timeline</h2>
-          {sortedActivities.length === 0 ? (
-            <div className="text-center py-16">
-              <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
-              <p className="text-muted-foreground font-medium mb-1">No activities yet today</p>
-              <p className="text-sm text-muted-foreground">Tap the + button to add your first activity</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {sortedActivities.map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} />
-              ))}
+          {activeTab === "today" && (
+            <div className="flex items-center gap-2 text-white/90">
+              <Calendar className="h-4 w-4" />
+              <p className="text-sm font-medium">{today}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Add Activity Button */}
-      <AddActivityModal onAddActivity={handleAddActivity} />
+      {/* Main Content */}
+      <div className="max-w-md mx-auto px-6 py-8">
+        {renderContent()}
+      </div>
+
+      {/* Add Activity Button - only show on Today tab */}
+      {activeTab === "today" && <AddActivityModal onAddActivity={handleAddActivity} />}
 
       {/* Chat Panel */}
       <ChatPanel 
@@ -152,6 +169,9 @@ const Index = () => {
         isOpen={isChatOpen}
         onToggle={() => setIsChatOpen(!isChatOpen)}
       />
+
+      {/* Bottom Navigation */}
+      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
 };
