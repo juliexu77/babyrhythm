@@ -135,7 +135,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
           details.quantity = quantity;
           details.unit = unit;
         }
-        if (reaction) details.reaction = reaction;
+        if (note) details.note = note;
         localStorage.setItem('lastUsedUnit', unit);
         break;
       case "diaper":
@@ -265,60 +265,28 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
 
                 <div>
                   <Label className="text-sm font-medium mb-2 block text-muted-foreground">Amount</Label>
-                  <div className="space-y-2">
-                    <Button
-                      variant="outline"
-                      className="w-full h-12 text-left justify-between hover:bg-muted"
-                      onClick={() => setShowKeypad(true)}
-                    >
-                      <span className="text-foreground">
-                        {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
-                      </span>
-                      <span className="text-muted-foreground text-xs">Enter</span>
-                    </Button>
-                    <div className="flex gap-1">
-                      {["oz", "ml"].map((u) => (
-                        <Button
-                          key={u}
-                          variant={unit === u ? "default" : "outline"}
-                          size="sm"
-                          className={`flex-1 h-8 text-xs ${
-                            unit === u 
-                              ? 'bg-primary text-primary-foreground' 
-                              : 'hover:bg-muted'
-                          }`}
-                          onClick={() => setUnit(u as any)}
-                        >
-                          {u}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 text-left justify-between hover:bg-muted"
+                    onClick={() => setShowKeypad(true)}
+                  >
+                    <span className="text-foreground">
+                      {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
+                    </span>
+                    <span className="text-muted-foreground text-xs">Enter</span>
+                  </Button>
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Reaction</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { type: "happy", icon: Smile, label: "Happy" },
-                      { type: "neutral", icon: Meh, label: "Neutral" },
-                      { type: "fussy", icon: Frown, label: "Fussy" }
-                    ].map(({ type, icon: Icon, label }) => (
-                      <Button
-                        key={type}
-                        variant={reaction === type ? "default" : "outline"}
-                        className={`h-10 flex-col gap-1 text-xs ${
-                          reaction === type 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'hover:bg-muted'
-                        }`}
-                        onClick={() => setReaction(type as any)}
-                      >
-                        <Icon className="h-3 w-3" />
-                        {label}
-                      </Button>
-                    ))}
-                  </div>
+                  <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block text-muted-foreground">Notes</Label>
+                  <Textarea
+                    id="feed-note"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Additional notes about feeding..."
+                    rows={3}
+                    className="resize-none"
+                  />
                 </div>
               </div>
             )}
@@ -434,44 +402,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
               </div>
             )}
 
-            {/* Photo Attachment - For all types */}
-            {activityType && (
-              <div>
-                <Label className="text-sm font-medium mb-2 block text-muted-foreground">Photo</Label>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-12 hover:bg-muted"
-                    onClick={() => document.getElementById('photo-input')?.click()}
-                  >
-                    <Camera className="h-4 w-4 mr-2" />
-                    {photo ? "Change Photo" : "Add Photo"}
-                  </Button>
-                  {photo && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-12 px-4 hover:bg-muted"
-                      onClick={() => setPhoto(null)}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-                <input
-                  id="photo-input"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => setPhoto(e.target.files?.[0] || null)}
-                />
-                {photo && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {photo.name}
-                  </p>
-                )}
-              </div>
-            )}
 
             <div className="flex gap-3 pt-6 border-t">
               <Button 

@@ -78,40 +78,54 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium text-muted-foreground">{label}</Label>}
       <div className="flex gap-2 bg-muted/50 rounded-lg p-3 items-center justify-center">
-        {/* Hours */}
-        <div className="flex items-center">
-          {[selectedHour - 1, selectedHour, selectedHour + 1].filter(h => h >= 1 && h <= 12).map((hour) => (
-            <div
-              key={hour}
-              className={`w-10 h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                selectedHour === hour 
-                  ? 'text-primary font-bold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              onClick={() => setSelectedHour(hour)}
-            >
-              {hour}
-            </div>
-          ))}
+        {/* Hours - Scrollable */}
+        <div 
+          ref={hourRef}
+          className="h-10 w-16 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          onScroll={() => handleScroll(hourRef, hours, setSelectedHour)}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex flex-col">
+            {hours.map((hour) => (
+              <div
+                key={hour}
+                className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                  selectedHour === hour 
+                    ? 'text-primary font-bold' 
+                    : 'text-muted-foreground'
+                }`}
+                onClick={() => setSelectedHour(hour)}
+              >
+                {hour}
+              </div>
+            ))}
+          </div>
         </div>
 
         <span className="text-muted-foreground font-medium">:</span>
 
-        {/* Minutes */}
-        <div className="flex items-center">
-          {[selectedMinute - 5, selectedMinute, selectedMinute + 5].filter(m => m >= 0 && m <= 55).map((minute) => (
-            <div
-              key={minute}
-              className={`w-10 h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                selectedMinute === minute 
-                  ? 'text-primary font-bold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              onClick={() => setSelectedMinute(minute)}
-            >
-              {minute.toString().padStart(2, '0')}
-            </div>
-          ))}
+        {/* Minutes - Scrollable */}
+        <div 
+          ref={minuteRef}
+          className="h-10 w-16 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute)}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex flex-col">
+            {minutes.map((minute) => (
+              <div
+                key={minute}
+                className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                  selectedMinute === minute 
+                    ? 'text-primary font-bold' 
+                    : 'text-muted-foreground'
+                }`}
+                onClick={() => setSelectedMinute(minute)}
+              >
+                {minute.toString().padStart(2, '0')}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* AM/PM */}
