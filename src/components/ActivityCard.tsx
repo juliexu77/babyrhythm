@@ -52,26 +52,40 @@ const getActivityGradient = (type: string) => {
   }
 };
 
-const getActivityDetails = (activity: Activity) => {
+const getPersonalizedActivityText = (activity: Activity) => {
+  const babyName = "Baby"; // Could be customizable later
+  
   switch (activity.type) {
     case "feed":
-      return activity.details.quantity ? `${activity.details.quantity} oz` : "";
+      const quantity = activity.details.quantity;
+      if (quantity) {
+        return `${babyName} drank ${quantity} oz`;
+      }
+      return `${babyName} had a feeding`;
     case "diaper":
-      return activity.details.diaperType ? 
-        activity.details.diaperType.charAt(0).toUpperCase() + activity.details.diaperType.slice(1) : "";
+      const type = activity.details.diaperType;
+      if (type === "pee") {
+        return `${babyName} had a wet diaper`;
+      } else if (type === "poop") {
+        return `${babyName} had a poop diaper`;
+      } else if (type === "both") {
+        return `${babyName} had a wet and poop diaper`;
+      }
+      return `${babyName} had a diaper change`;
     case "nap":
-      return activity.details.startTime && activity.details.endTime 
-        ? `${activity.details.startTime} - ${activity.details.endTime}` : "";
+      if (activity.details.startTime && activity.details.endTime) {
+        return `${babyName} napped ${activity.details.startTime} - ${activity.details.endTime}`;
+      }
+      return `${babyName} took a nap`;
     case "note":
-      return activity.details.note || "";
+      return activity.details.note || `${babyName} note`;
     default:
-      return "";
+      return `${babyName} activity`;
   }
 };
 
 export const ActivityCard = ({ activity, onEdit, onDelete }: ActivityCardProps) => {
-  const details = getActivityDetails(activity);
-  const activityText = details ? `${activity.type} ${details}` : activity.type;
+  const activityText = getPersonalizedActivityText(activity);
 
   return (
     <div className="relative flex items-center gap-3 py-1 group hover:bg-accent/30 rounded-md px-2 transition-colors">

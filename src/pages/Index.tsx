@@ -25,38 +25,7 @@ const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([
-    {
-      id: "1",
-      type: "feed",
-      time: "8:30 AM",
-      details: { quantity: "4" }
-    },
-    {
-      id: "2", 
-      type: "diaper",
-      time: "9:15 AM",
-      details: { diaperType: "pee" }
-    },
-    {
-      id: "3",
-      type: "nap", 
-      time: "10:00 AM",
-      details: { startTime: "10:00 AM", endTime: "11:30 AM" }
-    },
-    {
-      id: "4",
-      type: "feed",
-      time: "12:30 PM",
-      details: { quantity: "3.5" }
-    },
-    {
-      id: "5",
-      type: "diaper",
-      time: "1:45 PM", 
-      details: { diaperType: "both" }
-    }
-  ]);
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
@@ -145,12 +114,6 @@ const Index = () => {
     switch (activeTab) {
       case "home":
         return (
-          <div className="space-y-6">
-            <YesterdaysSummary activities={activities} />
-          </div>
-        );
-      case "timeline":
-        return (
           <div className="space-y-4">
             {/* Activity Timeline - Priority above fold */}
             <div className="space-y-2">
@@ -190,6 +153,12 @@ const Index = () => {
               <PatternInsights activities={activities} />
               <SummaryCards activities={activities} />
             </div>
+          </div>
+        );
+      case "timeline":
+        return (
+          <div className="space-y-6">
+            <YesterdaysSummary activities={activities} />
           </div>
         );
       case "trends":

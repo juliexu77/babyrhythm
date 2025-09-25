@@ -11,7 +11,7 @@ interface BottomNavigationProps {
 export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addButtonRef }: BottomNavigationProps) => {
   const leftTabs = [
     { id: "home", label: "Home", icon: Home },
-    { id: "timeline", label: "Timeline", icon: TrendingUp },
+    { id: "timeline", label: "Summary", icon: TrendingUp },
   ];
   
   const rightTabs = [

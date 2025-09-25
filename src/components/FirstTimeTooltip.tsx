@@ -39,19 +39,6 @@ export const FirstTimeTooltip = ({ target, onDismiss }: FirstTimeTooltipProps) =
       {/* Semi-transparent overlay */}
       <div className="fixed inset-0 bg-black/40 z-[60]" onClick={onDismiss} />
       
-      {/* Circular highlight perfectly centered on button */}
-      <div 
-        className="fixed z-[60] pointer-events-none"
-        style={{
-          top: position.top,
-          left: position.left,
-          transform: 'translate(-50%, -50%)'
-        }}
-      >
-        <div className="w-20 h-20 rounded-full bg-white/20 border-4 border-white/40 animate-pulse shadow-2xl backdrop-blur-sm">
-          <div className="w-full h-full rounded-full bg-gradient-to-r from-white/10 to-white/5" />
-        </div>
-      </div>
 
       {/* Tooltip card positioned above the highlight */}
       <div

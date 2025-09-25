@@ -8,6 +8,7 @@ import { RouteGuard } from "@/components/RouteGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import DemoTour from "./pages/DemoTour";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,7 +22,8 @@ const App = () => (
         <BrowserRouter>
           <RouteGuard>
               <Routes>
-                <Route path="/" element={<Navigate to="/app" replace />} />
+                <Route path="/" element={<Navigate to="/onboarding" replace />} />
+                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/app" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/demo" element={<DemoTour />} />
