@@ -15,6 +15,7 @@ import { PatternInsights } from "@/components/PatternInsights";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -213,6 +214,19 @@ const Index = () => {
                     </Button>
                   </>
                 )}
+              </div>
+              
+              {/* Theme Toggle */}
+              <div className="max-w-sm mx-auto mb-6">
+                <div className="p-4 bg-card rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Theme</p>
+                      <p className="text-xs text-muted-foreground">Switch between light and dark mode</p>
+                    </div>
+                    <ThemeToggle />
+                  </div>
+                </div>
               </div>
             </div>
             <InviteCollaborator />
