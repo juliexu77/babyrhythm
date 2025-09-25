@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChevronRight, ChevronLeft, Baby, Clock, TrendingUp } from "lucide-react";
 
 const OnboardingStep = ({ 
@@ -66,7 +67,12 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* Theme Toggle - Fixed position */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+      
       {/* Progress indicators */}
       <div className="flex justify-center pt-12 pb-8">
         <div className="flex space-x-2">
