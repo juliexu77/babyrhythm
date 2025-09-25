@@ -10,6 +10,20 @@ interface TrendChartProps {
 export const TrendChart = ({ activities }: TrendChartProps) => {
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
 
+  // Determine preferred unit from last feed entry
+  const getPreferredUnit = () => {
+    const feedActivities = activities.filter(a => a.type === "feed" && a.details?.quantity);
+    if (feedActivities.length === 0) return "oz";
+    
+    const lastFeed = feedActivities[feedActivities.length - 1];
+    const quantity = parseFloat(lastFeed.details.quantity || "0");
+    
+    // If quantity > 50, assume it's ml, otherwise oz
+    return quantity > 50 ? "ml" : "oz";
+  };
+
+  const preferredUnit = getPreferredUnit();
+
   // Calculate real feed volume data for the past 7 days
   const generateFeedData = () => {
     const days = 7;
@@ -28,20 +42,37 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         return dateStr === activityDate; // Only show data for today, empty for other days
       });
       
-      const totalOz = dayFeeds.reduce((sum, feed) => {
-        if (!feed.details.quantity) return sum;
-        const normalized = normalizeVolume(feed.details.quantity, "oz");
-        return sum + normalized.value;
-      }, 0);
+      let totalValue = 0;
       
-      const value = Math.round(totalOz * 10) / 10;
+      dayFeeds.forEach(feed => {
+        if (!feed.details.quantity) return;
+        const quantity = parseFloat(feed.details.quantity);
+        
+        if (preferredUnit === "ml") {
+          // If user prefers ml, convert oz to ml when needed
+          const detectedUnit = quantity > 50 ? "ml" : "oz";
+          if (detectedUnit === "oz") {
+            totalValue += quantity * 29.5735; // Convert oz to ml
+          } else {
+            totalValue += quantity;
+          }
+        } else {
+          // If user prefers oz, convert ml to oz when needed
+          const normalized = normalizeVolume(quantity);
+          totalValue += normalized.value;
+        }
+      });
+      
+      const value = Math.round(totalValue * 10) / 10;
       const feedCount = dayFeeds.length;
+      const unit = preferredUnit;
       
       data.push({
         date: date.toLocaleDateString("en-US", { weekday: "short" }),
         value,
         feedCount,
-        detail: value > 0 ? `${value} oz, ${feedCount} feeds` : "No feeds"
+        unit,
+        detail: value > 0 ? `${value} ${unit}, ${feedCount} feeds` : "No feeds"
       });
     }
     
@@ -102,7 +133,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-muted-foreground" />
           <h3 className="text-lg font-serif font-medium text-foreground">
-            Daily Feed Volume
+            Daily Feed Volume ({preferredUnit})
           </h3>
         </div>
         
@@ -111,7 +142,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
           <div className="flex gap-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gradient-feed"></div>
-              <span className="text-muted-foreground">Total oz</span>
+              <span className="text-muted-foreground">Total {preferredUnit}</span>
             </div>
           </div>
 

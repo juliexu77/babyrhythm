@@ -38,6 +38,19 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const currentTime = getCurrentTime();
     const currentMinutes = getTimeInMinutes(currentTime);
     
+    // Check if we have minimum required data for predictions
+    const feedCount = activities.filter(a => a.type === "feed").length;
+    const napCount = activities.filter(a => a.type === "nap").length;
+    
+    if (feedCount < 4 || napCount < 4) {
+      return {
+        type: "insufficient_data",
+        suggestedTime: currentTime,
+        anticipatedTime: currentTime,
+        reason: `Need at least 4 feeds and 4 naps to show predictions. Currently have ${feedCount} feeds and ${napCount} naps.`
+      };
+    }
+    
     if (activities.length === 0) {
       return {
         type: "feed",
@@ -179,6 +192,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       case "feed": return "text-pink-600 bg-pink-50";
       case "nap": return "text-blue-600 bg-blue-50";
       case "diaper": return "text-amber-600 bg-amber-50";
+      case "insufficient_data": return "text-muted-foreground bg-muted/30";
       default: return "text-gray-600 bg-gray-50";
     }
   };
@@ -194,19 +208,23 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       
       <div className={`flex items-center gap-4 p-4 rounded-lg ${getActivityColor(nextActivity.type)}`}>
         <div className="flex-shrink-0">
-          {getActivityIcon(nextActivity.type)}
+          {nextActivity.type === "insufficient_data" ? <Clock className="h-5 w-5" /> : getActivityIcon(nextActivity.type)}
         </div>
         <div className="flex-1">
           <h4 className="font-medium text-foreground capitalize mb-1">
-            {nextActivity.type}
+            {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
           </h4>
-          <p className="text-sm text-muted-foreground mb-1">
-            Suggested time: {nextActivity.suggestedTime}
-          </p>
-          {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
-            <p className="text-sm text-muted-foreground mb-2">
-              Anticipated: {nextActivity.anticipatedTime}
-            </p>
+          {nextActivity.type !== "insufficient_data" && (
+            <>
+              <p className="text-sm text-muted-foreground mb-1">
+                Suggested time: {nextActivity.suggestedTime}
+              </p>
+              {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  Anticipated: {nextActivity.anticipatedTime}
+                </p>
+              )}
+            </>
           )}
           <p className="text-xs text-muted-foreground">
             {nextActivity.reason}

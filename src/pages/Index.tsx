@@ -7,7 +7,7 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { SummaryCards } from "@/components/SummaryCards";
 import { TrendChart } from "@/components/TrendChart";
 import { DailySummary } from "@/components/DailySummary";
-import { YesterdaysSummary } from "@/components/YesterdaysSummary";
+import { TodaysSummary } from "@/components/TodaysSummary";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { InviteCollaborator } from "@/components/InviteCollaborator";
 import { InlineInsights } from "@/components/InlineInsights";
@@ -158,14 +158,13 @@ const Index = () => {
       case "timeline":
         return (
           <div className="space-y-6">
-            <YesterdaysSummary activities={activities} />
+            <TodaysSummary activities={activities} />
           </div>
         );
       case "trends":
         return (
           <div className="space-y-6">
             <TrendChart activities={activities} />
-            <DailySummary activities={activities} date={today} />
           </div>
         );
       case "calendar":
