@@ -232,7 +232,12 @@ const Index = () => {
       <OfflineIndicator />
       
       {/* Header */}
-      <div className="bg-gradient-primary px-6 py-4 text-white">
+      <div className="bg-gradient-primary px-6 py-4 text-white relative">
+        {/* Theme toggle in top right */}
+        <div className="absolute top-4 right-6 z-10">
+          <ThemeToggle />
+        </div>
+        
         <div className="max-w-md mx-auto">
           {activeTab === "home" && (
             <>
