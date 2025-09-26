@@ -25,6 +25,7 @@ import { offlineSync } from "@/utils/offlineSync";
 import { BabyProfileSetup } from "@/components/BabyProfileSetup";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { SubtleOnboarding } from "@/components/SubtleOnboarding";
+import { Settings } from "@/pages/Settings";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -113,7 +114,7 @@ const Index = () => {
   }
 
   // Show baby profile setup if no profile exists and user is not a collaborator
-  if (hasProfile === false && !localStorage.getItem('isCollaborator')) {
+  if (hasProfile === false && !localStorage.getItem('isCollaborator') && !localStorage.getItem('babyProfileSkipped')) {
     return <BabyProfileSetup onComplete={handleProfileComplete} />;
   }
 
@@ -218,75 +219,8 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">Coming soon</p>
           </div>
         );
-      case "profile":
-        return (
-          <div className="space-y-6">
-            <div className="text-center py-8">
-              <User className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
-              <p className="text-muted-foreground font-medium mb-4">{t('profile')}</p>
-              <div className="max-w-sm mx-auto mb-6">
-                {user ? (
-                  <>
-                    <div className="p-4 bg-card rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-2">Signed in as:</p>
-                      <p className="font-medium text-foreground">{user.email}</p>
-                    </div>
-                    <Button
-                      onClick={signOut}
-                      variant="outline"
-                      className="w-full mt-4"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      {t('signOut')}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="p-4 bg-card rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-2">Using as:</p>
-                      <p className="font-medium text-foreground">Guest User</p>
-                      <p className="text-xs text-muted-foreground mt-1">Sign in to save your data across devices</p>
-                    </div>
-                    <Button
-                      onClick={() => navigate("/auth")}
-                      className="w-full mt-4"
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      {t('signIn')}
-                    </Button>
-                  </>
-                )}
-              </div>
-              
-              {/* Theme Toggle */}
-              <div className="max-w-sm mx-auto mb-6">
-                <div className="p-4 bg-card rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">{t('theme')}</p>
-                      <p className="text-xs text-muted-foreground">Switch between light and dark mode</p>
-                    </div>
-                    <ThemeToggle />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Language Toggle */}
-              <div className="max-w-sm mx-auto mb-6">
-                <div className="p-4 bg-card rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">{t('language')}</p>
-                      <p className="text-xs text-muted-foreground">Switch between English and Chinese</p>
-                    </div>
-                    <LanguageToggle />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <InviteCollaborator />
-          </div>
-        );
+      case "settings":
+        return <Settings />;
       default:
         return null;
     }

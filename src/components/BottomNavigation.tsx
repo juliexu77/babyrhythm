@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Home, TrendingUp, Calendar, User, Plus } from "lucide-react";
+import { Home, TrendingUp, Calendar, Settings, Plus } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -19,7 +19,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
   
   const rightTabs = [
     { id: "trends", label: t('trends'), icon: Calendar },
-    { id: "profile", label: t('profile'), icon: User },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   return (

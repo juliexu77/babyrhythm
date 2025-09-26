@@ -70,6 +70,19 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
           <p className="text-muted-foreground text-sm">
             Let's personalize your tracking experience
           </p>
+          
+          {/* Skip option */}
+          <div className="text-center mt-4">
+            <button
+              onClick={() => {
+                localStorage.setItem('babyProfileSkipped', 'true');
+                onComplete({ name: 'Baby', birthday: '' });
+              }}
+              className="text-sm text-muted-foreground hover:text-foreground underline"
+            >
+              Skip for now (you can add this later in settings)
+            </button>
+          </div>
         </div>
 
         {/* Setup Form */}
