@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChevronRight, ChevronLeft, Baby, Clock, TrendingUp } from "lucide-react";
 
@@ -15,7 +16,7 @@ const OnboardingStep = ({
   description: string; 
   image?: string;
 }) => (
-  <div className="flex flex-col items-center text-center px-8 py-12">
+  <div className="min-h-screen flex flex-col items-center justify-center text-center px-8 py-12">
     <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mb-8">
       <Icon className="w-10 h-10 text-white" />
     </div>
@@ -29,6 +30,7 @@ const OnboardingStep = ({
 const Onboarding = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const steps = [
     {
@@ -48,37 +50,64 @@ const Onboarding = () => {
     }
   ];
 
+  // Handle scroll to update current step
+  useEffect(() => {
+    const scrollArea = scrollAreaRef.current;
+    if (!scrollArea) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollArea.scrollTop;
+      const windowHeight = window.innerHeight;
+      const newStep = Math.round(scrollTop / windowHeight);
+      setCurrentStep(Math.min(Math.max(newStep, 0), steps.length - 1));
+    };
+
+    scrollArea.addEventListener('scroll', handleScroll);
+    return () => scrollArea.removeEventListener('scroll', handleScroll);
+  }, [steps.length]);
+
+  const scrollToStep = (stepIndex: number) => {
+    if (scrollAreaRef.current) {
+      const windowHeight = window.innerHeight;
+      scrollAreaRef.current.scrollTo({
+        top: stepIndex * windowHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      scrollToStep(currentStep + 1);
     } else {
-      navigate("/app"); // Go directly to app, which will show baby profile setup if needed
+      navigate("/auth"); // Go to auth after onboarding
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      scrollToStep(currentStep - 1);
     }
   };
 
   const skipToAuth = () => {
-    navigate("/app"); // Go directly to app
+    navigate("/auth"); // Go to auth
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative">
+    <div className="h-screen bg-background relative overflow-hidden">
       {/* Theme Toggle - Fixed position */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-20">
         <ThemeToggle showText={false} />
       </div>
       
-      {/* Progress indicators */}
-      <div className="flex justify-center pt-12 pb-8">
+      {/* Progress indicators - Fixed position */}
+      <div className="absolute top-12 left-1/2 transform -translate-x-1/2 z-20">
         <div className="flex space-x-2">
           {steps.map((_, index) => (
-            <div
+            <button
               key={index}
+              onClick={() => scrollToStep(index)}
               className={`w-2 h-2 rounded-full transition-colors ${
                 index === currentStep ? "bg-primary" : "bg-muted-foreground/30"
               }`}
@@ -87,17 +116,25 @@ const Onboarding = () => {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="max-w-md mx-auto">
-          <OnboardingStep {...steps[currentStep]} />
+      {/* Scrollable Content */}
+      <ScrollArea 
+        ref={scrollAreaRef}
+        className="h-full w-full"
+        style={{ height: '100vh' }}
+      >
+        <div style={{ height: `${steps.length * 100}vh` }}>
+          {steps.map((step, index) => (
+            <div key={index} style={{ height: '100vh' }}>
+              <OnboardingStep {...step} />
+            </div>
+          ))}
         </div>
-      </div>
+      </ScrollArea>
 
-      {/* Navigation */}
-      <div className="p-8">
+      {/* Navigation - Fixed position */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <div className="max-w-md mx-auto">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center space-x-8">
             {currentStep > 0 ? (
               <Button variant="ghost" onClick={prevStep} className="flex items-center">
                 <ChevronLeft className="w-4 h-4 mr-1" />
