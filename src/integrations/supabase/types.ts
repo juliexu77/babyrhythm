@@ -14,6 +14,153 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          baby_profile_id: string
+          created_at: string
+          created_by: string
+          details: Json
+          id: string
+          logged_at: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          baby_profile_id: string
+          created_at?: string
+          created_by: string
+          details?: Json
+          id?: string
+          logged_at: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          baby_profile_id?: string
+          created_at?: string
+          created_by?: string
+          details?: Json
+          id?: string
+          logged_at?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_baby_profile_id_fkey"
+            columns: ["baby_profile_id"]
+            isOneToOne: false
+            referencedRelation: "baby_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      baby_profiles: {
+        Row: {
+          birthday: string | null
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          birthday?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          birthday?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      collaborators: {
+        Row: {
+          baby_profile_id: string
+          created_at: string
+          id: string
+          invited_by: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          baby_profile_id: string
+          created_at?: string
+          id?: string
+          invited_by: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          baby_profile_id?: string
+          created_at?: string
+          id?: string
+          invited_by?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaborators_baby_profile_id_fkey"
+            columns: ["baby_profile_id"]
+            isOneToOne: false
+            referencedRelation: "baby_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invite_links: {
+        Row: {
+          baby_profile_id: string
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          role: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          baby_profile_id: string
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          role?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          baby_profile_id?: string
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          role?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_links_baby_profile_id_fkey"
+            columns: ["baby_profile_id"]
+            isOneToOne: false
+            referencedRelation: "baby_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           baby_birth_date: string | null
@@ -49,7 +196,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_invite: {
+        Args: { invite_code: string }
+        Returns: string
+      }
+      generate_invite_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
