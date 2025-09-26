@@ -208,16 +208,10 @@ export const Settings = ({ onClose }: SettingsProps) => {
   return (
     <div className="space-y-4 pb-8">
 
-      {/* User Profile Section */}
+      {/* User Profile */}
       {user ? (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              User Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-6">
             <div className="flex items-center gap-4">
               <Avatar className="w-16 h-16">
                 <AvatarImage src="" alt={fullName || user.email || "User"} />
@@ -281,35 +275,27 @@ export const Settings = ({ onClose }: SettingsProps) => {
         </Card>
       )}
 
-      {/* Baby Profile Section */}
+      {/* Baby Profile */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Baby className="w-5 h-5" />
-            Baby Profile
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-6">
           {!showBabyEdit ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                <div>
-                  <p className="font-medium">{babyName}</p>
-                  {babyBirthday && (
-                    <p className="text-sm text-muted-foreground">
-                      Born {new Date(babyBirthday).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowBabyEdit(true)}
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
+            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+              <div>
+                <p className="font-medium">{babyName}</p>
+                {babyBirthday && (
+                  <p className="text-sm text-muted-foreground">
+                    Born {new Date(babyBirthday).toLocaleDateString()}
+                  </p>
+                )}
               </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowBabyEdit(true)}
+              >
+                <Edit3 className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -358,28 +344,18 @@ export const Settings = ({ onClose }: SettingsProps) => {
         </CardContent>
       </Card>
 
-      {/* Collaborators Section */}
       <SimpleInviteCollaborator />
 
       {/* App Preferences */}
       <Card>
-        <CardHeader>
-          <CardTitle>App Preferences</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Palette className="w-5 h-5 text-muted-foreground" />
-              <p className="font-medium">Theme</p>
-            </div>
+        <CardContent className="space-y-4 pt-6">
+          <div className="flex items-center justify-between">
+            <Palette className="w-5 h-5 text-muted-foreground" />
             <ThemeToggle />
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Globe className="w-5 h-5 text-muted-foreground" />
-              <p className="font-medium">Language</p>
-            </div>
+          <div className="flex items-center justify-between">
+            <Globe className="w-5 h-5 text-muted-foreground" />
             <LanguageToggle />
           </div>
         </CardContent>
