@@ -69,7 +69,7 @@ const DemoTour = () => {
       id: "demo-2",
       type: "diaper",
       time: "8:15 AM",
-      details: { diaperType: "pee" }
+      details: { diaperType: "wet" }
     },
     {
       id: "demo-3",
@@ -111,7 +111,7 @@ const DemoTour = () => {
         id: "demo-auto-2",
         type: "diaper",
         time: "8:15 AM",
-        details: { diaperType: "pee" }
+        details: { diaperType: "wet" }
       };
       setDemoActivities([...demoActivities, secondActivity]);
     }

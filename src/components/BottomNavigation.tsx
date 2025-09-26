@@ -51,11 +51,11 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
             ref={addButtonRef}
             onClick={onAddActivity}
             className="absolute left-1/2 transform -translate-x-1/2 -translate-y-2 
-                     w-14 h-14 bg-gradient-primary rounded-full 
-                     flex items-center justify-center shadow-soft
-                     hover:scale-105 transition-transform duration-200"
+                     w-14 h-14 bg-primary rounded-full 
+                     flex items-center justify-center shadow-lg
+                     hover:scale-105 transition-transform duration-200 z-10"
           >
-            <Plus className="w-6 h-6 text-white" />
+            <Plus className="w-6 h-6 text-primary-foreground" />
           </button>
 
           {/* Right tabs */}

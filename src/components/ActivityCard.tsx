@@ -8,10 +8,18 @@ export interface Activity {
   type: "feed" | "diaper" | "nap" | "note";
   time: string;
   details: {
+    // Feed details
+    feedType?: "bottle" | "nursing" | "solid";
     quantity?: string;
-    diaperType?: "pee" | "poop" | "both";
+    unit?: "oz" | "ml";
+    // Diaper details
+    diaperType?: "wet" | "poopy" | "both";
+    hasLeak?: boolean;
+    hasCream?: boolean;
+    // Nap details
     startTime?: string;
     endTime?: string;
+    // General
     note?: string;
   };
 }
@@ -64,9 +72,9 @@ const getPersonalizedActivityText = (activity: Activity) => {
       return `${babyName} had a feeding`;
     case "diaper":
       const type = activity.details.diaperType;
-      if (type === "pee") {
+      if (type === "wet") {
         return `${babyName} had a wet diaper`;
-      } else if (type === "poop") {
+      } else if (type === "poopy") {
         return `${babyName} had a poop diaper`;
       } else if (type === "both") {
         return `${babyName} had a wet and poop diaper`;

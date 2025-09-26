@@ -88,7 +88,7 @@ Guidelines:
   } catch (error) {
     console.error('Error in parse-schedule function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       activities: [] 
     }), {
       status: 500,

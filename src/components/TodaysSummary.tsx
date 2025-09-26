@@ -9,12 +9,24 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { ActivityDetailModal } from "./ActivityDetailModal";
 
 interface TodaysSummaryProps {
   activities: Activity[];
 }
 
 export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const handleCardClick = (activityType: string) => {
+    // Find the most recent activity of this type to show details
+    const recentActivity = activities.find(activity => activity.type === activityType);
+    if (recentActivity) {
+      setSelectedActivity(recentActivity);
+      setIsDetailModalOpen(true);
+    }
+  };
   // Get all unique dates from activities (in real app would come from database)
   const getAvailableDates = () => {
     const today = new Date();
@@ -115,13 +127,17 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
 
   const stats = calculateStats();
 
-  const StatCard = ({ icon: Icon, label, value, color }: { 
+  const StatCard = ({ icon: Icon, label, value, color, activityType }: { 
     icon: any, 
     label: string, 
     value: string | number, 
-    color: string 
+    color: string,
+    activityType: string
   }) => (
-    <div className="bg-card rounded-lg p-4 border border-border">
+    <div 
+      className="bg-card rounded-lg p-4 border border-border cursor-pointer hover:bg-accent/50 transition-colors"
+      onClick={() => handleCardClick(activityType)}
+    >
       <div className="flex items-center gap-3">
         <div className={`p-2 rounded-lg ${color}`}>
           <Icon className="h-4 w-4" />
@@ -218,24 +234,28 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
             label="Feeds"
             value={stats.feeds}
             color="bg-pink-50 text-pink-600"
+            activityType="feed"
           />
           <StatCard 
             icon={Moon}
             label="Naps"
             value={stats.naps}
             color="bg-blue-50 text-blue-600"
+            activityType="nap"
           />
           <StatCard 
             icon={Palette}
             label="Diapers"
             value={stats.diapers}
             color="bg-amber-50 text-amber-600"
+            activityType="diaper"
           />
           <StatCard 
             icon={StickyNote}
             label="Notes"
             value={stats.notes}
             color="bg-green-50 text-green-600"
+            activityType="note"
           />
         </div>
 
@@ -269,6 +289,15 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
           </div>
         )}
       </div>
+      
+      <ActivityDetailModal 
+        activity={selectedActivity}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedActivity(null);
+        }}
+      />
     </div>
   );
 };

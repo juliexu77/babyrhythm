@@ -36,8 +36,17 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
   const minuteRef = useRef<HTMLDivElement>(null);
   const periodRef = useRef<HTMLDivElement>(null);
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
+  // Create extended arrays for infinite scrolling
+  const hours = [
+    ...Array.from({ length: 12 }, (_, i) => i + 1), // Original 1-12
+    ...Array.from({ length: 12 }, (_, i) => i + 1), // Duplicate for continuity
+    ...Array.from({ length: 12 }, (_, i) => i + 1)  // Another duplicate
+  ];
+  const minutes = [
+    ...Array.from({ length: 12 }, (_, i) => i * 5), // Original 0-55
+    ...Array.from({ length: 12 }, (_, i) => i * 5), // Duplicate for continuity  
+    ...Array.from({ length: 12 }, (_, i) => i * 5)  // Another duplicate
+  ];
   const periods = ["AM", "PM"];
 
   useEffect(() => {
@@ -47,10 +56,11 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
 
   const scrollToValue = (ref: React.RefObject<HTMLDivElement>, value: number, items: any[]) => {
     if (ref.current) {
-      const index = items.indexOf(value);
-      if (index !== -1) {
-        const itemHeight = 40;
-        ref.current.scrollTop = index * itemHeight;
+      const itemHeight = 40;
+      // Find the middle occurrence of the value for smooth infinite scrolling
+      const middleIndex = 12 + items.slice(0, 12).indexOf(value);
+      if (middleIndex >= 12) {
+        ref.current.scrollTop = middleIndex * itemHeight;
       }
     }
   };
@@ -69,8 +79,23 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
       const itemHeight = 40;
       const scrollTop = ref.current.scrollTop;
       const index = Math.round(scrollTop / itemHeight);
-      const clampedIndex = Math.max(0, Math.min(index, items.length - 1));
-      setter(items[clampedIndex]);
+      const totalItems = items.length;
+      const sectionSize = totalItems / 3; // Each section has 12 items
+      
+      // Handle infinite scrolling by wrapping around
+      if (index < sectionSize * 0.5) {
+        // Near top, jump to middle section
+        ref.current.scrollTop = (index + sectionSize) * itemHeight;
+        return;
+      } else if (index >= sectionSize * 2.5) {
+        // Near bottom, jump to middle section
+        ref.current.scrollTop = (index - sectionSize) * itemHeight;
+        return;
+      }
+      
+      const clampedIndex = Math.max(0, Math.min(index, totalItems - 1));
+      const actualValue = items[clampedIndex % sectionSize];
+      setter(actualValue);
     }
   };
 
@@ -86,9 +111,9 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <div className="flex flex-col">
-            {hours.map((hour) => (
+            {hours.map((hour, index) => (
               <div
-                key={hour}
+                key={`hour-${index}`}
                 className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
                   selectedHour === hour 
                     ? 'text-primary font-bold' 
@@ -112,9 +137,9 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <div className="flex flex-col">
-            {minutes.map((minute) => (
+            {minutes.map((minute, index) => (
               <div
-                key={minute}
+                key={`minute-${index}`}
                 className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
                   selectedMinute === minute 
                     ? 'text-primary font-bold' 
