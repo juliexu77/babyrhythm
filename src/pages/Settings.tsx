@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -132,7 +133,12 @@ export const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-md mx-auto px-6 py-8 space-y-8 relative">
+        {/* Theme Toggle - Top Right */}
+        <div className="absolute top-8 right-6">
+          <ThemeToggle showText={false} />
+        </div>
+        
         {/* Header with User Icon and Title */}
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-muted rounded-full mx-auto flex items-center justify-center">
