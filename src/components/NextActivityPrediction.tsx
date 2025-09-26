@@ -51,7 +51,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         type: "insufficient_data",
         suggestedTime: currentTime,
         anticipatedTime: currentTime,
-        reason: `Need at least 2 feeds or 3 naps to show predictions. Currently have ${feedCount} feeds and ${napCount} naps.`
+        reason: "Once enough activities are logged, predictions will appear here."
       };
     }
     
@@ -212,7 +212,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       <div className="flex items-center gap-2 mb-4">
         <Clock className="w-5 h-5 text-muted-foreground" />
         <h3 className="text-lg font-serif font-medium text-foreground">
-          What's Next?
+          Next Action
         </h3>
       </div>
       
