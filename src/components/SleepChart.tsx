@@ -8,6 +8,7 @@ interface SleepChartProps {
 
 export const SleepChart = ({ activities }: SleepChartProps) => {
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [showFullDay, setShowFullDay] = useState(false);
 
   // Get baby's age for recommendations
   const getBabyProfile = () => {
@@ -24,6 +25,11 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
     const data = [];
     const today = new Date();
     
+    // Time range: 6am-9pm (15 hours) by default, or full 24 hours if expanded
+    const startHour = showFullDay ? 0 : 6;
+    const endHour = showFullDay ? 24 : 21;
+    const totalHours = endHour - startHour;
+    
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
@@ -37,8 +43,8 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
         return dateStr === today;
       });
       
-      // Create 24-hour sleep blocks (each representing 1 hour)
-      const sleepBlocks = Array(24).fill(false);
+      // Create sleep blocks for the time range
+      const sleepBlocks = Array(totalHours).fill(false);
       
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
@@ -50,8 +56,12 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           const startBlock = Math.floor(startHour + startMin / 60);
           const endBlock = Math.ceil(endHour + endMin / 60);
           
-          for (let block = startBlock; block < endBlock && block < 24; block++) {
-            sleepBlocks[block] = true;
+          // Map to our time range (starting from startHour)
+          for (let block = startBlock; block < endBlock; block++) {
+            const adjustedBlock = block - startHour;
+            if (adjustedBlock >= 0 && adjustedBlock < totalHours) {
+              sleepBlocks[adjustedBlock] = true;
+            }
           }
         }
       });
@@ -60,7 +70,9 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
         date: date.toLocaleDateString("en-US", { weekday: "short" }),
         fullDate: date,
         sleepBlocks,
-        hasData: dayNaps.length > 0
+        hasData: dayNaps.length > 0,
+        startHour,
+        totalHours
       });
     }
     
@@ -79,8 +91,8 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
     
     daysWithData.forEach(day => {
       let wakeTime = 0;
-      // Count wake time between 6am (6) and 8pm (20)
-      for (let hour = 6; hour < 20; hour++) {
+      // Count wake time in the visible time range
+      for (let hour = 0; hour < day.totalHours; hour++) {
         if (!day.sleepBlocks[hour]) {
           wakeTime++;
         }
@@ -132,9 +144,30 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   const averageWakeWindow = calculateAverageWakeWindow();
   const todaysSummary = getTodaysSummary();
   const nextNapRecommendation = getNextNapRecommendation(ageInWeeks);
+  const hasAnyData = sleepData.some(day => day.hasData);
 
-  // Time labels for the y-axis (every 4 hours)
-  const timeLabels = ['12am', '4am', '8am', '12pm', '4pm', '8pm'];
+  // Generate time labels based on current view
+  const generateTimeLabels = () => {
+    const startHour = showFullDay ? 0 : 6;
+    const endHour = showFullDay ? 24 : 21;
+    const labels = [];
+    
+    for (let hour = startHour; hour < endHour; hour += showFullDay ? 4 : 3) {
+      if (hour === 0) {
+        labels.push('12am');
+      } else if (hour < 12) {
+        labels.push(`${hour}am`);
+      } else if (hour === 12) {
+        labels.push('12pm');
+      } else {
+        labels.push(`${hour - 12}pm`);
+      }
+    }
+    
+    return labels;
+  };
+
+  const timeLabels = generateTimeLabels();
 
   return (
     <div className="space-y-6">
@@ -166,6 +199,16 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           </div>
         </div>
 
+        {/* Expand/Collapse Button */}
+        <div className="mb-4">
+          <button
+            onClick={() => setShowFullDay(!showFullDay)}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showFullDay ? 'Show daytime only (6am-9pm)' : 'Show full day (12am-12am)'}
+          </button>
+        </div>
+
         {/* Day headers */}
         <div className="grid grid-cols-[60px_1fr] gap-4 mb-2">
           <div></div>
@@ -181,7 +224,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
         {/* Sleep chart grid */}
         <div className="grid grid-cols-[60px_1fr] gap-4">
           {/* Time labels */}
-          <div className="grid grid-rows-6 gap-8 py-2">
+          <div className="flex flex-col justify-between py-2" style={{ height: showFullDay ? '384px' : '240px' }}>
             {timeLabels.map((time, index) => (
               <div key={index} className="text-xs text-muted-foreground text-right">
                 {time}
@@ -190,9 +233,16 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           </div>
 
           {/* Sleep blocks */}
-          <div className="grid gap-2 h-96" style={{ gridTemplateColumns: `repeat(${sleepData.length}, 1fr)` }}>
+          <div className="grid gap-2" style={{ 
+            gridTemplateColumns: `repeat(${sleepData.length}, 1fr)`,
+            height: showFullDay ? '384px' : '240px'
+          }}>
             {sleepData.map((day, dayIndex) => (
-              <div key={dayIndex} className="grid grid-rows-24 gap-0.5">
+              <div 
+                key={dayIndex} 
+                className="grid gap-0.5"
+                style={{ gridTemplateRows: `repeat(${day.totalHours}, 1fr)` }}
+              >
                 {day.sleepBlocks.map((isAsleep, hourIndex) => (
                   <div
                     key={hourIndex}
@@ -201,7 +251,6 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
                         ? 'bg-primary opacity-80' 
                         : 'bg-muted/30'
                     }`}
-                    style={{ height: '14px' }}
                   />
                 ))}
               </div>
@@ -210,25 +259,27 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
         </div>
       </div>
 
-      {/* Prediction Section */}
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <h3 className="text-lg font-serif font-semibold text-foreground mb-4">Prediction</h3>
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm text-muted-foreground">Next nap window: </span>
-            <span className="text-base font-medium text-foreground">
-              {nextNapRecommendation.nextNapTime || "No recommendation"}
-            </span>
+      {/* Prediction Section - Only show if there's data */}
+      {hasAnyData && (
+        <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+          <h3 className="text-lg font-serif font-semibold text-foreground mb-4">Prediction</h3>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm text-muted-foreground">Next nap window: </span>
+              <span className="text-base font-medium text-foreground">
+                {nextNapRecommendation.nextNapTime || "No recommendation"}
+              </span>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-muted-foreground">Avg wake window</div>
+              <div className="text-base font-medium text-foreground">{averageWakeWindow}</div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">Avg wake window</div>
-            <div className="text-base font-medium text-foreground">{averageWakeWindow}</div>
-          </div>
+          {nextNapRecommendation.reason && (
+            <p className="text-xs text-muted-foreground mt-2">{nextNapRecommendation.reason}</p>
+          )}
         </div>
-        {nextNapRecommendation.reason && (
-          <p className="text-xs text-muted-foreground mt-2">{nextNapRecommendation.reason}</p>
-        )}
-      </div>
+      )}
 
       {/* Today's Summary */}
       <div className="grid grid-cols-2 gap-4">
