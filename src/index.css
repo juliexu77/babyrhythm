@@ -8,53 +8,53 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Feminine, classy palette inspired by design guidelines */
-    --background: 35 40% 98%; /* #FDFBF8 - neutral-100 */
-    --foreground: 0 0% 20%; /* #333333 - text-primary */
+    /* Warm, nurturing palette for light mode */
+    --background: 30 50% 97%; /* #FAF7F5 - warm cream background */
+    --foreground: 0 0% 20%; /* #333333 - soft dark grey text */
 
-    --card: 35 40% 98%; /* #FDFBF8 - neutral-100 */
+    --card: 0 0% 99%; /* Slightly warmer white for cards */
     --card-foreground: 0 0% 20%;
 
-    --popover: 35 40% 98%;
+    --popover: 0 0% 99%;
     --popover-foreground: 0 0% 20%;
 
-    /* Rose accent as primary */
-    --primary: 8 25% 70%; /* #D8A29E - accent-rose */
-    --primary-foreground: 35 40% 98%;
-    --primary-light: 8 30% 75%;
+    /* Soft blush primary accent */
+    --primary: 8 70% 87%; /* #F7C7C2 - soft blush primary */
+    --primary-foreground: 0 0% 20%;
+    --primary-light: 8 75% 90%;
 
-    /* Soft neutral secondary */
-    --secondary: 30 25% 94%; /* #F5F1ED - neutral-200 */
-    --secondary-foreground: 0 0% 40%;
+    /* Light taupe secondary */
+    --secondary: 30 25% 94%; /* #F1ECEA - light taupe secondary */
+    --secondary-foreground: 0 0% 30%;
 
-    --muted: 25 20% 90%; /* #E8E2DD - neutral-300 */
-    --muted-foreground: 0 0% 40%; /* #666666 - text-secondary */
+    --muted: 30 20% 92%; /* Warm muted background */
+    --muted-foreground: 0 0% 45%; /* Softer muted text */
 
-    /* Sage accent */
-    --accent: 120 15% 70%; /* #A3B3A6 - accent-sage */
+    /* Mint accent alternative */
+    --accent: 150 45% 82%; /* #B5E5D0 - mint accent */
     --accent-foreground: 0 0% 20%;
 
     --destructive: 0 65% 55%;
-    --destructive-foreground: 35 40% 98%;
+    --destructive-foreground: 0 0% 99%;
 
-    --border: 25 20% 90%;
-    --input: 25 20% 90%;
-    --ring: 8 25% 70%;
+    --border: 30 15% 88%;
+    --input: 30 20% 96%;
+    --ring: 172 66% 46%; /* Keep teal as unifying color */
 
-    /* Activity colors - soft, feminine palette */
-    --feed-color: 8 25% 70%; /* Rose for feeding */
-    --diaper-color: 45 30% 75%; /* Gold tone for diapers */
-    --nap-color: 220 25% 75%; /* Soft blue for naps */
-    --note-color: 300 20% 75%; /* Soft lavender for notes */
-    --chat-color: 120 15% 70%; /* Sage for chat */
+    /* Activity colors - soft, nurturing palette */
+    --feed-color: 8 70% 87%; /* Soft blush for feeding */
+    --diaper-color: 45 50% 85%; /* Warm peachy tone for diapers */
+    --nap-color: 220 40% 85%; /* Soft lavender for naps */
+    --note-color: 300 35% 85%; /* Gentle purple for notes */
+    --chat-color: 172 66% 46%; /* Unifying teal for chat */
 
-    /* Elegant gradients */
+    /* Soft, nurturing gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-feed: linear-gradient(135deg, hsl(8 25% 70%), hsl(8 30% 80%));
-    --gradient-diaper: linear-gradient(135deg, hsl(45 30% 75%), hsl(45 35% 85%));
-    --gradient-nap: linear-gradient(135deg, hsl(220 25% 75%), hsl(220 30% 85%));
-    --gradient-note: linear-gradient(135deg, hsl(300 20% 75%), hsl(300 25% 85%));
-    --gradient-chat: linear-gradient(135deg, hsl(120 15% 70%), hsl(120 20% 80%));
+    --gradient-feed: linear-gradient(135deg, hsl(8 70% 87%), hsl(8 75% 92%));
+    --gradient-diaper: linear-gradient(135deg, hsl(45 50% 85%), hsl(45 55% 90%));
+    --gradient-nap: linear-gradient(135deg, hsl(220 40% 85%), hsl(220 45% 90%));
+    --gradient-note: linear-gradient(135deg, hsl(300 35% 85%), hsl(300 40% 90%));
+    --gradient-chat: linear-gradient(135deg, hsl(172 66% 46%), hsl(172 60% 60%));
 
     /* Sophisticated shadows */
     --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.1); /* floating shadow */
