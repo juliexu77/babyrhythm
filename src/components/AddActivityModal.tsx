@@ -117,6 +117,15 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
       return;
     }
 
+    if (activityType === "feed" && !quantity) {
+      toast({
+        title: "Feed amount required",
+        description: "Please enter the amount for this feeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (activityType === "nap" && (!startTime || !endTime)) {
       toast({
         title: "Nap times required",
@@ -294,6 +303,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
             {/* Diaper Details */}
             {activityType === "diaper" && (
               <div className="space-y-5">
+                {/* Time Picker for Diaper */}
+                <TimeScrollPicker value={time} onChange={setTime} label="Time" />
+                
                 <div>
                   <Label className="text-sm font-medium mb-2 block text-muted-foreground">Type</Label>
                   <div className="grid grid-cols-3 gap-2">

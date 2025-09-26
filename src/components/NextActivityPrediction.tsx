@@ -42,12 +42,16 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const feedCount = activities.filter(a => a.type === "feed").length;
     const napCount = activities.filter(a => a.type === "nap").length;
     
-    if (feedCount < 4 || napCount < 4) {
+    // Check if we have enough data for any predictions
+    const canPredictFeeds = feedCount >= 2;
+    const canPredictNaps = napCount >= 3;
+    
+    if (!canPredictFeeds && !canPredictNaps) {
       return {
         type: "insufficient_data",
         suggestedTime: currentTime,
         anticipatedTime: currentTime,
-        reason: `Need at least 4 feeds and 4 naps to show predictions. Currently have ${feedCount} feeds and ${napCount} naps.`
+        reason: `Need at least 2 feeds or 3 naps to show predictions. Currently have ${feedCount} feeds and ${napCount} naps.`
       };
     }
     
@@ -109,43 +113,49 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const currentTimeMinutes = getTimeInMinutes(getCurrentTime());
     const timeSinceLastActivity = currentTimeMinutes - lastActivityTime;
 
-    // Predict based on patterns
+    // Predict based on patterns and available data
     if (lastActivity.type === "feed") {
-      // Average time between feeds
-      const avgFeedInterval = feedIntervals.length > 0 
-        ? feedIntervals.reduce((a, b) => a + b, 0) / feedIntervals.length 
-        : 180; // Default 3 hours
-      
-      // Average time from feed to nap
-      const avgFeedToNap = napIntervals.length > 0
-        ? napIntervals.reduce((a, b) => a + b, 0) / napIntervals.length
-        : 60; // Default 1 hour
-
-      if (timeSinceLastActivity >= avgFeedToNap - 15) {
-        const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedToNap);
-        const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
+      // Average time between feeds (only if we can predict feeds)
+      if (canPredictFeeds) {
+        const avgFeedInterval = feedIntervals.length > 0 
+          ? feedIntervals.reduce((a, b) => a + b, 0) / feedIntervals.length 
+          : 180; // Default 3 hours
         
-        // Only suggest if anticipated time is in the future
-        if (anticipatedMinutes > currentMinutes) {
-          return {
-            type: "nap",
-            suggestedTime: currentTime,
-            anticipatedTime,
-            reason: `Based on yesterday's pattern, nap usually comes ${Math.round(avgFeedToNap / 60 * 10) / 10}h after feeding`
-          };
+        if (timeSinceLastActivity >= avgFeedInterval - 30) {
+          const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedInterval);
+          const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
+          
+          // Only suggest if anticipated time is in the future
+          if (anticipatedMinutes > currentMinutes) {
+            return {
+              type: "feed",
+              suggestedTime: currentTime,
+              anticipatedTime,
+              reason: `Next feeding typically due (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h between feeds)`
+            };
+          }
         }
-      } else if (timeSinceLastActivity >= avgFeedInterval - 30) {
-        const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedInterval);
-        const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
-        
-        // Only suggest if anticipated time is in the future
-        if (anticipatedMinutes > currentMinutes) {
-          return {
-            type: "feed",
-            suggestedTime: currentTime,
-            anticipatedTime,
-            reason: `Next feeding typically due (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h between feeds)`
-          };
+      }
+      
+      // Average time from feed to nap (only if we can predict naps)
+      if (canPredictNaps) {
+        const avgFeedToNap = napIntervals.length > 0
+          ? napIntervals.reduce((a, b) => a + b, 0) / napIntervals.length
+          : 60; // Default 1 hour
+
+        if (timeSinceLastActivity >= avgFeedToNap - 15) {
+          const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedToNap);
+          const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
+          
+          // Only suggest if anticipated time is in the future
+          if (anticipatedMinutes > currentMinutes) {
+            return {
+              type: "nap",
+              suggestedTime: currentTime,
+              anticipatedTime,
+              reason: `Based on yesterday's pattern, nap usually comes ${Math.round(avgFeedToNap / 60 * 10) / 10}h after feeding`
+            };
+          }
         }
       }
     }
