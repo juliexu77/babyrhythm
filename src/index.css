@@ -93,8 +93,8 @@ All colors MUST be HSL.
     --popover: 0 0% 3%;
     --popover-foreground: 0 0% 95%;
 
-    /* Bright teal primary for buttons */
-    --primary: 180 100% 50%; /* Bright teal like reference */
+    /* Muted teal primary for buttons */
+    --primary: 180 50% 45%; /* Muted teal */
     --primary-foreground: 0 0% 0%;
 
     --secondary: 0 0% 8%; /* Very dark gray secondary */
@@ -103,8 +103,8 @@ All colors MUST be HSL.
     --muted: 0 0% 10%; /* Muted dark */
     --muted-foreground: 0 0% 70%;
 
-    /* Bright teal accent */
-    --accent: 180 100% 50%; /* Bright teal accent matching primary */
+    /* Muted teal accent */
+    --accent: 180 50% 45%; /* Muted teal accent matching primary */
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 65% 55%;
@@ -112,7 +112,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 15%; /* Dark borders */
     --input: 0 0% 8%; /* Very dark inputs */
-    --ring: 180 100% 50%; /* Bright teal focus ring */
+    --ring: 180 50% 45%; /* Muted teal focus ring */
 
     /* Activity colors for dark mode - bright teal theme */
     --feed-color: 180 100% 50%; /* Bright teal for feeding */
@@ -131,12 +131,12 @@ All colors MUST be HSL.
 
     --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 180 100% 50%;
+    --sidebar-primary: 180 50% 45%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 8%;
     --sidebar-accent-foreground: 0 0% 90%;
     --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 180 100% 50%;
+    --sidebar-ring: 180 50% 45%;
   }
 }
 
