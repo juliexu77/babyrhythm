@@ -267,16 +267,22 @@ export const Settings = () => {
           </div>
         </div>
 
-        {/* Baby Profile Section - Minimal card */}
-        {(user || babyProfile) && (
-          <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
-            <div className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              <h3 className="text-lg font-medium text-foreground">Baby Details</h3>
-            </div>
-            
-            <div className="space-y-4">
-              {/* Baby Photo */}
+        {/* Baby Profile Section - Always visible */}
+        <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2">
+            <Baby className="w-5 h-5" />
+            <h3 className="text-lg font-medium text-foreground">Baby Details</h3>
+          </div>
+          
+          {!user && (
+            <p className="text-sm text-muted-foreground">
+              Baby information is saved locally. Sign in to sync across devices.
+            </p>
+          )}
+          
+          <div className="space-y-4">
+            {/* Baby Photo - Centered */}
+            <div className="flex justify-center">
               <PhotoUpload
                 currentPhotoUrl={babyProfile?.photo_url}
                 bucketName="baby-photos"
@@ -285,37 +291,37 @@ export const Settings = () => {
                 onPhotoUpdate={handleBabyPhotoUpdate}
                 size="md"
               />
+            </div>
 
-              {/* Baby Name */}
-              <div>
-                <Label htmlFor="babyName" className="text-sm text-muted-foreground">
-                  Baby's Name
-                </Label>
-                <Input
-                  id="babyName"
-                  value={babyName}
-                  onChange={(e) => setBabyName(e.target.value)}
-                  placeholder="Enter baby's name"
-                  className="mt-2 border-none bg-background"
-                />
-              </div>
+            {/* Baby Name */}
+            <div>
+              <Label htmlFor="babyName" className="text-sm text-muted-foreground">
+                Baby's Name
+              </Label>
+              <Input
+                id="babyName"
+                value={babyName}
+                onChange={(e) => setBabyName(e.target.value)}
+                placeholder="Enter baby's name"
+                className="mt-2 border-none bg-background"
+              />
+            </div>
 
-              {/* Baby Birthday */}
-              <div>
-                <Label htmlFor="babyBirthday" className="text-sm text-muted-foreground">
-                  Birthday
-                </Label>
-                <Input
-                  id="babyBirthday"
-                  type="date"
-                  value={babyBirthday}
-                  onChange={(e) => setBabyBirthday(e.target.value)}
-                  className="mt-2 border-none bg-background"
-                />
-              </div>
+            {/* Baby Birthday */}
+            <div>
+              <Label htmlFor="babyBirthday" className="text-sm text-muted-foreground">
+                Birthday
+              </Label>
+              <Input
+                id="babyBirthday"
+                type="date"
+                value={babyBirthday}
+                onChange={(e) => setBabyBirthday(e.target.value)}
+                className="mt-2 border-none bg-background"
+              />
             </div>
           </div>
-        )}
+        </div>
 
         {/* Share Tracking Section - Minimal card */}
         <div className="p-6 bg-muted/30 rounded-2xl space-y-4">

@@ -132,7 +132,7 @@ export function PhotoUpload({
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="relative flex justify-center">
       <Avatar className={sizeClasses[size]}>
         <AvatarImage 
           src={currentPhotoUrl || undefined} 
@@ -144,32 +144,33 @@ export function PhotoUpload({
         </AvatarFallback>
       </Avatar>
 
-      <div className="flex gap-2">
+      {/* Upload overlay button */}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
+        className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-background border-2 hover:bg-muted"
+      >
+        {uploading ? (
+          <Upload className="w-3 h-3 animate-spin" />
+        ) : (
+          <Camera className="w-3 h-3" />
+        )}
+      </Button>
+
+      {/* Delete button - only show when there's a photo */}
+      {currentPhotoUrl && (
         <Button
           variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          size="icon"
+          onClick={deletePhoto}
+          disabled={deleting}
+          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-background border-2 hover:bg-destructive hover:text-destructive-foreground"
         >
-          {uploading ? (
-            <Upload className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Camera className="w-4 h-4 mr-2" />
-          )}
-          {currentPhotoUrl ? "Change" : "Upload"}
+          <Trash2 className="w-3 h-3" />
         </Button>
-
-        {currentPhotoUrl && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={deletePhoto}
-            disabled={deleting}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
+      )}
 
       <input
         ref={fileInputRef}
