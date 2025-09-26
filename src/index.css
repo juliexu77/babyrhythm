@@ -8,31 +8,31 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Warm, nurturing palette for light mode */
+    /* Improved light mode readability */
     --background: 30 50% 97%; /* #FAF7F5 - warm cream background */
-    --foreground: 0 0% 20%; /* #333333 - soft dark grey text */
+    --foreground: 0 0% 17%; /* #2B2B2B - charcoal text for better readability */
 
     --card: 0 0% 99%; /* Slightly warmer white for cards */
-    --card-foreground: 0 0% 20%;
+    --card-foreground: 0 0% 17%;
 
     --popover: 0 0% 99%;
-    --popover-foreground: 0 0% 20%;
+    --popover-foreground: 0 0% 17%;
 
     /* Mint primary accent */
     --primary: 150 45% 82%; /* #B5E5D0 - mint primary */
-    --primary-foreground: 0 0% 20%;
+    --primary-foreground: 0 0% 17%;
     --primary-light: 150 50% 85%;
 
     /* Light taupe secondary */
     --secondary: 30 25% 94%; /* #F1ECEA - light taupe secondary */
-    --secondary-foreground: 0 0% 30%;
+    --secondary-foreground: 0 0% 25%;
 
     --muted: 30 20% 92%; /* Warm muted background */
-    --muted-foreground: 0 0% 45%; /* Softer muted text */
+    --muted-foreground: 0 0% 67%; /* #AAAAAA - lighter placeholders */
 
     /* Soft blush accent */
     --accent: 8 70% 87%; /* #F7C7C2 - soft blush accent */
-    --accent-foreground: 0 0% 20%;
+    --accent-foreground: 0 0% 17%;
 
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 99%;
@@ -66,39 +66,32 @@ All colors MUST be HSL.
     --radius: 0.75rem; /* 12px - medium border radius */
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    /* Black and muted teal dark theme */
+    /* Black and muted teal dark theme with improved readability */
     --background: 0 0% 0%; /* Pure black background */
-    --foreground: 0 0% 95%; /* White text */
+    --foreground: 0 0% 82%; /* #D1D1D1 - softer light gray for less glare */
 
     --card: 0 0% 3%; /* Very dark card background */
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 0 0% 82%;
 
     --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 95%;
+    --popover-foreground: 0 0% 82%;
 
     /* Rich teal primary matching reference */
     --primary: 180 75% 42%; /* Rich teal like reference image */
     --primary-foreground: 0 0% 0%;
 
     --secondary: 0 0% 8%; /* Very dark gray secondary */
-    --secondary-foreground: 0 0% 90%;
+    --secondary-foreground: 0 0% 82%;
 
     --muted: 0 0% 10%; /* Muted dark */
     --muted-foreground: 0 0% 70%;
@@ -108,7 +101,7 @@ All colors MUST be HSL.
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 95%;
+    --destructive-foreground: 0 0% 82%;
 
     --border: 0 0% 15%; /* Dark borders */
     --input: 0 0% 8%; /* Very dark inputs */
@@ -130,11 +123,11 @@ All colors MUST be HSL.
     --gradient-chat: linear-gradient(135deg, hsl(180 75% 42%), hsl(180 65% 52%));
 
     --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 90%;
+    --sidebar-foreground: 0 0% 82%;
     --sidebar-primary: 180 75% 42%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 8%;
-    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-accent-foreground: 0 0% 82%;
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 180 75% 42%;
   }

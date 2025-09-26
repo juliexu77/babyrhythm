@@ -123,26 +123,26 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-              <Baby className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm">
+              <Baby className="w-6 h-6 text-foreground" />
             </div>
-            <Heart className="w-5 h-5 text-white/80" />
+            <Heart className="w-5 h-5 text-accent/80" />
           </div>
-          <h1 className="text-3xl font-serif font-semibold text-white mb-2">
+          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground mb-2 tracking-tight leading-tight">
             Baby Tracker
           </h1>
-          <p className="text-white/90 text-sm">
+          <p className="text-muted-foreground text-sm leading-relaxed">
             Track your little one's precious moments
           </p>
         </div>
 
         {/* Auth Forms */}
-        <Card className="border-white/20 dark:border-white/10 bg-white/95 dark:bg-card backdrop-blur-sm">
+        <Card className="border-border bg-card/95 backdrop-blur-sm shadow-card">
           <CardHeader className="pb-4">
-            <CardTitle className="text-center text-foreground">
+            <CardTitle className="text-center text-foreground text-xl font-sans font-medium">
               Welcome
             </CardTitle>
-            <CardDescription className="text-center">
+            <CardDescription className="text-center text-muted-foreground text-sm leading-relaxed">
               Sign in to your account or create a new one
             </CardDescription>
           </CardHeader>
@@ -167,19 +167,20 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
+                    <Label htmlFor="signin-password" className="text-sm font-medium">Password</Label>
                     <Input
                       id="signin-password"
                       name="signin-password"
                       type="password"
-                      placeholder="Your password"
+                      placeholder="Enter password"
                       required
                       disabled={isLoading}
+                      className="text-sm"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full" 
+                    className="w-full font-semibold" 
                     disabled={isLoading}
                   >
                     {isLoading ? "Signing in..." : "Sign In"}
@@ -201,10 +202,10 @@ const Auth = () => {
                     variant="outline"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full"
+                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
-                    Google
+                    Continue with Google
                   </Button>
                 </form>
               </TabsContent>
@@ -234,7 +235,7 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password" className="text-sm font-medium">Password</Label>
                     <Input
                       id="signup-password"
                       name="signup-password"
@@ -242,11 +243,12 @@ const Auth = () => {
                       placeholder="Choose a password"
                       required
                       disabled={isLoading}
+                      className="text-sm"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full" 
+                    className="w-full font-semibold" 
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating account..." : "Create Account"}
@@ -268,17 +270,17 @@ const Auth = () => {
                     variant="outline"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full"
+                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
-                    Google
+                    Continue with Google
                   </Button>
                 </form>
               </TabsContent>
             </Tabs>
             
             {/* Guest Access Button */}
-            <div className="mt-6 pt-4 border-t">
+            <div className="mt-6 pt-4 border-t border-border">
               <Button
                 type="button"
                 variant="ghost"
@@ -287,11 +289,11 @@ const Auth = () => {
                   localStorage.setItem('hasSeenDemo', 'true');
                   navigate("/app");
                 }}
-                className="w-full text-muted-foreground hover:text-foreground"
+                className="w-full text-muted-foreground hover:text-foreground text-sm font-normal"
               >
                 Continue as Guest
               </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2">
+              <p className="text-xs text-muted-foreground text-center mt-2 leading-relaxed">
                 Your data won't be saved across devices
               </p>
             </div>
