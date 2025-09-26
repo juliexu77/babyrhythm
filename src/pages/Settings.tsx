@@ -23,7 +23,7 @@ import {
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { babyProfile, collaborators, removeCollaborator } = useBabyProfile();
+  const { babyProfile, collaborators, removeCollaborator, updateBabyProfile } = useBabyProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -31,6 +31,8 @@ export const Settings = () => {
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || "");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [babyName, setBabyName] = useState(babyProfile?.name || "");
+  const [babyBirthday, setBabyBirthday] = useState(babyProfile?.birthday || "");
 
   // Auto-save user profile changes
   useEffect(() => {
@@ -63,6 +65,43 @@ export const Settings = () => {
 
     return () => clearTimeout(timeoutId);
   }, [fullName, user, toast]);
+
+  // Auto-save baby profile changes
+  useEffect(() => {
+    if (!babyProfile || !babyName || babyName === babyProfile.name) return;
+    
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateBabyProfile({ name: babyName });
+      } catch (error) {
+        console.error('Error updating baby name:', error);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [babyName, babyProfile, updateBabyProfile]);
+
+  useEffect(() => {
+    if (!babyProfile || babyBirthday === babyProfile.birthday) return;
+    
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateBabyProfile({ birthday: babyBirthday });
+      } catch (error) {
+        console.error('Error updating baby birthday:', error);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [babyBirthday, babyProfile, updateBabyProfile]);
+
+  // Update local state when babyProfile changes
+  useEffect(() => {
+    if (babyProfile) {
+      setBabyName(babyProfile.name);
+      setBabyBirthday(babyProfile.birthday || "");
+    }
+  }, [babyProfile]);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -209,6 +248,56 @@ export const Settings = () => {
             <LanguageToggle />
           </div>
         </div>
+
+        {/* Baby Profile Section - Minimal card */}
+        {(user || babyProfile) && (
+          <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              <h3 className="text-lg font-medium text-foreground">Baby Details</h3>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Baby Photo */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center overflow-hidden">
+                  <User className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <Button variant="outline" size="sm">
+                  Change Photo
+                </Button>
+              </div>
+
+              {/* Baby Name */}
+              <div>
+                <Label htmlFor="babyName" className="text-sm text-muted-foreground">
+                  Baby's Name
+                </Label>
+                <Input
+                  id="babyName"
+                  value={babyName}
+                  onChange={(e) => setBabyName(e.target.value)}
+                  placeholder="Enter baby's name"
+                  className="mt-2 border-none bg-background"
+                />
+              </div>
+
+              {/* Baby Birthday */}
+              <div>
+                <Label htmlFor="babyBirthday" className="text-sm text-muted-foreground">
+                  Birthday
+                </Label>
+                <Input
+                  id="babyBirthday"
+                  type="date"
+                  value={babyBirthday}
+                  onChange={(e) => setBabyBirthday(e.target.value)}
+                  className="mt-2 border-none bg-background"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Share Tracking Section - Minimal card */}
         <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
