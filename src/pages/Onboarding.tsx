@@ -48,8 +48,8 @@ const Onboarding = () => {
     },
     {
       icon: UserPlus,
-      title: "Share Tracking",
-      description: "Share tracking with someone so they can view and add activities too."
+      title: "Collaborate with Caretakers",
+      description: "Share tracking with anyone you share caregiving responsibilities with, real time sync so you can see all the details even when you're not there"
     }
   ];
 
