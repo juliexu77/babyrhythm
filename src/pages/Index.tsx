@@ -15,10 +15,11 @@ import { PatternInsights } from "@/components/PatternInsights";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { BarChart3, TrendingUp, User, LogOut } from "lucide-react";
+import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { offlineSync } from "@/utils/offlineSync";
 import { BabyProfileSetup } from "@/components/BabyProfileSetup";
@@ -128,6 +129,13 @@ const Index = () => {
     offlineSync.storeOfflineActivity(newActivity);
   };
 
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric", 
+    month: "long",
+    day: "numeric"
+  });
+
   const getTimeValue = (timeString: string) => {
     const [time, period] = timeString.split(" ");
     const [hours, minutes] = time.split(":");
@@ -206,7 +214,7 @@ const Index = () => {
       case "calendar":
         return (
           <div className="text-center py-16">
-            <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
+            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
               <p className="text-muted-foreground font-medium mb-1">{t('calendar')}</p>
               <p className="text-sm text-muted-foreground">Coming soon</p>
           </div>
@@ -224,13 +232,24 @@ const Index = () => {
       <OfflineIndicator />
       
       {/* Header */}
-      {activeTab === "home" && (user || babyProfile) && (
-        <div className="px-6 py-4">
-          <div className="max-w-md mx-auto">
-            <BabyAge />
-          </div>
+      <div className="bg-gradient-primary px-6 py-4 text-white relative">
+        {/* Theme toggle in top right */}
+        <div className="absolute top-4 right-6 z-10">
+          <ThemeToggle />
         </div>
-      )}
+        
+        <div className="max-w-md mx-auto">
+          {activeTab === "home" && (
+            <>
+              {(user || babyProfile) && <BabyAge />}
+              <div className="flex items-center gap-2 text-white/90">
+                <Calendar className="h-4 w-4" />
+                <p className="text-sm font-medium">{today}</p>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-md mx-auto px-6 py-8">

@@ -141,47 +141,8 @@ export const Settings = () => {
         
         {/* Header with User Icon and Title */}
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-muted rounded-full mx-auto flex items-center justify-center relative overflow-hidden cursor-pointer group">
-            {user?.user_metadata?.avatar_url ? (
-              <img 
-                src={user.user_metadata.avatar_url} 
-                alt="Profile" 
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="w-10 h-10 text-muted-foreground" />
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file && user) {
-                  // Create a URL for the uploaded image and update user metadata
-                  const imageUrl = URL.createObjectURL(file);
-                  supabase.auth.updateUser({
-                    data: { avatar_url: imageUrl }
-                  }).then(() => {
-                    toast({
-                      title: "Profile photo updated",
-                      description: "Your profile photo has been saved.",
-                    });
-                  }).catch(() => {
-                    toast({
-                      title: "Error updating photo",
-                      description: "Failed to update profile photo. Please try again.",
-                      variant: "destructive"
-                    });
-                  });
-                }
-              }}
-            />
-            {user && (
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-            )}
+          <div className="w-20 h-20 bg-muted rounded-full mx-auto flex items-center justify-center">
+            <User className="w-10 h-10 text-muted-foreground" />
           </div>
           <h1 className="text-xl font-serif font-medium text-foreground">
             Profile & Settings
