@@ -93,8 +93,8 @@ All colors MUST be HSL.
     --popover: 0 0% 3%;
     --popover-foreground: 0 0% 95%;
 
-    /* Muted teal primary for buttons */
-    --primary: 180 50% 45%; /* Muted teal */
+    /* Rich teal primary matching reference */
+    --primary: 180 75% 42%; /* Rich teal like reference image */
     --primary-foreground: 0 0% 0%;
 
     --secondary: 0 0% 8%; /* Very dark gray secondary */
@@ -103,8 +103,8 @@ All colors MUST be HSL.
     --muted: 0 0% 10%; /* Muted dark */
     --muted-foreground: 0 0% 70%;
 
-    /* Muted teal accent */
-    --accent: 180 50% 45%; /* Muted teal accent matching primary */
+    /* Rich teal accent */
+    --accent: 180 75% 42%; /* Rich teal accent matching primary */
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 65% 55%;
@@ -112,31 +112,31 @@ All colors MUST be HSL.
 
     --border: 0 0% 15%; /* Dark borders */
     --input: 0 0% 8%; /* Very dark inputs */
-    --ring: 180 50% 45%; /* Muted teal focus ring */
+    --ring: 180 75% 42%; /* Rich teal focus ring */
 
-    /* Activity colors for dark mode - bright teal theme */
-    --feed-color: 180 100% 50%; /* Bright teal for feeding */
-    --diaper-color: 180 80% 55%; /* Lighter bright teal for diapers */
-    --nap-color: 200 80% 55%; /* Blue-teal for naps */
-    --note-color: 160 80% 55%; /* Green-teal for notes */
-    --chat-color: 180 100% 50%; /* Bright teal for chat */
+    /* Activity colors for dark mode - rich teal theme */
+    --feed-color: 180 75% 42%; /* Rich teal for feeding */
+    --diaper-color: 180 65% 48%; /* Lighter rich teal for diapers */
+    --nap-color: 200 70% 48%; /* Blue-teal for naps */
+    --note-color: 160 70% 48%; /* Green-teal for notes */
+    --chat-color: 180 75% 42%; /* Rich teal for chat */
 
-    /* Dark gradients with bright teal */
-    --gradient-primary: linear-gradient(135deg, hsl(180 100% 50%), hsl(180 80% 60%));
-    --gradient-feed: linear-gradient(135deg, hsl(180 100% 50%), hsl(180 80% 60%));
-    --gradient-diaper: linear-gradient(135deg, hsl(180 80% 55%), hsl(180 60% 65%));
-    --gradient-nap: linear-gradient(135deg, hsl(200 80% 55%), hsl(200 60% 65%));
-    --gradient-note: linear-gradient(135deg, hsl(160 80% 55%), hsl(160 60% 65%));
-    --gradient-chat: linear-gradient(135deg, hsl(180 100% 50%), hsl(180 80% 60%));
+    /* Dark gradients with rich teal */
+    --gradient-primary: linear-gradient(135deg, hsl(180 75% 42%), hsl(180 65% 52%));
+    --gradient-feed: linear-gradient(135deg, hsl(180 75% 42%), hsl(180 65% 52%));
+    --gradient-diaper: linear-gradient(135deg, hsl(180 65% 48%), hsl(180 55% 58%));
+    --gradient-nap: linear-gradient(135deg, hsl(200 70% 48%), hsl(200 60% 58%));
+    --gradient-note: linear-gradient(135deg, hsl(160 70% 48%), hsl(160 60% 58%));
+    --gradient-chat: linear-gradient(135deg, hsl(180 75% 42%), hsl(180 65% 52%));
 
     --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 180 50% 45%;
+    --sidebar-primary: 180 75% 42%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 0 0% 8%;
     --sidebar-accent-foreground: 0 0% 90%;
     --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 180 50% 45%;
+    --sidebar-ring: 180 75% 42%;
   }
 }
 
