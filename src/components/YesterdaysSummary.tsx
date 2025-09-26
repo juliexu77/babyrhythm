@@ -129,17 +129,6 @@ export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingDown className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-serif font-medium text-foreground">
-            Yesterday's Summary
-          </h3>
-        </div>
-        
-        <div className="mb-4">
-          <p className="text-muted-foreground text-sm">{getYesterdaysDate()}</p>
-        </div>
-
         <div className="grid grid-cols-2 gap-4 mb-6">
           <StatCard 
             icon={Baby}

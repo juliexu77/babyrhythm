@@ -1,6 +1,8 @@
 import { Activity } from "./ActivityCard";
 import { useState } from "react";
 import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface SleepChartProps {
   activities: Activity[];
@@ -8,6 +10,7 @@ interface SleepChartProps {
 
 export const SleepChart = ({ activities }: SleepChartProps) => {
   const [showFullDay, setShowFullDay] = useState(false);
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
 
   // Get baby's age for recommendations
   const getBabyProfile = () => {
@@ -18,11 +21,12 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   const babyProfile = getBabyProfile();
   const ageInWeeks = babyProfile?.birthday ? calculateAgeInWeeks(babyProfile.birthday) : 0;
 
-  // Calculate sleep data for the past 7 days
+  // Calculate sleep data for the selected week
   const generateSleepData = () => {
     const days = 7;
     const data = [];
     const today = new Date();
+    today.setDate(today.getDate() - (currentWeekOffset * 7));
     
     // Time range: 6am-9pm (15 hours) by default, or full 24 hours if expanded
     const startHour = showFullDay ? 0 : 6;
@@ -170,22 +174,45 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
 
   const timeLabels = generateTimeLabels();
 
+  // Get week date range for display
+  const getWeekDateRange = () => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() - (currentWeekOffset * 7));
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    return `${startOfWeek.toLocaleDateString("en-US", { month: "short", day: "numeric" })}-${endOfWeek.getDate()}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Sleep Chart */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+        {/* Week Navigation */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-serif font-semibold text-foreground">Sleep</h2>
-        </div>
-
-        {/* Expand/Collapse Button */}
-        <div className="mb-4">
-          <button
-            onClick={() => setShowFullDay(!showFullDay)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
           >
-            {showFullDay ? 'Show daytime only (6am-9pm)' : 'Show full day (12am-12am)'}
-          </button>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <div className="text-center">
+            <div className="text-lg font-medium text-foreground">
+              {getWeekDateRange()}
+            </div>
+          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
+            disabled={currentWeekOffset === 0}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Day headers */}
@@ -200,40 +227,70 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           </div>
         </div>
 
-        {/* Sleep chart grid */}
-        <div className="grid grid-cols-[60px_1fr] gap-4">
+        {/* Sleep chart grid with hour lines */}
+        <div className="grid grid-cols-[60px_1fr] gap-4 relative">
           {/* Time labels */}
-          <div className="flex flex-col justify-between py-2" style={{ height: showFullDay ? '384px' : '240px' }}>
-            {timeLabels.map((time, index) => (
-              <div key={index} className="text-xs text-muted-foreground text-right">
-                {time}
-              </div>
-            ))}
+          <div className="flex flex-col justify-between py-2" style={{ height: showFullDay ? '480px' : '360px' }}>
+            {Array.from({ length: showFullDay ? 25 : 16 }, (_, i) => {
+              const hour = showFullDay ? i : i + 6;
+              let timeLabel = '';
+              if (hour === 0) timeLabel = '12am';
+              else if (hour < 12) timeLabel = `${hour}am`;
+              else if (hour === 12) timeLabel = '12pm';
+              else timeLabel = `${hour - 12}pm`;
+              
+              return (
+                <div key={i} className="text-xs text-muted-foreground text-right">
+                  {timeLabel}
+                </div>
+              );
+            })}
           </div>
 
-          {/* Sleep blocks */}
-          <div className="grid gap-2" style={{ 
-            gridTemplateColumns: `repeat(${sleepData.length}, 1fr)`,
-            height: showFullDay ? '384px' : '240px'
-          }}>
-            {sleepData.map((day, dayIndex) => (
-              <div 
-                key={dayIndex} 
-                className="grid gap-0.5"
-                style={{ gridTemplateRows: `repeat(${day.totalHours}, 1fr)` }}
-              >
-                {day.sleepBlocks.map((isAsleep, hourIndex) => (
-                  <div
-                    key={hourIndex}
-                    className={`w-full rounded-sm ${
-                      isAsleep 
-                        ? 'bg-primary' 
-                        : 'bg-background border border-border/20'
-                    }`}
-                  />
-                ))}
-              </div>
-            ))}
+          {/* Sleep blocks with hour grid lines */}
+          <div className="relative" style={{ height: showFullDay ? '480px' : '360px' }}>
+            {/* Hour grid lines */}
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+              {Array.from({ length: showFullDay ? 25 : 16 }, (_, i) => (
+                <div key={i} className="h-px bg-border/20" />
+              ))}
+            </div>
+            
+            {/* Sleep blocks */}
+            <div className="grid gap-2 h-full" style={{ gridTemplateColumns: `repeat(${sleepData.length}, 1fr)` }}>
+              {sleepData.map((day, dayIndex) => (
+                <div key={dayIndex} className="relative">
+                  {/* Sleep bars */}
+                  {day.sleepBlocks.map((isAsleep, hourIndex) => {
+                    if (!isAsleep) return null;
+                    
+                    // Find continuous sleep blocks
+                    let blockStart = hourIndex;
+                    let blockEnd = hourIndex;
+                    while (blockEnd < day.sleepBlocks.length - 1 && day.sleepBlocks[blockEnd + 1]) {
+                      blockEnd++;
+                    }
+                    
+                    // Only render if this is the start of a block
+                    if (blockStart !== hourIndex) return null;
+                    
+                    const blockHeight = ((blockEnd - blockStart + 1) / day.totalHours) * 100;
+                    const blockTop = (blockStart / day.totalHours) * 100;
+                    
+                    return (
+                      <div
+                        key={`${hourIndex}-block`}
+                        className="absolute w-full bg-primary rounded-sm"
+                        style={{
+                          top: `${blockTop}%`,
+                          height: `${blockHeight}%`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

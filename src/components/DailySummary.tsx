@@ -39,38 +39,23 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
 
   return (
     <div className="bg-gradient-to-br from-background to-secondary/30 rounded-xl p-6 border border-border shadow-card">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-            <Calendar className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-serif font-semibold text-foreground">
-              Daily Summary
-            </h2>
-            <p className="text-sm text-muted-foreground">{date}</p>
-          </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            className="p-2"
-          >
-            <Share2 className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleScreenshot}
-            className="p-2"
-          >
-            <Download className="w-4 h-4" />
-          </Button>
-        </div>
+      <div className="flex gap-2 mb-6">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleShare}
+          className="p-2"
+        >
+          <Share2 className="w-4 h-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleScreenshot}
+          className="p-2"
+        >
+          <Download className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Summary Grid */}

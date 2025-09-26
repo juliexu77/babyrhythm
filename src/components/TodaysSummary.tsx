@@ -190,13 +190,7 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-muted-foreground" />
-            <h3 className="text-lg font-serif font-medium text-foreground">
-              Daily Summary
-            </h3>
-          </div>
+        <div className="flex justify-end mb-6">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
