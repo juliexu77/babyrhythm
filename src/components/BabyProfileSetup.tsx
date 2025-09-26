@@ -7,7 +7,7 @@ import { Baby, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface BabyProfileSetupProps {
-  onComplete: (profile: { name: string; birthday?: string }) => void;
+  onComplete: (profile: { name: string; birthday: string }) => void;
 }
 
 export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
@@ -28,12 +28,21 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
       return;
     }
 
+    if (!birthday) {
+      toast({
+        title: "Birthday required",
+        description: "Please enter your baby's birthday for personalized insights.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     // Save baby profile to localStorage for now
     const profile = {
       name: babyName.trim(),
-      birthday: birthday || undefined,
+      birthday: birthday,
     };
     
     localStorage.setItem('babyProfile', JSON.stringify(profile));
@@ -88,7 +97,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
               
               <div className="space-y-2">
                 <Label htmlFor="birthday" className="text-sm font-medium">
-                  Birthday <span className="text-muted-foreground text-xs">(Optional)</span>
+                  Birthday <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -99,17 +108,18 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                     onChange={(e) => setBirthday(e.target.value)}
                     disabled={isLoading}
                     className="h-12 pl-10"
+                    required
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  This helps us show your baby's age and development milestones
+                  Required for age-based insights and Huckleberry sleep recommendations
                 </p>
               </div>
 
               <Button 
                 type="submit" 
                 className="w-full h-12 text-base" 
-                disabled={isLoading || !babyName.trim()}
+                disabled={isLoading || !babyName.trim() || !birthday}
               >
                 {isLoading ? "Setting up..." : "Continue"}
               </Button>

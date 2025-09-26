@@ -5,7 +5,7 @@ import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { ChatPanel } from "@/components/ChatPanel";
 import { SummaryCards } from "@/components/SummaryCards";
-import { TrendChart } from "@/components/TrendChart";
+import { SleepChart } from "@/components/SleepChart";
 import { DailySummary } from "@/components/DailySummary";
 import { TodaysSummary } from "@/components/TodaysSummary";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
@@ -49,7 +49,7 @@ const Index = () => {
     }
   }, [user, loading]);
 
-  const handleProfileComplete = (profile: { name: string; birthday?: string }) => {
+  const handleProfileComplete = (profile: { name: string; birthday: string }) => {
     setBabyProfile(profile);
     setHasProfile(true);
   };
@@ -183,7 +183,7 @@ const Index = () => {
       case "trends":
         return (
           <div className="space-y-6">
-            <TrendChart activities={activities} />
+            <SleepChart activities={activities} />
           </div>
         );
       case "calendar":
