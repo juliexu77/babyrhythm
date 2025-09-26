@@ -9,6 +9,7 @@ import { RouteGuard } from "@/components/RouteGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import BabySetup from "./pages/BabySetup";
+import InviteAccept from "./pages/InviteAccept";
 import DemoTour from "./pages/DemoTour";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,7 @@ const App = () => (
                   <Route path="/app" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/baby-setup" element={<BabySetup />} />
+                  <Route path="/invite/:code" element={<InviteAccept />} />
                   <Route path="/demo" element={<DemoTour />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
