@@ -246,7 +246,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "feed" && (
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Type</Label>
+                  <Label className="text-sm font-medium mb-2 block">Type</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { type: "bottle", icon: Coffee, label: "Bottle" },
@@ -274,10 +274,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 <TimeScrollPicker value={time} onChange={setTime} label="Time" />
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Amount</Label>
+                  <Label className="text-sm font-medium mb-2 block">Amount</Label>
                   <Button
                     variant="outline"
-                    className="w-full h-12 text-left justify-between hover:bg-muted"
+                    className="w-full h-12 text-left justify-between"
                     onClick={() => setShowKeypad(true)}
                   >
                     <span className="text-foreground">
@@ -288,7 +288,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div>
-                  <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block text-muted-foreground">Notes</Label>
+                  <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">Notes</Label>
                   <Textarea
                     id="feed-note"
                     value={note}
@@ -308,7 +308,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 <TimeScrollPicker value={time} onChange={setTime} label="Time" />
                 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Type</Label>
+                  <Label className="text-sm font-medium mb-2 block">Type</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { type: "wet", label: "Wet" },
@@ -333,7 +333,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-3">
-                    <Label className="text-sm text-muted-foreground">Leak</Label>
+                    <Label className="text-sm">Leak</Label>
                     <Button
                       variant={hasLeak ? "default" : "outline"}
                       size="sm"
@@ -348,7 +348,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     </Button>
                   </div>
                   <div className="flex items-center justify-between py-3">
-                    <Label className="text-sm text-muted-foreground">Diaper Cream</Label>
+                    <Label className="text-sm">Diaper Cream</Label>
                     <Button
                       variant={hasCream ? "default" : "outline"}
                       size="sm"
@@ -365,7 +365,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div>
-                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block text-muted-foreground">Notes</Label>
+                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block">Notes</Label>
                   <Textarea
                     id="diaper-note"
                     value={note}
@@ -403,7 +403,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Note Details */}
             {activityType === "note" && (
               <div>
-                <Label htmlFor="note" className="text-sm font-medium mb-2 block text-muted-foreground">Note</Label>
+                <Label htmlFor="note" className="text-sm font-medium mb-2 block">Note</Label>
                 <Textarea
                   id="note"
                   value={note}

@@ -101,8 +101,8 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
 
   return (
     <div className="space-y-2">
-      {label && <Label className="text-sm font-medium text-muted-foreground">{label}</Label>}
-      <div className="flex gap-2 bg-muted/50 rounded-lg p-3 items-center justify-center">
+      {label && <Label className="text-sm font-medium">{label}</Label>}
+      <div className="flex gap-2 border rounded-lg p-3 items-center justify-center bg-background">
         {/* Hours - Scrollable */}
         <div 
           ref={hourRef}
@@ -116,8 +116,8 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
                 key={`hour-${index}`}
                 className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
                   selectedHour === hour 
-                    ? 'text-primary font-bold' 
-                    : 'text-muted-foreground'
+                    ? 'text-foreground font-bold' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setSelectedHour(hour)}
               >
@@ -127,7 +127,7 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
           </div>
         </div>
 
-        <span className="text-muted-foreground font-medium">:</span>
+        <span className="text-foreground font-medium">:</span>
 
         {/* Minutes - Scrollable */}
         <div 
@@ -142,8 +142,8 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
                 key={`minute-${index}`}
                 className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
                   selectedMinute === minute 
-                    ? 'text-primary font-bold' 
-                    : 'text-muted-foreground'
+                    ? 'text-foreground font-bold' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setSelectedMinute(minute)}
               >
@@ -160,7 +160,7 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
               key={period}
               className={`px-3 py-2 rounded text-sm font-medium cursor-pointer transition-colors ${
                 selectedPeriod === period 
-                  ? 'text-primary font-bold bg-primary/10' 
+                  ? 'text-foreground font-bold bg-muted' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
               onClick={() => setSelectedPeriod(period as "AM" | "PM")}
