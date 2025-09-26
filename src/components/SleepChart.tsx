@@ -1,8 +1,14 @@
 import { Activity } from "./ActivityCard";
 import { useState } from "react";
 import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 interface SleepChartProps {
   activities: Activity[];
@@ -185,33 +191,94 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
     return `${startOfWeek.toLocaleDateString("en-US", { month: "short", day: "numeric" })}-${endOfWeek.getDate()}`;
   };
 
+  // Get available week options
+  const getWeekOptions = () => {
+    const options = [];
+    for (let i = 0; i < 12; i++) { // Show up to 12 weeks back
+      if (i === 0) {
+        options.push({ label: "This Week", value: 0 });
+      } else if (i === 1) {
+        options.push({ label: "Last Week", value: 1 });
+      } else {
+        const date = new Date();
+        date.setDate(date.getDate() - (i * 7));
+        const startOfWeek = new Date(date);
+        startOfWeek.setDate(date.getDate() - date.getDay());
+        options.push({ 
+          label: startOfWeek.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          value: i 
+        });
+      }
+    }
+    return options;
+  };
+
+  const weekOptions = getWeekOptions();
+  const currentWeekLabel = weekOptions.find(option => option.value === currentWeekOffset)?.label || "This Week";
+
   return (
     <div className="space-y-6">
       {/* Sleep Chart */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        {/* Week Navigation */}
+        {/* Header with Sleep title and toggles */}
         <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+          <h2 className="text-2xl font-serif font-semibold text-foreground">Sleep</h2>
           
-          <div className="text-center">
-            <div className="text-lg font-medium text-foreground">
-              {getWeekDateRange()}
+          <div className="flex items-center gap-2">
+            {/* This Week / Last Week buttons */}
+            <div className="flex bg-muted/30 rounded-lg p-1">
+              <Button
+                variant={currentWeekOffset === 0 ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setCurrentWeekOffset(0)}
+                className="h-8 px-3 rounded-md"
+              >
+                This Week
+              </Button>
+              <Button
+                variant={currentWeekOffset === 1 ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setCurrentWeekOffset(1)}
+                className="h-8 px-3 rounded-md"
+              >
+                Last Week
+              </Button>
             </div>
+
+            {/* Additional weeks dropdown */}
+            {currentWeekOffset > 1 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    {currentWeekLabel}
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover border border-border">
+                  {weekOptions.slice(2).map((option) => (
+                    <DropdownMenuItem 
+                      key={option.value}
+                      onClick={() => setCurrentWeekOffset(option.value)}
+                      className={currentWeekOffset === option.value ? "bg-accent" : ""}
+                    >
+                      {option.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-          
+        </div>
+
+        {/* Show full day toggle */}
+        <div className="mb-6">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setCurrentWeekOffset(Math.max(0, currentWeekOffset - 1))}
-            disabled={currentWeekOffset === 0}
+            onClick={() => setShowFullDay(!showFullDay)}
+            className="text-muted-foreground text-sm hover:text-foreground"
           >
-            <ChevronRight className="h-4 w-4" />
+            {showFullDay ? "Show condensed (6am-9pm)" : "Show full day (12am-12am)"}
           </Button>
         </div>
 
