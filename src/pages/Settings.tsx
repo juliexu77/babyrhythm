@@ -132,7 +132,7 @@ export const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-md mx-auto px-6 py-8 space-y-8">
         {/* Header with User Icon and Title */}
         <div className="text-center space-y-4">
           <div className="w-20 h-20 bg-muted rounded-full mx-auto flex items-center justify-center">
@@ -143,15 +143,15 @@ export const Settings = () => {
           </h1>
         </div>
 
-        {/* User Status Section */}
-        <div className="text-center space-y-3">
+        {/* User Status Section - No card */}
+        <div className="text-center space-y-4">
           <div>
             <p className="text-sm text-muted-foreground mb-1">Using as:</p>
-            <h2 className="text-lg font-medium text-foreground">
+            <h2 className="text-xl font-medium text-foreground mb-2">
               {getUserDisplayName()}
             </h2>
             {!user && (
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground mb-4">
                 Sign in to save your data across devices
               </p>
             )}
@@ -161,125 +161,118 @@ export const Settings = () => {
             <Button 
               onClick={() => navigate("/auth")}
               size="lg"
-              className="w-full"
+              className="w-full h-12 bg-primary/80 hover:bg-primary text-primary-foreground rounded-2xl"
             >
               <User className="w-4 h-4 mr-2" />
               Sign In
             </Button>
           ) : (
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                <div>
-                  <Label htmlFor="fullName" className="text-sm text-muted-foreground">
-                    Full Name
-                  </Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div>
-                  <Label className="text-sm text-muted-foreground">Email</Label>
-                  <Input
-                    value={user.email || ""}
-                    disabled
-                    className="mt-1 bg-muted"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-4 p-4 bg-muted/30 rounded-2xl">
+              <div>
+                <Label htmlFor="fullName" className="text-sm text-muted-foreground">
+                  Full Name
+                </Label>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Enter your full name"
+                  className="mt-2 border-none bg-background"
+                />
+              </div>
+              
+              <div>
+                <Label className="text-sm text-muted-foreground">Email</Label>
+                <Input
+                  value={user.email || ""}
+                  disabled
+                  className="mt-2 border-none bg-muted"
+                />
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Language Toggle */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Language</p>
-                <p className="text-sm text-muted-foreground">Switch app language</p>
-              </div>
-              <LanguageToggle />
+        {/* Language Section - Minimal card */}
+        <div className="p-6 bg-muted/30 rounded-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-foreground text-lg">Language</p>
+              <p className="text-sm text-muted-foreground">Switch app language</p>
             </div>
-          </CardContent>
-        </Card>
+            <LanguageToggle />
+          </div>
+        </div>
 
-        {/* Share Tracking Section */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <UserPlus className="w-5 h-5" />
-              Share Tracking
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Share tracking with someone so they can view and add activities too.
-            </p>
+        {/* Share Tracking Section - Minimal card */}
+        <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
+          <div className="flex items-center gap-2">
+            <UserPlus className="w-5 h-5" />
+            <h3 className="text-lg font-medium text-foreground">Share Tracking</h3>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">
+            Share tracking with someone so they can view and add activities too.
+          </p>
 
-            <Button 
-              onClick={handleInviteClick}
-              className="w-full"
-              variant="outline"
-            >
-              <Share className="w-4 h-4 mr-2" />
-              {user ? (copied ? "Link Copied!" : "Copy Invite Link") : "Sign In to Share"}
-            </Button>
+          <Button 
+            onClick={handleInviteClick}
+            className="w-full h-12 rounded-2xl"
+            variant="outline"
+          >
+            <Share className="w-4 h-4 mr-2" />
+            {user ? (copied ? "Link Copied!" : "Copy Invite Link") : "Sign In to Share"}
+          </Button>
 
-            {/* List of Caregivers */}
-            {collaborators && collaborators.length > 0 && (
-              <div className="space-y-3 pt-2 border-t border-border">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">Caregivers</span>
-                </div>
-                <div className="space-y-2">
-                  {collaborators.map((collaborator) => (
-                    <div 
-                      key={collaborator.id}
-                      className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                          <span className="text-xs font-medium text-primary">
-                            {getInitials(collaborator.user_id)}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">
-                            {collaborator.user_id}
-                          </p>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {collaborator.role}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeCollaborator(collaborator.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+          {/* List of Caregivers */}
+          {collaborators && collaborators.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-border/50">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Caregivers</span>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <div className="space-y-2">
+                {collaborators.map((collaborator) => (
+                  <div 
+                    key={collaborator.id}
+                    className="flex items-center justify-between p-3 bg-background rounded-xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-primary">
+                          {getInitials(collaborator.user_id)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {collaborator.user_id}
+                        </p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          {collaborator.role}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeCollaborator(collaborator.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
-        {/* User Actions */}
+        {/* User Actions - No cards, clean buttons */}
         {user && (
-          <div className="space-y-3">
+          <div className="space-y-3 pt-4">
             <Button
               onClick={handleChangePassword}
               variant="outline"
-              className="w-full"
+              className="w-full h-12 rounded-2xl"
             >
               <Key className="w-4 h-4 mr-2" />
               Change Password
@@ -288,7 +281,7 @@ export const Settings = () => {
             <Button
               onClick={signOut}
               variant="outline"
-              className="w-full text-destructive hover:text-destructive"
+              className="w-full h-12 rounded-2xl text-destructive hover:text-destructive border-destructive/20 hover:border-destructive/40"
             >
               <LogOut className="w-4 h-4 mr-2" />
               {t('signOut')}
