@@ -223,24 +223,6 @@ const Index = () => {
 
       {renderTabContent()}
 
-      {/* Floating Add Button */}
-      <div className="fixed bottom-20 right-4 z-20">
-        <div className="relative">
-          <button
-            onClick={() => setShowAddActivity(true)}
-            className="w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-all duration-200 flex items-center justify-center hover:scale-110"
-          >
-            <Plus className="h-6 w-6" />
-          </button>
-          <FirstTimeTooltip 
-            target={null}
-            onDismiss={() => {
-              setShowTooltip(false);
-              localStorage.setItem('hasSeenAddActivityTooltip', 'true');
-            }}
-          />
-        </div>
-      </div>
 
       <BottomNavigation 
         activeTab={activeTab} 
