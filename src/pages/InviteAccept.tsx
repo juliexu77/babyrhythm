@@ -33,7 +33,7 @@ const InviteAccept = () => {
       // Mark user as collaborator to bypass baby profile setup
       localStorage.setItem('isCollaborator', 'true');
       localStorage.setItem('babyProfileCompleted', 'true');
-      navigate("/app");
+      navigate("/");
     } catch (err: any) {
       setError(err.message || "Failed to accept invite");
     } finally {
@@ -94,7 +94,7 @@ const InviteAccept = () => {
           
           <Button 
             variant="ghost" 
-            onClick={() => navigate("/app")}
+            onClick={() => navigate("/")}
             className="w-full"
           >
             Skip for now

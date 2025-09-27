@@ -34,9 +34,9 @@ const translations = {
     noActivitiesYet: "No activities yet today",
     tapToAddFirst: "Tap the + button to add your first activity",
     
-    // Navigation
+// Navigation
     home: "Home",
-    timeline: "Timeline", 
+    insights: "Insights", 
     trends: "Trends",
     calendar: "Calendar",
     profile: "Profile",
@@ -84,10 +84,10 @@ const translations = {
     noActivitiesYet: "今天还没有活动记录",
     tapToAddFirst: "点击+按钮添加第一个活动",
     
-    // Navigation
+// Navigation
     home: "首页",
-    timeline: "时间线",
-    trends: "趋势", 
+    insights: "洞察",
+    trends: "趋势",
     calendar: "日历",
     profile: "个人资料",
     

@@ -137,7 +137,7 @@ export const Settings = () => {
     }
   };
 
-  const handleInviteClick = async () => {
+const handleInviteClick = async () => {
     if (!user) {
       navigate("/auth");
       return;
@@ -145,14 +145,16 @@ export const Settings = () => {
 
     try {
       const inviteData = await generateInviteLink();
-      await navigator.clipboard.writeText(inviteData.link);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      
-      toast({
-        title: "Invite link copied!",
-        description: "Share this link with your partner or caregiver.",
-      });
+      if (inviteData?.link) {
+        await navigator.clipboard.writeText(inviteData.link);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        
+        toast({
+          title: "Invite link copied!",
+          description: "Share this link with your partner or caregiver.",
+        });
+      }
     } catch (err) {
       toast({
         title: "Failed to create invite",

@@ -5,8 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useBabyProfile, Collaborator } from "@/hooks/useBabyProfile";
-import { UserPlus, Trash2, Mail, Volume2 } from "lucide-react";
+import { UserPlus, Trash2, Mail, Volume2, Send } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface CaregiverManagementProps {
   onClose: () => void;
@@ -15,6 +17,9 @@ interface CaregiverManagementProps {
 export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
   const { babyProfile, collaborators, removeCollaborator, generateInviteLink } = useBabyProfile();
   const [isActive, setIsActive] = useState(true);
+  const [emailInvite, setEmailInvite] = useState("");
+  const [isInviting, setIsInviting] = useState(false);
+  const { toast } = useToast();
 
   const getInitials = (email: string) => {
     return email
@@ -41,13 +46,64 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
     }
   };
 
-  const handleAddCaregiver = async () => {
+const handleAddCaregiver = async () => {
     try {
       const inviteData = await generateInviteLink();
-      await navigator.clipboard.writeText(inviteData.link);
-      // Show success toast would be handled by the hook
+      if (inviteData?.link) {
+        await navigator.clipboard.writeText(inviteData.link);
+        toast({
+          title: "Invite link copied!",
+          description: "Share this link with your caregiver."
+        });
+      }
     } catch (error) {
       console.error('Error generating invite:', error);
+    }
+  };
+
+  const handleEmailInvite = async () => {
+    if (!emailInvite.trim()) {
+      toast({
+        title: "Email required",
+        description: "Please enter an email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!emailInvite.includes('@')) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsInviting(true);
+    try {
+      const inviteData = await generateInviteLink();
+      if (inviteData?.link) {
+        // In a real app, you'd send this via email service
+        // For now, we'll copy and show instructions
+        const message = `Hi! You've been invited to help track ${babyProfile?.name || "a baby"}'s activities. Click this link to join: ${inviteData.link}`;
+        await navigator.clipboard.writeText(message);
+        
+        toast({
+          title: "Invite message copied!",
+          description: `Send this message to ${emailInvite} to invite them.`
+        });
+        setEmailInvite("");
+      }
+    } catch (error) {
+      console.error('Error sending invite:', error);
+      toast({
+        title: "Error sending invite",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -130,6 +186,33 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
             ))}
           </div>
 
+          {/* Email Invite Section */}
+          <div className="space-y-3 p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-primary" />
+              <Label className="font-medium">Invite by Email</Label>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="Enter email address"
+                value={emailInvite}
+                onChange={(e) => setEmailInvite(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleEmailInvite}
+                disabled={isInviting}
+                size="sm"
+              >
+                {isInviting ? <Send className="w-4 h-4 animate-pulse" /> : <Send className="w-4 h-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              We'll copy an invite message for you to send
+            </p>
+          </div>
+
           {/* Add Caregiver Button */}
           <Button 
             onClick={handleAddCaregiver}
@@ -137,7 +220,7 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
             className="w-full h-12 border-dashed border-primary text-primary hover:bg-primary/5"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            Add Parent / Caregiver
+            Copy Invite Link
           </Button>
 
           {/* Profile Status Section */}
