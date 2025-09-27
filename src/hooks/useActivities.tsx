@@ -31,16 +31,34 @@ export interface DatabaseActivity {
 }
 
 // Convert database activity to UI activity format
-export const convertToUIActivity = (dbActivity: DatabaseActivity) => ({
-  id: dbActivity.id,
-  type: dbActivity.type,
-  time: new Date(dbActivity.logged_at).toLocaleTimeString("en-US", { 
-    hour: "numeric", 
-    minute: "2-digit",
-    hour12: true 
-  }),
-  details: dbActivity.details
-});
+export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
+  // Use the same time logic as sorting - startTime for naps when available
+  let displayTime;
+  if (dbActivity.type === 'nap' && dbActivity.details.startTime) {
+    const today = new Date().toDateString();
+    const activityDate = new Date(dbActivity.logged_at).toDateString();
+    // Combine the date from logged_at with the time from startTime
+    const combinedDateTime = new Date(`${activityDate} ${dbActivity.details.startTime}`);
+    displayTime = combinedDateTime.toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    });
+  } else {
+    displayTime = new Date(dbActivity.logged_at).toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    });
+  }
+
+  return {
+    id: dbActivity.id,
+    type: dbActivity.type,
+    time: displayTime,
+    details: dbActivity.details
+  };
+};
 
 export function useActivities() {
   const { user } = useAuth();
