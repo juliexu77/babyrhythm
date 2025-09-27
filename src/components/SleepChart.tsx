@@ -1,7 +1,7 @@
 import { Activity } from "./ActivityCard";
 import { useState } from "react";
 import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -18,21 +18,9 @@ interface SleepChartProps {
 export const SleepChart = ({ activities }: SleepChartProps) => {
   const [showFullDay, setShowFullDay] = useState(false);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
-  const { babyProfile: dbBabyProfile } = useBabyProfile();
+  const { household } = useHousehold();
 
-  // Get baby's age for recommendations - prioritize database
-  const getBabyProfile = () => {
-    if (dbBabyProfile) {
-      return dbBabyProfile;
-    } else {
-      // Fallback to localStorage for guest users
-      const profile = localStorage.getItem('babyProfile');
-      return profile ? JSON.parse(profile) : null;
-    }
-  };
-
-  const babyProfile = getBabyProfile();
-  const ageInWeeks = babyProfile?.birthday ? calculateAgeInWeeks(babyProfile.birthday) : 0;
+  const ageInWeeks = household?.baby_birthday ? calculateAgeInWeeks(household.baby_birthday) : 0;
 
   // Calculate sleep data for the selected week
   const generateSleepData = () => {

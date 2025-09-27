@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, Share } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 import { useNavigate } from "react-router-dom";
 
 export const SimpleInviteCollaborator = () => {
   const { user } = useAuth();
-  const { generateInviteLink } = useBabyProfile();
+  const { generateInviteLink } = useHousehold();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);

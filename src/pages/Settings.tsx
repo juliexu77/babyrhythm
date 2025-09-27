@@ -123,12 +123,12 @@ export const Settings = () => {
 
   // Auto-save baby profile changes
   useEffect(() => {
-    if (!babyProfile || !babyName || babyName === babyProfile.name) return;
+    if (!household || !babyName || babyName === household.baby_name) return;
     
     setBabyNameSaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
-        await updateBabyProfile({ name: babyName });
+        await updateHousehold({ baby_name: babyName });
         setBabyNameSaveStatus("saved");
         
         // Clear saved status after 3 seconds
@@ -140,15 +140,15 @@ export const Settings = () => {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [babyName, babyProfile, updateBabyProfile]);
+  }, [babyName, household, updateHousehold]);
 
   useEffect(() => {
-    if (!babyProfile || babyBirthday === babyProfile.birthday) return;
+    if (!household || babyBirthday === household.baby_birthday) return;
     
     setBabyBirthdaySaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
-        await updateBabyProfile({ birthday: babyBirthday });
+        await updateHousehold({ baby_birthday: babyBirthday });
         setBabyBirthdaySaveStatus("saved");
         
         // Clear saved status after 3 seconds
@@ -160,15 +160,15 @@ export const Settings = () => {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [babyBirthday, babyProfile, updateBabyProfile]);
+  }, [babyBirthday, household, updateHousehold]);
 
-  // Update local state when babyProfile changes
+  // Update local state when household changes
   useEffect(() => {
-    if (babyProfile) {
-      setBabyName(babyProfile.name);
-      setBabyBirthday(babyProfile.birthday || "");
+    if (household) {
+      setBabyName(household.baby_name || "");
+      setBabyBirthday(household.baby_birthday || "");
     }
-  }, [babyProfile]);
+  }, [household]);
 
   // Update local state when userProfile changes
   useEffect(() => {
@@ -212,7 +212,7 @@ export const Settings = () => {
       const inviteData = await generateInviteLink();
       if (inviteData?.link) {
         setCurrentInviteLink(inviteData.link);
-        const shared = await shareInviteLink(inviteData.link, babyProfile?.name);
+        const shared = await shareInviteLink(inviteData.link, household?.baby_name);
         
         if (shared) {
           toast({
@@ -248,9 +248,8 @@ export const Settings = () => {
   };
 
   const handleBabyPhotoUpdate = async (photoUrl: string | null) => {
-    if (babyProfile) {
-      await updateBabyProfile({ photo_url: photoUrl });
-    }
+    // Baby photos are not supported in household model yet
+    console.log('Baby photo update not implemented in household model');
   };
 
   const getInitials = (name: string) => {
@@ -388,9 +387,9 @@ export const Settings = () => {
             {/* Baby Photo - Centered */}
             <div className="flex justify-center">
               <PhotoUpload
-                currentPhotoUrl={babyProfile?.photo_url}
+                currentPhotoUrl={undefined}
                 bucketName="baby-photos"
-                folder={babyProfile?.id || "baby"}
+                folder={household?.id || "baby"}
                 fallbackIcon={<Baby className="w-6 h-6 text-muted-foreground" />}
                 onPhotoUpdate={handleBabyPhotoUpdate}
                 size="md"
@@ -464,7 +463,7 @@ export const Settings = () => {
             {user && currentInviteLink && (
               <EmailInvite 
                 inviteLink={currentInviteLink}
-                babyName={babyProfile?.name}
+                babyName={household?.baby_name}
               />
             )}
 

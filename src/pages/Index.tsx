@@ -15,7 +15,7 @@ import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { DailySummary } from "@/components/DailySummary";
 import { PatternInsights } from "@/components/PatternInsights";
 import { useActivities } from "@/hooks/useActivities";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,11 +24,9 @@ import { Plus, MessageCircle, Home, TrendingUp, User } from "lucide-react";
 const Index = () => {
   const { user, loading } = useAuth();
   const { 
-    babyProfile: dbBabyProfile, 
-    loading: profileLoading, 
-    createBabyProfile,
-    refetch: refetchBabyProfile 
-  } = useBabyProfile();
+    household, 
+    loading: householdLoading
+  } = useHousehold();
   const { 
     activities: dbActivities, 
     loading: activitiesLoading, 
@@ -40,7 +38,7 @@ const Index = () => {
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
 
   // Convert database activities to UI activities
-  const activities: Activity[] = user && dbBabyProfile && dbActivities 
+  const activities: Activity[] = user && household && dbActivities 
     ? dbActivities.map(dbActivity => ({
         id: dbActivity.id,
         type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
@@ -59,20 +57,20 @@ const Index = () => {
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Check user authentication and baby profile status
+  // Check user authentication and household status
   useEffect(() => {
-    if (loading || profileLoading) return;
+    if (loading || householdLoading) return;
 
     if (user) {
       // For authenticated users, always use database as source of truth
-      if (dbBabyProfile) {
-        setBabyProfile(dbBabyProfile);
+      if (household) {
+        setBabyProfile({ name: household.baby_name || '', birthday: household.baby_birthday || undefined });
         setHasProfile(true);
         // Clear any stale localStorage data
         localStorage.removeItem('babyProfile');
         localStorage.removeItem('babyProfileCompleted');
       } else {
-        // No database profile exists, show setup
+        // No household exists, show setup
         setHasProfile(false);
       }
     } else {
@@ -80,7 +78,7 @@ const Index = () => {
       navigate('/auth');
       return;
     }
-  }, [user, loading, profileLoading, dbBabyProfile, navigate]);
+  }, [user, loading, householdLoading, household, navigate]);
 
   // Clear stale local profile if no user
   useEffect(() => {
@@ -110,14 +108,14 @@ const Index = () => {
   }, [hasProfile, activities.length]);
 
   const addActivity = async (type: string, details: any = {}) => {
-    if (!user || !babyProfile) {
-      console.error('User or baby profile not available');
+    if (!user || !household) {
+      console.error('User or household not available');
       return;
     }
 
     try {
       const { error } = await supabase.from('activities').insert({
-        baby_profile_id: (babyProfile as any).id,
+        household_id: household.id,
         type,
         logged_at: new Date().toISOString(),
         details,
@@ -188,7 +186,7 @@ const Index = () => {
     }
   };
 
-  if (loading || profileLoading || hasProfile === null) {
+  if (loading || householdLoading || hasProfile === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

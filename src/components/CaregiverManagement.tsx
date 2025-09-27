@@ -95,7 +95,7 @@ const handleAddCaregiver = async () => {
       if (inviteData?.link) {
         // In a real app, you'd send this via email service
         // For now, we'll copy and show instructions
-        const message = `Hi! You've been invited to help track ${babyProfile?.name || "a baby"}'s activities. Click this link to join: ${inviteData.link}`;
+        const message = `Hi! You've been invited to help track ${household?.baby_name || "a baby"}'s activities. Click this link to join: ${inviteData.link}`;
         await (navigator as any).clipboard.writeText(message);
         
         toast({
@@ -124,7 +124,7 @@ const handleAddCaregiver = async () => {
           <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
             ← Back
           </Button>
-          <h1 className="text-xl font-medium">{babyProfile?.name || "Baby"}</h1>
+          <h1 className="text-xl font-medium">{household?.baby_name || "Baby"}</h1>
           <Button variant="ghost" className="text-muted-foreground">
             Cancel
           </Button>
@@ -134,13 +134,13 @@ const handleAddCaregiver = async () => {
         <div className="px-4 pb-6">
           <div className="flex flex-col items-center space-y-4">
             <Avatar className="w-20 h-20">
-              <AvatarImage src={babyProfile?.photo_url || undefined} />
+              <AvatarImage src={undefined} />
               <AvatarFallback className="bg-muted text-2xl">
                 👶
               </AvatarFallback>
             </Avatar>
             <div className="text-center">
-              <h2 className="text-lg font-medium">{babyProfile?.name || "Baby"}</h2>
+              <h2 className="text-lg font-medium">{household?.baby_name || "Baby"}</h2>
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@ const handleAddCaregiver = async () => {
           </div>
           
           <p className="text-sm text-muted-foreground mb-4">
-            Each caregiver will be able to view and save entries for {babyProfile?.name || "Baby"}
+            Each caregiver will be able to view and save entries for {household?.baby_name || "Baby"}
           </p>
 
           {/* Collaborators List */}
@@ -170,10 +170,10 @@ const handleAddCaregiver = async () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">
-                      {collaborator.profiles?.full_name || collaborator.user_id}
+                      User {collaborator.user_id.slice(0, 8)}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {collaborator.user_id}
+                      {collaborator.role}
                     </p>
                   </div>
                 </div>
