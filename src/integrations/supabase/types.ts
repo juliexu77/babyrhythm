@@ -92,6 +92,7 @@ export type Database = {
         Row: {
           baby_profile_id: string
           created_at: string
+          household_id: string | null
           id: string
           invited_by: string
           role: string
@@ -100,6 +101,7 @@ export type Database = {
         Insert: {
           baby_profile_id: string
           created_at?: string
+          household_id?: string | null
           id?: string
           invited_by: string
           role?: string
@@ -108,6 +110,7 @@ export type Database = {
         Update: {
           baby_profile_id?: string
           created_at?: string
+          household_id?: string | null
           id?: string
           invited_by?: string
           role?: string
@@ -157,6 +160,7 @@ export type Database = {
           created_at: string
           created_by: string
           expires_at: string
+          household_id: string | null
           id: string
           role: string
           used_at: string | null
@@ -168,6 +172,7 @@ export type Database = {
           created_at?: string
           created_by: string
           expires_at: string
+          household_id?: string | null
           id?: string
           role?: string
           used_at?: string | null
@@ -179,6 +184,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           expires_at?: string
+          household_id?: string | null
           id?: string
           role?: string
           used_at?: string | null
