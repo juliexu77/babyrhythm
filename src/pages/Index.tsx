@@ -206,6 +206,22 @@ const Index = () => {
                       activityGroups[activityDate].push(activity);
                     });
 
+                    // Sort activities within each date group by actual activity time
+                    Object.keys(activityGroups).forEach(dateKey => {
+                      activityGroups[dateKey].sort((a, b) => {
+                        const getActivityTime = (activity: any) => {
+                          // For naps, use startTime if available, otherwise logged_at
+                          if (activity.type === 'nap' && activity.details?.startTime) {
+                            const activityDate = new Date(activity.loggedAt!).toDateString();
+                            return new Date(`${activityDate} ${activity.details.startTime}`).getTime();
+                          }
+                          return new Date(activity.loggedAt!).getTime();
+                        };
+
+                        return getActivityTime(b) - getActivityTime(a);
+                      });
+                    });
+
                     const sortedDates = Object.keys(activityGroups).sort((a, b) => 
                       new Date(b).getTime() - new Date(a).getTime()
                     );

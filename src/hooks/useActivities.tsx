@@ -105,7 +105,23 @@ export function useActivities() {
 
       if (error) throw error;
 
-      setActivities((data || []) as DatabaseActivity[]);
+      // Sort activities by actual activity time (startTime for naps, logged_at for others)
+      const sortedData = (data || []).sort((a, b) => {
+        const getActivityTime = (activity: any) => {
+          // For naps, use startTime if available, otherwise logged_at
+          if (activity.type === 'nap' && activity.details.startTime) {
+            const today = new Date().toDateString();
+            const activityDate = new Date(activity.logged_at).toDateString();
+            // Combine the date from logged_at with the time from startTime
+            return new Date(`${activityDate} ${activity.details.startTime}`).getTime();
+          }
+          return new Date(activity.logged_at).getTime();
+        };
+
+        return getActivityTime(b) - getActivityTime(a);
+      });
+
+      setActivities(sortedData as DatabaseActivity[]);
     } catch (error) {
       console.error('Error fetching activities:', error);
       toast({
