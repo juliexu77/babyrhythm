@@ -174,7 +174,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         {/* Date - Scrollable */}
         <div 
           ref={dateRef}
-          className="h-8 w-16 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
           onScroll={() => {
             if (dateRef.current) {
               const itemHeight = 32;
@@ -191,7 +191,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {dates.map((date, index) => (
               <div
                 key={index}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
                   selectedDateIndex === index 
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
