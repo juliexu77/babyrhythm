@@ -29,13 +29,29 @@ const Onboarding = () => {
           </div>
 
           {/* Mission Statement */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <h1 className="text-3xl font-serif font-semibold text-foreground leading-tight">
               {t('welcomeToApp')}
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              {t('simplestWay')}
-            </p>
+            <div className="space-y-4">
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {t('simplestWay')}
+              </p>
+              <div className="space-y-3 text-base text-muted-foreground">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                  <span>{t('logFeeds')}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                  <span>{t('understandRoutines')}</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                  <span>{t('shareTracking')}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* CTA */}
