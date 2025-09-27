@@ -226,14 +226,14 @@ const Index = () => {
       />
 
       {/* Add Activity Modal */}
-      {showAddActivity && (
-        <AddActivityModal
-          onAddActivity={(activity) => {
-            addActivity(activity.type, activity.details);
-            setShowAddActivity(false);
-          }}
-        />
-      )}
+      <AddActivityModal
+        isOpen={showAddActivity}
+        onClose={() => setShowAddActivity(false)}
+        onAddActivity={(activity) => {
+          addActivity(activity.type, activity.details);
+          setShowAddActivity(false);
+        }}
+      />
 
       {/* Activity Detail Modal */}
       {selectedActivity && (
