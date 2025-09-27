@@ -169,7 +169,7 @@ export const useHousehold = () => {
         .insert([{
           household_id: newHouseholdId,
           user_id: user.id,
-          role: 'parent',
+          role: 'owner',
           invited_by: user.id,
         }]);
 
