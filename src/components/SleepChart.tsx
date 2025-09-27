@@ -173,12 +173,11 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
     
     const dates = Object.keys(activityByDate);
     if (dates.length === 0) {
-      return { feeds: 0, feedUnit: 'oz', diapers: 0 };
+      return { feeds: 0, diapers: 0 };
     }
     
-    let totalFeedQuantity = 0;
+    let totalFeeds = 0;
     let totalDiapers = 0;
-    let feedCount = 0;
     
     dates.forEach(date => {
       const dayActivities = activityByDate[date];
@@ -186,22 +185,15 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
       const dayFeeds = dayActivities.filter(a => a.type === "feed");
       const dayDiapers = dayActivities.filter(a => a.type === "diaper");
       
-      dayFeeds.forEach(feed => {
-        if (feed.details.quantity) {
-          totalFeedQuantity += parseFloat(feed.details.quantity) || 0;
-          feedCount++;
-        }
-      });
-      
+      totalFeeds += dayFeeds.length;
       totalDiapers += dayDiapers.length;
     });
     
-    const avgFeeds = dates.length > 0 ? Math.round(totalFeedQuantity / dates.length) : 0;
+    const avgFeeds = dates.length > 0 ? Math.round(totalFeeds / dates.length) : 0;
     const avgDiapers = dates.length > 0 ? Math.round(totalDiapers / dates.length) : 0;
     
     return {
       feeds: avgFeeds,
-      feedUnit: avgFeeds > 50 ? 'ml' : 'oz',
       diapers: avgDiapers
     };
   };
@@ -422,7 +414,6 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           <h4 className="text-sm text-muted-foreground mb-2">Avg Daily Feeds</h4>
           <div className="text-3xl font-serif font-bold text-foreground">
             {averageDailySummary.feeds}
-            <span className="text-lg text-muted-foreground ml-1">{averageDailySummary.feedUnit}</span>
           </div>
         </div>
         <div className="bg-card rounded-xl p-6 shadow-card border border-border">
