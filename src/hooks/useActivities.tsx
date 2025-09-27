@@ -185,10 +185,7 @@ export function useActivities() {
 
       if (error) throw error;
 
-      toast({
-        title: "Activity added!",
-        description: `${activity.type.charAt(0).toUpperCase() + activity.type.slice(1)} has been logged.`,
-      });
+      // Removed noisy popup notification
 
       return data;
     } catch (error) {

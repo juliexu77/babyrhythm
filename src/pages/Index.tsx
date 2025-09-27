@@ -319,6 +319,40 @@ const Index = () => {
           addActivity(activity.type, activity.details, activityDate, activityTime);
           setShowAddActivity(false);
         }}
+        onEditActivity={async (updatedActivity) => {
+          try {
+            // Convert time string to timestamp for database update
+            const [time, period] = updatedActivity.time.split(' ');
+            const [hours, minutes] = time.split(':').map(Number);
+            
+            let hour24 = hours;
+            if (period === 'PM' && hours !== 12) hour24 += 12;
+            if (period === 'AM' && hours === 12) hour24 = 0;
+            
+            const loggedAt = new Date();
+            loggedAt.setHours(hour24, minutes, 0, 0);
+
+            const { error } = await supabase
+              .from('activities')
+              .update({
+                type: updatedActivity.type,
+                logged_at: loggedAt.toISOString(),
+                details: updatedActivity.details
+              })
+              .eq('id', updatedActivity.id);
+            
+            if (error) throw error;
+            refetchActivities();
+            setEditingActivity(null);
+          } catch (error) {
+            console.error('Error updating activity:', error);
+            toast({
+              title: "Error updating activity",
+              description: "Please try again.",
+              variant: "destructive"
+            });
+          }
+        }}
         onDeleteActivity={async (activityId) => {
           try {
             const { error } = await supabase
