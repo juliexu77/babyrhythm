@@ -6,6 +6,7 @@ export interface Activity {
   id: string;
   type: "feed" | "diaper" | "nap" | "note";
   time: string;
+  loggedAt?: string; // Add the original logged timestamp
   details: {
     // Feed details
     feedType?: "bottle" | "nursing" | "solid";

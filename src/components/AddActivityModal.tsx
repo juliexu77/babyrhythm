@@ -66,6 +66,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       setActivityType(editingActivity.type);
       setTime(editingActivity.time);
       
+      // Set the selected date based on the original logged date
+      if (editingActivity.loggedAt) {
+        setSelectedDate(new Date(editingActivity.loggedAt));
+      }
+      
       if (editingActivity.type === "feed") {
         const details = editingActivity.details;
         setFeedType(details.feedType || "bottle");

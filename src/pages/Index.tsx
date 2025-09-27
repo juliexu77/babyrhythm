@@ -50,6 +50,7 @@ const Index = () => {
           id: dbActivity.id,
           type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
           time: displayTime,
+          loggedAt: dbActivity.logged_at, // Preserve the original timestamp
           details: dbActivity.details
         };
       })
