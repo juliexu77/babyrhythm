@@ -11,7 +11,7 @@ import { TodaysSummary } from "@/components/TodaysSummary";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { InviteCollaborator } from "@/components/InviteCollaborator";
 import { InlineInsights } from "@/components/InlineInsights";
-import { PatternInsights } from "@/components/PatternInsights";
+import { InsightsTab } from "@/components/InsightsTab";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
@@ -195,16 +195,11 @@ const Index = () => {
             <div className="space-y-4 pt-2">
               <InlineInsights activities={activities} />
               <NextActivityPrediction activities={activities} />
-              <PatternInsights activities={activities} />
             </div>
           </div>
         );
       case "timeline":
-        return (
-          <div className="space-y-6">
-            <TodaysSummary activities={activities} />
-          </div>
-        );
+        return <InsightsTab activities={activities} />;
       case "trends":
         return (
           <div className="space-y-6">

@@ -334,8 +334,18 @@ export const Settings = () => {
               </Label>
               <div className="mt-2">
                 <DatePicker
-                  selected={babyBirthday ? new Date(babyBirthday) : undefined}
-                  onSelect={(date) => setBabyBirthday(date ? format(date, "yyyy-MM-dd") : "")}
+                  selected={babyBirthday ? new Date(babyBirthday + 'T00:00:00') : undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      // Convert to local date string to avoid timezone issues
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setBabyBirthday(`${year}-${month}-${day}`);
+                    } else {
+                      setBabyBirthday("");
+                    }
+                  }}
                   placeholder="Select birthday"
                   className="border-none bg-background"
                 />

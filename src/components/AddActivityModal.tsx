@@ -204,6 +204,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           details.quantity = quantity;
           details.unit = unit;
           localStorage.setItem('lastUsedUnit', unit);
+          localStorage.setItem('lastFeedQuantity', quantity);
         } else if (feedType === "nursing") {
           if (minutesLeft) details.minutesLeft = minutesLeft;
           if (minutesRight) details.minutesRight = minutesRight;

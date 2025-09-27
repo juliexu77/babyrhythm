@@ -24,6 +24,19 @@ export const NumericKeypad = ({
 }: NumericKeypadProps) => {
   const [value, setValue] = useState(initialValue);
 
+  // Auto-populate with last feed amount when modal opens
+  const getLastFeedAmount = () => {
+    const lastQuantity = localStorage.getItem('lastFeedQuantity');
+    return lastQuantity || initialValue;
+  };
+
+  // Set initial value when modal opens
+  useState(() => {
+    if (!initialValue) {
+      setValue(getLastFeedAmount());
+    }
+  });
+
   const handleNumber = (num: string) => {
     if (value.length < 6) { // Limit to reasonable length
       setValue(prev => prev + num);

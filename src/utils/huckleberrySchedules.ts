@@ -123,6 +123,52 @@ export function getScheduleForAge(ageInWeeks: number): NapSchedule | null {
   ) || null;
 }
 
+export function getFeedingGuidanceForAge(ageInWeeks: number) {
+  if (ageInWeeks < 2) {
+    return {
+      frequency: "Every 1-3 hours",
+      amount: "1-3 oz (30-90ml)",
+      dailyTotal: "8-12 feeds",
+      notes: "Newborns need frequent small feeds. Follow baby's hunger cues."
+    };
+  } else if (ageInWeeks < 4) {
+    return {
+      frequency: "Every 2-3 hours", 
+      amount: "2-4 oz (60-120ml)",
+      dailyTotal: "8-10 feeds",
+      notes: "Feeding patterns are becoming more predictable."
+    };
+  } else if (ageInWeeks < 8) {
+    return {
+      frequency: "Every 3-4 hours",
+      amount: "3-5 oz (90-150ml)", 
+      dailyTotal: "6-8 feeds",
+      notes: "Baby can go longer between feeds now."
+    };
+  } else if (ageInWeeks < 12) {
+    return {
+      frequency: "Every 3-4 hours",
+      amount: "4-6 oz (120-180ml)",
+      dailyTotal: "5-7 feeds", 
+      notes: "Sleep periods are getting longer, affecting feeding schedule."
+    };
+  } else if (ageInWeeks < 26) {
+    return {
+      frequency: "Every 4-5 hours",
+      amount: "6-8 oz (180-240ml)",
+      dailyTotal: "4-6 feeds",
+      notes: "May start showing interest in solid foods around 4-6 months."
+    };
+  } else {
+    return {
+      frequency: "Every 4-6 hours",
+      amount: "6-8 oz (180-240ml)",
+      dailyTotal: "3-5 feeds",
+      notes: "Solid foods are becoming a bigger part of nutrition."
+    };
+  }
+}
+
 export function getWakeWindowForAge(ageInWeeks: number): WakeWindowData | null {
   return huckleberryWakeWindows.find(
     data => ageInWeeks >= data.ageStart && ageInWeeks <= data.ageEnd
