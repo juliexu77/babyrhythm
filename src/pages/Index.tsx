@@ -9,7 +9,6 @@ import { YesterdaysSummary } from "@/components/YesterdaysSummary";
 import { InsightsTab } from "@/components/InsightsTab";
 import { Settings } from "@/pages/Settings";
 import { ChatPanel } from "@/components/ChatPanel";
-import { BabyProfileSetup } from "@/components/BabyProfileSetup";
 import { FirstTimeTooltip } from "@/components/FirstTimeTooltip";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { DailySummary } from "@/components/DailySummary";
@@ -19,7 +18,8 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, MessageCircle, Home, TrendingUp, User } from "lucide-react";
+import { Plus, MessageCircle, Home, TrendingUp, User, Baby } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -199,8 +199,23 @@ const Index = () => {
 
   if (!hasProfile) {
     return (
-      <div className="min-h-screen bg-background">
-        <BabyProfileSetup onComplete={handleProfileComplete} />
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="text-center space-y-6 max-w-md">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-foreground">Welcome!</h1>
+            <p className="text-muted-foreground">
+              Let's set up your baby's profile to get started with tracking.
+            </p>
+          </div>
+          <Button 
+            onClick={() => navigate('/app?tab=settings')}
+            size="lg"
+            className="w-full"
+          >
+            <Baby className="w-4 h-4 mr-2" />
+            Set up baby profile
+          </Button>
+        </div>
       </div>
     );
   }

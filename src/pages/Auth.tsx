@@ -27,7 +27,7 @@ const Auth = () => {
         if (redirectTo) {
           navigate(redirectTo, { replace: true });
         } else {
-          navigate("/baby-setup", { replace: true }); // This will handle the multi-step onboarding
+          navigate("/app", { replace: true });
         }
       }
     });
@@ -38,7 +38,7 @@ const Auth = () => {
         if (redirectTo) {
           navigate(redirectTo, { replace: true });
         } else {
-          navigate("/baby-setup", { replace: true }); // This will handle the multi-step onboarding
+          navigate("/app", { replace: true });
         }
       }
     });
@@ -55,7 +55,7 @@ const Auth = () => {
     const password = formData.get("signup-password") as string;
     const fullName = formData.get("full-name") as string;
 
-    const redirectUrl = `${window.location.origin}/baby-setup`;
+    const redirectUrl = `${window.location.origin}/app`;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -87,7 +87,7 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     
-    const redirectUrl = `${window.location.origin}/baby-setup`;
+    const redirectUrl = `${window.location.origin}/app`;
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -34,7 +34,7 @@ import { format } from "date-fns";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { household, collaborators, removeCollaborator, updateHousehold, generateInviteLink } = useHousehold();
+  const { household, collaborators, removeCollaborator, updateHousehold, generateInviteLink, createHousehold } = useHousehold();
   const { userProfile, updateUserProfile } = useUserProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -123,27 +123,36 @@ export const Settings = () => {
 
   // Auto-save baby profile changes
   useEffect(() => {
-    if (!household || !babyName || babyName === household.baby_name) return;
+    if (!user || !babyName) return;
+    
+    // Skip if baby name hasn't changed from existing household
+    if (household && babyName === household.baby_name) return;
     
     setBabyNameSaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
-        await updateHousehold({ baby_name: babyName });
+        if (household) {
+          // Update existing household
+          await updateHousehold({ baby_name: babyName });
+        } else {
+          // Create new household with baby name
+          await createHousehold(babyName);
+        }
         setBabyNameSaveStatus("saved");
         
         // Clear saved status after 3 seconds
         setTimeout(() => setBabyNameSaveStatus("unsaved"), 3000);
       } catch (error) {
         setBabyNameSaveStatus("error");
-        console.error('Error updating baby name:', error);
+        console.error('Error saving baby name:', error);
       }
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [babyName, household, updateHousehold]);
+  }, [babyName, household, updateHousehold, createHousehold, user]);
 
   useEffect(() => {
-    if (!household || babyBirthday === household.baby_birthday) return;
+    if (!user || !household || babyBirthday === household.baby_birthday) return;
     
     setBabyBirthdaySaveStatus("saving");
     const timeoutId = setTimeout(async () => {
@@ -160,7 +169,7 @@ export const Settings = () => {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [babyBirthday, household, updateHousehold]);
+  }, [babyBirthday, household, updateHousehold, user]);
 
   // Update local state when household changes
   useEffect(() => {

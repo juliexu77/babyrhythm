@@ -24,7 +24,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
 
     // Redirect authenticated users away from auth and onboarding pages
     if (user && (location.pathname === "/auth" || location.pathname === "/onboarding")) {
-      navigate("/baby-setup", { replace: true });
+      navigate("/app", { replace: true });
       return;
     }
 
