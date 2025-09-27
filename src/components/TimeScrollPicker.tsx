@@ -191,7 +191,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {dates.map((date, index) => (
               <div
                 key={index}
-                className={`h-8 flex items-center justify-center text-xs font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
                   selectedDateIndex === index 
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -207,7 +207,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </div>
         </div>
 
-        <span className="text-muted-foreground text-xs">-</span>
+        <span className="text-muted-foreground text-sm">-</span>
         {/* Hours - Scrollable */}
         <div 
           ref={hourRef}
@@ -219,7 +219,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {hours.map((hour, index) => (
               <div
                 key={`hour-${index}`}
-                className={`h-8 flex items-center justify-center text-xs font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
                   selectedHour === hour 
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -235,7 +235,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </div>
         </div>
 
-        <span className="text-muted-foreground text-xs">:</span>
+        <span className="text-muted-foreground text-sm">:</span>
 
         {/* Minutes - Scrollable */}
         <div 
@@ -248,7 +248,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {minutes.map((minute, index) => (
               <div
                 key={`minute-${index}`}
-                className={`h-8 flex items-center justify-center text-xs font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
                   selectedMinute === minute 
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -269,7 +269,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           {periods.map((period) => (
             <div
               key={period}
-              className={`px-2 py-1 rounded text-xs font-medium cursor-pointer transition-colors ${
+              className={`px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors ${
                 selectedPeriod === period 
                   ? 'text-foreground font-bold bg-muted' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
