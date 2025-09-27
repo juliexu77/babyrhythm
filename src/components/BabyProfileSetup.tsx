@@ -53,15 +53,12 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
         birthday: birthday,
       };
 
-      if (user) {
-        // For authenticated users, create database profile
-        await createBabyProfile(profile.name, profile.birthday);
-      } else {
-        // For guest users, store locally
-        localStorage.setItem('babyProfile', JSON.stringify(profile));
-        localStorage.setItem('babyProfileCompleted', 'true');
+      if (!user) {
+        throw new Error('Authentication required to create baby profile');
       }
-      
+
+      // For authenticated users, create database profile
+      await createBabyProfile(profile.name, profile.birthday);
       onComplete(profile);
     } catch (error) {
       console.error('Error creating baby profile:', error);

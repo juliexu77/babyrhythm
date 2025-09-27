@@ -15,18 +15,14 @@ const BabySetup = () => {
   useEffect(() => {
     if (authLoading || profileLoading) return;
 
-    const isGuest = localStorage.getItem('skipOnboarding') === 'true';
-    const hasLocalProfile = localStorage.getItem('babyProfile');
-    const profileCompleted = localStorage.getItem('babyProfileCompleted');
-
-    // If authenticated user has a DB profile, go to app
-    if (user && babyProfile) {
-      navigate("/app");
+    // Require authentication - redirect to auth if not logged in
+    if (!user) {
+      navigate("/auth");
       return;
     }
 
-    // If guest has completed local profile, go to app
-    if (isGuest && hasLocalProfile && profileCompleted) {
+    // If user has a database profile, redirect to main app
+    if (babyProfile) {
       navigate("/app");
       return;
     }
@@ -36,23 +32,22 @@ const BabySetup = () => {
 
   const handleProfileComplete = async (profile: { name: string; birthday?: string }) => {
     try {
-      if (user) {
-        // For authenticated users, create database profile
-        await createBabyProfile(profile.name, profile.birthday);
-      } else {
-        // For guest users, store locally
-        localStorage.setItem("babyProfile", JSON.stringify(profile));
-        localStorage.setItem("babyProfileCompleted", "true");
+      if (!user) {
+        throw new Error('Authentication required to create baby profile');
       }
+
+      // For authenticated users, create database profile
+      await createBabyProfile(profile.name, profile.birthday);
       
       // Navigate to main app
       navigate("/app");
     } catch (error) {
       console.error('Error creating baby profile:', error);
-      // Fallback to local storage even for authenticated users
-      localStorage.setItem("babyProfile", JSON.stringify(profile));
-      localStorage.setItem("babyProfileCompleted", "true");
-      navigate("/app");
+      toast({
+        title: "Error creating profile",
+        description: "Please try again or contact support.",
+        variant: "destructive"
+      });
     }
   };
 

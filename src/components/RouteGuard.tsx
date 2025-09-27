@@ -10,12 +10,16 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
-    const isGuest = localStorage.getItem('skipOnboarding') === 'true';
+    // Require authentication for all protected routes
+    const publicRoutes = ['/auth', '/invite'];
+    const isPublicRoute = publicRoutes.some(route => 
+      location.pathname === route || location.pathname.startsWith(route + '/')
+    );
 
-    // Don't interfere with the natural onboarding flow
-    // Just protect /app route for non-authenticated, non-guest users
-    if (!user && !isGuest && location.pathname.startsWith("/app")) {
-      navigate("/", { replace: true });
+    // Redirect unauthenticated users to auth page
+    if (!user && !isPublicRoute) {
+      navigate("/auth", { replace: true });
+      return;
     }
 
     // Mark demo seen only on true landing page

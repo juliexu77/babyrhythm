@@ -297,25 +297,6 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
-            
-            {/* Guest Access Button */}
-            <div className="mt-6 pt-4 border-t border-border">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  localStorage.setItem('skipOnboarding', 'true');
-                  localStorage.setItem('hasSeenDemo', 'true');
-                  navigate("/baby-setup");
-                }}
-                className="w-full text-muted-foreground hover:text-foreground text-sm font-normal"
-              >
-                {t('continueAsGuest')}
-              </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2 leading-relaxed">
-                {t('yourDataWontBeSaved')}
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -57,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       'initialActivities',
       'hasSeenAddActivityTooltip',
       'hasSeenDemo',
-      'skipOnboarding',
       'lastUsedUnit',
       'lastFeedQuantity',
       'language', // Keep this one as it's a user preference
