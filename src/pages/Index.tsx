@@ -137,7 +137,7 @@ const Index = () => {
             household_id: householdId,
             invited_by: user.id,
             user_id: user.id,
-            role: 'owner'
+            role: 'parent'
           });
 
         if (collaboratorError) throw collaboratorError;

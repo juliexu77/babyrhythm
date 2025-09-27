@@ -181,7 +181,7 @@ const handleAddCaregiver = async () => {
                   <Badge variant="secondary" className={getRoleColor(collaborator.role)}>
                     {collaborator.role}
                   </Badge>
-                  {collaborator.role !== 'owner' && (
+                  {collaborator.role !== 'parent' && (
                     <Button
                       variant="ghost"
                       size="sm"

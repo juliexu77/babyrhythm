@@ -3,65 +3,39 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface UserRoleSelectorProps {
-  value: "owner" | "partner" | "caregiver" | "grandparent";
-  onChange: (value: "owner" | "partner" | "caregiver" | "grandparent") => void;
+  value: "parent" | "caregiver";
+  onChange: (value: "parent" | "caregiver") => void;
   className?: string;
 }
 
 export function UserRoleSelector({ value, onChange, className }: UserRoleSelectorProps) {
   return (
-    <div className={cn("grid grid-cols-2 gap-1 p-1 bg-muted rounded-xl", className)}>
+    <div className={cn("flex gap-1 p-1 bg-muted rounded-xl", className)}>
       <Button
-        variant={value === "owner" ? "default" : "ghost"}
+        variant={value === "parent" ? "default" : "ghost"}
         size="sm"
-        onClick={() => onChange("owner")}
+        onClick={() => onChange("parent")}
         className={cn(
-          "rounded-lg transition-all text-xs",
-          value === "owner" 
+          "flex-1 rounded-lg transition-all",
+          value === "parent" 
             ? "bg-primary text-primary-foreground shadow-sm" 
             : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background"
         )}
       >
-        Owner
-      </Button>
-      <Button
-        variant={value === "partner" ? "default" : "ghost"}
-        size="sm"
-        onClick={() => onChange("partner")}
-        className={cn(
-          "rounded-lg transition-all text-xs",
-          value === "partner" 
-            ? "bg-primary text-primary-foreground shadow-sm" 
-            : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background"
-        )}
-      >
-        Partner
+        Parent / Family
       </Button>
       <Button
         variant={value === "caregiver" ? "default" : "ghost"}
         size="sm"
         onClick={() => onChange("caregiver")}
         className={cn(
-          "rounded-lg transition-all text-xs",
+          "flex-1 rounded-lg transition-all",
           value === "caregiver" 
             ? "bg-primary text-primary-foreground shadow-sm" 
             : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background"
         )}
       >
-        Caregiver
-      </Button>
-      <Button
-        variant={value === "grandparent" ? "default" : "ghost"}
-        size="sm"
-        onClick={() => onChange("grandparent")}
-        className={cn(
-          "rounded-lg transition-all text-xs",
-          value === "grandparent" 
-            ? "bg-primary text-primary-foreground shadow-sm" 
-            : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background"
-        )}
-      >
-        Grandparent
+        Caregiver / Nanny
       </Button>
     </div>
   );

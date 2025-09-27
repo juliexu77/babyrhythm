@@ -163,13 +163,13 @@ export const useHousehold = () => {
         throw householdError;
       }
 
-      // Add user as collaborator (owner)
+      // Add user as collaborator (parent)
       const { error: collaboratorError } = await supabase
         .from('collaborators')
         .insert([{
           household_id: newHouseholdId,
           user_id: user.id,
-          role: 'owner',
+          role: 'parent',
           invited_by: user.id,
         }]);
 
@@ -226,7 +226,7 @@ export const useHousehold = () => {
     }
   };
 
-  const generateInviteLink = async (role?: 'partner' | 'caregiver' | 'grandparent') => {
+  const generateInviteLink = async (role?: 'caregiver') => {
     if (!user || !household) {
       throw new Error('User and household required for invite');
     }

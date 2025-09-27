@@ -45,7 +45,7 @@ export const Settings = () => {
   const [copied, setCopied] = useState(false);
   const [babyName, setBabyName] = useState(household?.baby_name || "");
   const [babyBirthday, setBabyBirthday] = useState(household?.baby_birthday || "");
-  const [userRole, setUserRole] = useState<"owner" | "partner" | "caregiver" | "grandparent">("owner");
+  const [userRole, setUserRole] = useState<"parent" | "caregiver">("parent");
   const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
   
@@ -182,7 +182,7 @@ export const Settings = () => {
   // Update local state when userProfile changes
   useEffect(() => {
     if (userProfile) {
-      setUserRole(userProfile.role || 'owner');
+      setUserRole(userProfile.role || 'parent');
       setFullName(userProfile.full_name || "");
     }
   }, [userProfile]);
