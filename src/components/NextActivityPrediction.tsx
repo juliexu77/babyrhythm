@@ -8,7 +8,7 @@ interface NextActivityPredictionProps {
 }
 
 export const NextActivityPrediction = ({ activities }: NextActivityPredictionProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true); // Default to collapsed
   const getCurrentTime = () => {
     const now = new Date();
     return now.toLocaleTimeString("en-US", { 

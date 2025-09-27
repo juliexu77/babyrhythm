@@ -304,7 +304,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             </Button>
           </DialogTrigger>
         )}
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto [&>button[data-state]]:hidden">{/* Hide close button */}
           <DialogHeader className="pb-4">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-lg font-medium">

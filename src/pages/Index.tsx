@@ -179,14 +179,7 @@ const Index = () => {
         return (
           <>
             {/* Activities Timeline */}
-            <div className="px-4 py-6">
-              {/* Next Predicted Action - Collapsible at top */}
-              {activities.length > 0 && (
-                <div className="mb-6">
-                  <NextActivityPrediction activities={activities} />
-                </div>
-              )}
-              
+            <div className="px-4 py-6">              
               <div className="space-y-6 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -225,7 +218,7 @@ const Index = () => {
                       new Date(b).getTime() - new Date(a).getTime()
                     );
 
-                    return sortedDates.map(dateString => {
+                    return sortedDates.map((dateString, index) => {
                       const date = new Date(dateString);
                       const today = new Date().toDateString();
                       const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -244,24 +237,33 @@ const Index = () => {
                       }
 
                       return (
-                        <div key={dateString} className="space-y-3">
-                          {/* Date Header */}
-                          <h3 className="text-lg font-serif font-medium text-foreground border-b border-border pb-2">
-                            {displayDate}
-                          </h3>
-                          
-                          {/* Activities for this date */}
-                          <div className="space-y-2">
-                            {activityGroups[dateString].map((activity) => (
-                              <ActivityCard
-                                key={activity.id}
-                                activity={activity}
-                                babyName={babyProfile?.name}
-                                onEdit={(activity) => setEditingActivity(activity)}
-                                onDelete={undefined}
-                              />
-                            ))}
+                        <div key={dateString}>
+                          <div className="space-y-3">
+                            {/* Date Header */}
+                            <h3 className="text-lg font-serif font-medium text-foreground border-b border-border pb-2">
+                              {displayDate}
+                            </h3>
+                            
+                            {/* Activities for this date */}
+                            <div className="space-y-2">
+                              {activityGroups[dateString].map((activity) => (
+                                <ActivityCard
+                                  key={activity.id}
+                                  activity={activity}
+                                  babyName={babyProfile?.name}
+                                  onEdit={(activity) => setEditingActivity(activity)}
+                                  onDelete={undefined}
+                                />
+                              ))}
+                            </div>
                           </div>
+                          
+                          {/* Next Predicted Action - Show after Today's activities */}
+                          {dateString === today && activities.length > 0 && (
+                            <div className="mt-6 mb-6">
+                              <NextActivityPrediction activities={activities} />
+                            </div>
+                          )}
                         </div>
                       );
                     });
