@@ -144,29 +144,30 @@ export const useHousehold = () => {
     try {
       console.log('Creating household with baby name:', babyName, 'birthday:', babyBirthday);
 
-      // Create household
-      const { data: householdData, error: householdError } = await supabase
+      // Create household with client-generated id to avoid RLS issues on RETURNING
+      const newHouseholdId = crypto.randomUUID();
+
+      const { error: householdError } = await supabase
         .from('households')
-        .insert({
-          name: `${babyName}'s Household`,
-          baby_name: babyName,
-          baby_birthday: babyBirthday || null,
-        })
-        .select()
-        .single();
+        .insert([
+          {
+            id: newHouseholdId,
+            name: `${babyName}'s Household`,
+            baby_name: babyName,
+            baby_birthday: babyBirthday || null,
+          }
+        ]);
 
       if (householdError) {
         console.error('Household creation error:', householdError);
         throw householdError;
       }
 
-      console.log('Household created:', householdData);
-
       // Add user as collaborator (owner)
       const { error: collaboratorError } = await supabase
         .from('collaborators')
         .insert([{
-          household_id: householdData.id,
+          household_id: newHouseholdId,
           user_id: user.id,
           role: 'parent',
           invited_by: user.id,
@@ -177,8 +178,20 @@ export const useHousehold = () => {
         throw collaboratorError;
       }
 
+      // Now we can safely fetch the household (SELECT policy will pass)
+      const { data: householdData, error: fetchError } = await supabase
+        .from('households')
+        .select('*')
+        .eq('id', newHouseholdId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching newly created household:', fetchError);
+        throw fetchError;
+      }
+
       setHousehold(householdData);
-      await fetchCollaborators(householdData.id);
+      await fetchCollaborators(newHouseholdId);
       
       return householdData;
     } catch (error) {
