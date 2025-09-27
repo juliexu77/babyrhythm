@@ -91,14 +91,16 @@ export function useActivities() {
     }
 
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Get activities from the past 7 days for continuous scrolling
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
 
       const { data, error } = await supabase
         .from('activities')
         .select('*')
         .eq('household_id', household.id)
-        .gte('logged_at', today.toISOString())
+        .gte('logged_at', sevenDaysAgo.toISOString())
         .order('logged_at', { ascending: false });
 
       if (error) throw error;

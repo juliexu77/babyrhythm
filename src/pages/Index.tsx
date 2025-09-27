@@ -178,54 +178,91 @@ const Index = () => {
       default:
         return (
           <>
-            {/* Today's Activities Header */}
+            {/* Activities Timeline Header */}
             <div className="bg-primary text-primary-foreground py-4 px-4">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                <span className="font-medium">
-                  {new Date().toLocaleDateString("en-US", { 
-                    weekday: "long", 
-                    month: "long", 
-                    day: "numeric", 
-                    year: "numeric" 
-                  })}
-                </span>
+                <span className="font-medium">Recent Activities</span>
               </div>
             </div>
 
             {/* Activities Timeline */}
             <div className="px-4 py-6">
-              <h2 className="text-xl font-serif font-medium text-foreground mb-4">
-                Today's Activities
-              </h2>
-              
-              <div className="space-y-3 pb-20">
+              <div className="space-y-6 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <p>No activities yet. Start by adding your first activity!</p>
                   </div>
                 ) : (
-                  activities.map((activity) => (
-                    <ActivityCard
-                      key={activity.id}
-                      activity={activity}
-                      babyName={babyProfile?.name}
-                      onEdit={(activity) => setEditingActivity(activity)}
-                      onDelete={async (activityId) => {
-                        try {
-                          const { error } = await supabase
-                            .from('activities')
-                            .delete()
-                            .eq('id', activityId);
+                  (() => {
+                    // Group activities by date
+                    const activityGroups: { [date: string]: typeof activities } = {};
+                    
+                    activities.forEach(activity => {
+                      const activityDate = new Date(activity.loggedAt!).toDateString();
+                      if (!activityGroups[activityDate]) {
+                        activityGroups[activityDate] = [];
+                      }
+                      activityGroups[activityDate].push(activity);
+                    });
+
+                    const sortedDates = Object.keys(activityGroups).sort((a, b) => 
+                      new Date(b).getTime() - new Date(a).getTime()
+                    );
+
+                    return sortedDates.map(dateString => {
+                      const date = new Date(dateString);
+                      const today = new Date().toDateString();
+                      const yesterday = new Date(Date.now() - 86400000).toDateString();
+                      
+                      let displayDate;
+                      if (dateString === today) {
+                        displayDate = "Today";
+                      } else if (dateString === yesterday) {
+                        displayDate = "Yesterday";
+                      } else {
+                        displayDate = date.toLocaleDateString("en-US", { 
+                          weekday: "long", 
+                          month: "short", 
+                          day: "numeric" 
+                        });
+                      }
+
+                      return (
+                        <div key={dateString} className="space-y-3">
+                          {/* Date Header */}
+                          <h3 className="text-lg font-serif font-medium text-foreground border-b border-border pb-2">
+                            {displayDate}
+                          </h3>
                           
-                          if (error) throw error;
-                          refetchActivities();
-                        } catch (error) {
-                          console.error('Error deleting activity:', error);
-                        }
-                      }}
-                    />
-                  ))
+                          {/* Activities for this date */}
+                          <div className="space-y-2">
+                            {activityGroups[dateString].map((activity) => (
+                              <ActivityCard
+                                key={activity.id}
+                                activity={activity}
+                                babyName={babyProfile?.name}
+                                onEdit={(activity) => setEditingActivity(activity)}
+                                onDelete={async (activityId) => {
+                                  try {
+                                    const { error } = await supabase
+                                      .from('activities')
+                                      .delete()
+                                      .eq('id', activityId);
+                                    
+                                    if (error) throw error;
+                                    refetchActivities();
+                                  } catch (error) {
+                                    console.error('Error deleting activity:', error);
+                                  }
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()
                 )}
               </div>
 
