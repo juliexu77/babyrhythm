@@ -8,9 +8,11 @@ import { Baby, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { useBabyProfile } from "@/hooks/useBabyProfile";
 
 interface BabyProfileSetupProps {
-  onComplete: (profile: { name: string; birthday: string }) => void;
+  onComplete: (profile: { name: string; birthday?: string }) => void;
 }
 
 export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
@@ -19,6 +21,8 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { createBabyProfile } = useBabyProfile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,19 +47,35 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
 
     setIsLoading(true);
     
-    // Save baby profile to localStorage for now
-    const profile = {
-      name: babyName.trim(),
-      birthday: birthday,
-    };
-    
-    localStorage.setItem('babyProfile', JSON.stringify(profile));
-    
-    // Mark profile as completed so setup won't show again
-    localStorage.setItem('babyProfileCompleted', 'true');
-    
-    onComplete(profile);
-    setIsLoading(false);
+    try {
+      const profile = {
+        name: babyName.trim(),
+        birthday: birthday,
+      };
+
+      if (user) {
+        // For authenticated users, create database profile
+        await createBabyProfile(profile.name, profile.birthday);
+      } else {
+        // For guest users, store locally
+        localStorage.setItem('babyProfile', JSON.stringify(profile));
+        localStorage.setItem('babyProfileCompleted', 'true');
+      }
+      
+      onComplete(profile);
+    } catch (error) {
+      console.error('Error creating baby profile:', error);
+      // Fallback to local storage even for authenticated users
+      const profile = {
+        name: babyName.trim(),
+        birthday: birthday,
+      };
+      localStorage.setItem('babyProfile', JSON.stringify(profile));
+      localStorage.setItem('babyProfileCompleted', 'true');
+      onComplete(profile);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
