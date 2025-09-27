@@ -25,9 +25,9 @@ const Auth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         if (redirectTo) {
-          navigate(redirectTo);
+          navigate(redirectTo, { replace: true });
         } else {
-          navigate("/baby-setup"); // This will handle the multi-step onboarding
+          navigate("/baby-setup", { replace: true }); // This will handle the multi-step onboarding
         }
       }
     });
@@ -36,9 +36,9 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         if (redirectTo) {
-          navigate(redirectTo);
+          navigate(redirectTo, { replace: true });
         } else {
-          navigate("/baby-setup"); // This will handle the multi-step onboarding
+          navigate("/baby-setup", { replace: true }); // This will handle the multi-step onboarding
         }
       }
     });

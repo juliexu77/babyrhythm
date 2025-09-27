@@ -15,13 +15,13 @@ const BabySetup = () => {
 
     // Require authentication - redirect to auth if not logged in
     if (!user) {
-      navigate("/auth");
+      navigate("/auth", { replace: true });
       return;
     }
 
     // If user has a household, redirect to main app
     if (household) {
-      navigate("/app");
+      navigate("/app", { replace: true });
       return;
     }
 
@@ -30,7 +30,7 @@ const BabySetup = () => {
 
   const handleOnboardingComplete = () => {
     // Navigate to main app after completion
-    navigate("/app");
+    navigate("/app", { replace: true });
   };
 
   if (authLoading || profileLoading) {

@@ -22,6 +22,12 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
+    // Redirect authenticated users away from auth page
+    if (user && location.pathname === "/auth") {
+      navigate("/baby-setup", { replace: true });
+      return;
+    }
+
     // Mark demo seen only on true landing page
     if (location.pathname === "/" && !localStorage.getItem("hasSeenDemo")) {
       localStorage.setItem("hasSeenDemo", "true");
