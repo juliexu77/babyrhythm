@@ -10,6 +10,9 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
+    // Debug logging
+    console.log('RouteGuard - Current path:', location.pathname, 'User:', !!user, 'Loading:', loading);
+
     // Require authentication for all protected routes
     const publicRoutes = ['/auth', '/invite', '/onboarding'];
     const isPublicRoute = publicRoutes.some(route => 
@@ -18,12 +21,14 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
 
     // Redirect unauthenticated users to onboarding first
     if (!user && !isPublicRoute) {
+      console.log('Redirecting unauthenticated user to onboarding');
       navigate("/onboarding", { replace: true });
       return;
     }
 
     // Redirect authenticated users away from auth and onboarding pages to the main app
     if (user && (location.pathname === "/auth" || location.pathname === "/onboarding" || location.pathname === "/")) {
+      console.log('Redirecting authenticated user to main app');
       navigate("/app", { replace: true });
       return;
     }
