@@ -128,8 +128,9 @@ export function useBabyProfile() {
 
       setBabyProfile(data);
       
-      // Clear localStorage baby profile if it exists
+      // Clear localStorage baby profile if it exists (ensure database is source of truth)
       localStorage.removeItem('babyProfile');
+      localStorage.removeItem('babyProfileCompleted');
       
       toast({
         title: "Baby profile created!",

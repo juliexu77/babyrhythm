@@ -58,33 +58,34 @@ const Index = () => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Check for baby profile - check completion status first
+  // Check for baby profile - prioritize database for authenticated users
   useEffect(() => {
     if (!loading && !profileLoading) {
-      const profileCompleted = localStorage.getItem('babyProfileCompleted');
-      const savedProfile = localStorage.getItem('babyProfile');
-      const isCollaborator = localStorage.getItem('isCollaborator');
-      
-      // If user is a collaborator with access to a DB profile, use that
-      if (isCollaborator && dbBabyProfile) {
-        setBabyProfile(dbBabyProfile);
-        setHasProfile(true);
+      if (user) {
+        // For authenticated users, always use database as source of truth
+        if (dbBabyProfile) {
+          setBabyProfile(dbBabyProfile);
+          setHasProfile(true);
+          // Clear any stale localStorage data
+          localStorage.removeItem('babyProfile');
+          localStorage.removeItem('babyProfileCompleted');
+        } else {
+          // No database profile exists, show setup
+          setHasProfile(false);
+        }
+      } else {
+        // For guest users, use localStorage
+        const profileCompleted = localStorage.getItem('babyProfileCompleted');
+        const savedProfile = localStorage.getItem('babyProfile');
+        
+        if (profileCompleted && savedProfile) {
+          setBabyProfile(JSON.parse(savedProfile));
+          setHasProfile(true);
+        } else {
+          setHasProfile(false);
+        }
       }
-      // If they have a completed local profile, use that
-      else if (profileCompleted && savedProfile) {
-        setBabyProfile(JSON.parse(savedProfile));
-        setHasProfile(true);
-      }
-      // If they have a DB profile (they're the owner), use that
-      else if (dbBabyProfile) {
-        setBabyProfile(dbBabyProfile);
-        setHasProfile(true);
-      }
-      // Otherwise show the setup screen
-      else {
-        setHasProfile(false);
-      }
-}
+    }
   }, [user, loading, profileLoading, dbBabyProfile]);
 
   // Clear stale local profile if no user
