@@ -38,8 +38,9 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       // Filter activities for this specific date
       const dayFeeds = activities.filter(a => {
         if (a.type !== "feed") return false;
-        const activityDate = new Date().toISOString().split('T')[0]; // All current activities are today
-        return dateStr === activityDate; // Only show data for today, empty for other days
+        if (!a.loggedAt) return false;
+        const activityDate = new Date(a.loggedAt).toISOString().split('T')[0];
+        return dateStr === activityDate;
       });
       
       let totalValue = 0;
@@ -93,8 +94,9 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       // Filter activities for this specific date
       const dayNaps = activities.filter(a => {
         if (a.type !== "nap") return false;
-        const activityDate = new Date().toISOString().split('T')[0]; // All current activities are today
-        return dateStr === activityDate; // Only show data for today, empty for other days
+        if (!a.loggedAt) return false;
+        const activityDate = new Date(a.loggedAt).toISOString().split('T')[0];
+        return dateStr === activityDate;
       });
       
       let totalHours = 0;

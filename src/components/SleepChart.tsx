@@ -42,21 +42,10 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
       // Filter nap activities for this specific date
       const dayNaps = activities.filter(a => {
         if (a.type !== "nap") return false;
+        if (!a.loggedAt) return false;
         
-        // Convert activity time to a proper date for comparison
-        // Since activities only have time strings like "10:30 AM", we need to check if they're from the correct date
-        // For now, we'll assume all activities are from today since the data doesn't include full timestamps
-        // TODO: This should be improved to use proper logged_at timestamps from the database
-        
-        const today = new Date().toISOString().split('T')[0];
-        // If the activity is from today and we're looking at today's data, include it
-        if (dateStr === today) {
-          return true;
-        }
-        
-        // For historical dates, we would need proper timestamp data
-        // For now, only show data for today
-        return false;
+        const activityDate = new Date(a.loggedAt).toISOString().split('T')[0];
+        return dateStr === activityDate;
       });
       
       // Create sleep blocks for the time range
