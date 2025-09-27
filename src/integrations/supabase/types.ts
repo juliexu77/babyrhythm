@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           created_by: string
           details: Json
+          household_id: string | null
           id: string
           logged_at: string
           type: string
@@ -30,6 +31,7 @@ export type Database = {
           created_at?: string
           created_by: string
           details?: Json
+          household_id?: string | null
           id?: string
           logged_at: string
           type: string
@@ -40,6 +42,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           details?: Json
+          household_id?: string | null
           id?: string
           logged_at?: string
           type?: string
