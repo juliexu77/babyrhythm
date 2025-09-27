@@ -140,7 +140,7 @@ const Auth = () => {
             {t('appName')}
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Track your little one's precious moments
+            {t('tagline')}
           </p>
         </div>
 

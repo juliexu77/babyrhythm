@@ -120,7 +120,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                   {t('babyBirthday')} <span className="text-destructive">*</span>
                 </Label>
                 <DatePicker
-                  selected={birthday ? new Date(birthday) : undefined}
+                  selected={birthday ? (() => { const [y,m,d] = birthday.split('-').map(Number); return new Date(y, m-1, d); })() : undefined}
                   onSelect={(date) => {
                     if (date) {
                       // Fix the date picker bug - use local date string to avoid timezone issues

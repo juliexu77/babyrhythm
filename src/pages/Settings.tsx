@@ -137,9 +137,18 @@ export const Settings = () => {
     }
   };
 
-const handleInviteClick = async () => {
+  const handleInviteClick = async () => {
     if (!user) {
       navigate("/auth");
+      return;
+    }
+
+    if (!babyProfile) {
+      toast({
+        title: "Create a baby profile first",
+        description: "Add your baby's details in Settings before inviting.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -336,7 +345,7 @@ const handleInviteClick = async () => {
               </Label>
               <div className="mt-2">
                 <DatePicker
-                  selected={babyBirthday ? new Date(babyBirthday + 'T00:00:00') : undefined}
+                  selected={babyBirthday ? (() => { const [y,m,d] = babyBirthday.split('-').map(Number); return new Date(y, m-1, d); })() : undefined}
                   onSelect={(date) => {
                     if (date) {
                       // Convert to local date string to avoid timezone issues
