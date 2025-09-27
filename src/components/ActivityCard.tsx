@@ -1,4 +1,4 @@
-import { Clock, Baby, Palette, Moon, StickyNote } from "lucide-react";
+import { Clock, Baby, Palette, Moon, StickyNote, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -160,7 +160,8 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
     }
   };
 
-  const handleLongPress = () => {
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the edit click
     if (onDelete) {
       onDelete(activity.id);
     }
@@ -180,24 +181,6 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
       <div className="flex-1 flex items-center justify-between min-w-0">
         <button
           onClick={handleClick}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            handleLongPress();
-          }}
-          onTouchStart={(e) => {
-            const touchTimer = setTimeout(() => {
-              handleLongPress();
-            }, 500); // 500ms for long press
-            
-            const clearTimer = () => {
-              clearTimeout(touchTimer);
-              document.removeEventListener('touchend', clearTimer);
-              document.removeEventListener('touchmove', clearTimer);
-            };
-            
-            document.addEventListener('touchend', clearTimer);
-            document.addEventListener('touchmove', clearTimer);
-          }}
           className="flex-1 text-left"
           disabled={!onEdit && !onDelete}
         >
@@ -209,6 +192,16 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
           <span className="text-xs text-muted-foreground">
             {activity.time}
           </span>
+          {/* Delete button - appears on hover */}
+          {onDelete && (
+            <button
+              onClick={handleDelete}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded text-destructive hover:text-destructive/80"
+              title="Delete activity"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </div>
     </div>
