@@ -34,7 +34,7 @@ const Onboarding = () => {
               {t('welcomeToApp')}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Track your baby's day, discover their patterns, and share the journey with your partner.
+              Copilot for your baby's day. Track with all your household caregivers so you know how your baby is doing even when you aren't there.
             </p>
           </div>
 
