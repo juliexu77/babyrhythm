@@ -86,14 +86,28 @@ export const Settings = () => {
     
     const timeoutId = setTimeout(async () => {
       try {
+        console.log('Updating user role to:', userRole);
         await updateUserProfile({ role: userRole });
+        
+        // Don't redirect or reset anything - just update the role
+        toast({
+          title: "Role updated",
+          description: `Your role has been changed to ${userRole}`,
+        });
       } catch (error) {
         console.error('Error updating user role:', error);
+        // Revert the role change if it failed
+        setUserRole(userProfile.role);
+        toast({
+          title: "Error updating role",
+          description: "Failed to update your role. Please try again.",
+          variant: "destructive"
+        });
       }
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [userRole, userProfile, updateUserProfile]);
+  }, [userRole, userProfile, updateUserProfile, toast]);
 
   // Auto-save baby profile changes
   useEffect(() => {

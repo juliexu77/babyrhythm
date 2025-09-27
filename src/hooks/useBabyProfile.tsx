@@ -34,6 +34,8 @@ export function useBabyProfile() {
 
   useEffect(() => {
     if (!user) {
+      setBabyProfile(null);
+      setCollaborators([]);
       setLoading(false);
       return;
     }
@@ -70,21 +72,28 @@ export function useBabyProfile() {
 
   const fetchBabyProfile = async () => {
     try {
+      console.log('Fetching baby profile for user:', user?.id);
+      // Query for baby profiles the user has access to
       const { data, error } = await supabase
         .from('baby_profiles')
         .select('*')
-        .single();
+        .limit(1);
 
-      if (error && error.code !== 'PGRST116') {
+      console.log('Baby profile query result:', { data, error });
+
+      if (error) {
+        console.error('Error fetching baby profile:', error);
         throw error;
       }
 
-      setBabyProfile(data || null);
-      if (data) {
-        fetchCollaborators(data.id);
+      // Take the first profile if any exist
+      setBabyProfile(data?.[0] || null);
+      if (data?.[0]) {
+        fetchCollaborators(data[0].id);
       }
     } catch (error) {
       console.error('Error fetching baby profile:', error);
+      setBabyProfile(null);
     } finally {
       setLoading(false);
     }
@@ -196,11 +205,12 @@ export function useBabyProfile() {
     if (!user) throw new Error('User not authenticated');
     
     try {
-      // Create baby profile if it doesn't exist
-      let profileToUse = babyProfile;
-      if (!profileToUse) {
-        profileToUse = await createBabyProfile('Baby', undefined);
+      // Check if baby profile exists first
+      if (!babyProfile) {
+        throw new Error('No baby profile found. Please set up your baby profile first.');
       }
+      
+      let profileToUse = babyProfile;
 
       // Check for existing valid invite first
       const { data: existingInvites, error: checkError } = await supabase
