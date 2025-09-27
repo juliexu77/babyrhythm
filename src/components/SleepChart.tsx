@@ -47,9 +47,21 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
       // Filter nap activities for this specific date
       const dayNaps = activities.filter(a => {
         if (a.type !== "nap") return false;
-        // Since activities don't have logged_at, assume they're all from today for now
+        
+        // Convert activity time to a proper date for comparison
+        // Since activities only have time strings like "10:30 AM", we need to check if they're from the correct date
+        // For now, we'll assume all activities are from today since the data doesn't include full timestamps
+        // TODO: This should be improved to use proper logged_at timestamps from the database
+        
         const today = new Date().toISOString().split('T')[0];
-        return dateStr === today;
+        // If the activity is from today and we're looking at today's data, include it
+        if (dateStr === today) {
+          return true;
+        }
+        
+        // For historical dates, we would need proper timestamp data
+        // For now, only show data for today
+        return false;
       });
       
       // Create sleep blocks for the time range
@@ -57,12 +69,25 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
       
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
-          const [startHour, startMin] = nap.details.startTime.split(':').map(Number);
-          const [endHour, endMin] = nap.details.endTime.split(':').map(Number);
+          // Parse time strings like "10:30 AM"
+          const parseTime = (timeStr: string) => {
+            const [time, period] = timeStr.split(' ');
+            const [hoursStr, minutesStr] = time.split(':');
+            let hours = parseInt(hoursStr);
+            const minutes = parseInt(minutesStr);
+            
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            
+            return { hours, minutes };
+          };
+          
+          const startTime = parseTime(nap.details.startTime);
+          const endTime = parseTime(nap.details.endTime);
           
           // Create precise time blocks for continuous sleep bars
-          const startTimeInMinutes = startHour * 60 + startMin;
-          const endTimeInMinutes = endHour * 60 + endMin;
+          const startTimeInMinutes = startTime.hours * 60 + startTime.minutes;
+          const endTimeInMinutes = endTime.hours * 60 + endTime.minutes;
           const rangeStartInMinutes = (showFullDay ? 0 : 6) * 60;
           const rangeEndInMinutes = (showFullDay ? 24 : 21) * 60;
           
