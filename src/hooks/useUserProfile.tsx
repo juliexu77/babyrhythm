@@ -8,7 +8,7 @@ interface UserProfile {
   user_id: string;
   full_name?: string;
   photo_url?: string;
-  role: 'parent' | 'nanny';
+  role: 'owner' | 'partner' | 'caregiver' | 'grandparent';
   baby_name?: string;
   baby_birth_date?: string;
   created_at: string;
@@ -85,7 +85,7 @@ export const useUserProfile = () => {
           user_id: session.user.id,
           full_name: profile.full_name || null,
           photo_url: profile.photo_url || null,
-          role: profile.role || 'parent'
+          role: profile.role || 'owner'
         })
         .select()
         .single();

@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 export type SaveStatus = "unsaved" | "saving" | "saved" | "error";
 
 interface UserRoleSelectorWithStatusProps {
-  value: "parent" | "nanny";
-  onChange: (value: "parent" | "nanny") => void;
+  value: "owner" | "partner" | "caregiver" | "grandparent";
+  onChange: (value: "owner" | "partner" | "caregiver" | "grandparent") => void;
   saveStatus?: SaveStatus;
   errorMessage?: string;
   className?: string;
