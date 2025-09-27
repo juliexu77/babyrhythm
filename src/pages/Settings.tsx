@@ -167,15 +167,6 @@ export const Settings = () => {
       return;
     }
 
-    if (!babyProfile) {
-      toast({
-        title: "Create a baby profile first",
-        description: "Add your baby's details in Settings before inviting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const inviteData = await generateInviteLink();
       if (inviteData?.link) {
