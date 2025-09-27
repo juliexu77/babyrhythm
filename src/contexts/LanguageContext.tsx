@@ -64,7 +64,7 @@ const translations = {
     continue: "Continue",
     
     // Onboarding
-    welcomeToApp: "Welcome to Baby Tracker",
+    welcomeToApp: "Stay in sync with your baby",
     simplestWay: "The simplest way to track your baby's daily activities and patterns.",
     trackEverything: "Track Everything",
     logFeeds: "Log feeds, diaper changes, naps, and notes with just a few taps.",
@@ -191,7 +191,7 @@ const translations = {
     continue: "继续",
     
     // Onboarding
-    welcomeToApp: "欢迎使用宝宝追踪器",
+    welcomeToApp: "与您的宝宝保持同步",
     simplestWay: "追踪宝宝日常活动和模式的最简单方法。",
     trackEverything: "记录所有活动",
     logFeeds: "只需几次点击即可记录喂养、换尿布、睡觉和笔记。",

@@ -34,7 +34,7 @@ const Onboarding = () => {
               {t('welcomeToApp')}
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
-              Copilot for your baby's day. Track with all your household caregivers so you know how your baby is doing even when you aren't there.
+              Track feedings, sleep, and milestones together with family and caregivers.
             </p>
           </div>
 
@@ -43,7 +43,7 @@ const Onboarding = () => {
             <Button 
               onClick={() => navigate("/auth")}
               size="lg"
-              className="w-full h-12 text-base font-medium"
+              className="w-full h-12 text-base font-bold rounded-full"
             >
               {t('getStarted')}
             </Button>
