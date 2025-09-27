@@ -290,7 +290,7 @@ case "insights":
           <div className="text-center py-16">
             <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
               <p className="text-muted-foreground font-medium mb-1">{t('calendar')}</p>
-              <p className="text-sm text-muted-foreground">Coming soon</p>
+              <p className="text-sm text-muted-foreground">{t('comingSoon')}</p>
           </div>
         );
       case "settings":

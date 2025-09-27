@@ -37,6 +37,7 @@ const App = () => (
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/app" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/login" element={<Auth />} />
                   <Route path="/baby-setup" element={<BabySetup />} />
                   <Route path="/invite/:code" element={<InviteAccept />} />
                   <Route path="/demo" element={<DemoTour />} />

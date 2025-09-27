@@ -70,7 +70,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
             {t('setupProfile')}
           </h1>
           <p className="text-muted-foreground text-sm">
-            Let's personalize your tracking experience
+            {t('personalizeExperience')}
           </p>
           
           {/* Skip option */}
@@ -82,7 +82,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
               }}
               className="text-sm text-muted-foreground hover:text-foreground underline"
             >
-              Skip for now (you can add this later in settings)
+              {t('skipForNow')}
             </button>
           </div>
         </div>
@@ -91,10 +91,10 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
         <Card className="border border-border">
           <CardHeader className="pb-4">
             <CardTitle className="text-center text-foreground">
-              Baby Profile
+              {t('babyProfile')}
             </CardTitle>
             <CardDescription className="text-center">
-              We'll use this information to personalize your experience
+              {t('useThisInfo')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -133,7 +133,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                     }
                   }}
                   disabled={isLoading}
-                  placeholder="Select birthday"
+                  placeholder={t('selectBirthday')}
                 />
               </div>
 
@@ -142,7 +142,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                 className="w-full h-12 text-base" 
                 disabled={isLoading || !babyName.trim() || !birthday}
               >
-                {isLoading ? "Setting up..." : t('continue')}
+                {isLoading ? t('settingUp') : t('continue')}
               </Button>
             </form>
           </CardContent>

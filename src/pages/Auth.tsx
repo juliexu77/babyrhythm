@@ -151,7 +151,7 @@ const Auth = () => {
               {t('welcome')}
             </CardTitle>
             <CardDescription className="text-center text-muted-foreground text-sm leading-relaxed">
-              Sign in to your account or create a new one
+              {t('signInToAccount')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -164,23 +164,23 @@ const Auth = () => {
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
+                    <Label htmlFor="signin-email">{t('email')}</Label>
                     <Input
                       id="signin-email"
                       name="signin-email"
                       type="email"
-                      placeholder="your@email.com"
+                      placeholder={t('enterEmail')}
                       required
                       disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-sm font-medium">Password</Label>
+                    <Label htmlFor="signin-password" className="text-sm font-medium">{t('password')}</Label>
                     <Input
                       id="signin-password"
                       name="signin-password"
                       type="password"
-                      placeholder="Enter password"
+                      placeholder={t('enterPassword')}
                       required
                       disabled={isLoading}
                       className="text-sm"
@@ -191,7 +191,7 @@ const Auth = () => {
                     className="w-full font-semibold" 
                     disabled={isLoading}
                   >
-                    {isLoading ? "Signing in..." : "Sign In"}
+                    {isLoading ? t('loading') : t('signIn')}
                   </Button>
                   
                   <div className="relative">
@@ -200,7 +200,7 @@ const Auth = () => {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                       <span className="bg-background px-2 text-muted-foreground">
-                        Or continue with
+                        {t('orContinueWith')}
                       </span>
                     </div>
                   </div>
@@ -213,7 +213,7 @@ const Auth = () => {
                     className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
-                    Continue with Google
+                    {t('signInWithGoogle')}
                   </Button>
                 </form>
               </TabsContent>
@@ -221,34 +221,34 @@ const Auth = () => {
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full-name">Full Name</Label>
+                    <Label htmlFor="full-name">{t('fullName')}</Label>
                     <Input
                       id="full-name"
                       name="full-name"
                       type="text"
-                      placeholder="Your full name"
+                      placeholder={t('fullName')}
                       required
                       disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email">{t('email')}</Label>
                     <Input
                       id="signup-email"
                       name="signup-email"
                       type="email"
-                      placeholder="your@email.com"
+                      placeholder={t('enterEmail')}
                       required
                       disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-sm font-medium">Password</Label>
+                    <Label htmlFor="signup-password" className="text-sm font-medium">{t('password')}</Label>
                     <Input
                       id="signup-password"
                       name="signup-password"
                       type="password"
-                      placeholder="Choose a password"
+                      placeholder={t('enterPassword')}
                       required
                       disabled={isLoading}
                       className="text-sm"
@@ -259,7 +259,7 @@ const Auth = () => {
                     className="w-full font-semibold" 
                     disabled={isLoading}
                   >
-                    {isLoading ? "Creating account..." : "Create Account"}
+                    {isLoading ? t('settingUp') : t('createAccount')}
                   </Button>
                   
                   <div className="relative">
@@ -268,7 +268,7 @@ const Auth = () => {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                       <span className="bg-background px-2 text-muted-foreground">
-                        Or continue with
+                        {t('orContinueWith')}
                       </span>
                     </div>
                   </div>
@@ -302,7 +302,7 @@ const Auth = () => {
                 {t('continueAsGuest')}
               </Button>
               <p className="text-xs text-muted-foreground text-center mt-2 leading-relaxed">
-                Your data won't be saved across devices
+                {t('yourDataWontBeSaved')}
               </p>
             </div>
           </CardContent>

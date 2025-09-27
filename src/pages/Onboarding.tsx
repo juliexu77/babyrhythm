@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ChevronRight, ChevronLeft, Baby, Clock, TrendingUp, UserPlus } from "lucide-react";
 
 const OnboardingStep = ({ 
@@ -28,28 +30,29 @@ const OnboardingStep = ({
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
     {
       icon: Baby,
-      title: "Welcome to Baby Tracker",
-      description: "The simplest way to track your baby's daily activities and patterns."
+      title: t('welcomeToApp'),
+      description: t('simplestWay')
     },
     {
       icon: Clock,
-      title: "Track Everything",
-      description: "Log feeds, diaper changes, naps, and notes with just a few taps."
+      title: t('trackEverything'),
+      description: t('logFeeds')
     },
     {
       icon: TrendingUp,
-      title: "See Patterns",
-      description: "Understand your baby's routines and get helpful insights over time."
+      title: t('seePatterns'),
+      description: t('understandRoutines')
     },
     {
       icon: UserPlus,
-      title: "Collaborate with Caretakers",
-      description: "Share tracking with anyone you share caregiving responsibilities with, real time sync so you can see all the details even when you're not there"
+      title: t('collaborateWith'),
+      description: t('shareTracking')
     }
   ];
 
@@ -73,8 +76,9 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* Theme Toggle - Fixed position */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Language and Theme Toggles - Fixed position */}
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <LanguageToggle />
         <ThemeToggle showText={false} />
       </div>
       
@@ -141,16 +145,16 @@ const Onboarding = () => {
             {currentStep > 0 ? (
               <Button variant="ghost" onClick={prevStep} className="flex items-center">
                 <ChevronLeft className="w-4 h-4 mr-1" />
-                Back
+                {t('back')}
               </Button>
             ) : (
               <Button variant="ghost" onClick={skipToAuth}>
-                Skip
+                {t('skip')}
               </Button>
             )}
 
             <Button onClick={nextStep} className="flex items-center">
-              {currentStep === steps.length - 1 ? "Get Started" : "Next"}
+              {currentStep === steps.length - 1 ? t('getStarted') : t('next')}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
