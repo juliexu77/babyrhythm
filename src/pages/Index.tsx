@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { offlineSync } from "@/utils/offlineSync";
 import { BabyProfileSetup } from "@/components/BabyProfileSetup";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useActivities } from "@/hooks/useActivities";
 import { SubtleOnboarding } from "@/components/SubtleOnboarding";
 import { Settings } from "@/pages/Settings";
 
@@ -30,10 +31,25 @@ const Index = () => {
   const { user, loading, signOut } = useAuth();
   const { t } = useLanguage();
   const { babyProfile: dbBabyProfile, loading: profileLoading } = useBabyProfile();
+  const { activities: dbActivities, loading: activitiesLoading, addActivity, updateActivity, deleteActivity } = useActivities();
   const navigate = useNavigate();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [guestActivities, setGuestActivities] = useState<Activity[]>([]);
+
+  // Convert database activities to UI activities, or use guest activities
+  const activities: Activity[] = user && dbBabyProfile && dbActivities 
+    ? dbActivities.map(dbActivity => ({
+        id: dbActivity.id,
+        type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
+        time: new Date(dbActivity.logged_at).toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit', 
+          hour12: true 
+        }),
+        details: dbActivity.details
+      }))
+    : guestActivities;
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
@@ -97,21 +113,46 @@ const Index = () => {
     }
   }, []);
 
-  // Load initial activities from localStorage if available
+  // Load guest activities from localStorage
   useEffect(() => {
+    if (user && dbBabyProfile) return; // Don't load guest activities if authenticated
+    
     const initialActivities = localStorage.getItem('initialActivities');
     if (initialActivities) {
       try {
         const parsed = JSON.parse(initialActivities);
-        setActivities(parsed);
-        localStorage.removeItem('initialActivities'); // Remove after loading
+        setGuestActivities(parsed);
       } catch (error) {
         console.error('Error parsing initial activities:', error);
       }
     }
-  }, []);
+  }, [user, dbBabyProfile]);
 
-  if (loading || profileLoading) {
+  // Migrate guest activities to database when user first logs in
+  useEffect(() => {
+    if (!user || !dbBabyProfile || dbActivities.length > 0) return;
+    
+    const initialActivities = localStorage.getItem('initialActivities');
+    if (initialActivities) {
+      try {
+        const parsed = JSON.parse(initialActivities);
+        // Migrate each activity to the database
+        parsed.forEach(async (activity: Activity) => {
+          await addActivity({
+            type: activity.type as 'feed' | 'diaper' | 'nap' | 'note',
+            time: activity.time,
+            details: activity.details
+          });
+        });
+        localStorage.removeItem('initialActivities'); // Remove after migrating
+        setGuestActivities([]); // Clear guest activities
+      } catch (error) {
+        console.error('Error migrating initial activities:', error);
+      }
+    }
+  }, [user, dbBabyProfile, dbActivities, addActivity]);
+
+  if (loading || profileLoading || activitiesLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -127,15 +168,36 @@ const Index = () => {
     return <BabyProfileSetup onComplete={handleProfileComplete} />;
   }
 
-  const handleAddActivity = (newActivity: Omit<Activity, "id">) => {
-    const activity: Activity = {
-      ...newActivity,
-      id: Date.now().toString(),
-    };
-    setActivities(prev => [activity, ...prev]);
-    
-    // Store offline and attempt sync
-    offlineSync.storeOfflineActivity(newActivity);
+  const handleAddActivity = async (newActivity: Omit<Activity, "id">) => {
+    try {
+      // If user is authenticated and has a baby profile, save to database
+      if (user && dbBabyProfile) {
+        await addActivity({
+          type: newActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
+          time: newActivity.time,
+          details: newActivity.details
+        });
+      } else {
+        // For guest users, store locally
+        const activity: Activity = {
+          ...newActivity,
+          id: Date.now().toString(),
+        };
+        setGuestActivities(prev => [activity, ...prev]);
+        
+        // Also store in localStorage for persistence
+        const updatedActivities = [activity, ...guestActivities];
+        localStorage.setItem('initialActivities', JSON.stringify(updatedActivities));
+      }
+    } catch (error) {
+      console.error('Error adding activity:', error);
+      // Fallback to guest storage
+      const activity: Activity = {
+        ...newActivity,
+        id: Date.now().toString(),
+      };
+      setGuestActivities(prev => [activity, ...prev]);
+    }
   };
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -188,11 +250,19 @@ const Index = () => {
                         setEditingActivity(activity);
                         setIsAddModalOpen(true);
                       }}
-                      onDelete={(activityId) => {
-                        const updatedActivities = activities.filter(a => a.id !== activityId);
-                        setActivities(updatedActivities);
-                        offlineSync.clearOfflineData();
-                        updatedActivities.forEach(act => offlineSync.storeOfflineActivity(act));
+                      onDelete={async (activityId) => {
+                        try {
+                          if (user && dbBabyProfile) {
+                            await deleteActivity(activityId);
+                          } else {
+                            // For guest users, remove from local state and localStorage
+                            const updatedActivities = guestActivities.filter(a => a.id !== activityId);
+                            setGuestActivities(updatedActivities);
+                            localStorage.setItem('initialActivities', JSON.stringify(updatedActivities));
+                          }
+                        } catch (error) {
+                          console.error('Error deleting activity:', error);
+                        }
                       }}
                     />
                   ))}
@@ -264,15 +334,27 @@ case "insights":
           setEditingActivity(null);
         }}
         editingActivity={editingActivity}
-        onEditActivity={(updatedActivity) => {
-          const updatedActivities = activities.map(a => 
-            a.id === updatedActivity.id ? updatedActivity : a
-          );
-          setActivities(updatedActivities);
-          offlineSync.clearOfflineData();
-          updatedActivities.forEach(act => offlineSync.storeOfflineActivity(act));
-          setEditingActivity(null);
-          setIsAddModalOpen(false);
+        onEditActivity={async (updatedActivity) => {
+          try {
+            if (user && dbBabyProfile) {
+              await updateActivity(updatedActivity.id, {
+                type: updatedActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
+                logged_at: new Date().toISOString(), // Use current time for simplicity
+                details: updatedActivity.details
+              });
+            } else {
+              // For guest users, update local state and localStorage
+              const updatedActivities = guestActivities.map(a => 
+                a.id === updatedActivity.id ? updatedActivity : a
+              );
+              setGuestActivities(updatedActivities);
+              localStorage.setItem('initialActivities', JSON.stringify(updatedActivities));
+            }
+            setEditingActivity(null);
+            setIsAddModalOpen(false);
+          } catch (error) {
+            console.error('Error updating activity:', error);
+          }
         }}
       />
 
