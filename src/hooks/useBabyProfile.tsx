@@ -115,20 +115,61 @@ export function useBabyProfile() {
 
     try {
       // Ensure we have a valid session before creating the profile
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No valid session found');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw new Error('Failed to get user session');
+      }
+      
+      if (!session) {
+        console.error('No session found, attempting to refresh...');
+        // Try to refresh the session
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshData.session) {
+          throw new Error('No valid session found and refresh failed');
+        }
+        console.log('Session refreshed successfully');
+      }
+      
+      const currentSession = session || (await supabase.auth.getSession()).data.session;
+      if (!currentSession?.user?.id) {
+        throw new Error('No user ID in session');
+      }
+
+      // Check if the session is still valid (not expired)
+      const now = new Date().getTime() / 1000;
+      if (currentSession.expires_at && currentSession.expires_at < now) {
+        throw new Error('Session has expired');
+      }
+
+      console.log('Creating baby profile with user ID:', currentSession.user.id);
+      console.log('Session details:', { 
+        userId: currentSession.user.id, 
+        userEmail: currentSession.user.email,
+        sessionExpiry: currentSession.expires_at,
+        timeUntilExpiry: currentSession.expires_at ? (currentSession.expires_at - now) : 'unknown'
+      });
 
       const { data, error } = await supabase
         .from('baby_profiles')
         .insert({
           name,
           birthday: birthday || null,
-          created_by: session.user.id
+          created_by: currentSession.user.id
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Baby profile creation error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw error;
+      }
 
       setBabyProfile(data);
       
@@ -142,13 +183,42 @@ export function useBabyProfile() {
       });
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating baby profile:', error);
-      toast({
-        title: "Error creating profile",
-        description: "Please try again.",
-        variant: "destructive"
+      
+      // Check current auth state when error occurs
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Auth state during error:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        isAuthenticated: !!user,
+        errorMessage: error.message,
+        errorCode: error.code
       });
+      
+      // If this is an RLS error and we have a valid session, it might be a timing issue
+      if (error.message?.includes('row-level security') && session?.user?.id) {
+        console.log('RLS error detected with valid session, this may be a database configuration issue');
+        toast({
+          title: "Database Error",
+          description: "There's an issue with database permissions. Please contact support.",
+          variant: "destructive"
+        });
+      } else if (!session) {
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in again to continue.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error creating profile",
+          description: "Please try again.",
+          variant: "destructive"
+        });
+      }
+      
       throw error;
     }
   };
