@@ -114,12 +114,16 @@ export function useBabyProfile() {
     if (!user) throw new Error('User not authenticated');
 
     try {
+      // Ensure we have a valid session before creating the profile
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No valid session found');
+
       const { data, error } = await supabase
         .from('baby_profiles')
         .insert({
           name,
           birthday: birthday || null,
-          created_by: user.id
+          created_by: session.user.id
         })
         .select()
         .single();
