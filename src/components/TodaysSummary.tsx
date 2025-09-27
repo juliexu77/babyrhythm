@@ -171,10 +171,10 @@ stats.totalNapDuration = Math.round((totalNapMinutes / 60) * 10) / 10;
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {availableDates.map((date, index) => (
+            <DropdownMenuContent align="end" className="bg-popover border border-border z-50">
+              {availableDates.map((date) => (
                 <DropdownMenuItem 
-                  key={index}
+                  key={date.dateStr}
                   onClick={() => setSelectedDate(date)}
                   className={selectedDate.dateStr === date.dateStr ? "bg-accent" : ""}
                 >
@@ -202,10 +202,10 @@ stats.totalNapDuration = Math.round((totalNapMinutes / 60) * 10) / 10;
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {availableDates.map((date, index) => (
+            <DropdownMenuContent align="end" className="bg-popover border border-border z-50">
+              {availableDates.map((date) => (
                 <DropdownMenuItem 
-                  key={index}
+                  key={date.dateStr}
                   onClick={() => setSelectedDate(date)}
                   className={selectedDate.dateStr === date.dateStr ? "bg-accent" : ""}
                 >

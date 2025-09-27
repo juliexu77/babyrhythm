@@ -125,7 +125,7 @@ export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = fals
           </div>
           <div className="space-y-1">
             {insights.slice(0, 2).map((insight, index) => (
-              <div key={index} className="text-xs text-muted-foreground bg-background/50 rounded p-2">
+              <div key={`insight-${insight.type}-${index}`} className="text-xs text-muted-foreground bg-background/50 rounded p-2">
                 {insight.message}
               </div>
             ))}

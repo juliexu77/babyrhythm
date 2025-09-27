@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,21 +14,32 @@ import { useToast } from "@/hooks/use-toast";
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
 
   useEffect(() => {
+    const redirectTo = searchParams.get('redirect');
+    
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/baby-setup");
+        if (redirectTo) {
+          navigate(redirectTo);
+        } else {
+          navigate("/baby-setup");
+        }
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/baby-setup");
+        if (redirectTo) {
+          navigate(redirectTo);
+        } else {
+          navigate("/baby-setup");
+        }
       }
     });
 
