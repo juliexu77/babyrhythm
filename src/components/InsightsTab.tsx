@@ -3,16 +3,24 @@ import { PatternInsights } from "./PatternInsights";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Baby, Clock, Milk, Moon, Lightbulb } from "lucide-react";
 import { calculateAgeInWeeks, getWakeWindowForAge, getFeedingGuidanceForAge } from "@/utils/huckleberrySchedules";
+import { useBabyProfile } from "@/hooks/useBabyProfile";
 
 interface InsightsTabProps {
   activities: Activity[];
 }
 
 export const InsightsTab = ({ activities }: InsightsTabProps) => {
-  // Get baby's age for age-appropriate guidance
+  const { babyProfile: dbBabyProfile } = useBabyProfile();
+  
+  // Get baby's age for age-appropriate guidance - prioritize database
   const getBabyProfile = () => {
-    const profile = localStorage.getItem('babyProfile');
-    return profile ? JSON.parse(profile) : null;
+    if (dbBabyProfile) {
+      return dbBabyProfile;
+    } else {
+      // Fallback to localStorage for guest users
+      const profile = localStorage.getItem('babyProfile');
+      return profile ? JSON.parse(profile) : null;
+    }
   };
 
   const babyProfile = getBabyProfile();
