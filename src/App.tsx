@@ -33,7 +33,7 @@ const App = () => (
           <BrowserRouter>
             <RouteGuard>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/auth" replace />} />
+                  <Route path="/" element={<Navigate to="/onboarding" replace />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/app" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />

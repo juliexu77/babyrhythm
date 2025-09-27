@@ -11,19 +11,19 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     if (loading) return;
 
     // Require authentication for all protected routes
-    const publicRoutes = ['/auth', '/invite'];
+    const publicRoutes = ['/auth', '/invite', '/onboarding'];
     const isPublicRoute = publicRoutes.some(route => 
       location.pathname === route || location.pathname.startsWith(route + '/')
     );
 
-    // Redirect unauthenticated users to auth page
+    // Redirect unauthenticated users to onboarding first
     if (!user && !isPublicRoute) {
-      navigate("/auth", { replace: true });
+      navigate("/onboarding", { replace: true });
       return;
     }
 
-    // Redirect authenticated users away from auth page
-    if (user && location.pathname === "/auth") {
+    // Redirect authenticated users away from auth and onboarding pages
+    if (user && (location.pathname === "/auth" || location.pathname === "/onboarding")) {
       navigate("/baby-setup", { replace: true });
       return;
     }
