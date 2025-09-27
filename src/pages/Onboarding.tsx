@@ -39,7 +39,7 @@ const Onboarding = () => {
           </div>
 
           {/* CTA */}
-          <div className="space-y-4 pt-8">
+          <div className="pt-8">
             <Button 
               onClick={() => navigate("/auth")}
               size="lg"
@@ -47,10 +47,6 @@ const Onboarding = () => {
             >
               {t('getStarted')}
             </Button>
-            
-            <p className="text-sm text-muted-foreground">
-              {t('freeToUse')} • {t('setupInMinutes')}
-            </p>
           </div>
         </div>
       </div>
