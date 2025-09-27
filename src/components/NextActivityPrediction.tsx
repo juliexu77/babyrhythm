@@ -212,11 +212,11 @@ const getActivityColor = (type: string) => {
 };
 
 return (
-  <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-    <div className="flex items-center justify-between mb-4">
+  <div className="bg-card rounded-xl p-4 shadow-card border border-border">
+    <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
-        <Clock className="w-5 h-5 text-muted-foreground" />
-        <h3 className="text-lg font-serif font-medium text-foreground">
+        <Clock className="w-4 h-4 text-muted-foreground" />
+        <h3 className="text-base font-serif font-medium text-foreground">
           Next Predicted Action
         </h3>
       </div>
@@ -257,25 +257,25 @@ return (
     ) : (
       // Expanded state - full card
       <div
-        className={`flex items-center gap-4 p-4 rounded-lg ${getActivityColor(nextActivity.type)} cursor-pointer`}
+        className={`flex items-center gap-3 p-3 rounded-lg ${getActivityColor(nextActivity.type)} cursor-pointer`}
         onClick={() => setOpen(true)}
         role="button"
         aria-label="See why this prediction was made"
       >
         <div className="flex-shrink-0">
-          {nextActivity.type === "insufficient_data" ? <Clock className="h-5 w-5" /> : getActivityIcon(nextActivity.type)}
+          {nextActivity.type === "insufficient_data" ? <Clock className="h-4 w-4" /> : getActivityIcon(nextActivity.type)}
         </div>
         <div className="flex-1">
-          <h4 className="font-medium text-foreground capitalize mb-1">
+          <h4 className="font-medium text-foreground capitalize mb-0.5">
             {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
           </h4>
           {nextActivity.type !== "insufficient_data" && (
             <>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-sm text-muted-foreground mb-0.5">
                 Suggested time: {nextActivity.suggestedTime}
               </p>
               {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-sm text-muted-foreground mb-1">
                   Anticipated: {nextActivity.anticipatedTime}
                 </p>
               )}

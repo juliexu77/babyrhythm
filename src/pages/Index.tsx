@@ -179,8 +179,8 @@ const Index = () => {
         return (
           <>
             {/* Activities Timeline */}
-            <div className="px-4 py-6">              
-              <div className="space-y-6 pb-20">
+            <div className="px-4 py-4">              
+              <div className="space-y-4 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <p>No activities yet. Start by adding your first activity!</p>
@@ -238,14 +238,14 @@ const Index = () => {
 
                       return (
                         <div key={dateString}>
-                          <div className="space-y-3">
+                          <div className="space-y-2">
                             {/* Date Header */}
-                            <h3 className="text-lg font-serif font-medium text-foreground border-b border-border pb-2">
+                            <h3 className="text-base font-serif font-medium text-foreground border-b border-border pb-1 mb-2">
                               {displayDate}
                             </h3>
                             
                             {/* Activities for this date */}
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                               {activityGroups[dateString].map((activity) => (
                                 <ActivityCard
                                   key={activity.id}
@@ -260,7 +260,7 @@ const Index = () => {
                           
                           {/* Next Predicted Action - Show after Today's activities */}
                           {dateString === today && activities.length > 0 && (
-                            <div className="mt-6 mb-6">
+                            <div className="mt-4 mb-4">
                               <NextActivityPrediction activities={activities} />
                             </div>
                           )}
