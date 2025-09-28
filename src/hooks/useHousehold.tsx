@@ -70,61 +70,27 @@ export const useHousehold = () => {
     try {
       console.log('Fetching household for user:', user.id);
       
-      // Try to use the active household from localStorage first
-      let preferredHouseholdId: string | null = null;
-      try {
-        preferredHouseholdId = localStorage.getItem('active_household_id');
-      } catch {}
-      
-      let householdId: string | null = null;
+      // Get household through collaborator relationship
+      const { data: collaboratorData, error: collaboratorError } = await supabase
+        .from('collaborators')
+        .select('household_id')
+        .eq('user_id', user.id)
+        .limit(1);
 
-      if (preferredHouseholdId) {
-        // Verify the user is a collaborator of the preferred household
-        const { data: preferredCollab, error: preferredError } = await supabase
-          .from('collaborators')
-          .select('household_id')
-          .eq('user_id', user.id)
-          .eq('household_id', preferredHouseholdId)
-          .limit(1);
-
-        if (preferredError) {
-          console.error('Error verifying preferred household access:', preferredError);
-        } else if (preferredCollab && preferredCollab.length > 0) {
-          householdId = preferredCollab[0].household_id;
-        }
+      if (collaboratorError) {
+        console.error('Error fetching collaborator data:', collaboratorError);
+        setLoading(false);
+        return;
       }
 
-      if (!householdId) {
-        // Fallback to the oldest (original) household as default
-        const { data: collaboratorData, error: collaboratorError } = await supabase
-          .from('collaborators')
-          .select('household_id, created_at')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: true })
-          .limit(1);
-
-        if (collaboratorError) {
-          console.error('Error fetching collaborator data:', collaboratorError);
-          setLoading(false);
-          return;
-        }
-
-        if (!collaboratorData || collaboratorData.length === 0) {
-          console.log('No household found for user');
-          setHousehold(null);
-          setLoading(false);
-          return;
-        }
-
-        householdId = collaboratorData[0].household_id;
-
-        // Persist as active if none was set
-        try {
-          if (!preferredHouseholdId) {
-            localStorage.setItem('active_household_id', householdId);
-          }
-        } catch {}
+      if (!collaboratorData || collaboratorData.length === 0) {
+        console.log('No household found for user');
+        setHousehold(null);
+        setLoading(false);
+        return;
       }
+
+      const householdId = collaboratorData[0].household_id;
 
       // Fetch the actual household data
       const { data: householdData, error: householdError } = await supabase
@@ -315,28 +281,9 @@ export const useHousehold = () => {
         throw error;
       }
 
-      const householdId = data as string;
-
-      // Remember this as the active household
-      try {
-        localStorage.setItem('active_household_id', householdId);
-      } catch {}
-
-      // Fetch and set the accepted household as current
-      const { data: householdData, error: householdError } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', householdId)
-        .single();
-
-      if (householdError) {
-        console.error('Error fetching accepted household:', householdError);
-        throw householdError;
-      }
-
-      setHousehold(householdData);
-      await fetchCollaborators(householdId);
-      return householdId;
+      // Refresh household data
+      await fetchHousehold();
+      return data;
     } catch (error) {
       console.error('Error in acceptInvite:', error);
       throw error;
