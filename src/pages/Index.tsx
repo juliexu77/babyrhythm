@@ -14,7 +14,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronDown, ChevronUp } from "lucide-react";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -59,6 +59,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [collapsedDays, setCollapsedDays] = useState<Set<string>>(new Set());
   
 
   // Check user authentication and household status
@@ -259,43 +260,76 @@ const Index = () => {
                         });
                       }
 
+                      // Auto-collapse days before yesterday
+                      const shouldAutoCollapse = dateKey !== todayKey && dateKey !== yesterdayKey;
+                      const isCollapsed = shouldAutoCollapse && !collapsedDays.has(dateKey);
+                      
+                      const toggleCollapse = () => {
+                        setCollapsedDays(prev => {
+                          const newSet = new Set(prev);
+                          if (newSet.has(dateKey)) {
+                            newSet.delete(dateKey);
+                          } else {
+                            newSet.add(dateKey);
+                          }
+                          return newSet;
+                        });
+                      };
+
                       return (
                         <div key={dateKey}>
                           <div className="space-y-2">
                             {/* Date Header */}
-                            <h3 className="text-base font-sans font-medium text-foreground border-b border-border pb-1 mb-2 dark:font-bold">
-                              {displayDate}
-                            </h3>
-                            
-                            {/* Activities for this date */}
-                            <div className="space-y-1">
-                              {activityGroups[dateKey].map((activity) => (
-                                <ActivityCard
-                                  key={activity.id}
-                                  activity={activity}
-                                  babyName={babyProfile?.name}
-                                  onEdit={(activity) => setEditingActivity(activity)}
-                                  onDelete={async (activityId) => {
-                                    try {
-                                      const { error } = await supabase
-                                        .from('activities')
-                                        .delete()
-                                        .eq('id', activityId);
-                                      
-                                      if (error) throw error;
-                                      refetchActivities();
-                                    } catch (error) {
-                                      console.error('Error deleting activity:', error);
-                                      toast({
-                                        title: "Error deleting activity",
-                                        description: "Please try again.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                />
-                              ))}
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-base font-sans font-medium text-foreground border-b border-border pb-1 mb-2 dark:font-bold flex-1">
+                                {displayDate}
+                              </h3>
+                              {shouldAutoCollapse && (
+                                <button
+                                  onClick={toggleCollapse}
+                                  className="p-1 hover:bg-accent rounded-md transition-colors ml-2"
+                                  aria-label={isCollapsed ? "Expand" : "Collapse"}
+                                >
+                                  {isCollapsed ? (
+                                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                  ) : (
+                                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </button>
+                              )}
                             </div>
+                            
+                            {/* Activities for this date - only show if not collapsed */}
+                            {!isCollapsed && (
+                              <div className="space-y-1">
+                                {activityGroups[dateKey].map((activity) => (
+                                  <ActivityCard
+                                    key={activity.id}
+                                    activity={activity}
+                                    babyName={babyProfile?.name}
+                                    onEdit={(activity) => setEditingActivity(activity)}
+                                    onDelete={async (activityId) => {
+                                      try {
+                                        const { error } = await supabase
+                                          .from('activities')
+                                          .delete()
+                                          .eq('id', activityId);
+                                        
+                                        if (error) throw error;
+                                        refetchActivities();
+                                      } catch (error) {
+                                        console.error('Error deleting activity:', error);
+                                        toast({
+                                          title: "Error deleting activity",
+                                          description: "Please try again.",
+                                          variant: "destructive"
+                                        });
+                                      }
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
                           
                           {/* Next Predicted Action - Show after Today's activities */}
