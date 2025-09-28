@@ -70,28 +70,61 @@ export const useHousehold = () => {
     try {
       console.log('Fetching household for user:', user.id);
       
-      // Get household through collaborator relationship
-      const { data: collaboratorData, error: collaboratorError } = await supabase
-        .from('collaborators')
-        .select('household_id, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+      // Try to use the active household from localStorage first
+      let preferredHouseholdId: string | null = null;
+      try {
+        preferredHouseholdId = localStorage.getItem('active_household_id');
+      } catch {}
+      
+      let householdId: string | null = null;
 
-      if (collaboratorError) {
-        console.error('Error fetching collaborator data:', collaboratorError);
-        setLoading(false);
-        return;
+      if (preferredHouseholdId) {
+        // Verify the user is a collaborator of the preferred household
+        const { data: preferredCollab, error: preferredError } = await supabase
+          .from('collaborators')
+          .select('household_id')
+          .eq('user_id', user.id)
+          .eq('household_id', preferredHouseholdId)
+          .limit(1);
+
+        if (preferredError) {
+          console.error('Error verifying preferred household access:', preferredError);
+        } else if (preferredCollab && preferredCollab.length > 0) {
+          householdId = preferredCollab[0].household_id;
+        }
       }
 
-      if (!collaboratorData || collaboratorData.length === 0) {
-        console.log('No household found for user');
-        setHousehold(null);
-        setLoading(false);
-        return;
-      }
+      if (!householdId) {
+        // Fallback to the oldest (original) household as default
+        const { data: collaboratorData, error: collaboratorError } = await supabase
+          .from('collaborators')
+          .select('household_id, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true })
+          .limit(1);
 
-      const householdId = collaboratorData[0].household_id;
+        if (collaboratorError) {
+          console.error('Error fetching collaborator data:', collaboratorError);
+          setLoading(false);
+          return;
+        }
+
+        if (!collaboratorData || collaboratorData.length === 0) {
+          console.log('No household found for user');
+          setHousehold(null);
+          setLoading(false);
+          return;
+        }
+
+        householdId = collaboratorData[0].household_id;
+
+        // Persist as active if none was set
+        try {
+          if (!preferredHouseholdId) {
+            localStorage.setItem('active_household_id', householdId);
+          }
+        } catch {}
+      }
 
       // Fetch the actual household data
       const { data: householdData, error: householdError } = await supabase
