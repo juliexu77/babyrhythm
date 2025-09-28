@@ -487,13 +487,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         <Label className="text-sm font-medium mb-2 block">Amount</Label>
                         <Button
                           variant="outline"
-                          className="w-full h-12 text-left justify-between"
+                          className="w-full h-12 text-left"
                           onClick={() => setShowKeypad(true)}
                         >
                           <span className="text-foreground">
                             {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
                           </span>
-                          <span className="text-muted-foreground text-xs">Enter</span>
                         </Button>
                       </div>
                       <div className="flex items-center space-x-2 pb-2">
