@@ -111,16 +111,27 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       }
     }
 
-    // Analyze nap patterns
-    const naps = activities.filter(a => a.type === 'nap');
+    // Analyze nap patterns - filter for today's naps only
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+    
+    const naps = activities.filter(a => {
+      if (a.type !== 'nap') return false;
+      if (!a.loggedAt) return true; // Include if no timestamp (fallback)
+      const activityDate = new Date(a.loggedAt);
+      return activityDate >= todayStart && activityDate < todayEnd;
+    });
+    
     if (naps.length >= 2) {
       insights.push({
         icon: Moon,
-        text: `Taking ${naps.length} naps on average`,
+        text: `Taking ${naps.length} naps today`,
         confidence: 'medium',
         type: 'sleep',
         details: {
-          description: `Recorded ${naps.length} nap activities. Here are the nap times:`,
+          description: `Recorded ${naps.length} nap activities today. Here are the nap times:`,
           data: naps.map(nap => ({
             activity: nap,
             value: nap.details.startTime && nap.details.endTime 
