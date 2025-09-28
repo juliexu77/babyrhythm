@@ -119,6 +119,16 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
             );
           })}
         </div>
+        
+        {/* Informational footer */}
+        <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <span className="text-purple-600 text-lg">💡</span>
+            <p className="text-sm text-purple-700">
+              These patterns are based on your recent activities. The more you track, the more accurate they become!
+            </p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
