@@ -566,44 +566,6 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       }
     }
 
-    // 7. Peak Feeding Times Analysis
-    if (feeds.length >= 6) {
-      const feedingHours = feeds.map(feed => Math.floor(getTimeInMinutes(feed.time) / 60));
-      const hourCounts = new Map<number, number>();
-      
-      feedingHours.forEach(hour => {
-        hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
-      });
-
-      const sortedHours = Array.from(hourCounts.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 2);
-
-      if (sortedHours.length >= 2 && sortedHours[0][1] >= 2) {
-        const peakHour1 = sortedHours[0][0];
-        const peakHour2 = sortedHours[1][0];
-        const formatHour = (h: number) => `${h === 0 ? 12 : h > 12 ? h - 12 : h}${h >= 12 ? 'PM' : 'AM'}`;
-        
-        additionalInsights.push({
-          icon: Baby,
-          text: `Peak feeding times: ${formatHour(peakHour1)}-${formatHour(peakHour1 + 1)} & ${formatHour(peakHour2)}-${formatHour(peakHour2 + 1)}`,
-          confidence: 'medium',
-          type: 'feeding',
-          details: {
-            description: `Most feeds occur between ${formatHour(peakHour1)}-${formatHour(peakHour1 + 1)} (${sortedHours[0][1]} feeds) and ${formatHour(peakHour2)}-${formatHour(peakHour2 + 1)} (${sortedHours[1][1]} feeds).`,
-            data: feeds.filter(feed => {
-              const hour = Math.floor(getTimeInMinutes(feed.time) / 60);
-              return hour === peakHour1 || hour === peakHour2;
-            }).slice(-6).map(feed => ({
-              activity: feed,
-              value: feed.time,
-              calculation: `Peak time feeding`
-            })),
-            calculation: `Analysis of ${feeds.length} feeding times`
-          }
-        });
-      }
-    }
 
     // 8. Nursing Duration Patterns (if nursing data exists)
     const nursingFeeds = feeds.filter(feed => 
@@ -688,67 +650,6 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       }
     }
 
-    // 15. Activity Clustering Analysis
-    if (activities.length >= 8) {
-      const activityTimes = activities.map(a => ({
-        time: getTimeInMinutes(a.time),
-        activity: a
-      }));
-
-      // Find busy periods (3+ activities within 2 hours)
-      const busyPeriods: Array<{ start: number; end: number; activities: Activity[]; count: number }> = [];
-      
-      for (let i = 0; i < activityTimes.length - 2; i++) {
-        const windowStart = activityTimes[i].time;
-        const activitiesInWindow = activityTimes.filter(a => {
-          const timeDiff = Math.abs(a.time - windowStart);
-          return timeDiff <= 120; // Within 2 hours
-        });
-
-        if (activitiesInWindow.length >= 3) {
-          const times = activitiesInWindow.map(a => a.time).sort((a, b) => a - b);
-          busyPeriods.push({
-            start: times[0],
-            end: times[times.length - 1],
-            activities: activitiesInWindow.map(a => a.activity),
-            count: activitiesInWindow.length
-          });
-        }
-      }
-
-      // Remove overlapping periods and keep most significant ones
-      const uniqueBusyPeriods = busyPeriods
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 2);
-
-      if (uniqueBusyPeriods.length >= 1) {
-        const formatTime = (minutes: number) => {
-          const h = Math.floor(minutes / 60);
-          const m = minutes % 60;
-          return `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
-        };
-
-        const period = uniqueBusyPeriods[0];
-        const startTime = formatTime(period.start);
-        const endTime = formatTime(period.end);
-
-        additionalInsights.push({
-          icon: Clock,
-          text: `Busy period: ${startTime} - ${endTime} (${period.count} activities)`,
-          confidence: 'medium',
-          type: 'general',
-          details: {
-            description: `Most activity clusters around ${startTime} - ${endTime} with ${period.count} activities typically happening during this window.`,
-            data: period.activities.slice(-5).map(activity => ({
-              activity,
-              value: activity.time,
-              calculation: `${activity.type} during busy period`
-            })),
-            calculation: `${period.count} activities within 2-hour window`
-          }
-        });
-      }
-    }
 
     // Rotation system: Show key insights + rotating selection
     const keyInsights = insights.filter(i => 
