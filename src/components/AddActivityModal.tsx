@@ -481,18 +481,35 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {/* Dynamic amount/details based on feed type */}
                 {feedType === "bottle" && (
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block">Amount</Label>
-                    <Button
-                      variant="outline"
-                      className="w-full h-12 text-left justify-between"
-                      onClick={() => setShowKeypad(true)}
-                    >
-                      <span className="text-foreground">
-                        {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
-                      </span>
-                      <span className="text-muted-foreground text-xs">Enter</span>
-                    </Button>
+                  <div className="space-y-3">
+                    <div className="flex items-end gap-3">
+                      <div className="flex-1">
+                        <Label className="text-sm font-medium mb-2 block">Amount</Label>
+                        <Button
+                          variant="outline"
+                          className="w-full h-12 text-left justify-between"
+                          onClick={() => setShowKeypad(true)}
+                        >
+                          <span className="text-foreground">
+                            {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
+                          </span>
+                          <span className="text-muted-foreground text-xs">Enter</span>
+                        </Button>
+                      </div>
+                      <div className="flex items-center space-x-2 pb-2">
+                        <Checkbox
+                          id="dream-feed"
+                          checked={isDreamFeed}
+                          onCheckedChange={(checked) => setIsDreamFeed(checked === true)}
+                        />
+                        <Label 
+                          htmlFor="dream-feed" 
+                          className="text-sm font-medium cursor-pointer whitespace-nowrap"
+                        >
+                          Dream feed
+                        </Label>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -537,21 +554,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     />
                   </div>
                  )}
-
-                {/* Dream Feed Checkbox */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="dream-feed"
-                    checked={isDreamFeed}
-                    onCheckedChange={(checked) => setIsDreamFeed(checked === true)}
-                  />
-                  <Label 
-                    htmlFor="dream-feed" 
-                    className="text-sm font-medium cursor-pointer"
-                  >
-                    Dream feed (baby stayed asleep)
-                  </Label>
-                </div>
 
                 <div>
                   <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">Notes</Label>
