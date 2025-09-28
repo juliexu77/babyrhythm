@@ -47,7 +47,7 @@ const addMinutesToTime = (timeString: string, minutes: number): string => {
 
 export const NextActivityPrediction = ({ activities }: NextActivityPredictionProps) => {
   const { t } = useLanguage();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const { household } = useHousehold();
   
   // Use the new prediction engine but adapt to old UI format
