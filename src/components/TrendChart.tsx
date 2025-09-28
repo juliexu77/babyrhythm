@@ -38,10 +38,17 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       // Filter activities for this specific date using loggedAt timestamp
       const dayFeeds = activities.filter(a => {
         if (a.type !== "feed" || !a.loggedAt) return false;
+        // Use consistent date grouping approach
         const activityDate = new Date(a.loggedAt);
-        const activityDateStr = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const targetDateStr = date.toLocaleDateString('en-CA');
-        return activityDateStr === targetDateStr;
+        const localDateStr = activityDate.toDateString();
+        const localDate = new Date(localDateStr);
+        const activityDateKey = localDate.getFullYear() + '-' + 
+                               String(localDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                               String(localDate.getDate()).padStart(2, '0');
+        const targetDateKey = date.getFullYear() + '-' + 
+                             String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                             String(date.getDate()).padStart(2, '0');
+        return activityDateKey === targetDateKey;
       });
       
       let totalValue = 0;
@@ -98,10 +105,17 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       // Filter activities for this specific date using loggedAt timestamp
       const dayNaps = activities.filter(a => {
         if (a.type !== "nap" || !a.loggedAt) return false;
+        // Use consistent date grouping approach
         const activityDate = new Date(a.loggedAt);
-        const activityDateStr = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const targetDateStr = date.toLocaleDateString('en-CA');
-        return activityDateStr === targetDateStr;
+        const localDateStr = activityDate.toDateString();
+        const localDate = new Date(localDateStr);
+        const activityDateKey = localDate.getFullYear() + '-' + 
+                               String(localDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                               String(localDate.getDate()).padStart(2, '0');
+        const targetDateKey = date.getFullYear() + '-' + 
+                             String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                             String(date.getDate()).padStart(2, '0');
+        return activityDateKey === targetDateKey;
       });
       
       let totalHours = 0;

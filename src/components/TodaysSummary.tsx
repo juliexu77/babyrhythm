@@ -36,9 +36,15 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
+      // Use consistent local date formatting
+      const localDateStr = date.toDateString();
+      const localDate = new Date(localDateStr);
+      const dateKey = localDate.getFullYear() + '-' + 
+                     String(localDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(localDate.getDate()).padStart(2, '0');
       dates.push({
         date: date,
-        dateStr: date.toISOString().split('T')[0],
+        dateStr: dateKey,
         label: i === 0 ? "Today" : i === 1 ? "Yesterday" : date.toLocaleDateString("en-US", { 
           weekday: "short", 
           month: "short", 
