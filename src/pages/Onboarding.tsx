@@ -14,7 +14,10 @@ const Onboarding = () => {
       {/* Language and Theme Toggles */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">
         <LanguageToggle />
-        <ThemeToggle showText={false} />
+        <div className="relative">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full blur opacity-75 animate-pulse"></div>
+          <ThemeToggle showText={false} />
+        </div>
       </div>
       
       {/* Main Content */}
