@@ -1,7 +1,11 @@
-import { useState } from "react";
 import { Activity } from "./ActivityCard";
 import { Clock, Baby, Moon, Palette, ChevronDown, ChevronUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { isDaytimeActivity, isNightActivity, getNaps, getNighttimeSleep, getDaytimeFeeds, getNightFeeds } from "@/utils/patternAnalysis";
 
 interface NextActivityPredictionProps {
   activities: Activity[];
@@ -21,9 +25,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   };
 
   const getTimeInMinutes = (timeString: string) => {
-    // Handle time ranges (e.g., "2:30 PM - 3:30 PM") by extracting start time
     const startTime = timeString.includes(' - ') ? timeString.split(' - ')[0] : timeString;
-    
     const [time, period] = startTime.split(' ');
     const [hours, minutes] = time.split(':').map(Number);
     let totalMinutes = (hours % 12) * 60 + minutes;
@@ -36,7 +38,6 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const timeInMinutes = getTimeInMinutes(timeString);
     let totalMinutes = timeInMinutes + minutes;
     
-    // Handle day boundary properly - ensure positive result
     while (totalMinutes < 0) {
       totalMinutes += (24 * 60);
     }
@@ -50,551 +51,313 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   };
 
   const predictNextActivity = () => {
-    console.log('🚀 NextActivityPrediction running with', activities.length, 'activities');
-    
     const currentTime = getCurrentTime();
     const currentMinutes = getTimeInMinutes(currentTime);
     
-    console.log('⏰ Time check:', { currentTime, currentMinutes });
+    // Group activities by type and time context
+    const daytimeFeeds = getDaytimeFeeds(activities);
+    const nightFeeds = getNightFeeds(activities);
+    const naps = getNaps(activities);
+    const nighttimeSleep = getNighttimeSleep(activities);
     
-    // Check if we have minimum required data for predictions
-    const feedActivities = activities.filter(a => a.type === "feed");
-    const napActivities = activities.filter(a => a.type === "nap");
+    const canPredictFeeds = daytimeFeeds.length >= 2 || nightFeeds.length >= 2;
+    const canPredictNaps = naps.length >= 2 || nighttimeSleep.length >= 2;
     
-    const canPredictFeeds = feedActivities.length >= 2;
-    const canPredictNaps = napActivities.length >= 2;
-    
-    // Detect if baby is currently napping (robust: prefer details.startTime)
-    const currentlyNapping = napActivities.find(nap => {
+    // Detect if baby is currently napping (check both naps and nighttime sleep)
+    const allSleepActivities = [...naps, ...nighttimeSleep];
+    const currentlyNapping = allSleepActivities.find(nap => {
       const noEnd = !nap.details.endTime || nap.details.endTime === "";
-      console.log('🛌 Checking nap for current status:', {
-        napId: nap.id,
-        napTime: nap.time,
-        startTime: nap.details.startTime,
-        endTime: nap.details.endTime,
-        noEnd
-      });
-      
-      if (!noEnd) return false;
-      const startStr = nap.details.startTime || (nap.time.includes(' - ') ? nap.time.split(' - ')[0] : nap.time);
-      const napStartMinutes = getTimeInMinutes(startStr);
-      let timeSinceNapStart = currentMinutes - napStartMinutes;
-      if (timeSinceNapStart < 0) timeSinceNapStart += (24 * 60);
-      
-      console.log('🛌 Nap timing details:', {
-        startStr,
-        napStartMinutes,
-        currentMinutes,
-        timeSinceNapStart,
-        withinWindow: timeSinceNapStart <= 6 * 60
-      });
-      
-      // Consider napping if started within 6 hours and no end time
-      return timeSinceNapStart <= 6 * 60;
+      return noEnd;
     });
+
+    const totalFeeds = daytimeFeeds.length + nightFeeds.length;
+    const totalNaps = naps.length + nighttimeSleep.length;
     
-    console.log('🕒 Prediction Debug - Starting:', {
-      currentTime,
-      currentMinutes,
-      activitiesCount: activities.length,
-      currentlyNapping: !!currentlyNapping,
-      napStartTime: currentlyNapping?.time,
-      napDetails: currentlyNapping?.details,
-      activities: activities.slice(0, 3).map(a => ({ type: a.type, time: a.time, loggedAt: a.loggedAt }))
-    });
-    
-    // CRITICAL: If baby is currently napping, NEVER predict another nap
-    if (currentlyNapping) {
-      console.log('🛌 BLOCKING nap prediction - baby is currently napping:', {
-        currentNap: currentlyNapping.time,
-        napDetails: currentlyNapping.details
-      });
+    if (totalFeeds === 0 && totalNaps === 0) {
+      return null;
     }
+
+    let nextFeedPrediction: any = null;
+    let nextNapPrediction: any = null;
+
+    // Context-aware feed prediction
+    const isCurrentlyDaytime = isDaytimeActivity(currentTime);
+    const relevantFeeds = isCurrentlyDaytime ? daytimeFeeds : nightFeeds;
+    const feedContext = isCurrentlyDaytime ? "daytime" : "night";
     
-    console.log('🔍 Activities Filter:', {
-      totalActivities: activities.length,
-      feedActivities: feedActivities.length,
-      napActivities: napActivities.length,
-      canPredictFeeds,
-      canPredictNaps
-    });
-    
-    if (!canPredictFeeds && !canPredictNaps) {
-      return {
-        type: "feed",
-        anticipatedTime: undefined,
-        confidence: 'low' as const,
-        reason: "Gathering data to make predictions",
-        details: {
-          description: "Once enough activities are logged, intelligent predictions will appear here based on your baby's patterns.",
-          data: [],
-          calculation: "Minimum 2 activities of each type needed for pattern analysis"
+    if (relevantFeeds.length >= 2 && canPredictFeeds) {
+      const intervals: Array<{ interval: number; feed1: Activity; feed2: Activity }> = [];
+      for (let i = 1; i < relevantFeeds.length; i++) {
+        const current = getTimeInMinutes(relevantFeeds[i-1].time);
+        const previous = getTimeInMinutes(relevantFeeds[i].time);
+        let interval = current - previous;
+        
+        if (interval < 0) {
+          interval += 24 * 60;
         }
-      };
-    }
-
-    // Calculate feed-to-feed intervals
-    const feedIntervals: number[] = [];
-    for (let i = 0; i < feedActivities.length - 1; i++) {
-      const newer = getTimeInMinutes(feedActivities[i].time);
-      const older = getTimeInMinutes(feedActivities[i + 1].time);
-      let interval = newer - older;
-      if (interval < 0) interval = (24 * 60) + interval;
-      if (interval > 0 && interval < 12 * 60) {
-        feedIntervals.push(interval);
-      }
-    }
-
-    // Calculate sleep-to-sleep intervals
-    const sleepIntervals: number[] = [];
-    const sleepTimes: number[] = [];
-    for (let i = 0; i < napActivities.length - 1; i++) {
-      const newer = getTimeInMinutes(napActivities[i].time);
-      const older = getTimeInMinutes(napActivities[i + 1].time);
-      let interval = newer - older;
-      if (interval < 0) interval = (24 * 60) + interval;
-      if (interval > 0 && interval < 12 * 60) {
-        sleepIntervals.push(interval);
-      }
-    }
-    napActivities.forEach(nap => {
-      sleepTimes.push(getTimeInMinutes(nap.time));
-    });
-
-    const lastActivity = activities[0];
-    if (!lastActivity) {
-      return {
-        type: "feed",
-        anticipatedTime: undefined,
-        confidence: 'low' as const,
-        reason: "Start your day with a feeding",
-        details: {
-          description: "No activities logged today yet. Typically, the day starts with a feeding.",
-          data: [],
-          calculation: "Based on general feeding patterns"
-        }
-      };
-    }
-
-    const lastActivityTime = getTimeInMinutes(lastActivity.time);
-    let timeSinceLastActivity = currentMinutes - lastActivityTime;
-    if (timeSinceLastActivity < 0) {
-      timeSinceLastActivity = (24 * 60) + timeSinceLastActivity;
-    }
-
-    let nextFeedPrediction = null;
-    let nextNapPrediction = null;
-
-    // Calculate next feed prediction
-    if (canPredictFeeds && feedIntervals.length > 0) {
-      const lastFeed = feedActivities[0];
-      const avgFeedInterval = feedIntervals.reduce((a, b) => a + b, 0) / feedIntervals.length;
-      const lastFeedTime = getTimeInMinutes(lastFeed.time);
-      let timeSinceLastFeed = currentMinutes - lastFeedTime;
-      if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
-      
-      console.log('Feed prediction debug:', {
-        canPredictFeeds,
-        feedIntervalsLength: feedIntervals.length,
-        avgFeedInterval: Math.round(avgFeedInterval),
-        timeSinceLastFeed: Math.round(timeSinceLastFeed),
-        threshold: Math.round(avgFeedInterval - 30),
-        shouldPredict: timeSinceLastFeed >= avgFeedInterval - 30
-      });
-      
-      // Always show feed prediction when we have interval data
-      const anticipatedTime = addMinutesToTime(lastFeed.time, Math.round(avgFeedInterval));
-      const hours = Math.round(avgFeedInterval / 60 * 10) / 10;
-      nextFeedPrediction = {
-        type: "feed",
-        anticipatedTime,
-        confidence: feedIntervals.length >= 5 ? 'high' : feedIntervals.length >= 3 ? 'medium' : 'low',
-        reason: `Usually feeds every ${hours}h`,
-        details: {
-          description: `Based on ${feedIntervals.length} recent feeding intervals, your baby typically feeds every ${hours} hours.`,
-          data: feedIntervals.map((interval, index) => ({
-            activity: feedActivities[index],
-            value: `${Math.round(interval / 60 * 10) / 10}h`,
-            calculation: `Time between feeds`
-          })),
-          calculation: `Average: ${feedIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${feedIntervals.length} = ${hours}h`
-        }
-      };
-    }
-
-    // Calculate next nap prediction using wake windows (time from nap end to next nap start)
-    if (canPredictNaps && !currentlyNapping) {
-      const currentHour = Math.floor(currentMinutes / 60);
-      const isEarlyMorning = currentHour >= 6 && currentHour < 12;
-      const isAfternoon = currentHour >= 12 && currentHour < 18;
-      
-      // Filter naps by time of day for better predictions
-      const morningNaps = napActivities.filter(nap => {
-        const napHour = Math.floor(getTimeInMinutes(nap.time) / 60);
-        return napHour >= 6 && napHour < 12;
-      });
-      
-      const afternoonNaps = napActivities.filter(nap => {
-        const napHour = Math.floor(getTimeInMinutes(nap.time) / 60);
-        return napHour >= 12 && napHour < 18;
-      });
-      
-      // Calculate wake windows (time from end of last nap to start of next nap)
-      const relevantNaps = isEarlyMorning ? morningNaps : isAfternoon ? afternoonNaps : napActivities;
-      const wakeWindows: number[] = [];
-      
-      for (let i = 0; i < relevantNaps.length - 1; i++) {
-        const currentNap = relevantNaps[i];
-        const previousNap = relevantNaps[i + 1];
         
-        // Use end time of previous nap if available, otherwise use start time
-        const previousNapEndTime = previousNap.details.endTime ? 
-          getTimeInMinutes(previousNap.details.endTime) : 
-          getTimeInMinutes(previousNap.time);
+        const minInterval = isCurrentlyDaytime ? 60 : 90;
+        const maxInterval = isCurrentlyDaytime ? 300 : 480;
         
-        const currentNapStartTime = getTimeInMinutes(currentNap.time);
-        
-        let wakeWindow = currentNapStartTime - previousNapEndTime;
-        if (wakeWindow < 0) wakeWindow = (24 * 60) + wakeWindow;
-        
-        // Only include reasonable wake windows (30 minutes to 6 hours)
-        if (wakeWindow >= 30 && wakeWindow <= 6 * 60) {
-          wakeWindows.push(wakeWindow);
+        if (interval >= minInterval && interval <= maxInterval) {
+          intervals.push({
+            interval,
+            feed1: relevantFeeds[i],
+            feed2: relevantFeeds[i-1]
+          });
         }
       }
       
-      const lastNap = napActivities[0];
-      let lastNapEndTime: number;
-      let timeSinceLastNapEnded: number;
-      
-      if (currentlyNapping && lastNap.id === currentlyNapping.id) {
-        // Baby is currently napping - use current time as reference
-        lastNapEndTime = currentMinutes;
-        timeSinceLastNapEnded = 0; // Currently in nap
+      if (intervals.length >= 1) {
+        const avgInterval = intervals.reduce((sum, i) => sum + i.interval, 0) / intervals.length;
+        const lastFeed = relevantFeeds[0];
+        const timeSinceLastFeed = currentMinutes - getTimeInMinutes(lastFeed.time);
         
-        console.log('🛌 Currently napping detected:', {
-          napStartTime: lastNap.time,
-          currentTime,
-          napDuration: currentMinutes - getTimeInMinutes(lastNap.time)
-        });
-      } else {
-        // Use actual end time or start time as fallback
-        lastNapEndTime = lastNap.details.endTime ? 
-          getTimeInMinutes(lastNap.details.endTime) : 
-          getTimeInMinutes(lastNap.time);
+        if (timeSinceLastFeed < avgInterval && avgInterval - timeSinceLastFeed > 10) {
+          const minutesUntilNextFeed = avgInterval - timeSinceLastFeed;
+          const anticipatedTime = addMinutesToTime(currentTime, minutesUntilNextFeed);
+          
+          nextFeedPrediction = {
+            type: "feed",
+            anticipatedTime,
+            confidence: intervals.length >= 4 ? 'high' as const : intervals.length >= 2 ? 'medium' as const : 'low' as const,
+            reason: `${feedContext.charAt(0).toUpperCase() + feedContext.slice(1)} feeding interval pattern`,
+            details: {
+              description: `Based on ${intervals.length} recent ${feedContext} feeding intervals.`,
+              data: intervals.map(({ interval, feed1, feed2 }) => ({
+                activity: feed1,
+                value: `${Math.round(interval / 60 * 10) / 10}h`,
+                calculation: `Time between ${feed2.time} and ${feed1.time}`
+              }))
+            }
+          };
+        }
+      }
+    }
+
+    // Context-aware nap prediction
+    if (!currentlyNapping && isCurrentlyDaytime && naps.length >= 2) {
+      const intervals: Array<{ interval: number; nap1: Activity; nap2: Activity }> = [];
+      for (let i = 1; i < naps.length; i++) {
+        const current = getTimeInMinutes(naps[i-1].time);
+        const previous = getTimeInMinutes(naps[i].time);
+        let interval = current - previous;
         
-        timeSinceLastNapEnded = currentMinutes - lastNapEndTime;
-        if (timeSinceLastNapEnded < 0) timeSinceLastNapEnded += (24 * 60);
+        if (interval < 0) {
+          interval += 24 * 60;
+        }
+        
+        if (interval >= 60 && interval <= 360) {
+          intervals.push({
+            interval,
+            nap1: naps[i],
+            nap2: naps[i-1]
+          });
+        }
       }
       
-      if (wakeWindows.length > 0) {
-        const avgWakeWindow = wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length;
+      if (intervals.length >= 1) {
+        const avgInterval = intervals.reduce((sum, i) => sum + i.interval, 0) / intervals.length;
+        const lastNap = naps[0];
+        const timeSinceLastNap = currentMinutes - getTimeInMinutes(lastNap.time);
         
-        console.log('Nap prediction debug:', {
-          wakeWindowsLength: wakeWindows.length,
-          avgWakeWindow: Math.round(avgWakeWindow),
-          timeSinceLastNapEnded: Math.round(timeSinceLastNapEnded),
-          lastNapEndTime,
-          currentMinutes,
-          isEarlyMorning,
-          isAfternoon
-        });
+        if (timeSinceLastNap < avgInterval && avgInterval - timeSinceLastNap > 15) {
+          const minutesUntilNextNap = avgInterval - timeSinceLastNap;
+          const anticipatedTime = addMinutesToTime(currentTime, minutesUntilNextNap);
+          
+          if (isDaytimeActivity(anticipatedTime)) {
+            nextNapPrediction = {
+              type: "nap",
+              anticipatedTime,
+              confidence: intervals.length >= 3 ? 'high' as const : 'medium' as const,
+              reason: "Daytime nap interval pattern",
+              details: {
+                description: `Based on ${intervals.length} recent nap intervals.`,
+                data: intervals.map(({ interval, nap1, nap2 }) => ({
+                  activity: nap1,
+                  value: `${Math.round(interval / 60 * 10) / 10}h`,
+                  calculation: `Time between ${nap2.time} and ${nap1.time}`
+                }))
+              }
+            };
+          }
+        }
+      }
+    }
+
+    // Nighttime sleep prediction
+    if (!currentlyNapping && !isCurrentlyDaytime && nighttimeSleep.length >= 2) {
+      const intervals: Array<{ interval: number; sleep1: Activity; sleep2: Activity }> = [];
+      for (let i = 1; i < nighttimeSleep.length; i++) {
+        const current = getTimeInMinutes(nighttimeSleep[i-1].time);
+        const previous = getTimeInMinutes(nighttimeSleep[i].time);
+        let interval = current - previous;
         
-        const hours = Math.round(avgWakeWindow / 60 * 10) / 10;
-        const timeContext = isEarlyMorning ? "morning" : isAfternoon ? "afternoon" : "";
+        if (interval < 0) {
+          interval += 24 * 60;
+        }
         
-        // Only predict nap if not currently napping
-        if (!currentlyNapping) {
-          // Calculate from the appropriate reference point
-          const referenceTime = currentlyNapping ? currentTime : (lastNap.details.endTime || lastNap.time);
-          const anticipatedTime = addMinutesToTime(referenceTime, Math.round(avgWakeWindow));
+        if (interval >= 18 * 60 && interval <= 30 * 60) {
+          intervals.push({
+            interval,
+            sleep1: nighttimeSleep[i],
+            sleep2: nighttimeSleep[i-1]
+          });
+        }
+      }
+      
+      if (intervals.length >= 1) {
+        const avgInterval = intervals.reduce((sum, i) => sum + i.interval, 0) / intervals.length;
+        const lastBedtime = nighttimeSleep[0];
+        const timeSinceLastBedtime = currentMinutes - getTimeInMinutes(lastBedtime.time);
+        
+        if (timeSinceLastBedtime < avgInterval && avgInterval - timeSinceLastBedtime > 15) {
+          const minutesUntilBedtime = avgInterval - timeSinceLastBedtime;
+          const anticipatedTime = addMinutesToTime(currentTime, minutesUntilBedtime);
           
           nextNapPrediction = {
             type: "nap",
             anticipatedTime,
-            confidence: wakeWindows.length >= 3 ? 'high' : wakeWindows.length >= 2 ? 'medium' : 'low',
-            reason: `${timeContext} wake window (~${hours}h awake)`,
+            confidence: intervals.length >= 3 ? 'high' as const : 'medium' as const,
+            reason: "Bedtime routine pattern",
             details: {
-              description: `Based on ${wakeWindows.length} recent ${timeContext} wake windows, your baby typically needs a nap after ${hours} hours awake.`,
-              data: wakeWindows.map((window, index) => ({
-                activity: relevantNaps[index],
-                value: `${Math.round(window / 60 * 10) / 10}h`,
-                calculation: `Wake window before ${timeContext} nap`
-              })),
-              calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} wake window average: ${wakeWindows.map(w => Math.round(w / 60 * 10) / 10).join(' + ')} ÷ ${wakeWindows.length} = ${hours}h`
+              description: `Based on ${intervals.length} recent bedtime patterns.`,
+              data: intervals.map(({ interval, sleep1, sleep2 }) => ({
+                activity: sleep1,
+                value: `${Math.round(interval / 60)}h`,
+                calculation: `Time between ${sleep2.time} and ${sleep1.time}`
+              }))
             }
           };
         }
-      } else if (sleepIntervals.length > 0) {
-        // Fallback to general sleep intervals if no wake window data
-        const avgSleepInterval = sleepIntervals.reduce((a, b) => a + b, 0) / sleepIntervals.length;
-        let timeSinceLastNap = currentMinutes - getTimeInMinutes(lastNap.time);
-        if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
-        
-        // Always show nap prediction based on sleep intervals
-        const anticipatedTime = addMinutesToTime(lastNap.time, Math.round(avgSleepInterval));
-        const hours = Math.round(avgSleepInterval / 60 * 10) / 10;
-        nextNapPrediction = {
-          type: "nap",
-          anticipatedTime,
-          confidence: sleepIntervals.length >= 5 ? 'high' : sleepIntervals.length >= 3 ? 'medium' : 'low',
-          reason: `Usually naps every ${hours}h`,
-          details: {
-            description: `Based on ${sleepIntervals.length} recent sleep intervals, your baby typically naps every ${hours} hours.`,
-            data: sleepIntervals.map((interval, index) => ({
-              activity: napActivities[index],
-              value: `${Math.round(interval / 60 * 10) / 10}h`,
-              calculation: `Time between naps`
-            })),
-            calculation: `Average: ${sleepIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${sleepIntervals.length} = ${hours}h`
-          }
-        };
-      }
-      
-      // Time-of-day nap prediction - but not if currently napping
-      if (!nextNapPrediction && !currentlyNapping && sleepTimes.length > 0) {
-        const lastNap = napActivities[0];
-        const lastNapTime = getTimeInMinutes(lastNap.time);
-        let timeSinceLastNap = currentMinutes - lastNapTime;
-        if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
-        
-        // Always check for typical nap times without time restrictions
-        const currentHour = Math.floor(currentMinutes / 60);
-        const isTypicalNapTime = sleepTimes.some(sleepTime => {
-          const sleepHour = Math.floor(sleepTime / 60);
-          return Math.abs(currentHour - sleepHour) <= 1;
-        });
-        
-        if (isTypicalNapTime) {
-          const candidateTimes = sleepTimes.filter(sleepTime => {
-            const sleepHour = Math.floor(sleepTime / 60);
-            return Math.abs(currentHour - sleepHour) <= 1;
-          });
-          const typicalMinutes = Math.round(candidateTimes.reduce((a, b) => a + b, 0) / candidateTimes.length);
-          const delta = ((typicalMinutes - currentMinutes) % (24 * 60) + (24 * 60)) % (24 * 60);
-          const safeDelta = delta === 0 ? 30 : Math.round(delta);
-
-          console.log('🕰️ Time-of-day nap check:', {
-            currentTime,
-            currentMinutes,
-            typicalMinutes,
-            delta,
-            safeDelta,
-            candidateCount: candidateTimes.length
-          });
-
-          // Only consider time-of-day nap predictions if within the next 6 hours
-          if (safeDelta > 0 && safeDelta <= 360) {
-            const anticipatedTime = addMinutesToTime(currentTime, safeDelta);
-            nextNapPrediction = {
-              type: "nap",
-              anticipatedTime,
-              confidence: 'medium' as const,
-              reason: "Typical sleep time approaching",
-              details: {
-                description: "Based on historical nap times, this is typically when your baby sleeps.",
-                data: candidateTimes.map((time, index) => {
-                  const h = Math.floor(time / 60);
-                  const m = time % 60;
-                  const timeStr = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
-                  return {
-                    activity: napActivities[index],
-                    value: timeStr,
-                    calculation: "Historical nap time"
-                  };
-                }),
-                calculation: "Pattern matches current time window"
-              }
-            };
-          } else {
-            console.log('⏭️ Skipping typical nap prediction due to far-in-future time', { safeDelta });
-          }
-        }
       }
     }
 
-    // Return prediction with context awareness
+    // Return the most relevant prediction
     if (nextFeedPrediction && nextNapPrediction) {
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
+      const feedMinutes = Math.abs(feedTime - currentMinutes);
+      const napMinutes = Math.abs(napTime - currentMinutes);
       
-      // Calculate how far in the future each prediction is
-      let feedDelta = feedTime - currentMinutes;
-      if (feedDelta < 0) feedDelta += (24 * 60); // Handle day boundary
-      
-      let napDelta = napTime - currentMinutes;
-      if (napDelta < 0) napDelta += (24 * 60); // Handle day boundary
-      
-      // Context-aware decision: if currently napping, strongly prefer feed predictions
-      const shouldPreferFeed = currentlyNapping || feedDelta <= napDelta;
-      
-      console.log('🎯 Prediction comparison:', {
-        currentTime,
-        currentlyNapping: !!currentlyNapping,
-        feedPrediction: nextFeedPrediction.anticipatedTime,
-        napPrediction: nextNapPrediction.anticipatedTime,
-        feedDeltaMinutes: feedDelta,
-        napDeltaMinutes: napDelta,
-        currentMinutes,
-        selectedPrediction: shouldPreferFeed ? 'feed' : 'nap',
-        feedTimeRaw: feedTime,
-        napTimeRaw: napTime,
-        reasonForSelection: currentlyNapping ? 'currently napping' : 'time-based'
-      });
-      
-      return shouldPreferFeed ? nextFeedPrediction : nextNapPrediction;
-    }
-
-    console.log('Single prediction available:', {
-      hasFeedPrediction: !!nextFeedPrediction,
-      hasNapPrediction: !!nextNapPrediction,
-      feedPrediction: nextFeedPrediction?.anticipatedTime,
-      napPrediction: nextNapPrediction?.anticipatedTime
-    });
-
-    if (nextFeedPrediction) return nextFeedPrediction;
-    if (nextNapPrediction) return nextNapPrediction;
-
-    // Fallback predictions - but NEVER predict nap if currently napping
-    if (lastActivity.type === "nap") {
-      return {
-        type: "feed",
-        anticipatedTime: undefined,
-        confidence: 'medium' as const,
-        reason: "Feeding typically follows sleep",
-        details: {
-          description: "Your baby just woke up from a nap. Feeding usually comes next in a healthy routine.",
-          data: [{ activity: lastActivity, value: lastActivity.time, calculation: "Last activity was sleep" }],
-          calculation: "Based on typical sleep-feed cycles"
-        }
-      };
-    }
-
-    // Only suggest nap if not currently napping
-    if (!currentlyNapping) {
-      return {
-        type: "nap",
-        anticipatedTime: undefined,
-        confidence: 'medium' as const,
-        reason: "Consider sleep time after feeding",
-        details: {
-          description: "After a feeding, babies often need some time to settle before their next sleep period.",
-          data: [{ activity: lastActivity, value: lastActivity.time, calculation: "Last activity was feeding" }],
-          calculation: "Based on typical feed-sleep cycles"
-        }
-      };
+      return feedMinutes <= napMinutes ? nextFeedPrediction : nextNapPrediction;
     }
     
-    // If currently napping, suggest feed as next activity
-    return {
-      type: "feed",
-      anticipatedTime: undefined,
-      confidence: 'medium' as const,
-      reason: "Feeding will be needed after current nap",
-      details: {
-        description: "Your baby is currently napping. The next activity will likely be a feeding when they wake up.",
-        data: [{ activity: currentlyNapping, value: currentlyNapping.time, calculation: "Currently napping" }],
-        calculation: "Based on typical nap-feed cycles"
-      }
-    };
+    return nextFeedPrediction || nextNapPrediction;
   };
 
-  const nextActivity = predictNextActivity();
+  const prediction = predictNextActivity();
 
-  const getActivityIcon = (type: string) => {
+  if (!prediction) {
+    return (
+      <Card className="shadow-card border-border">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-xl font-sans font-semibold dark:font-bold">
+            <Clock className="h-5 w-5 text-primary" />
+            {t('nextActivity')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <p className="text-muted-foreground">
+              Keep logging activities to get predictions for your baby's next activity.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Predictions appear after logging multiple activities of the same type.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getIcon = (type: string) => {
     switch (type) {
-      case "feed": return Baby;
-      case "nap": return Moon;
-      case "diaper": return Palette;
-      default: return Clock;
+      case 'feed': return Baby;
+      case 'nap': return Moon;
+      default: return Palette;
     }
   };
 
   const getConfidenceColor = (confidence: 'high' | 'medium' | 'low') => {
     switch (confidence) {
-      case 'high': return 'text-green-600';
-      case 'medium': return 'text-blue-600';
-      case 'low': return 'text-amber-600';
-      default: return 'text-muted-foreground';
+      case 'high': return 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950 dark:border-green-800';
+      case 'medium': return 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950 dark:border-blue-800';
+      case 'low': return 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950 dark:border-amber-800';
+      default: return 'text-muted-foreground bg-muted border-border';
     }
   };
 
-  const IconComponent = getActivityIcon(nextActivity.type);
+  const IconComponent = getIcon(prediction.type);
 
   return (
-    <div className="bg-card rounded-xl p-4 shadow-card border border-border">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-muted-foreground" />
-          <h3 className="text-base font-sans font-medium text-foreground dark:font-bold">
-            {t('nextPredictedAction')}
-          </h3>
-        </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 hover:bg-accent rounded-md transition-colors"
-          aria-label={isExpanded ? "Collapse" : "Expand"}
-        >
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 p-2 rounded-lg bg-accent/50">
-            <IconComponent className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-medium text-foreground capitalize">
-                {nextActivity.type}
-              </h4>
-              {nextActivity.anticipatedTime && (
-                <span className="text-sm text-muted-foreground">
-                  around {nextActivity.anticipatedTime}
-                </span>
-              )}
+    <Card className="shadow-card border-border">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-xl font-sans font-semibold dark:font-bold">
+          <Clock className="h-5 w-5 text-primary" />
+          {t('nextActivity')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+          <div className={`rounded-lg p-4 transition-all ${getConfidenceColor(prediction.confidence)}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <IconComponent className="h-5 w-5" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold">
+                    {prediction.type === 'feed' ? t('nextFeed') : t('nextNap')} at {prediction.anticipatedTime}
+                  </h3>
+                  <p className="text-sm opacity-75">{prediction.reason}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs capitalize">
+                  {prediction.confidence} confidence
+                </Badge>
+                <CollapsibleTrigger asChild>
+                  <button className="p-1 hover:bg-white/20 rounded">
+                    {isExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {nextActivity.reason}
-            </p>
+            
+            <CollapsibleContent>
+              <div className="mt-4 pt-4 border-t border-current/20">
+                <p className="text-sm mb-4 opacity-90">
+                  {prediction.details.description}
+                </p>
+                
+                {prediction.details.data && prediction.details.data.length > 0 && (
+                  <div className="space-y-2">
+                    <h5 className="text-xs font-medium opacity-75 uppercase tracking-wide">
+                      Supporting Data
+                    </h5>
+                    <div className="space-y-1">
+                      {prediction.details.data.slice(0, 3).map((dataPoint: any, dataIndex: number) => (
+                        <div key={dataIndex} className="flex justify-between items-center text-xs">
+                          <span className="opacity-75">
+                            {dataPoint.calculation}
+                          </span>
+                          <span className="font-medium">
+                            {dataPoint.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CollapsibleContent>
           </div>
-        </div>
-
-        {isExpanded && (
-          <div className="pt-3 border-t border-border">
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {nextActivity.details.description}
-              </p>
-              
-               {nextActivity.details.data.length > 0 && (
-                 <div className="space-y-2">
-                   <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                     Recent Data
-                   </h5>
-                   <div className="space-y-1">
-                     {nextActivity.details.data.slice(0, 3).map((dataPoint, index) => (
-                       <div key={index} className="flex justify-between items-center text-xs">
-                         <span className="text-muted-foreground">
-                           Time between {nextActivity.type}s
-                         </span>
-                         <span className="font-medium">
-                           {dataPoint.value}
-                         </span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+        </Collapsible>
+      </CardContent>
+    </Card>
   );
 };

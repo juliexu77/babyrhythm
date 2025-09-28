@@ -105,7 +105,7 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       }
     }
 
-    // Analyze nap patterns - use recent week's worth of daytime naps for better pattern detection
+    // Analyze nap patterns (6am-6pm) - use recent week's worth
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     
@@ -115,10 +115,23 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       const activityDate = new Date(a.loggedAt);
       if (activityDate < weekAgo) return false; // Only include last 7 days
       
-      // Only count daytime naps (exclude overnight sleep)
+      // Only count daytime naps (6am-6pm)
       const napTime = getTimeInMinutes(a.time);
-      // Exclude naps that start after 6 PM (likely overnight sleep)
-      if (napTime >= 18 * 60) return false;
+      if (napTime < 6 * 60 || napTime >= 18 * 60) return false;
+      
+      return true;
+    });
+
+    // Analyze nighttime sleep patterns (6pm-6am) separately
+    const nighttimeSleep = activities.filter(a => {
+      if (a.type !== 'nap') return false;
+      if (!a.loggedAt) return true;
+      const activityDate = new Date(a.loggedAt);
+      if (activityDate < weekAgo) return false;
+      
+      // Only count nighttime sleep (6pm-6am)
+      const sleepTime = getTimeInMinutes(a.time);
+      if (sleepTime >= 6 * 60 && sleepTime < 18 * 60) return false;
       
       return true;
     });
@@ -137,19 +150,19 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       const morningNaps = napTimes.filter(time => time < 12 * 60);
       const afternoonNaps = napTimes.filter(time => time >= 12 * 60 && time < 18 * 60);
       
-      if (morningNaps.length > afternoonNaps.length && morningNaps.length >= 2) {
+        if (morningNaps.length > afternoonNaps.length && morningNaps.length >= 2) {
         const morningNapActivities = naps.filter(nap => getTimeInMinutes(nap.time) < 12 * 60);
         insights.push({
           icon: Moon,
-          text: `${morningNaps.length}/${naps.length} naps before noon`,
+          text: `${morningNaps.length}/${naps.length} daytime naps before noon`,
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `Strong morning nap pattern detected. ${morningNaps.length} out of ${naps.length} naps occur before 12 PM.`,
+            description: `Strong morning nap pattern detected. ${morningNaps.length} out of ${naps.length} daytime naps occur before 12 PM.`,
             data: morningNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
-              calculation: 'Morning nap'
+              calculation: 'Morning nap (6am-12pm)'
             }))
           }
         });
@@ -160,15 +173,44 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         });
         insights.push({
           icon: Moon,
-          text: `${afternoonNaps.length}/${naps.length} naps after lunch`,
+          text: `${afternoonNaps.length}/${naps.length} daytime naps after lunch`,
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `Afternoon sleep preference identified. ${afternoonNaps.length} out of ${naps.length} naps happen between 12-6 PM.`,
+            description: `Afternoon nap preference identified. ${afternoonNaps.length} out of ${naps.length} daytime naps happen between 12-6 PM.`,
             data: afternoonNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
-              calculation: 'Afternoon nap'
+              calculation: 'Afternoon nap (12pm-6pm)'
+            }))
+          }
+        });
+      }
+
+      // Add nighttime sleep patterns if available
+      if (nighttimeSleep.length >= 3) {
+        const bedtimes = nighttimeSleep.map(sleep => getTimeInMinutes(sleep.time));
+        const avgBedtime = bedtimes.reduce((sum, time) => sum + time, 0) / bedtimes.length;
+        const bedtimeHours = Math.floor(avgBedtime / 60);
+        const bedtimeMinutes = Math.round(avgBedtime % 60);
+        let bedtimeText = `${bedtimeHours === 0 ? 12 : bedtimeHours > 12 ? bedtimeHours - 12 : bedtimeHours}:${bedtimeMinutes.toString().padStart(2, '0')} ${bedtimeHours >= 12 ? 'PM' : 'AM'}`;
+        
+        // Handle times after midnight
+        if (bedtimeHours < 6) {
+          bedtimeText = `${bedtimeHours === 0 ? 12 : bedtimeHours}:${bedtimeMinutes.toString().padStart(2, '0')} AM`;
+        }
+
+        insights.push({
+          icon: Moon,
+          text: `Average bedtime around ${bedtimeText}`,
+          confidence: nighttimeSleep.length >= 5 ? 'high' : 'medium',
+          type: 'sleep',
+          details: {
+            description: `Based on ${nighttimeSleep.length} nighttime sleep sessions, baby typically goes to bed around ${bedtimeText}.`,
+            data: nighttimeSleep.slice(-5).map(sleep => ({
+              activity: sleep,
+              value: sleep.time,
+              calculation: 'Bedtime (6pm-6am)'
             }))
           }
         });
@@ -317,12 +359,13 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       activitiesByDate.get(dateKey)!.push(activity);
     });
 
-    // Find bedtime patterns
+    // Find bedtime patterns using nighttime sleep data
     activitiesByDate.forEach((dayActivities, dateKey) => {
       const eveningSleepActivities = dayActivities.filter(activity => {
         if (activity.type !== 'nap') return false;
         const activityTime = getTimeInMinutes(activity.time);
-        if (activityTime < 18 * 60) return false;
+        // Nighttime sleep starts after 6 PM or before 6 AM
+        if (activityTime >= 6 * 60 && activityTime < 18 * 60) return false;
         if (activity.details.isDreamFeed) return false;
         return true;
       });
