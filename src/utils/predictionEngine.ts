@@ -155,14 +155,29 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
 }
 
 function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
-  const sleepSegments = events
-    .filter(e => e.type === 'nap')
+  const sleepEvents = events.filter(e => e.type === 'nap');
+  const wakeEvents = events.filter(e => e.type === 'wake_up');
+  
+  const sleepSegments = sleepEvents
     .map(e => ({
       start: e.startTime || e.timestamp,
       end: e.endTime || null,
       type: (isNightTime(e.startTime || e.timestamp) ? 'night' : 'nap') as 'nap' | 'night'
     }))
     .sort((a, b) => b.start.getTime() - a.start.getTime()); // Most recent first
+    
+  // For sleep segments without end times, check if there's a wake_up event after them
+  sleepSegments.forEach(segment => {
+    if (!segment.end) {
+      const wakeUpAfter = wakeEvents.find(wake => 
+        wake.timestamp > segment.start && 
+        wake.timestamp <= new Date() // Only consider past wake-ups
+      );
+      if (wakeUpAfter) {
+        segment.end = wakeUpAfter.timestamp;
+      }
+    }
+  });
     
   // Add duration for completed segments, but keep ongoing ones too
   return sleepSegments.map(s => ({
