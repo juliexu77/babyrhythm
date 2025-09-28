@@ -651,42 +651,42 @@ export const usePatternAnalysis = (activities: Activity[]) => {
     }
 
 
-    // Rotation system: Show key insights + rotating selection
-    const keyInsights = insights.filter(i => 
-      i.text.includes('Average bedtime') || 
-      i.text.includes('Usually feeds every') ||
-      i.text.includes('stays awake')
+    // Group insights by type for sensible organization
+    const allInsights = [...insights, ...additionalInsights];
+    
+    // Remove duplicates
+    const uniqueInsights = allInsights.filter((insight, index, arr) => 
+      arr.findIndex(i => i.text === insight.text) === index
     );
-
-    // Create day-based rotation for additional insights
+    
+    // Group by type
+    const feedingInsights = uniqueInsights.filter(i => i.type === 'feeding');
+    const sleepInsights = uniqueInsights.filter(i => i.type === 'sleep');
+    const generalInsights = uniqueInsights.filter(i => i.type === 'general');
+    
+    // Create day-based rotation for each group
     const today = new Date();
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    const rotationIndex = dayOfYear % Math.max(1, additionalInsights.length);
     
-    // Show 1-2 rotating insights per day
-    const rotatingInsights = additionalInsights.length > 0 
-      ? additionalInsights.slice(rotationIndex, rotationIndex + 2).concat(
-          additionalInsights.slice(0, Math.max(0, (rotationIndex + 2) - additionalInsights.length))
-        ).slice(0, 2)
+    // Select insights from each group with rotation
+    const selectedFeeding = feedingInsights.length > 0 
+      ? feedingInsights.slice(0, Math.min(3, feedingInsights.length))
       : [];
-
-    // Combine key insights with rotating ones, remove duplicates
-    const finalInsights = [...keyInsights];
-    rotatingInsights.forEach(insight => {
-      if (!finalInsights.some(existing => existing.text === insight.text)) {
-        finalInsights.push(insight);
-      }
-    });
-
-    // Add remaining non-key insights if we have space and they're not rotating
-    insights.forEach(insight => {
-      if (!keyInsights.includes(insight) && 
-          !rotatingInsights.some(r => r.text === insight.text) &&
-          !finalInsights.some(f => f.text === insight.text)) {
-        finalInsights.push(insight);
-      }
-    });
-
+    
+    const selectedSleep = sleepInsights.length > 0 
+      ? sleepInsights.slice(0, Math.min(2, sleepInsights.length))
+      : [];
+    
+    const rotationIndex = dayOfYear % Math.max(1, generalInsights.length);
+    const selectedGeneral = generalInsights.length > 0 
+      ? generalInsights.slice(rotationIndex, rotationIndex + 1).concat(
+          generalInsights.slice(0, Math.max(0, (rotationIndex + 1) - generalInsights.length))
+        ).slice(0, 1)
+      : [];
+    
+    // Combine groups in logical order: feeding, sleep, then general
+    const finalInsights = [...selectedFeeding, ...selectedSleep, ...selectedGeneral];
+    
     return finalInsights;
   };
 
