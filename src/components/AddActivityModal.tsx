@@ -733,69 +733,79 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 {/* Photo Upload for Notes */}
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Photo (optional)</Label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-4">
-                    <input
-                      type="file"
-                      accept="image/*"
-                     onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          // Validate file type
-                          if (!file.type.startsWith('image/')) {
-                            toast({
-                              title: "Invalid file type",
-                              description: "Please select an image file.",
-                              variant: "destructive"
-                            });
-                            return;
-                          }
-                          
-                          // Validate file size (10MB max)
-                          if (file.size > 10 * 1024 * 1024) {
-                            toast({
-                              title: "File too large",
-                              description: "Please select an image smaller than 10MB.",
-                              variant: "destructive"
-                            });
-                            return;
-                          }
-                          
-                          setPhoto(file);
-                          setPhotoUrl(null); // Clear existing URL when new file selected
-                        }
-                      }}
-                      className="hidden"
-                      id="photo-input"
-                    />
-                    <label
-                      htmlFor="photo-input"
-                      className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <Camera className="h-8 w-8 mb-2" />
-                      {photo || photoUrl ? (
-                        <span className="text-sm font-medium">
-                          {photo ? photo.name : "Photo attached"}
-                        </span>
-                      ) : (
-                        <>
-                          <span className="text-sm font-medium">Tap to add photo</span>
-                          <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
-                        </>
-                      )}
-                    </label>
+                  <div className="space-y-3">
+                    {/* Photo Preview */}
                     {(photo || photoUrl) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setPhoto(null);
-                          setPhotoUrl(null);
-                        }}
-                        className="mt-2 h-8"
-                      >
-                        Remove photo
-                      </Button>
+                      <div className="relative">
+                        <img
+                          src={photo ? URL.createObjectURL(photo) : photoUrl!}
+                          alt="Selected photo"
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPhoto(null);
+                            setPhotoUrl(null);
+                          }}
+                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm"
+                        >
+                          Remove
+                        </Button>
+                      </div>
                     )}
+                    
+                    {/* Upload Area */}
+                    <div className="border-2 border-dashed border-border rounded-lg p-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                       onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            // Validate file type
+                            if (!file.type.startsWith('image/')) {
+                              toast({
+                                title: "Invalid file type",
+                                description: "Please select an image file.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            // Validate file size (10MB max)
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast({
+                                title: "File too large",
+                                description: "Please select an image smaller than 10MB.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            setPhoto(file);
+                            setPhotoUrl(null); // Clear existing URL when new file selected
+                          }
+                        }}
+                        className="hidden"
+                        id="photo-input"
+                      />
+                      <label
+                        htmlFor="photo-input"
+                        className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Camera className="h-8 w-8 mb-2" />
+                        {photo || photoUrl ? (
+                          <span className="text-sm font-medium">Change photo</span>
+                        ) : (
+                          <>
+                            <span className="text-sm font-medium">Tap to add photo</span>
+                            <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
+                          </>
+                        )}
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>

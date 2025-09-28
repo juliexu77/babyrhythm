@@ -215,15 +215,13 @@ const Index = () => {
                     activities.forEach(activity => {
                       // Use the logged_at date for grouping activities by day
                       const activityDate = new Date(activity.loggedAt!);
-                      // Get the date string in local timezone to avoid timezone issues
-                      const dateKey = activityDate.getFullYear() + '-' + 
-                                     String(activityDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                                     String(activityDate.getDate()).padStart(2, '0');
+                      // Use toDateString() and then parse to avoid timezone issues
+                      const localDateString = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
                       
-                      if (!activityGroups[dateKey]) {
-                        activityGroups[dateKey] = [];
+                      if (!activityGroups[localDateString]) {
+                        activityGroups[localDateString] = [];
                       }
-                      activityGroups[dateKey].push(activity);
+                      activityGroups[localDateString].push(activity);
                     });
 
                     // Sort activities within each date group by actual activity time
