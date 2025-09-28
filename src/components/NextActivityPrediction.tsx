@@ -125,7 +125,17 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       let timeSinceLastFeed = currentMinutes - lastFeedTime;
       if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
       
-      if (timeSinceLastFeed >= avgFeedInterval - 60) {
+      console.log('Feed prediction debug:', {
+        canPredictFeeds,
+        feedIntervalsLength: feedIntervals.length,
+        avgFeedInterval: Math.round(avgFeedInterval),
+        timeSinceLastFeed: Math.round(timeSinceLastFeed),
+        threshold: Math.round(avgFeedInterval - 30),
+        shouldPredict: timeSinceLastFeed >= avgFeedInterval - 30
+      });
+      
+      // Suggest feed 30 minutes before average interval (more proactive)
+      if (timeSinceLastFeed >= avgFeedInterval - 30) {
         const anticipatedTime = addMinutesToTime(lastFeed.time, Math.round(avgFeedInterval));
         const hours = Math.round(avgFeedInterval / 60 * 10) / 10;
         nextFeedPrediction = {
