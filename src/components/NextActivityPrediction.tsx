@@ -213,14 +213,14 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       if (adjustedFeedTime <= adjustedNapTime) {
         return {
           type: nextFeedPrediction.type,
-          suggestedTime: currentTime,
+          suggestedTime: nextFeedPrediction.anticipatedTime,
           anticipatedTime: nextFeedPrediction.anticipatedTime,
           reason: nextFeedPrediction.reason
         };
       } else {
         return {
           type: nextNapPrediction.type,
-          suggestedTime: currentTime,
+          suggestedTime: nextNapPrediction.anticipatedTime,
           anticipatedTime: nextNapPrediction.anticipatedTime,
           reason: nextNapPrediction.reason
         };
@@ -231,7 +231,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (nextFeedPrediction) {
       return {
         type: nextFeedPrediction.type,
-        suggestedTime: currentTime,
+        suggestedTime: nextFeedPrediction.anticipatedTime,
         anticipatedTime: nextFeedPrediction.anticipatedTime,
         reason: nextFeedPrediction.reason
       };
@@ -240,7 +240,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (nextNapPrediction) {
       return {
         type: nextNapPrediction.type,
-        suggestedTime: currentTime,
+        suggestedTime: nextNapPrediction.anticipatedTime,
         anticipatedTime: nextNapPrediction.anticipatedTime,
         reason: nextNapPrediction.reason
       };
