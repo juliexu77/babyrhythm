@@ -42,7 +42,7 @@ const Onboarding = () => {
           </div>
 
           {/* CTA */}
-          <div className="pt-8">
+          <div className="pt-8 space-y-4">
             <Button 
               onClick={() => navigate("/auth")}
               size="lg"
@@ -50,6 +50,16 @@ const Onboarding = () => {
             >
               {t('getStarted')}
             </Button>
+            
+            {/* Sign In Link */}
+            <div className="text-center">
+              <button
+                onClick={() => navigate("/auth")}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+              >
+                Already have an account? Log in
+              </button>
+            </div>
           </div>
         </div>
       </div>
