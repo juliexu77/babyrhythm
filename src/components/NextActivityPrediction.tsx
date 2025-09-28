@@ -286,17 +286,35 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   const IconComponent = getActivityIcon(nextActivity.type);
 
   return (
-    <div className="bg-card rounded-xl p-4 shadow-card border border-border">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-muted-foreground" />
-          <h3 className="text-base font-serif font-medium text-foreground">
-            Next Predicted Action
-          </h3>
+    <div className="relative flex items-center gap-2 py-2 group hover:bg-accent/30 rounded-md px-2 transition-colors">
+      {/* Timeline line - hidden since this is the last item */}
+      
+      {/* Timeline marker */}
+      <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-gradient-primary flex items-center justify-center text-white">
+        <IconComponent className="h-3 w-3" />
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1 flex items-center justify-between min-w-0">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-sm font-medium text-foreground capitalize">
+              {nextActivity.type}
+            </span>
+            {nextActivity.anticipatedTime && (
+              <span className="text-xs text-muted-foreground">
+                around {nextActivity.anticipatedTime}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {nextActivity.reason}
+          </p>
         </div>
+        
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 hover:bg-accent rounded-md transition-colors"
+          className="ml-2 p-1 hover:bg-accent rounded-md transition-colors flex-shrink-0"
           aria-label={isExpanded ? "Collapse" : "Expand"}
         >
           {isExpanded ? (
@@ -307,66 +325,44 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         </button>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-start gap-3">
-          <div className={`flex-shrink-0 p-2 rounded-lg bg-accent/50 ${getConfidenceColor(nextActivity.confidence)}`}>
-            <IconComponent className="h-4 w-4" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-medium text-foreground capitalize">
-                {nextActivity.type}
-              </h4>
-              {nextActivity.anticipatedTime && (
-                <span className="text-sm text-muted-foreground">
-                  around {nextActivity.anticipatedTime}
-                </span>
-              )}
-            </div>
+      {/* Expanded details */}
+      {isExpanded && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-lg border border-border shadow-sm p-3 z-20">
+          <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              {nextActivity.reason}
+              {nextActivity.details.description}
             </p>
+            
+            {nextActivity.details.data.length > 0 && (
+              <div className="space-y-2">
+                <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Recent Data
+                </h5>
+                <div className="space-y-1">
+                  {nextActivity.details.data.slice(0, 3).map((dataPoint, index) => (
+                    <div key={index} className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground">
+                        {dataPoint.calculation}
+                      </span>
+                      <span className="font-medium">
+                        {dataPoint.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {nextActivity.details.calculation && (
+              <div className="pt-2 border-t border-border/50">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium">Calculation:</span> {nextActivity.details.calculation}
+                </p>
+              </div>
+            )}
           </div>
         </div>
-
-        {isExpanded && (
-          <div className="pt-3 border-t border-border">
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                {nextActivity.details.description}
-              </p>
-              
-              {nextActivity.details.data.length > 0 && (
-                <div className="space-y-2">
-                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Recent Data
-                  </h5>
-                  <div className="space-y-1">
-                    {nextActivity.details.data.slice(0, 3).map((dataPoint, index) => (
-                      <div key={index} className="flex justify-between items-center text-xs">
-                        <span className="text-muted-foreground">
-                          {dataPoint.calculation}
-                        </span>
-                        <span className="font-medium">
-                          {dataPoint.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {nextActivity.details.calculation && (
-                <div className="pt-2 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-medium">Calculation:</span> {nextActivity.details.calculation}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };
