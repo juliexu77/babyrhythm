@@ -198,7 +198,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-muted-foreground" />
           <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-            Daily Nap Duration
+            Daily Sleep Totals
           </h3>
         </div>
         
