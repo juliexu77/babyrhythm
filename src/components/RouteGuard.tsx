@@ -19,6 +19,10 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
       location.pathname === route || location.pathname.startsWith(route + '/')
     );
 
+    // Allow Auth page to handle redirect param without being intercepted
+    const searchParams = new URLSearchParams(location.search);
+    const isAuthWithRedirect = location.pathname === '/auth' && searchParams.has('redirect');
+
     // Redirect unauthenticated users to onboarding first
     if (!user && !isPublicRoute) {
       console.log('Redirecting unauthenticated user to onboarding');
@@ -27,7 +31,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     }
 
     // Redirect authenticated users away from auth and onboarding pages to the main app
-    if (user && (location.pathname === "/auth" || location.pathname === "/onboarding" || location.pathname === "/")) {
+    if (user && !isAuthWithRedirect && (location.pathname === "/auth" || location.pathname === "/onboarding" || location.pathname === "/")) {
       console.log('Redirecting authenticated user to main app');
       navigate("/app", { replace: true });
       return;
@@ -37,7 +41,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     if (location.pathname === "/" && !localStorage.getItem("hasSeenDemo")) {
       localStorage.setItem("hasSeenDemo", "true");
     }
-  }, [user, loading, location.pathname, navigate]);
+  }, [user, loading, location.pathname, location.search, navigate]);
 
   return <>{children}</>;
 };
