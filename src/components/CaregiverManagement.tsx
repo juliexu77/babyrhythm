@@ -22,7 +22,6 @@ interface Collaborator {
 }
 import { UserPlus, Trash2, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CaregiverManagementProps {
   onClose: () => void;
@@ -124,12 +123,16 @@ const handleAddCaregiver = async () => {
     }
   };
 
-  const handleRoleChange = async (collaboratorId: string, newRole: string) => {
+  const handleRoleClick = async (collaboratorId: string, currentRole: string) => {
+    const roles = ['parent', 'caregiver', 'grandparent', 'partner'];
+    const currentIndex = roles.indexOf(currentRole);
+    const nextRole = roles[(currentIndex + 1) % roles.length];
+    
     try {
-      await updateCollaboratorRole(collaboratorId, newRole);
+      await updateCollaboratorRole(collaboratorId, nextRole);
       toast({
         title: "Role updated",
-        description: "The collaborator's role has been changed successfully."
+        description: `Role changed to ${nextRole}`
       });
     } catch (error) {
       console.error('Error updating role:', error);
@@ -153,21 +156,6 @@ const handleAddCaregiver = async () => {
           <Button variant="ghost" className="text-muted-foreground">
             Cancel
           </Button>
-        </div>
-
-        {/* Baby Info Section */}
-        <div className="px-4 pb-6">
-          <div className="flex flex-col items-center space-y-4">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={undefined} />
-              <AvatarFallback className="bg-muted text-2xl">
-                👶
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-center">
-              <h2 className="text-lg font-medium">{household?.baby_name || "Baby"}</h2>
-            </div>
-          </div>
         </div>
 
         {/* Parents / Caregivers Section */}
@@ -210,22 +198,14 @@ const handleAddCaregiver = async () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className="flex items-center space-x-2">
-                        <Select
-                          value={collaborator.role}
-                          onValueChange={(newRole) => handleRoleChange(collaborator.id, newRole)}
-                        >
-                          <SelectTrigger className="w-24 h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="parent">Parent</SelectItem>
-                            <SelectItem value="caregiver">Caregiver</SelectItem>
-                            <SelectItem value="grandparent">Grandparent</SelectItem>
-                            <SelectItem value="partner">Partner</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <button
+                        onClick={() => handleRoleClick(collaborator.id, collaborator.role)}
+                        className="transition-colors hover:opacity-80"
+                      >
+                        <Badge variant="secondary" className={`${getRoleColor(collaborator.role)} cursor-pointer`}>
+                          {collaborator.role}
+                        </Badge>
+                      </button>
                       {collaborator.role !== 'parent' && (
                         <Button
                           variant="ghost"
