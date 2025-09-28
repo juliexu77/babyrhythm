@@ -194,6 +194,195 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       }
     }
 
+    // Analyze wake windows (time between naps)
+    const completedNaps = naps.filter(nap => nap.details.startTime && nap.details.endTime);
+    if (completedNaps.length >= 2) {
+      const wakeWindows: Array<{ duration: number; afterNap: Activity; beforeNap: Activity }> = [];
+      
+      // Sort naps by start time to get chronological order
+      const sortedNaps = [...completedNaps].sort((a, b) => {
+        const aTime = getTimeInMinutes(a.details.startTime!);
+        const bTime = getTimeInMinutes(b.details.startTime!);
+        return aTime - bTime;
+      });
+
+      for (let i = 1; i < sortedNaps.length; i++) {
+        const prevNapEnd = getTimeInMinutes(sortedNaps[i-1].details.endTime!);
+        const currentNapStart = getTimeInMinutes(sortedNaps[i].details.startTime!);
+        
+        let wakeTime = currentNapStart - prevNapEnd;
+        
+        // Handle case where next nap is next day (add 24 hours)
+        if (wakeTime < 0) {
+          wakeTime += 24 * 60;
+        }
+        
+        // Only include reasonable wake windows (30 min to 6 hours)
+        if (wakeTime >= 30 && wakeTime <= 360) {
+          wakeWindows.push({
+            duration: wakeTime,
+            afterNap: sortedNaps[i-1],
+            beforeNap: sortedNaps[i]
+          });
+        }
+      }
+
+      if (wakeWindows.length >= 1) {
+        const avgWakeWindow = wakeWindows.reduce((sum, w) => sum + w.duration, 0) / wakeWindows.length;
+        const hours = Math.floor(avgWakeWindow / 60);
+        const minutes = Math.round(avgWakeWindow % 60);
+        const timeText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+        insights.push({
+          icon: Clock,
+          text: `Your baby stays awake ~${timeText} between naps`,
+          confidence: wakeWindows.length >= 3 ? 'high' : 'medium',
+          type: 'sleep',
+          details: {
+            description: `Based on ${wakeWindows.length} wake windows today, your baby typically stays awake for ${timeText} between naps. This is a good indicator of their natural rhythm.`,
+            data: wakeWindows.map(({ duration, afterNap, beforeNap }) => {
+              const wHours = Math.floor(duration / 60);
+              const wMinutes = Math.round(duration % 60);
+              const wTimeText = wHours > 0 ? `${wHours}h ${wMinutes}m` : `${wMinutes}m`;
+              return {
+                activity: beforeNap,
+                value: wTimeText,
+                calculation: `Awake from ${afterNap.details.endTime} to ${beforeNap.details.startTime}`
+              };
+            }),
+            calculation: `Average: ${wakeWindows.map(w => {
+              const h = Math.floor(w.duration / 60);
+              const m = Math.round(w.duration % 60);
+              return h > 0 ? `${h}h${m}m` : `${m}m`;
+            }).join(' + ')} ÷ ${wakeWindows.length} = ${timeText}`
+          }
+        });
+      }
+    }
+
+    // Analyze bedtime trends (look at last activity each day over past week)
+    const bedtimes: Array<{ time: number; activity: Activity; date: string }> = [];
+    
+    // Group activities by date
+    const activitiesByDate = new Map<string, Activity[]>();
+    activities.forEach(activity => {
+      if (!activity.loggedAt) return;
+      const date = new Date(activity.loggedAt);
+      const dateKey = date.toDateString();
+      if (!activitiesByDate.has(dateKey)) {
+        activitiesByDate.set(dateKey, []);
+      }
+      activitiesByDate.get(dateKey)!.push(activity);
+    });
+
+    // Find last activity of each day (potential bedtime indicator)
+    activitiesByDate.forEach((dayActivities, dateKey) => {
+      // Sort by time and get the latest activity that's after 6 PM
+      const eveningActivities = dayActivities.filter(activity => {
+        const activityTime = getTimeInMinutes(activity.time);
+        return activityTime >= 18 * 60; // After 6 PM
+      });
+      
+      if (eveningActivities.length > 0) {
+        // Get the latest evening activity
+        const latestActivity = eveningActivities.reduce((latest, current) => {
+          const latestTime = getTimeInMinutes(latest.time);
+          const currentTime = getTimeInMinutes(current.time);
+          return currentTime > latestTime ? current : latest;
+        });
+        
+        const bedtimeMinutes = getTimeInMinutes(latestActivity.time);
+        // Only consider reasonable bedtimes (6 PM to 11 PM)
+        if (bedtimeMinutes >= 18 * 60 && bedtimeMinutes <= 23 * 60) {
+          bedtimes.push({
+            time: bedtimeMinutes,
+            activity: latestActivity,
+            date: dateKey
+          });
+        }
+      }
+    });
+
+    if (bedtimes.length >= 3) {
+      const avgBedtime = bedtimes.reduce((sum, b) => sum + b.time, 0) / bedtimes.length;
+      const bedtimeHours = Math.floor(avgBedtime / 60);
+      const bedtimeMinutes = Math.round(avgBedtime % 60);
+      const bedtimeText = `${bedtimeHours === 0 ? 12 : bedtimeHours > 12 ? bedtimeHours - 12 : bedtimeHours}:${bedtimeMinutes.toString().padStart(2, '0')} ${bedtimeHours >= 12 ? 'PM' : 'AM'}`;
+
+      // Check for trend (compare first half vs second half of data)
+      if (bedtimes.length >= 4) {
+        const firstHalf = bedtimes.slice(0, Math.floor(bedtimes.length / 2));
+        const secondHalf = bedtimes.slice(Math.floor(bedtimes.length / 2));
+        const firstAvg = firstHalf.reduce((sum, b) => sum + b.time, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, b) => sum + b.time, 0) / secondHalf.length;
+        const timeDiff = Math.abs(secondAvg - firstAvg);
+
+        if (timeDiff >= 30) { // At least 30 minutes difference
+          const isGettingLater = secondAvg > firstAvg;
+          const direction = isGettingLater ? 'later' : 'earlier';
+          insights.push({
+            icon: Moon,
+            text: `Bedtime trending ${direction} - now ~${bedtimeText}`,
+            confidence: 'medium',
+            type: 'sleep',
+            details: {
+              description: `Over the past ${bedtimes.length} days, bedtime has been trending ${direction}. Current average is ${bedtimeText}, which is ${Math.round(timeDiff)} minutes ${direction} than earlier this week.`,
+              data: bedtimes.map(({ time, activity, date }) => {
+                const h = Math.floor(time / 60);
+                const m = Math.round(time % 60);
+                const timeText = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+                return {
+                  activity,
+                  value: timeText,
+                  calculation: `Last activity on ${new Date(date).toLocaleDateString()}`
+                };
+              })
+            }
+          });
+        } else {
+          insights.push({
+            icon: Moon,
+            text: `Consistent bedtime routine ~${bedtimeText}`,
+            confidence: 'high',
+            type: 'sleep',
+            details: {
+              description: `Your baby has a consistent bedtime around ${bedtimeText}. This stable routine is great for healthy sleep patterns.`,
+              data: bedtimes.map(({ time, activity, date }) => {
+                const h = Math.floor(time / 60);
+                const m = Math.round(time % 60);
+                const timeText = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+                return {
+                  activity,
+                  value: timeText,
+                  calculation: `Bedtime on ${new Date(date).toLocaleDateString()}`
+                };
+              })
+            }
+          });
+        }
+      } else {
+        insights.push({
+          icon: Moon,
+          text: `Average bedtime this week ~${bedtimeText}`,
+          confidence: 'medium',
+          type: 'sleep',
+          details: {
+            description: `Based on ${bedtimes.length} recent days, your baby's average bedtime is around ${bedtimeText}. Keep tracking to see if patterns emerge.`,
+            data: bedtimes.map(({ time, activity, date }) => {
+              const h = Math.floor(time / 60);
+              const m = Math.round(time % 60);
+              const timeText = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+              return {
+                activity,
+                value: timeText,
+                calculation: `Last activity on ${new Date(date).toLocaleDateString()}`
+              };
+            })
+          }
+        });
+      }
+    }
+
     // Analyze daily totals - average feeds per day over past 7 days (using loggedAt)
     const now = new Date();
     const start = new Date(now);
