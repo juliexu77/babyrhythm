@@ -74,15 +74,15 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         if (stdDev < 30) { // Very consistent timing
           insights.push({
             icon: Clock,
-            text: 'Feeding routine locked in - you can plan around it',
+            text: `Feeds every ${hours}h ±${Math.round(stdDev)}min`,
             confidence: 'high',
             type: 'feeding',
             details: {
-              description: `Your baby has settled into a reliable routine with only ${Math.round(stdDev)} minutes variation. This consistency means you can confidently plan activities knowing when feeds will happen.`,
+              description: `Highly predictable feeding pattern with only ${Math.round(stdDev)} minutes variation from ${hours}h average.`,
               data: intervals.map(({ interval, feed1, feed2 }) => ({
                 activity: feed1,
                 value: `${Math.round(interval / 60 * 10) / 10}h`,
-                calculation: `Deviation from average: ${Math.round(Math.abs(interval - avgInterval))} minutes`
+                calculation: `Deviation: ${Math.round(Math.abs(interval - avgInterval))}min`
               }))
             }
           });
@@ -141,15 +141,15 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         const morningNapActivities = naps.filter(nap => getTimeInMinutes(nap.time) < 12 * 60);
         insights.push({
           icon: Moon,
-          text: 'Morning naps work best - plan outings for afternoons',
+          text: `${morningNaps.length}/${naps.length} naps before noon`,
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `Your baby settles better for morning naps. ${morningNaps.length} out of ${naps.length} successful naps happen before noon - consider scheduling errands and outings in the afternoon.`,
+            description: `Strong morning nap pattern detected. ${morningNaps.length} out of ${naps.length} naps occur before 12 PM.`,
             data: morningNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
-              calculation: 'Morning nap success'
+              calculation: 'Morning nap'
             }))
           }
         });
@@ -160,15 +160,15 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         });
         insights.push({
           icon: Moon,
-          text: 'Afternoon naps preferred - mornings for activities',
+          text: `${afternoonNaps.length}/${naps.length} naps after lunch`,
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `Your baby naps better in the afternoon. ${afternoonNaps.length} out of ${naps.length} successful naps happen after lunch - perfect for morning playdates and activities.`,
+            description: `Afternoon sleep preference identified. ${afternoonNaps.length} out of ${naps.length} naps happen between 12-6 PM.`,
             data: afternoonNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
-              calculation: 'Afternoon nap success'
+              calculation: 'Afternoon nap'
             }))
           }
         });
@@ -463,17 +463,17 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       if (stdDev <= 1) {
         insights.push({
           icon: Baby,
-          text: 'Feeding routine locked in - you can plan around it',
+          text: `${avgFeeds} feeds/day (±0.${Math.round(stdDev * 10)} variation)`,
           confidence: 'high',
           type: 'feeding',
           details: {
-            description: `Your baby has settled into a reliable ${avgFeeds} feeds per day. This consistency means you can confidently plan activities knowing when feeds will happen.`,
+            description: `Consistent daily intake pattern established. Daily feed count varies by less than 1 feed.`,
             data: Array.from(feedCountsByDate.entries()).slice(-5).map(([date, count]) => ({
               activity: feeds[0],
               value: `${count} feeds`,
               calculation: `${new Date(date).toLocaleDateString()}`
             })),
-            calculation: `Reliable pattern established`
+            calculation: `Standard deviation: ${Math.round(stdDev * 100)/100}`
           }
         });
       }
@@ -502,31 +502,31 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         if (avgDuration <= 30) {
           additionalInsights.push({
             icon: Moon,
-            text: 'Short naps might mean overtiredness - try earlier timing',
+            text: `Brief naps: ${minutes}min average`,
             confidence: 'medium',
             type: 'sleep',
             details: {
-              description: `Your baby takes brief ${minutes}m naps, which often signals overtiredness. Try moving nap time 15-30 minutes earlier for longer, more restorative sleep.`,
+              description: `Short nap pattern detected. Average duration ${minutes} minutes suggests possible sleep cycle interruption.`,
               data: napDurations.slice(-5).map(({ duration, activity }) => {
                 const m = Math.round(duration);
                 return {
                   activity,
-                  value: `${m}m`,
+                  value: `${m}min`,
                   calculation: `${activity.details.startTime} - ${activity.details.endTime}`
                 };
               }),
-              calculation: `Consider earlier nap timing`
+              calculation: `${napDurations.length} naps analyzed`
             }
           });
         } else if (avgDuration >= 90) {
           const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
           additionalInsights.push({
             icon: Moon,
-            text: `Great nap lengths - ${durationText} is restorative`,
+            text: `Extended naps: ${durationText} average`,
             confidence: 'medium',
             type: 'sleep',
             details: {
-              description: `Your baby is getting quality ${durationText} naps. This length allows for full sleep cycles and proper restoration - keep this timing working.`,
+              description: `Long nap pattern detected. ${durationText} duration indicates complete sleep cycles.`,
               data: napDurations.slice(-5).map(({ duration, activity }) => {
                 const h = Math.floor(duration / 60);
                 const m = Math.round(duration % 60);
@@ -537,7 +537,7 @@ export const usePatternAnalysis = (activities: Activity[]) => {
                   calculation: `${activity.details.startTime} - ${activity.details.endTime}`
                 };
               }),
-              calculation: `Optimal nap duration achieved`
+              calculation: `${napDurations.length} naps analyzed`
             }
           });
         }
@@ -567,49 +567,49 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         if (leftSideFeeds.length > rightSideFeeds.length * 1.5) {
           additionalInsights.push({
             icon: Baby,
-            text: 'Left side preference - consider positioning comfort',
+            text: `Left side preference: ${leftSideFeeds.length}/${durations.length} sessions`,
             confidence: 'medium',
             type: 'feeding',
             details: {
-              description: `Your baby consistently prefers the left side. This could indicate positioning comfort or milk flow preference - worth noting for feeding positions.`,
+              description: `Strong left side nursing preference detected in ${Math.round(leftSideFeeds.length/durations.length*100)}% of sessions.`,
               data: leftSideFeeds.slice(-5).map(({ left, right, activity }) => ({
                 activity,
                 value: `L:${left}min R:${right}min`,
-                calculation: `Left side preference pattern`
+                calculation: `Left side dominance`
               })),
-              calculation: `${leftSideFeeds.length} left-preferred vs ${rightSideFeeds.length} right-preferred sessions`
+              calculation: `${leftSideFeeds.length} left-dominant sessions`
             }
           });
         } else if (rightSideFeeds.length > leftSideFeeds.length * 1.5) {
           additionalInsights.push({
             icon: Baby,
-            text: 'Right side preference - check positioning comfort',
+            text: `Right side preference: ${rightSideFeeds.length}/${durations.length} sessions`,
             confidence: 'medium',
             type: 'feeding',
             details: {
-              description: `Your baby consistently prefers the right side. This could indicate positioning comfort or milk flow preference - worth noting for feeding positions.`,
+              description: `Strong right side nursing preference detected in ${Math.round(rightSideFeeds.length/durations.length*100)}% of sessions.`,
               data: rightSideFeeds.slice(-5).map(({ left, right, activity }) => ({
                 activity,
                 value: `L:${left}min R:${right}min`,
-                calculation: `Right side preference pattern`
+                calculation: `Right side dominance`
               })),
-              calculation: `${rightSideFeeds.length} right-preferred vs ${leftSideFeeds.length} left-preferred sessions`
+              calculation: `${rightSideFeeds.length} right-dominant sessions`
             }
           });
         } else if (avgTotal <= 10) {
           additionalInsights.push({
             icon: Baby,
-            text: `Efficient nursing - ${Math.round(avgTotal)}min sessions working well`,
+            text: `Efficient nursing: ${Math.round(avgTotal)}min average`,
             confidence: 'medium',
             type: 'feeding',
             details: {
-              description: `Your baby nurses efficiently in ${Math.round(avgTotal)}-minute sessions. This suggests good milk transfer and effective feeding - no need to extend sessions.`,
+              description: `Brief nursing pattern detected. ${Math.round(avgTotal)}-minute sessions indicate efficient milk transfer.`,
               data: durations.slice(-5).map(({ total, left, right, activity }) => ({
                 activity,
                 value: `${total}min (L:${left} R:${right})`,
-                calculation: `Efficient nursing session`
+                calculation: `Session duration`
               })),
-              calculation: `Effective feeding pattern established`
+              calculation: `${durations.length} sessions analyzed`
             }
           });
         }
