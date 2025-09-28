@@ -66,17 +66,17 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <IconComponent className="h-5 w-5" />
+                    <IconComponent className="h-4 w-4" />
                     <div className="flex-1">
-                      <h4 className="font-medium">{insight.text}</h4>
+                      <h4 className="text-sm font-medium">{insight.text}</h4>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm opacity-75 capitalize">{insight.confidence} confidence</span>
+                    <span className="text-xs opacity-75 capitalize">{insight.confidence} confidence</span>
                     {expandedInsight === index ? (
-                      <ChevronUp className="h-4 w-4 opacity-50" />
+                      <ChevronUp className="h-3 w-3 opacity-50" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 opacity-50" />
+                      <ChevronDown className="h-3 w-3 opacity-50" />
                     )}
                   </div>
                 </div>
