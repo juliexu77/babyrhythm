@@ -208,33 +208,10 @@ const Index = () => {
                     Object.keys(activityGroups).forEach(dateKey => {
                       activityGroups[dateKey].sort((a, b) => {
                         const getActivityTime = (activity: any) => {
-                          const activityDate = new Date(activity.loggedAt!);
-                          
-                          // For naps with endTime, use endTime for sorting but keep in original day
-                          if (activity.type === 'nap' && activity.details?.endTime) {
-                            const endTime = activity.details.endTime;
-                            const [time, period] = endTime.split(' ');
-                            const [hours, minutes] = time.split(':').map(Number);
-                            let endHour = hours;
-                            if (period === 'PM' && hours !== 12) endHour += 12;
-                            if (period === 'AM' && hours === 12) endHour = 0;
-                            
-                            // If end time is early morning (before 12 PM), it's likely next day
-                            // Add 24 hours to sort it after other activities from the same logged day
-                            if (endHour < 12) {
-                              const nextDay = new Date(activityDate);
-                              nextDay.setDate(nextDay.getDate() + 1);
-                              nextDay.setHours(endHour, minutes, 0, 0);
-                              return nextDay.getTime();
-                            } else {
-                              // Same day end time
-                              const sameDay = new Date(activityDate);
-                              sameDay.setHours(endHour, minutes, 0, 0);
-                              return sameDay.getTime();
-                            }
-                          } else if (activity.type === 'nap' && activity.details?.startTime) {
-                            const activityDateStr = activityDate.toDateString();
-                            return new Date(`${activityDateStr} ${activity.details.startTime}`).getTime();
+                          // For naps, use startTime if available, otherwise logged_at
+                          if (activity.type === 'nap' && activity.details?.startTime) {
+                            const activityDate = new Date(activity.loggedAt!).toDateString();
+                            return new Date(`${activityDate} ${activity.details.startTime}`).getTime();
                           }
                           return new Date(activity.loggedAt!).getTime();
                         };
