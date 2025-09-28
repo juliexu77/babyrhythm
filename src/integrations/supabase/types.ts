@@ -55,36 +55,6 @@ export type Database = {
           },
         ]
       }
-      baby_profiles: {
-        Row: {
-          birthday: string | null
-          created_at: string
-          created_by: string
-          id: string
-          name: string
-          photo_url: string | null
-          updated_at: string
-        }
-        Insert: {
-          birthday?: string | null
-          created_at?: string
-          created_by: string
-          id?: string
-          name: string
-          photo_url?: string | null
-          updated_at?: string
-        }
-        Update: {
-          birthday?: string | null
-          created_at?: string
-          created_by?: string
-          id?: string
-          name?: string
-          photo_url?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       collaborators: {
         Row: {
           created_at: string
