@@ -346,7 +346,9 @@ const Index = () => {
             if (period === 'PM' && hours !== 12) hour24 += 12;
             if (period === 'AM' && hours === 12) hour24 = 0;
             
-            const loggedAt = new Date();
+            // Preserve the original date, only update the time
+            const originalActivity = activities.find(a => a.id === updatedActivity.id);
+            const loggedAt = new Date(originalActivity?.loggedAt || updatedActivity.loggedAt);
             loggedAt.setHours(hour24, minutes, 0, 0);
 
             const { error } = await supabase
