@@ -45,7 +45,7 @@ return (
     <div className="bg-card rounded-xl p-6 shadow-card border border-border">
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-serif font-semibold text-foreground">
+        <h2 className="text-xl font-sans font-semibold text-foreground dark:font-bold">
           What to Expect at {Math.floor(ageInWeeks)} Weeks
         </h2>
       </div>

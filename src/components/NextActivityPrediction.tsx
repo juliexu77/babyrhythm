@@ -291,7 +291,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-muted-foreground" />
-          <h3 className="text-base font-serif font-medium text-foreground">
+          <h3 className="text-base font-sans font-medium text-foreground dark:font-bold">
             Next Predicted Action
           </h3>
         </div>

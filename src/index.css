@@ -8,71 +8,72 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Improved light mode readability */
-    --background: 30 50% 97%; /* #FAF7F5 - warm cream background */
-    --foreground: 0 0% 17%; /* #2B2B2B - charcoal text for better readability */
+    /* Light Mode - "Calm & Supportive" (for overwhelmed moms) */
+    --background: 35 20% 97%; /* #FAF9F7 - warm off-white/light beige */
+    --foreground: 0 0% 18%; /* #2F2F2F - charcoal gray primary text */
 
-    --card: 0 0% 99%; /* Slightly warmer white for cards */
-    --card-foreground: 0 0% 17%;
+    --card: 0 0% 100%; /* Pure white cards with subtle shadows */
+    --card-foreground: 0 0% 18%;
 
-    --popover: 0 0% 99%;
-    --popover-foreground: 0 0% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 18%;
 
-    /* Mint primary accent */
-    --primary: 150 45% 82%; /* #B5E5D0 - mint primary */
-    --primary-foreground: 0 0% 17%;
-    --primary-light: 150 50% 85%;
+    /* Muted green primary accent #4CAF7D */
+    --primary: 153 39% 55%; /* Muted green for "all good" signals */
+    --primary-foreground: 0 0% 100%;
 
-    /* Light taupe secondary */
-    --secondary: 30 25% 94%; /* #F1ECEA - light taupe secondary */
-    --secondary-foreground: 0 0% 25%;
+    /* Soft lavender secondary #9B89B3 */
+    --secondary: 264 21% 63%; /* Soft lavender for insights and reminders */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 30 20% 92%; /* Warm muted background */
-    --muted-foreground: 0 0% 67%; /* #AAAAAA - lighter placeholders */
+    --muted: 35 15% 95%; /* Soft muted background */
+    --muted-foreground: 0 0% 46%; /* #757575 - medium gray secondary text */
 
-    /* Soft blush accent */
-    --accent: 8 70% 87%; /* #F7C7C2 - soft blush accent */
-    --accent-foreground: 0 0% 17%;
+    /* Soft lavender accent for gentle highlights */
+    --accent: 264 21% 63%; /* Soft lavender accent */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 99%;
+    /* Gentle coral for errors #F28B82 */
+    --destructive: 6 77% 73%; /* Gentle coral for alerts */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 88%;
-    --input: 30 20% 96%;
-    --ring: 172 66% 46%; /* Keep teal as unifying color */
+    --border: 35 10% 88%; /* Soft borders */
+    --input: 35 15% 96%; /* Light input backgrounds */
+    --ring: 153 39% 55%; /* Muted green focus ring */
 
-    /* Activity colors - soft, nurturing palette with mint primary */
-    --feed-color: 150 45% 82%; /* Mint for feeding */
-    --diaper-color: 45 50% 85%; /* Warm peachy tone for diapers */
-    --nap-color: 220 40% 85%; /* Soft lavender for naps */
-    --note-color: 300 35% 85%; /* Gentle purple for notes */
-    --chat-color: 172 66% 46%; /* Unifying teal for chat */
+    /* Activity colors - soft, nurturing palette */
+    --feed-color: 153 39% 55%; /* Muted green for feeding */
+    --diaper-color: 264 21% 63%; /* Soft lavender for diapers */
+    --nap-color: 220 25% 75%; /* Gentle blue for naps */
+    --note-color: 45 35% 80%; /* Warm peachy for notes */
+    --chat-color: 153 39% 55%; /* Muted green for chat */
 
-    /* Soft, nurturing gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-feed: linear-gradient(135deg, hsl(150 45% 82%), hsl(150 50% 87%));
-    --gradient-diaper: linear-gradient(135deg, hsl(45 50% 85%), hsl(45 55% 90%));
-    --gradient-nap: linear-gradient(135deg, hsl(220 40% 85%), hsl(220 45% 90%));
-    --gradient-note: linear-gradient(135deg, hsl(300 35% 85%), hsl(300 40% 90%));
-    --gradient-chat: linear-gradient(135deg, hsl(172 66% 46%), hsl(172 60% 60%));
+    /* Gentle, reassuring gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(153 39% 55%), hsl(153 35% 65%));
+    --gradient-feed: linear-gradient(135deg, hsl(153 45% 75%), hsl(153 40% 85%)); /* Light green tint */
+    --gradient-diaper: linear-gradient(135deg, hsl(264 25% 85%), hsl(264 20% 90%)); /* Light lavender tint */
+    --gradient-nap: linear-gradient(135deg, hsl(220 30% 85%), hsl(220 25% 90%)); /* Light blue tint */
+    --gradient-note: linear-gradient(135deg, hsl(45 40% 85%), hsl(45 35% 90%)); /* Light peachy tint */
+    --gradient-chat: linear-gradient(135deg, hsl(153 39% 55%), hsl(153 35% 65%));
 
-    /* Sophisticated shadows */
-    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.1); /* floating shadow */
-    --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.05); /* card shadow */
+    /* Gentle, supportive shadows */
+    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08); /* Subtle floating shadow */
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04); /* Very gentle card shadow */
 
-    /* Refined animations */
-    --transition-smooth: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Gentle animations */
+    --transition-smooth: all 350ms cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Ease-out for calming effect */
 
-    --radius: 0.75rem; /* 12px - medium border radius */
+    --radius: 0.875rem; /* 14px - friendly rounded corners */
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar with calm, supportive feel */
+    --sidebar-background: 35 20% 98%;
+    --sidebar-foreground: 0 0% 18%;
+    --sidebar-primary: 153 39% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 15% 95%;
+    --sidebar-accent-foreground: 0 0% 18%;
+    --sidebar-border: 35 10% 88%;
+    --sidebar-ring: 153 39% 55%;
   }
 
   .dark {
@@ -152,6 +153,23 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Light mode - calm and supportive utilities */
+  .gentle-fade {
+    @apply transition-all duration-500 ease-out;
+  }
+  
+  .supportive-card {
+    @apply rounded-xl shadow-card bg-white border border-border/20 backdrop-blur-sm;
+  }
+  
+  .reassuring-text {
+    @apply text-muted-foreground font-medium;
+  }
+  
+  .confidence-badge {
+    @apply bg-primary/10 text-primary border border-primary/20 rounded-full px-3 py-1 text-sm font-medium;
+  }
+
   /* Performance dashboard utilities for dark mode */
   .data-highlight {
     @apply dark:animate-flash dark:text-primary;

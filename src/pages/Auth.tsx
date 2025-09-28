@@ -148,7 +148,7 @@ const Auth = () => {
             </div>
             <Heart className="w-5 h-5 text-accent/80" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground mb-2 tracking-tight leading-tight">
+          <h1 className="text-2xl md:text-3xl font-sans font-semibold text-foreground mb-2 tracking-tight leading-tight dark:font-bold">
             {t('appName')}
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">

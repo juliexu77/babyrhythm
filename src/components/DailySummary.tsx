@@ -68,7 +68,7 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
               Feeds
             </span>
           </div>
-          <div className="text-2xl font-serif font-semibold text-foreground">
+          <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {feedActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">
@@ -84,7 +84,7 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
               Naps
             </span>
           </div>
-          <div className="text-2xl font-serif font-semibold text-foreground">
+          <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {napActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">
@@ -100,7 +100,7 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
               Diapers
             </span>
           </div>
-          <div className="text-2xl font-serif font-semibold text-foreground">
+          <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {diaperActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">
@@ -116,7 +116,7 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
               Notes
             </span>
           </div>
-          <div className="text-2xl font-serif font-semibold text-foreground">
+          <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {noteActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">

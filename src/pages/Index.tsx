@@ -263,7 +263,7 @@ const Index = () => {
                         <div key={dateKey}>
                           <div className="space-y-2">
                             {/* Date Header */}
-                            <h3 className="text-base font-serif font-medium text-foreground border-b border-border pb-1 mb-2">
+                            <h3 className="text-base font-sans font-medium text-foreground border-b border-border pb-1 mb-2 dark:font-bold">
                               {displayDate}
                             </h3>
                             

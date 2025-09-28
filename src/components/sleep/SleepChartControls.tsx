@@ -49,7 +49,7 @@ export const SleepChartControls = ({
     <div className="space-y-4">
       {/* Header with Sleep title and toggles */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-serif font-semibold text-foreground">Sleep</h2>
+        <h2 className="text-2xl font-sans font-semibold text-foreground dark:font-bold">Sleep</h2>
         
         <div className="flex items-center gap-2">
           {/* This Week / Last Week buttons */}

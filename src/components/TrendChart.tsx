@@ -145,7 +145,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-serif font-medium text-foreground">
+          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
             Daily Feed Volume ({preferredUnit})
           </h3>
         </div>
@@ -197,7 +197,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-serif font-medium text-foreground">
+          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
             Daily Nap Duration
           </h3>
         </div>

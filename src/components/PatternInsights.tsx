@@ -25,7 +25,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
     return (
       <Card className="shadow-card border-border">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-xl font-serif">
+        <CardTitle className="flex items-center gap-2 text-xl font-sans font-semibold dark:font-bold">
             <Brain className="h-5 w-5 text-primary" />
             Pattern Insights
           </CardTitle>
@@ -48,7 +48,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
   return (
     <Card className="shadow-card border-border">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-xl font-serif">
+        <CardTitle className="flex items-center gap-2 text-xl font-sans font-semibold dark:font-bold">
           <Brain className="h-5 w-5 text-primary" />
           Pattern Insights
         </CardTitle>

@@ -241,7 +241,7 @@ const DemoTour = () => {
       <div className="max-w-md mx-auto px-6 py-8">
         {/* Step header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-serif font-semibold text-foreground mb-2">
+          <h1 className="text-2xl font-sans font-semibold text-foreground mb-2 dark:font-bold">
             {currentStepData.title}
           </h1>
           <p className="text-muted-foreground">

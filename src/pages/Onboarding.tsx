@@ -30,7 +30,7 @@ const Onboarding = () => {
 
           {/* Mission Statement */}
           <div className="space-y-6">
-            <h1 className="text-2xl font-serif font-medium text-foreground leading-tight">
+            <h1 className="text-2xl font-sans font-medium text-foreground leading-tight dark:font-bold">
               {t('welcomeToApp')}
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
