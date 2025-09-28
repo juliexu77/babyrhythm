@@ -183,31 +183,35 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       }
     }
 
-    // Analyze daily totals - calculate average over past 7 days
-    const feedsByDate = new Map<string, Activity[]>();
-    const today = new Date();
+    // Analyze daily totals - average feeds per day over past 7 days (using loggedAt)
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - 6); // inclusive of today -> 7 days window
+    start.setHours(0, 0, 0, 0);
     
-    // Group feeds by date for past 7 days
+    // Initialize counts for each day in the window
+    const feedCountsByDate = new Map<string, number>();
     for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateKey = date.toDateString();
-      feedsByDate.set(dateKey, []);
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      feedCountsByDate.set(d.toDateString(), 0);
     }
     
+    // Count feeds per day based on loggedAt timestamps
     feeds.forEach(feed => {
-      // Try to determine the date of the feed - this is simplified since we only have time
-      // For now, assume all feeds are from recent days
-      const feedDate = new Date().toDateString(); // This could be improved with actual date tracking
-      if (feedsByDate.has(feedDate)) {
-        feedsByDate.get(feedDate)!.push(feed);
+      if (!feed.loggedAt) return;
+      const d = new Date(feed.loggedAt);
+      if (d >= start && d <= now) {
+        const key = d.toDateString();
+        if (feedCountsByDate.has(key)) {
+          feedCountsByDate.set(key, (feedCountsByDate.get(key) || 0) + 1);
+        }
       }
     });
     
-    // Calculate average feeds per day
-    const dailyFeedCounts = Array.from(feedsByDate.values()).map(dayFeeds => dayFeeds.length);
-    const totalFeedDays = dailyFeedCounts.filter(count => count > 0).length || 1; // Avoid division by zero
-    const avgDailyFeeds = Math.round(feeds.length / Math.max(totalFeedDays, 1));
+    // Calculate 7-day average (including days with zero feeds)
+    const sumFeeds = Array.from(feedCountsByDate.values()).reduce((a, b) => a + b, 0);
+    const avgDailyFeeds = Math.round(sumFeeds / 7);
     if (avgDailyFeeds >= 6 && avgDailyFeeds <= 8) {
       insights.push({
         icon: Baby,
@@ -215,7 +219,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
         confidence: 'high',
         type: 'general',
         details: {
-          description: `Averaging ${avgDailyFeeds} feeds per day over recent days falls within the typical range of 6-8 feeds for healthy babies.`,
+          description: `Averaging ${avgDailyFeeds} feeds per day over the past 7 days falls within the typical range of 6-8 feeds for healthy babies.`,
           data: feeds.map(feed => ({
             activity: feed,
             value: feed.details.quantity && feed.details.unit 
@@ -232,7 +236,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
         confidence: 'medium',
         type: 'general',
         details: {
-          description: `Averaging ${avgDailyFeeds} feeds per day over recent days is above typical range, which could indicate growth spurts or increased appetite.`,
+          description: `Averaging ${avgDailyFeeds} feeds per day over the past 7 days is above typical range, which could indicate growth spurts or increased appetite.`,
           data: feeds.map(feed => ({
             activity: feed,
             value: feed.details.quantity && feed.details.unit 
