@@ -3,7 +3,7 @@ import { UserRoleSelector } from "@/components/UserRoleSelector";
 import { Check, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type SaveStatus = "unsaved" | "saving" | "saved" | "error";
+export type SaveStatus = "idle" | "unsaved" | "saving" | "saved" | "error";
 
 interface UserRoleSelectorWithStatusProps {
   value: "parent" | "caregiver";
@@ -16,7 +16,7 @@ interface UserRoleSelectorWithStatusProps {
 export function UserRoleSelectorWithStatus({ 
   value, 
   onChange, 
-  saveStatus = "unsaved", 
+  saveStatus = "idle", 
   errorMessage,
   className 
 }: UserRoleSelectorWithStatusProps) {

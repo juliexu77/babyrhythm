@@ -28,8 +28,8 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
   const [userRole, setUserRole] = useState<"parent" | "caregiver">("parent");
   
   // Save status states
-  const [fullNameSaveStatus, setFullNameSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
-  const [userRoleSaveStatus, setUserRoleSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
+  const [fullNameSaveStatus, setFullNameSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
+  const [userRoleSaveStatus, setUserRoleSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
 
   // Initialize values when modal opens
   useEffect(() => {
@@ -41,8 +41,9 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
 
   // Auto-save full name changes
   useEffect(() => {
-    if (!user || !fullName || fullName === user?.user_metadata?.full_name) return;
+    if (!user || !fullName || fullName === (user?.user_metadata?.full_name || userProfile?.full_name || "")) return;
     
+    setFullNameSaveStatus("unsaved");
     const timeoutId = setTimeout(async () => {
       setFullNameSaveStatus("saving");
       try {
@@ -52,7 +53,7 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
         
         if (error) throw error;
         setFullNameSaveStatus("saved");
-        setTimeout(() => setFullNameSaveStatus("unsaved"), 3000);
+        setTimeout(() => setFullNameSaveStatus("idle"), 3000);
         
       } catch (error) {
         setFullNameSaveStatus("error");
@@ -67,12 +68,13 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
   useEffect(() => {
     if (!userProfile || userRole === userProfile.role) return;
     
+    setUserRoleSaveStatus("unsaved");
     setUserRoleSaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         await updateUserProfile({ role: userRole });
         setUserRoleSaveStatus("saved");
-        setTimeout(() => setUserRoleSaveStatus("unsaved"), 3000);
+        setTimeout(() => setUserRoleSaveStatus("idle"), 3000);
       } catch (error) {
         setUserRoleSaveStatus("error");
         console.error('Error updating user role:', error);

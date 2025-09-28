@@ -26,8 +26,8 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   const [babyBirthday, setBabyBirthday] = useState("");
   
   // Save status states
-  const [babyNameSaveStatus, setBabyNameSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
-  const [babyBirthdaySaveStatus, setBabyBirthdaySaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
+  const [babyNameSaveStatus, setBabyNameSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
+  const [babyBirthdaySaveStatus, setBabyBirthdaySaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
 
   // Initialize values when modal opens
   useEffect(() => {
@@ -41,12 +41,13 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   useEffect(() => {
     if (!user || !babyName || !household || babyName === household.baby_name) return;
     
+    setBabyNameSaveStatus("unsaved");
     setBabyNameSaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         await updateHousehold({ baby_name: babyName });
         setBabyNameSaveStatus("saved");
-        setTimeout(() => setBabyNameSaveStatus("unsaved"), 3000);
+        setTimeout(() => setBabyNameSaveStatus("idle"), 3000);
       } catch (error) {
         setBabyNameSaveStatus("error");
         console.error('Error saving baby name:', error);
@@ -60,12 +61,13 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   useEffect(() => {
     if (!user || !household || babyBirthday === household.baby_birthday) return;
     
+    setBabyBirthdaySaveStatus("unsaved");
     setBabyBirthdaySaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         await updateHousehold({ baby_birthday: babyBirthday });
         setBabyBirthdaySaveStatus("saved");
-        setTimeout(() => setBabyBirthdaySaveStatus("unsaved"), 3000);
+        setTimeout(() => setBabyBirthdaySaveStatus("idle"), 3000);
       } catch (error) {
         setBabyBirthdaySaveStatus("error");
         console.error('Error updating baby birthday:', error);

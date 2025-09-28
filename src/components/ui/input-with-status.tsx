@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Check, Loader2, AlertCircle, Circle } from "lucide-react";
 
-export type SaveStatus = "unsaved" | "saving" | "saved" | "error";
+export type SaveStatus = "idle" | "unsaved" | "saving" | "saved" | "error";
 
 export interface InputWithStatusProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -13,7 +13,7 @@ export interface InputWithStatusProps
 }
 
 const InputWithStatus = React.forwardRef<HTMLInputElement, InputWithStatusProps>(
-  ({ className, saveStatus = "unsaved", errorMessage, onValueChange, onChange, ...props }, ref) => {
+  ({ className, saveStatus = "idle", errorMessage, onValueChange, onChange, ...props }, ref) => {
     const [localValue, setLocalValue] = React.useState(props.value || "");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +32,8 @@ const InputWithStatus = React.forwardRef<HTMLInputElement, InputWithStatusProps>
         case "error":
           return <AlertCircle className="h-4 w-4 text-destructive" />;
         case "unsaved":
-          return localValue !== (props.value || "") ? <Circle className="h-4 w-4 fill-amber-500 text-amber-500" /> : null;
+          return <Circle className="h-4 w-4 fill-amber-500 text-amber-500" />;
+        case "idle":
         default:
           return null;
       }
@@ -47,7 +48,8 @@ const InputWithStatus = React.forwardRef<HTMLInputElement, InputWithStatusProps>
         case "error":
           return errorMessage || "Failed to save";
         case "unsaved":
-          return localValue !== (props.value || "") ? "Unsaved changes" : "";
+          return "Unsaved changes";
+        case "idle":
         default:
           return "";
       }
