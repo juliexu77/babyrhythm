@@ -74,11 +74,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         if (stdDev < 30) { // Very consistent timing
           insights.push({
             icon: Clock,
-            text: 'Very consistent feeding schedule',
+            text: 'Feeding routine locked in - you can plan around it',
             confidence: 'high',
             type: 'feeding',
             details: {
-              description: `Feeding intervals vary by only ${Math.round(stdDev)} minutes on average, showing high consistency.`,
+              description: `Your baby has settled into a reliable routine with only ${Math.round(stdDev)} minutes variation. This consistency means you can confidently plan activities knowing when feeds will happen.`,
               data: intervals.map(({ interval, feed1, feed2 }) => ({
                 activity: feed1,
                 value: `${Math.round(interval / 60 * 10) / 10}h`,
