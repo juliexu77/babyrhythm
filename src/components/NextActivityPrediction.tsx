@@ -29,9 +29,10 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
   const addMinutesToTime = (timeString: string, minutes: number) => {
     const timeInMinutes = getTimeInMinutes(timeString);
-    const newTimeInMinutes = (timeInMinutes + minutes) % (24 * 60);
+    const totalMinutes = Math.round(timeInMinutes + minutes);
+    const newTimeInMinutes = totalMinutes % (24 * 60);
     const hours = Math.floor(newTimeInMinutes / 60);
-    const mins = newTimeInMinutes % 60;
+    const mins = Math.round(newTimeInMinutes % 60);
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
