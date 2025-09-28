@@ -54,7 +54,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
 
     switch (intent) {
       case "todays_schedule": {
-        const feeds = todayActivities.filter(a => a.type === "feeding");
+        const feeds = todayActivities.filter(a => a.type === "feed");
         const naps = todayActivities.filter(a => a.type === "nap");
         const diapers = todayActivities.filter(a => a.type === "diaper");
         
@@ -93,7 +93,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       }
 
       case "yesterdays_summary": {
-        const feeds = yesterdayActivities.filter(a => a.type === "feeding");
+        const feeds = yesterdayActivities.filter(a => a.type === "feed");
         const naps = yesterdayActivities.filter(a => a.type === "nap");
         const diapers = yesterdayActivities.filter(a => a.type === "diaper");
         
@@ -130,7 +130,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
             return activityDate >= dayStart && activityDate <= dayEnd;
           });
           
-          feedsByDay[day] = dayActivities.filter(a => a.type === "feeding").length;
+          feedsByDay[day] = dayActivities.filter(a => a.type === "feed").length;
           napsByDay[day] = dayActivities.filter(a => a.type === "nap").length;
         }
 
@@ -151,7 +151,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
 
       case "whats_next": {
         const recentFeeds = activities
-          .filter(a => a.type === "feeding")
+          .filter(a => a.type === "feed")
           .sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())
           .slice(0, 5);
 
@@ -191,8 +191,8 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       }
 
       case "anomalies_today": {
-        const recentAvg = weekActivities.filter(a => a.type === "feeding").length / 7;
-        const todayFeeds = todayActivities.filter(a => a.type === "feeding").length;
+        const recentAvg = weekActivities.filter(a => a.type === "feed").length / 7;
+        const todayFeeds = todayActivities.filter(a => a.type === "feed").length;
         
         const anomalies = [];
         if (todayFeeds > recentAvg * 1.3) {
