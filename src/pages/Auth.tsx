@@ -174,6 +174,28 @@ const Auth = () => {
 
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
+                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    {t('signInWithGoogle')}
+                  </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        {t('orContinueWith')}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">{t('email')}</Label>
                     <Input
@@ -204,7 +226,22 @@ const Auth = () => {
                   >
                     {isLoading ? t('loading') : t('signIn')}
                   </Button>
-                  
+                </form>
+              </TabsContent>
+
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
+                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    {t('signInWithGoogle')}
+                  </Button>
+
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t" />
@@ -216,21 +253,6 @@ const Auth = () => {
                     </div>
                   </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGoogleSignIn}
-                    disabled={isLoading}
-                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    {t('signInWithGoogle')}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="full-name">{t('fullName')}</Label>
                     <Input
@@ -271,28 +293,6 @@ const Auth = () => {
                     disabled={isLoading}
                   >
                     {isLoading ? t('settingUp') : t('createAccount')}
-                  </Button>
-                  
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        {t('orContinueWith')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGoogleSignIn}
-                    disabled={isLoading}
-                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    {t('signInWithGoogle')}
                   </Button>
                 </form>
               </TabsContent>
