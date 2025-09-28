@@ -99,35 +99,47 @@ export const useHousehold = () => {
       }
 
       if (!householdId) {
-        // Fallback to the oldest (original) household as default
-        const { data: collaboratorData, error: collaboratorError } = await supabase
+        // First try to find a household with baby data
+        const { data: householdWithBaby, error: babyError } = await supabase
           .from('collaborators')
-          .select('household_id, created_at')
+          .select('household_id, households!inner(baby_name)')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: true })
+          .not('households.baby_name', 'is', null)
           .limit(1);
 
-        if (collaboratorError) {
-          console.error('Error fetching collaborator data:', collaboratorError);
-          setLoading(false);
-          return;
-        }
+        if (!babyError && householdWithBaby && householdWithBaby.length > 0) {
+          householdId = householdWithBaby[0].household_id;
+         } else {
+           // Fallback to the oldest (original) household as default
+           const { data: collaboratorData, error: collaboratorError } = await supabase
+             .from('collaborators')
+             .select('household_id, created_at')
+             .eq('user_id', user.id)
+             .order('created_at', { ascending: true })
+             .limit(1);
 
-        if (!collaboratorData || collaboratorData.length === 0) {
-          console.log('No household found for user');
-          setHousehold(null);
-          setLoading(false);
-          return;
-        }
+           if (collaboratorError) {
+             console.error('Error fetching collaborator data:', collaboratorError);
+             setLoading(false);
+             return;
+           }
 
-        householdId = collaboratorData[0].household_id;
+           if (!collaboratorData || collaboratorData.length === 0) {
+             console.log('No household found for user');
+             setHousehold(null);
+             setLoading(false);
+             return;
+           }
 
-        // Persist as active if none was set
-        try {
-          if (!preferredHouseholdId) {
-            localStorage.setItem('active_household_id', householdId);
-          }
-        } catch {}
+           householdId = collaboratorData[0].household_id;
+         }
+
+         // Persist as active if none was set
+         try {
+           if (!preferredHouseholdId) {
+             localStorage.setItem('active_household_id', householdId);
+           }
+         } catch {}
       }
 
       // Fetch the actual household data
