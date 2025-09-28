@@ -51,14 +51,12 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'owner':
+      case 'parent':
         return 'bg-primary text-primary-foreground';
       case 'partner':
         return 'bg-blue-500 text-white';
       case 'caregiver':
         return 'bg-green-500 text-white';
-      case 'grandparent':
-        return 'bg-purple-500 text-white';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -126,7 +124,7 @@ const handleAddCaregiver = async () => {
   };
 
   const handleRoleClick = async (collaboratorId: string, currentRole: string) => {
-    const roles = ['parent', 'caregiver', 'grandparent', 'partner'];
+    const roles = ['parent', 'partner', 'caregiver'];
     const currentIndex = roles.indexOf(currentRole);
     const nextRole = roles[(currentIndex + 1) % roles.length];
     

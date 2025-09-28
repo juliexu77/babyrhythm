@@ -146,9 +146,66 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Calculate next nap prediction
+    // Calculate next nap prediction considering time of day patterns
     if (canPredictNaps) {
-      if (sleepIntervals.length > 0) {
+      const currentHour = Math.floor(currentMinutes / 60);
+      const isEarlyMorning = currentHour >= 6 && currentHour < 12;
+      const isAfternoon = currentHour >= 12 && currentHour < 18;
+      
+      // Filter naps by time of day for better predictions
+      const morningNaps = napActivities.filter(nap => {
+        const napHour = Math.floor(getTimeInMinutes(nap.time) / 60);
+        return napHour >= 6 && napHour < 12;
+      });
+      
+      const afternoonNaps = napActivities.filter(nap => {
+        const napHour = Math.floor(getTimeInMinutes(nap.time) / 60);
+        return napHour >= 12 && napHour < 18;
+      });
+      
+      // Calculate intervals for current time period
+      const relevantNaps = isEarlyMorning ? morningNaps : isAfternoon ? afternoonNaps : napActivities;
+      const relevantIntervals: number[] = [];
+      
+      for (let i = 0; i < relevantNaps.length - 1; i++) {
+        const newer = getTimeInMinutes(relevantNaps[i].time);
+        const older = getTimeInMinutes(relevantNaps[i + 1].time);
+        let interval = newer - older;
+        if (interval < 0) interval = (24 * 60) + interval;
+        if (interval > 0 && interval < 8 * 60) { // More reasonable nap interval
+          relevantIntervals.push(interval);
+        }
+      }
+      
+      if (relevantIntervals.length > 0) {
+        const lastNap = napActivities[0];
+        const avgSleepInterval = relevantIntervals.reduce((a, b) => a + b, 0) / relevantIntervals.length;
+        const lastNapTime = getTimeInMinutes(lastNap.time);
+        let timeSinceLastNap = currentMinutes - lastNapTime;
+        if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
+        
+        if (timeSinceLastNap >= avgSleepInterval - 60) {
+          const anticipatedTime = addMinutesToTime(lastNap.time, Math.round(avgSleepInterval));
+          const hours = Math.round(avgSleepInterval / 60 * 10) / 10;
+          const timeContext = isEarlyMorning ? "morning" : isAfternoon ? "afternoon" : "";
+          nextNapPrediction = {
+            type: "nap",
+            anticipatedTime,
+            confidence: relevantIntervals.length >= 3 ? 'high' : relevantIntervals.length >= 2 ? 'medium' : 'low',
+            reason: `Typical ${timeContext} nap time (every ${hours}h)`,
+            details: {
+              description: `Based on ${relevantIntervals.length} recent ${timeContext} nap intervals, your baby typically naps every ${hours} hours during this time of day.`,
+              data: relevantIntervals.map((interval, index) => ({
+                activity: relevantNaps[index],
+                value: `${Math.round(interval / 60 * 10) / 10}h`,
+                calculation: `Time between ${timeContext} naps`
+              })),
+              calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} average: ${relevantIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${relevantIntervals.length} = ${hours}h`
+            }
+          };
+        }
+      } else if (sleepIntervals.length > 0) {
+        // Fallback to general sleep intervals if no time-specific data
         const lastNap = napActivities[0];
         const avgSleepInterval = sleepIntervals.reduce((a, b) => a + b, 0) / sleepIntervals.length;
         const lastNapTime = getTimeInMinutes(lastNap.time);

@@ -401,8 +401,17 @@ export const useHousehold = () => {
         throw error;
       }
 
-      // Refresh collaborators
+      // Refresh collaborators to ensure UI updates
       await fetchCollaborators();
+      
+      // Also update local state immediately to ensure instant UI feedback
+      setCollaborators(prev => 
+        prev.map(collab => 
+          collab.id === collaboratorId 
+            ? { ...collab, role: newRole }
+            : collab
+        )
+      );
     } catch (error) {
       console.error('Error in updateCollaboratorRole:', error);
       throw error;
