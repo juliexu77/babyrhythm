@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2 } from "lucide-react";
+import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -733,6 +733,40 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 {/* Photo Upload for Notes */}
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Photo (optional)</Label>
+                  
+                  {/* Photo Preview */}
+                  {(photo || photoUrl) && (
+                    <div className="relative mb-4">
+                      <div className="aspect-video w-full max-w-sm mx-auto rounded-lg overflow-hidden border bg-muted">
+                        <img 
+                          src={photo ? URL.createObjectURL(photo) : photoUrl || ''} 
+                          alt="Note photo preview"
+                          className="w-full h-full object-cover"
+                          onError={() => {
+                            console.error('Error loading photo preview');
+                            toast({
+                              title: "Preview error", 
+                              description: "Could not display photo preview.",
+                              variant: "destructive"
+                            });
+                          }}
+                        />
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPhoto(null);
+                          setPhotoUrl(null);
+                        }}
+                        className="absolute top-2 right-2 h-8 w-8 p-0 bg-background/80 backdrop-blur-sm"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Upload Area */}
                   <div className="border-2 border-dashed border-border rounded-lg p-4">
                     <input
                       type="file"
@@ -740,6 +774,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                      onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          console.log('Photo selected:', file.name, file.size, file.type);
+                          
                           // Validate file type
                           if (!file.type.startsWith('image/')) {
                             toast({
@@ -773,9 +809,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     >
                       <Camera className="h-8 w-8 mb-2" />
                       {photo || photoUrl ? (
-                        <span className="text-sm font-medium">
-                          {photo ? photo.name : "Photo attached"}
-                        </span>
+                        <>
+                          <span className="text-sm font-medium">Change photo</span>
+                          <span className="text-xs mt-1">{photo ? photo.name : "Photo attached"}</span>
+                        </>
                       ) : (
                         <>
                           <span className="text-sm font-medium">Tap to add photo</span>
@@ -783,19 +820,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         </>
                       )}
                     </label>
-                    {(photo || photoUrl) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setPhoto(null);
-                          setPhotoUrl(null);
-                        }}
-                        className="mt-2 h-8"
-                      >
-                        Remove photo
-                      </Button>
-                    )}
                   </div>
                 </div>
               </div>
