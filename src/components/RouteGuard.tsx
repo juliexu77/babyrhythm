@@ -3,9 +3,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
+  console.log('🛡️ RouteGuard rendering');
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading } = useAuth();
+
+  console.log('🛡️ RouteGuard state:', { 
+    pathname: location.pathname, 
+    hasUser: !!user, 
+    loading,
+    search: location.search 
+  });
 
   useEffect(() => {
     if (loading) return;

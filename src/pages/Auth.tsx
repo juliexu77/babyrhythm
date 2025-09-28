@@ -12,6 +12,7 @@ import { Baby, Heart, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
+  console.log('🔐 Auth component rendering');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
