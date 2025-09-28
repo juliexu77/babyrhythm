@@ -337,7 +337,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
                 {nextActivity.details.description}
               </p>
               
-              {nextActivity.details.data.length > 0 && (
+               {nextActivity.details.data.length > 0 && (
                 <div className="space-y-2">
                   <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Recent Data
@@ -346,7 +346,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
                     {nextActivity.details.data.slice(0, 3).map((dataPoint, index) => (
                       <div key={index} className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground">
-                          {dataPoint.calculation}
+                          Time between {nextActivity.type}s
                         </span>
                         <span className="font-medium">
                           {dataPoint.value}
@@ -354,14 +354,6 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-              
-              {nextActivity.details.calculation && (
-                <div className="pt-2 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-medium">Calculation:</span> {nextActivity.details.calculation}
-                  </p>
                 </div>
               )}
             </div>
