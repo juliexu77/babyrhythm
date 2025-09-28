@@ -123,22 +123,40 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       let timeSinceLastFeed = currentMinutes - lastFeedTime;
       if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
       
-      if (timeSinceLastFeed >= avgFeedInterval - 60) {
-        const anticipatedTime = addMinutesToTime(lastFeed.time, Math.round(avgFeedInterval));
-        const hours = Math.round(avgFeedInterval / 60 * 10) / 10;
+      // Enhanced logic: detect dream feed pattern (late evening feed after sleep)
+      const isDreamFeed = lastActivity.type === 'feed' && lastFeedTime > 20 * 60; // After 8pm
+      const hasRecentSleep = activities.some(a => a.type === 'nap' && 
+        getTimeInMinutes(a.time) > 18 * 60 && getTimeInMinutes(a.time) < lastFeedTime); // Sleep before dream feed
+      
+      let expectedInterval = avgFeedInterval;
+      let feedThreshold = avgFeedInterval - 60;
+      
+      // If this looks like a dream feed pattern, expect longer overnight interval
+      if (isDreamFeed && hasRecentSleep) {
+        expectedInterval = Math.max(avgFeedInterval * 1.5, 4 * 60); // At least 4 hours for overnight
+        feedThreshold = expectedInterval - 60;
+      }
+      
+      if (timeSinceLastFeed >= feedThreshold) {
+        const anticipatedTime = addMinutesToTime(lastFeed.time, Math.round(expectedInterval));
+        const hours = Math.round(expectedInterval / 60 * 10) / 10;
         nextFeedPrediction = {
           type: "feed",
           anticipatedTime,
           confidence: feedIntervals.length >= 5 ? 'high' : feedIntervals.length >= 3 ? 'medium' : 'low',
-          reason: `Usually feeds every ${hours}h`,
+          reason: isDreamFeed && hasRecentSleep ? `First feed after overnight sleep (~${hours}h)` : `Usually feeds every ${hours}h`,
           details: {
-            description: `Based on ${feedIntervals.length} recent feeding intervals, your baby typically feeds every ${hours} hours.`,
+            description: isDreamFeed && hasRecentSleep 
+              ? `After a dream feed, babies typically sleep longer before their first morning feed.`
+              : `Based on ${feedIntervals.length} recent feeding intervals, your baby typically feeds every ${hours} hours.`,
             data: feedIntervals.map((interval, index) => ({
               activity: feedActivities[index],
               value: `${Math.round(interval / 60 * 10) / 10}h`,
               calculation: `Time between feeds`
             })),
-            calculation: `Average: ${feedIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${feedIntervals.length} = ${hours}h`
+            calculation: isDreamFeed && hasRecentSleep 
+              ? `Extended overnight interval: ${hours}h`
+              : `Average: ${feedIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${feedIntervals.length} = ${hours}h`
           }
         };
       }
@@ -222,15 +240,22 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Return earliest prediction
+    // Return earliest prediction - fixed time comparison
     if (nextFeedPrediction && nextNapPrediction) {
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
       
-      const adjustedFeedTime = feedTime < currentMinutes ? feedTime + (24 * 60) : feedTime;
-      const adjustedNapTime = napTime < currentMinutes ? napTime + (24 * 60) : napTime;
+      // Calculate time until each prediction, handling day rollovers
+      const timeToFeed = feedTime < currentMinutes ? (24 * 60) - currentMinutes + feedTime : feedTime - currentMinutes;
+      const timeToNap = napTime < currentMinutes ? (24 * 60) - currentMinutes + napTime : napTime - currentMinutes;
       
-      return adjustedFeedTime <= adjustedNapTime ? nextFeedPrediction : nextNapPrediction;
+      console.log('Prediction comparison:', { 
+        feedTime, napTime, currentMinutes, timeToFeed, timeToNap,
+        feedTimeStr: nextFeedPrediction.anticipatedTime,
+        napTimeStr: nextNapPrediction.anticipatedTime
+      });
+      
+      return timeToFeed <= timeToNap ? nextFeedPrediction : nextNapPrediction;
     }
 
     if (nextFeedPrediction) return nextFeedPrediction;
