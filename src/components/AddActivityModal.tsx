@@ -8,6 +8,7 @@ import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
 import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -58,6 +59,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Sleep state
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [hasEndTime, setHasEndTime] = useState(true); // Controls whether end time is included
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [timerStart, setTimerStart] = useState<Date | null>(null);
   
@@ -100,6 +102,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         const details = editingActivity.details;
         setStartTime(details.startTime || "");
         setEndTime(details.endTime || "");
+        setHasEndTime(!!details.endTime); // Set checkbox based on whether end time exists
       } else if (editingActivity.type === "note") {
         setNote(editingActivity.details.note || "");
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
@@ -135,6 +138,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setHasCream(false);
     setStartTime("");
     setEndTime("");
+    setHasEndTime(true); // Reset to default (end time included)
     setIsTimerActive(false);
     setTimerStart(null);
     setNote("");
@@ -152,6 +156,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       hour12: true 
     });
     setStartTime(startTime);
+    setHasEndTime(false); // Don't include end time when using timer
     
     // Save the activity immediately when starting the sleep timer
     const newActivity: Omit<Activity, "id"> = {
@@ -251,10 +256,19 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       return;
     }
 
-    if (activityType === "nap" && (!startTime || !endTime)) {
+    if (activityType === "nap" && !startTime) {
       toast({
-        title: "Sleep times required",
-        description: "Please select both start and end times for the sleep.",
+        title: "Start time required",
+        description: "Please select a start time for the sleep.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (activityType === "nap" && hasEndTime && !endTime) {
+      toast({
+        title: "End time required",
+        description: "Please select an end time or uncheck 'Include end time'.",
         variant: "destructive",
       });
       return;
@@ -286,7 +300,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         break;
       case "nap":
         details.startTime = startTime;
-        details.endTime = endTime;
+        if (hasEndTime && endTime) {
+          details.endTime = endTime;
+        }
         break;
       case "note":
         details.note = note;
@@ -638,13 +654,34 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     onDateChange={setSelectedDate}
                     label="Start Time" 
                   />
-                  <TimeScrollPicker 
-                    value={endTime} 
-                    selectedDate={selectedDate}
-                    onChange={setEndTime} 
-                    onDateChange={setSelectedDate}
-                    label="End Time" 
-                  />
+                  
+                  {/* End Time Checkbox */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="has-end-time"
+                      checked={hasEndTime}
+                      onCheckedChange={(checked) => {
+                        setHasEndTime(checked as boolean);
+                        if (!checked) {
+                          setEndTime(""); // Clear end time when unchecked
+                        }
+                      }}
+                    />
+                    <Label htmlFor="has-end-time" className="text-sm font-medium">
+                      Include end time
+                    </Label>
+                  </div>
+
+                  {/* End Time Picker - Only show when checkbox is checked */}
+                  {hasEndTime && (
+                    <TimeScrollPicker 
+                      value={endTime} 
+                      selectedDate={selectedDate}
+                      onChange={setEndTime} 
+                      onDateChange={setSelectedDate}
+                      label="End Time" 
+                    />
+                  )}
                 </div>
               </div>
             )}
