@@ -197,8 +197,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   const uploadPhoto = async (file: File): Promise<string | null> => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const fileExt = file.name.split('.').pop();
-      const fileName = `notes/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('baby-photos')
