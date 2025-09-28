@@ -410,15 +410,19 @@ const Index = () => {
             if (period === 'PM' && hours !== 12) hour24 += 12;
             if (period === 'AM' && hours === 12) hour24 = 0;
             
-            // Use the selected date from the modal, not the original date
-            const loggedAt = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), hour24, minutes, 0, 0);
-            loggedAt.setHours(hour24, minutes, 0, 0);
+            // Create timestamp the same way as addActivity to ensure consistency
+            const year = selectedDate.getFullYear();
+            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(selectedDate.getDate()).padStart(2, '0');
+            const hour = String(hour24).padStart(2, '0');
+            const minute = String(minutes).padStart(2, '0');
+            const loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
 
             const { error } = await supabase
               .from('activities')
               .update({
                 type: updatedActivity.type,
-                logged_at: loggedAt.toISOString(),
+                logged_at: loggedAt,
                 details: updatedActivity.details
               })
               .eq('id', updatedActivity.id);
