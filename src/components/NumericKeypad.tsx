@@ -43,8 +43,14 @@ useEffect(() => {
 }, [isOpen, initialValue]);
 
   const handleNumber = (num: string) => {
-    if (value.length < 6) { // Limit to reasonable length
-      setValue(prev => prev + num);
+    // Allow up to 8 characters for larger numbers (e.g., 1000.5ml)
+    if (value.length < 8) {
+      const newValue = value + num;
+      // Ensure the number is valid and reasonable (under 10000)
+      const numValue = parseFloat(newValue);
+      if (!isNaN(numValue) && numValue <= 9999) {
+        setValue(newValue);
+      }
     }
   };
 
