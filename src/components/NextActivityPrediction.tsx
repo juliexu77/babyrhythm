@@ -57,14 +57,12 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       };
     }
     
-    if (activities.length === 0) {
       return {
         type: "feed",
-        suggestedTime: currentTime,
-        anticipatedTime: currentTime,
+        suggestedTime: undefined,
+        anticipatedTime: undefined,
         reason: "Start your day with a feeding"
       };
-    }
 
     // Calculate feed-to-feed intervals (activities are already sorted newest first)
     const feedIntervals: number[] = [];
@@ -102,8 +100,8 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (!lastActivity) {
       return {
         type: "feed",
-        suggestedTime: getCurrentTime(),
-        anticipatedTime: getCurrentTime(),
+        suggestedTime: undefined,
+        anticipatedTime: undefined,
         reason: "No activities logged today yet"
       };
     }
@@ -189,9 +187,17 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
           
           if (isTypicalNapTime) {
             console.log("Creating time-of-day nap prediction");
+            const candidateTimes = sleepTimes.filter(sleepTime => {
+              const sleepHour = Math.floor(sleepTime / 60);
+              return Math.abs(currentHour - sleepHour) <= 1;
+            });
+            const typicalMinutes = Math.round(candidateTimes.reduce((a, b) => a + b, 0) / candidateTimes.length);
+            const delta = ((typicalMinutes - currentMinutes) % (24 * 60) + (24 * 60)) % (24 * 60);
+            const safeDelta = delta === 0 ? 30 : delta;
+            const anticipatedTime = addMinutesToTime(currentTime, safeDelta);
             nextNapPrediction = {
               type: "nap",
-              anticipatedTime: currentTime,
+              anticipatedTime,
               reason: "Typical nap time based on historical patterns"
             };
           }
@@ -250,8 +256,8 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (lastActivity.type === "nap") {
       return {
         type: "feed",
-        suggestedTime: currentTime,
-        anticipatedTime: currentTime,
+        suggestedTime: undefined,
+        anticipatedTime: undefined,
         reason: "Feeding typically follows after sleep"
       };
     }
@@ -259,8 +265,8 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (lastActivity.type === "feed") {
       return {
         type: "nap",
-        suggestedTime: currentTime,
-        anticipatedTime: currentTime,
+        suggestedTime: undefined,
+        anticipatedTime: undefined,
         reason: "Consider nap time after feeding"
       };
     }
@@ -268,8 +274,8 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     // Final fallback
     return {
       type: "feed",
-      suggestedTime: currentTime,
-      anticipatedTime: currentTime,
+      suggestedTime: undefined,
+      anticipatedTime: undefined,
       reason: "Next activity likely to be feeding"
     };
   };
@@ -326,11 +332,11 @@ return (
           <span className="font-medium capitalize">
             {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
           </span>
-          {nextActivity.type !== "insufficient_data" && (
-            <span className="text-muted-foreground">
-              at {nextActivity.suggestedTime}
-            </span>
-          )}
+            {nextActivity.type !== "insufficient_data" && nextActivity.suggestedTime && (
+              <span className="text-muted-foreground">
+                at {nextActivity.suggestedTime}
+              </span>
+            )}
         </div>
         <button
           onClick={() => setOpen(true)}
@@ -354,18 +360,20 @@ return (
           <h4 className="font-medium text-foreground capitalize mb-0.5">
             {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
           </h4>
-          {nextActivity.type !== "insufficient_data" && (
-            <>
-              <p className="text-sm text-muted-foreground mb-0.5">
-                Suggested time: {nextActivity.suggestedTime}
-              </p>
-              {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
-                <p className="text-sm text-muted-foreground mb-1">
-                  Anticipated: {nextActivity.anticipatedTime}
-                </p>
-              )}
-            </>
-          )}
+            {nextActivity.type !== "insufficient_data" && (
+              <>
+                {nextActivity.suggestedTime && (
+                  <p className="text-sm text-muted-foreground mb-0.5">
+                    Suggested time: {nextActivity.suggestedTime}
+                  </p>
+                )}
+                {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
+                  <p className="text-sm text-muted-foreground mb-1">
+                    Anticipated: {nextActivity.anticipatedTime}
+                  </p>
+                )}
+              </>
+            )}
           <p className="text-xs text-muted-foreground">
             {nextActivity.reason}
           </p>
