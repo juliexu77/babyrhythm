@@ -116,6 +116,12 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     }
 
     // Calculate both next feed and next nap predictions, then pick the earliest
+    console.log("=== PREDICTION DEBUG ===");
+    console.log("Current time:", currentTime, "Minutes:", currentMinutes);
+    console.log("Feed activities:", feedActivities.length, "Nap activities:", napActivities.length);
+    console.log("Can predict feeds:", canPredictFeeds, "Can predict naps:", canPredictNaps);
+    console.log("Last activity:", lastActivity);
+    
     let nextFeedPrediction = null;
     let nextNapPrediction = null;
 
@@ -128,8 +134,10 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
       
       // Only predict if we're approaching the next feed time (within 1 hour early)
+      console.log("Feed check - Time since last feed:", timeSinceLastFeed, "minutes, Avg interval:", avgFeedInterval);
       if (timeSinceLastFeed >= avgFeedInterval - 60) {
         const anticipatedTime = addMinutesToTime(lastFeed.time, avgFeedInterval);
+        console.log("Creating feed prediction for:", anticipatedTime);
         nextFeedPrediction = {
           type: "feed",
           anticipatedTime,
@@ -149,8 +157,10 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
         
         // Only predict if we're approaching the next nap time (within 1 hour early)
+        console.log("Nap check - Time since last nap:", timeSinceLastNap, "minutes, Avg interval:", avgSleepInterval);
         if (timeSinceLastNap >= avgSleepInterval - 60) {
           const anticipatedTime = addMinutesToTime(lastNap.time, avgSleepInterval);
+          console.log("Creating nap prediction for:", anticipatedTime);
           nextNapPrediction = {
             type: "nap",
             anticipatedTime,
@@ -160,24 +170,38 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
       
       // Method 2: Time-of-day nap prediction (if no interval prediction and it's typical nap time)
+      // BUT only if it's been at least 2 hours since the last nap (prevents suggesting nap right after one)
       if (!nextNapPrediction && sleepTimes.length > 0) {
-        const currentHour = Math.floor(currentMinutes / 60);
-        const isTypicalNapTime = sleepTimes.some(sleepTime => {
-          const sleepHour = Math.floor(sleepTime / 60);
-          return Math.abs(currentHour - sleepHour) <= 1; // Within 1 hour
-        });
+        const lastNap = napActivities[0];
+        const lastNapTime = getTimeInMinutes(lastNap.time);
+        let timeSinceLastNap = currentMinutes - lastNapTime;
+        if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
         
-        if (isTypicalNapTime) {
-          nextNapPrediction = {
-            type: "nap",
-            anticipatedTime: currentTime,
-            reason: "Typical nap time based on historical patterns"
-          };
+        console.log("Time-of-day nap check - Time since last nap:", timeSinceLastNap, "minutes");
+        
+        // Only suggest time-of-day nap if it's been at least 2 hours (120 minutes) since last nap
+        if (timeSinceLastNap >= 120) {
+          const currentHour = Math.floor(currentMinutes / 60);
+          const isTypicalNapTime = sleepTimes.some(sleepTime => {
+            const sleepHour = Math.floor(sleepTime / 60);
+            return Math.abs(currentHour - sleepHour) <= 1; // Within 1 hour
+          });
+          
+          if (isTypicalNapTime) {
+            console.log("Creating time-of-day nap prediction");
+            nextNapPrediction = {
+              type: "nap",
+              anticipatedTime: currentTime,
+              reason: "Typical nap time based on historical patterns"
+            };
+          }
+        } else {
+          console.log("Skipping time-of-day nap - too soon after last nap");
         }
       }
     }
 
-    // If we have both predictions, determine which comes first chronologically
+    console.log("Final predictions - Feed:", nextFeedPrediction, "Nap:", nextNapPrediction);
     if (nextFeedPrediction && nextNapPrediction) {
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
