@@ -208,8 +208,12 @@ const Index = () => {
                     Object.keys(activityGroups).forEach(dateKey => {
                       activityGroups[dateKey].sort((a, b) => {
                         const getActivityTime = (activity: any) => {
-                          // For naps, use startTime if available, otherwise logged_at
-                          if (activity.type === 'nap' && activity.details?.startTime) {
+                          // For naps, use endTime if available (so overnight sleep appears after dream feeds)
+                          // Otherwise use startTime, otherwise logged_at
+                          if (activity.type === 'nap' && activity.details?.endTime) {
+                            const activityDate = new Date(activity.loggedAt!).toDateString();
+                            return new Date(`${activityDate} ${activity.details.endTime}`).getTime();
+                          } else if (activity.type === 'nap' && activity.details?.startTime) {
                             const activityDate = new Date(activity.loggedAt!).toDateString();
                             return new Date(`${activityDate} ${activity.details.startTime}`).getTime();
                           }

@@ -123,11 +123,17 @@ export function useActivities() {
 
       if (error) throw error;
 
-      // Sort activities by actual activity time (startTime for naps, logged_at for others)
+      // Sort activities by actual activity time (endTime for naps when available, startTime otherwise, logged_at for others)
       const sortedData = (data || []).sort((a, b) => {
         const getActivityTime = (activity: any) => {
-          // For naps, use startTime if available, otherwise logged_at
-          if (activity.type === 'nap' && activity.details.startTime) {
+          // For naps, use endTime if available (so overnight sleep appears after dream feeds)
+          // Otherwise use startTime, otherwise logged_at
+          if (activity.type === 'nap' && activity.details.endTime) {
+            const today = new Date().toDateString();
+            const activityDate = new Date(activity.logged_at).toDateString();
+            // Combine the date from logged_at with the time from endTime
+            return new Date(`${activityDate} ${activity.details.endTime}`).getTime();
+          } else if (activity.type === 'nap' && activity.details.startTime) {
             const today = new Date().toDateString();
             const activityDate = new Date(activity.logged_at).toDateString();
             // Combine the date from logged_at with the time from startTime
