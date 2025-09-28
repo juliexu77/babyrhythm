@@ -164,46 +164,33 @@ export const useHousehold = () => {
 
       console.log('Fetching collaborators for household:', targetHouseholdId);
 
-      // First get collaborators
-      const { data: collaboratorData, error: collaboratorError } = await supabase
-        .from('collaborators')
-        .select('*')
-        .eq('household_id', targetHouseholdId);
+      // Use the secure function to get collaborators with profile names
+      const { data, error } = await supabase.rpc('get_collaborators_with_profiles', {
+        _household_id: targetHouseholdId
+      });
 
-      if (collaboratorError) {
-        console.error('Error fetching collaborators:', collaboratorError);
+      if (error) {
+        console.error('Error fetching collaborators:', error);
         return;
       }
 
-      console.log('Raw collaborator data:', collaboratorData);
+      console.log('Collaborators with profiles:', data);
 
-      // Then get profiles for all user_ids (if any exist)
-      if (collaboratorData && collaboratorData.length > 0) {
-        const userIds = collaboratorData.map(c => c.user_id);
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name')
-          .in('user_id', userIds);
+      // Transform the data to match our interface
+      const collaborators = data?.map((collaborator: any) => ({
+        id: collaborator.id,
+        household_id: collaborator.household_id,
+        user_id: collaborator.user_id,
+        role: collaborator.role,
+        invited_by: collaborator.invited_by,
+        created_at: collaborator.created_at,
+        profiles: collaborator.full_name ? {
+          full_name: collaborator.full_name,
+          user_id: collaborator.user_id
+        } : null
+      })) || [];
 
-        if (profileError) {
-          console.error('Error fetching profiles:', profileError);
-          // Don't fail if profiles can't be fetched, just continue without them
-        }
-
-        console.log('Profile data:', profileData);
-
-        // Merge collaborator and profile data
-        const enrichedCollaborators = collaboratorData.map(collaborator => ({
-          ...collaborator,
-          profiles: profileData?.find(p => p.user_id === collaborator.user_id) || null
-        }));
-
-        console.log('Enriched collaborators:', enrichedCollaborators);
-        setCollaborators(enrichedCollaborators);
-      } else {
-        console.log('No collaborators found');
-        setCollaborators([]);
-      }
+      setCollaborators(collaborators);
     } catch (error) {
       console.error('Error in fetchCollaborators:', error);
     }

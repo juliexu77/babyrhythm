@@ -219,6 +219,18 @@ export type Database = {
           household_id: string
         }[]
       }
+      get_collaborators_with_profiles: {
+        Args: { _household_id: string }
+        Returns: {
+          created_at: string
+          full_name: string
+          household_id: string
+          id: string
+          invited_by: string
+          role: string
+          user_id: string
+        }[]
+      }
       user_has_household_access: {
         Args: { _household_id: string; _user_id: string }
         Returns: boolean
