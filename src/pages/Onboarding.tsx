@@ -22,15 +22,15 @@ const Onboarding = () => {
         <div className="max-w-md mx-auto text-center space-y-8">
           {/* App Icon & Branding */}
           <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm">
-              <Baby className="w-8 h-8 text-foreground" />
+            <div className="w-16 h-16 rounded-xl bg-card shadow-card border border-border flex items-center justify-center">
+              <Baby className="w-8 h-8 text-primary" />
             </div>
-            <Heart className="w-6 h-6 text-accent/80" />
+            <Heart className="w-6 h-6 text-primary/60" />
           </div>
 
           {/* Mission Statement */}
-          <div className="space-y-6">
-            <h1 className="text-2xl font-serif font-medium text-foreground leading-tight">
+          <div className="bg-card rounded-xl p-6 shadow-card border border-border space-y-6">
+            <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
               {t('welcomeToApp')}
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
@@ -39,11 +39,11 @@ const Onboarding = () => {
           </div>
 
           {/* CTA */}
-          <div className="pt-8">
+          <div className="pt-2">
             <Button 
               onClick={() => navigate("/auth")}
               size="lg"
-              className="w-full h-12 text-base font-bold rounded-full"
+              className="w-full h-12 text-base font-semibold rounded-xl shadow-card hover:shadow-soft transition-all duration-300"
             >
               {t('getStarted')}
             </Button>
