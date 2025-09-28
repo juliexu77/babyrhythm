@@ -310,24 +310,28 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Return earliest prediction
+    // Return earliest prediction that makes logical sense
     if (nextFeedPrediction && nextNapPrediction) {
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
       
-      const adjustedFeedTime = feedTime < currentMinutes ? feedTime + (24 * 60) : feedTime;
-      const adjustedNapTime = napTime < currentMinutes ? napTime + (24 * 60) : napTime;
+      // Calculate how far in the future each prediction is
+      let feedDelta = feedTime - currentMinutes;
+      if (feedDelta < 0) feedDelta += (24 * 60); // Handle day boundary
+      
+      let napDelta = napTime - currentMinutes;
+      if (napDelta < 0) napDelta += (24 * 60); // Handle day boundary
       
       console.log('Prediction comparison:', {
         feedPrediction: nextFeedPrediction.anticipatedTime,
         napPrediction: nextNapPrediction.anticipatedTime,
-        feedTimeMinutes: adjustedFeedTime,
-        napTimeMinutes: adjustedNapTime,
+        feedDeltaMinutes: feedDelta,
+        napDeltaMinutes: napDelta,
         currentMinutes,
-        selectedPrediction: adjustedFeedTime <= adjustedNapTime ? 'feed' : 'nap'
+        selectedPrediction: feedDelta <= napDelta ? 'feed' : 'nap'
       });
       
-      return adjustedFeedTime <= adjustedNapTime ? nextFeedPrediction : nextNapPrediction;
+      return feedDelta <= napDelta ? nextFeedPrediction : nextNapPrediction;
     }
 
     console.log('Single prediction available:', {
