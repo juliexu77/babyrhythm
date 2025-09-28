@@ -132,6 +132,16 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
+    // If last activity was a nap, typically suggest feeding next
+    if (lastActivity.type === "nap" && canPredictFeeds) {
+      return {
+        type: "feed",
+        suggestedTime: currentTime,
+        anticipatedTime: currentTime,
+        reason: "Feeding typically follows after sleep"
+      };
+    }
+
     // Predict next sleep based on sleep-to-sleep patterns and time-of-day
     if (lastActivity.type === "nap" && canPredictNaps) {
       const avgSleepInterval = sleepIntervals.length > 0
@@ -155,34 +165,6 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
           reason: `Next nap due based on ${timeReason} (avg ${Math.round(avgSleepInterval / 60 * 10) / 10}h)`
         };
       }
-    }
-
-    // Default predictions when last activity doesn't match our patterns
-    if (lastActivity.type === "feed" && canPredictNaps) {
-      // Check if it's a typical nap time based on historical patterns
-      const currentHour = Math.floor(currentMinutes / 60);
-      const isTypicalNapTime = sleepTimes.some(sleepTime => {
-        const sleepHour = Math.floor(sleepTime / 60);
-        return Math.abs(currentHour - sleepHour) <= 1;
-      });
-
-      if (isTypicalNapTime && timeSinceLastActivity >= 60) { // At least 1 hour since feed
-        return {
-          type: "nap",
-          suggestedTime: currentTime,
-          anticipatedTime: currentTime,
-          reason: "Typical nap time based on historical sleep patterns"
-        };
-      }
-    }
-
-    if (lastActivity.type === "nap" && canPredictFeeds) {
-      return {
-        type: "feed",
-        suggestedTime: currentTime,
-        anticipatedTime: currentTime,
-        reason: "Feeding typically follows after sleep"
-      };
     }
 
     // Fallback to feed prediction if we have feed data
