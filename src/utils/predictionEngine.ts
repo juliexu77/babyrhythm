@@ -140,28 +140,80 @@ function median(values: number[]): number {
 // ---------------------------
 
 function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
+  console.log('🔍 Raw activities received:', activities.length);
+  console.log('📋 First few activities:', activities.slice(0, 3).map(a => ({
+    id: a.id,
+    type: a.type,
+    time: a.time,
+    loggedAt: a.loggedAt,
+    details: a.details
+  })));
+  
   return activities
     .filter(activity => activity.type !== 'note') // Ignore notes and other non-essential logs
-    .map(activity => ({
-      id: activity.id,
-      type: activity.type,
-      timestamp: new Date(activity.time),
-      startTime: activity.details.startTime ? new Date(activity.details.startTime) : undefined,
-      endTime: activity.details.endTime ? new Date(activity.details.endTime) : undefined,
-      details: activity.details
-    }))
+    .map(activity => {
+      // Get the logged date for this activity
+      const loggedDate = new Date(activity.loggedAt!);
+      const dateString = loggedDate.toDateString(); // e.g., "Fri Sep 28 2024"
+      
+      // Parse start and end times properly
+      let startTime: Date | undefined;
+      let endTime: Date | undefined;
+      
+      if (activity.details.startTime) {
+        startTime = new Date(`${dateString} ${activity.details.startTime}`);
+      }
+      
+      if (activity.details.endTime) {
+        endTime = new Date(`${dateString} ${activity.details.endTime}`);
+      }
+      
+      const event = {
+        id: activity.id,
+        type: activity.type,
+        timestamp: new Date(activity.time),
+        startTime,
+        endTime,
+        details: activity.details
+      };
+      
+      console.log('🔄 Converted activity:', {
+        type: event.type,
+        originalTime: activity.time,
+        timestamp: event.timestamp.toISOString(),
+        startTime: event.startTime?.toISOString(),
+        endTime: event.endTime?.toISOString(),
+        originalStartTime: activity.details.startTime,
+        originalEndTime: activity.details.endTime
+      });
+      
+      return event;
+    })
     .filter(event => event.timestamp <= new Date()) // Remove future events
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Most recent first
 }
 
 function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
+  console.log('😴 Extracting sleep from events:', events.length);
+  
   const sleepSegments = events
     .filter(e => e.type === 'nap')
-    .map(e => ({
-      start: e.startTime || e.timestamp,
-      end: e.endTime || null,
-      type: (isNightTime(e.startTime || e.timestamp) ? 'night' : 'nap') as 'nap' | 'night'
-    }))
+    .map(e => {
+      const segment = {
+        start: e.startTime || e.timestamp,
+        end: e.endTime || null,
+        type: (isNightTime(e.startTime || e.timestamp) ? 'night' : 'nap') as 'nap' | 'night'
+      };
+      
+      console.log('💤 Sleep segment:', {
+        start: segment.start.toISOString(),
+        end: segment.end?.toISOString() || 'ONGOING',
+        type: segment.type,
+        duration: segment.end ? Math.round((segment.end.getTime() - segment.start.getTime()) / 60000) : 'ONGOING'
+      });
+      
+      return segment;
+    })
     .sort((a, b) => b.start.getTime() - a.start.getTime()); // Most recent first
     
   // Add duration for completed segments, but keep ongoing ones too
