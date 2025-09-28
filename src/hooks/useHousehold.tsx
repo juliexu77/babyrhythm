@@ -389,6 +389,26 @@ export const useHousehold = () => {
     }
   };
 
+  const updateCollaboratorRole = async (collaboratorId: string, newRole: string) => {
+    try {
+      const { error } = await supabase
+        .from('collaborators')
+        .update({ role: newRole })
+        .eq('id', collaboratorId);
+
+      if (error) {
+        console.error('Error updating collaborator role:', error);
+        throw error;
+      }
+
+      // Refresh collaborators
+      await fetchCollaborators();
+    } catch (error) {
+      console.error('Error in updateCollaboratorRole:', error);
+      throw error;
+    }
+  };
+
   const refetch = async () => {
     setLoading(true);
     await fetchHousehold();
@@ -404,6 +424,7 @@ export const useHousehold = () => {
     generateInviteLink,
     acceptInvite,
     removeCollaborator,
+    updateCollaboratorRole,
     refetch,
   };
 };

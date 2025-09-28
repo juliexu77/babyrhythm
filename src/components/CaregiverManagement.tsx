@@ -20,15 +20,16 @@ interface Collaborator {
     user_id: string;
   } | null;
 }
-import { UserPlus, Trash2, Mail, Volume2, Send } from "lucide-react";
+import { UserPlus, Trash2, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CaregiverManagementProps {
   onClose: () => void;
 }
 
 export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
-  const { household, collaborators, removeCollaborator, generateInviteLink } = useHousehold();
+  const { household, collaborators, removeCollaborator, updateCollaboratorRole, generateInviteLink } = useHousehold();
   const [isActive, setIsActive] = useState(true);
   const [emailInvite, setEmailInvite] = useState("");
   const [isInviting, setIsInviting] = useState(false);
@@ -123,6 +124,23 @@ const handleAddCaregiver = async () => {
     }
   };
 
+  const handleRoleChange = async (collaboratorId: string, newRole: string) => {
+    try {
+      await updateCollaboratorRole(collaboratorId, newRole);
+      toast({
+        title: "Role updated",
+        description: "The collaborator's role has been changed successfully."
+      });
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast({
+        title: "Error updating role",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto">
@@ -177,14 +195,11 @@ const handleAddCaregiver = async () => {
                 return (
                   <div key={collaborator.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <Avatar className="w-10 h-10">
-                          <AvatarFallback className="bg-muted text-sm">
-                            {getInitials(userName)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <Volume2 className="w-4 h-4 absolute -bottom-1 -right-1 bg-background rounded-full p-0.5" />
-                      </div>
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-muted text-sm">
+                          {getInitials(userName)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">
                           {userName}
@@ -195,9 +210,22 @@ const handleAddCaregiver = async () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant="secondary" className={getRoleColor(collaborator.role)}>
-                        {collaborator.role}
-                      </Badge>
+                      <div className="flex items-center space-x-2">
+                        <Select
+                          value={collaborator.role}
+                          onValueChange={(newRole) => handleRoleChange(collaborator.id, newRole)}
+                        >
+                          <SelectTrigger className="w-24 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="parent">Parent</SelectItem>
+                            <SelectItem value="caregiver">Caregiver</SelectItem>
+                            <SelectItem value="grandparent">Grandparent</SelectItem>
+                            <SelectItem value="partner">Partner</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       {collaborator.role !== 'parent' && (
                         <Button
                           variant="ghost"

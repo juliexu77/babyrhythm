@@ -5,6 +5,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Baby, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface InviteDetails {
+  household_id: string;
+  role: string;
+  created_by: string;
+  inviter_name?: string;
+  baby_name?: string;
+}
 
 const InviteAccept = () => {
   const { code } = useParams<{ code: string }>();
@@ -13,6 +22,7 @@ const InviteAccept = () => {
   const { acceptInvite } = useHousehold();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inviteDetails, setInviteDetails] = useState<InviteDetails | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -20,7 +30,48 @@ const InviteAccept = () => {
       navigate(`/auth?redirect=/invite/${code}`);
       return;
     }
+    
+    // Fetch invite details
+    fetchInviteDetails();
   }, [user, code, navigate]);
+
+  const fetchInviteDetails = async () => {
+    if (!code) return;
+    
+    try {
+      // Get invite details with inviter information
+      const { data, error } = await supabase
+        .from('invite_links')
+        .select(`
+          household_id,
+          role,
+          created_by,
+          households!inner(baby_name),
+          profiles!inner(full_name)
+        `)
+        .eq('code', code)
+        .gt('expires_at', new Date().toISOString())
+        .is('used_at', null)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching invite details:', error);
+        return;
+      }
+
+      if (data) {
+        setInviteDetails({
+          household_id: data.household_id,
+          role: data.role,
+          created_by: data.created_by,
+          inviter_name: (data.profiles as any)?.full_name || 'Someone',
+          baby_name: (data.households as any)?.baby_name || 'a baby'
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching invite details:', err);
+    }
+  };
 
   const handleAcceptInvite = async () => {
     if (!code) return;
@@ -71,7 +122,7 @@ const InviteAccept = () => {
           </div>
           <CardTitle>You've been invited!</CardTitle>
           <CardDescription>
-            Someone has invited you to help track their baby's activities
+            {inviteDetails?.inviter_name || 'Someone'} has invited you to help track {inviteDetails?.baby_name || 'their baby'}'s activities
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
