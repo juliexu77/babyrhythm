@@ -15,6 +15,10 @@ interface Collaborator {
   role: string;
   invited_by: string;
   created_at: string;
+  profiles?: {
+    full_name: string | null;
+    user_id: string;
+  } | null;
 }
 import { UserPlus, Trash2, Mail, Volume2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -30,10 +34,10 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
   const [isInviting, setIsInviting] = useState(false);
   const { toast } = useToast();
 
-  const getInitials = (email: string) => {
-    return email
-      .split('@')[0]
-      .split('.')
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    return name
+      .split(' ')
       .map(n => n[0])
       .join('')
       .toUpperCase()
@@ -157,42 +161,45 @@ const handleAddCaregiver = async () => {
 
           {/* Collaborators List */}
           <div className="space-y-3">
-            {collaborators.map((collaborator) => (
-              <div key={collaborator.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="bg-muted text-sm">
-                        {getInitials(collaborator.user_id)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Volume2 className="w-4 h-4 absolute -bottom-1 -right-1 bg-background rounded-full p-0.5" />
+            {collaborators.map((collaborator) => {
+              const userName = collaborator.profiles?.full_name || `User ${collaborator.user_id.slice(0, 8)}`;
+              return (
+                <div key={collaborator.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-muted text-sm">
+                          {getInitials(userName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Volume2 className="w-4 h-4 absolute -bottom-1 -right-1 bg-background rounded-full p-0.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">
+                        {userName}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {collaborator.role}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">
-                      User {collaborator.user_id.slice(0, 8)}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="secondary" className={getRoleColor(collaborator.role)}>
                       {collaborator.role}
-                    </p>
+                    </Badge>
+                    {collaborator.role !== 'parent' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCollaborator(collaborator.id)}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary" className={getRoleColor(collaborator.role)}>
-                    {collaborator.role}
-                  </Badge>
-                  {collaborator.role !== 'parent' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeCollaborator(collaborator.id)}
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Email Invite Section */}

@@ -19,6 +19,10 @@ interface Collaborator {
   role: string;
   invited_by: string;
   created_at: string;
+  profiles?: {
+    full_name: string | null;
+    user_id: string;
+  } | null;
 }
 
 export const useHousehold = () => {
@@ -155,17 +159,39 @@ export const useHousehold = () => {
       const targetHouseholdId = householdId || household?.id;
       if (!targetHouseholdId) return;
 
-      const { data, error } = await supabase
+      // First get collaborators
+      const { data: collaboratorData, error: collaboratorError } = await supabase
         .from('collaborators')
         .select('*')
         .eq('household_id', targetHouseholdId);
 
-      if (error) {
-        console.error('Error fetching collaborators:', error);
+      if (collaboratorError) {
+        console.error('Error fetching collaborators:', collaboratorError);
         return;
       }
 
-      setCollaborators(data || []);
+      // Then get profiles for all user_ids
+      if (collaboratorData && collaboratorData.length > 0) {
+        const userIds = collaboratorData.map(c => c.user_id);
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', userIds);
+
+        if (profileError) {
+          console.error('Error fetching profiles:', profileError);
+        }
+
+        // Merge collaborator and profile data
+        const enrichedCollaborators = collaboratorData.map(collaborator => ({
+          ...collaborator,
+          profiles: profileData?.find(p => p.user_id === collaborator.user_id) || null
+        }));
+
+        setCollaborators(enrichedCollaborators);
+      } else {
+        setCollaborators([]);
+      }
     } catch (error) {
       console.error('Error in fetchCollaborators:', error);
     }
