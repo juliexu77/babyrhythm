@@ -127,21 +127,18 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       let timeSinceLastFeed = currentMinutes - lastFeedTime;
       if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
       
-      if (timeSinceLastFeed >= avgFeedInterval - 60) { // Within 1 hour of expected time
+      // Only predict if we're approaching the next feed time (within 1 hour early)
+      if (timeSinceLastFeed >= avgFeedInterval - 60) {
         const anticipatedTime = addMinutesToTime(lastFeed.time, avgFeedInterval);
-        const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
-        
         nextFeedPrediction = {
           type: "feed",
           anticipatedTime,
-          anticipatedMinutes: anticipatedMinutes > currentMinutes ? anticipatedMinutes : anticipatedMinutes + (24 * 60),
-          reason: `Next feeding due based on feed pattern (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h)`,
-          confidence: feedIntervals.length >= 3 ? "high" : "medium"
+          reason: `Next feeding due based on feed pattern (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h)`
         };
       }
     }
 
-    // Calculate next nap prediction based on sleep patterns and time-of-day
+    // Calculate next nap prediction based on sleep patterns
     if (canPredictNaps) {
       // Method 1: Sleep-to-sleep interval prediction
       if (sleepIntervals.length > 0) {
@@ -151,21 +148,18 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         let timeSinceLastNap = currentMinutes - lastNapTime;
         if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
         
-        if (timeSinceLastNap >= avgSleepInterval - 60) { // Within 1 hour of expected time
+        // Only predict if we're approaching the next nap time (within 1 hour early)
+        if (timeSinceLastNap >= avgSleepInterval - 60) {
           const anticipatedTime = addMinutesToTime(lastNap.time, avgSleepInterval);
-          const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
-          
           nextNapPrediction = {
             type: "nap",
             anticipatedTime,
-            anticipatedMinutes: anticipatedMinutes > currentMinutes ? anticipatedMinutes : anticipatedMinutes + (24 * 60),
-            reason: `Next nap due based on sleep pattern (avg ${Math.round(avgSleepInterval / 60 * 10) / 10}h)`,
-            confidence: sleepIntervals.length >= 3 ? "high" : "medium"
+            reason: `Next nap due based on sleep pattern (avg ${Math.round(avgSleepInterval / 60 * 10) / 10}h)`
           };
         }
       }
       
-      // Method 2: Time-of-day nap prediction (if no sleep-to-sleep prediction or it's a typical nap time)
+      // Method 2: Time-of-day nap prediction (if no interval prediction and it's typical nap time)
       if (!nextNapPrediction && sleepTimes.length > 0) {
         const currentHour = Math.floor(currentMinutes / 60);
         const isTypicalNapTime = sleepTimes.some(sleepTime => {
@@ -177,20 +171,22 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
           nextNapPrediction = {
             type: "nap",
             anticipatedTime: currentTime,
-            anticipatedMinutes: currentMinutes,
-            reason: "Typical nap time based on historical patterns",
-            confidence: "medium"
+            reason: "Typical nap time based on historical patterns"
           };
         }
       }
     }
 
-    // Compare predictions and return the earliest one
+    // If we have both predictions, determine which comes first chronologically
     if (nextFeedPrediction && nextNapPrediction) {
-      const feedDistance = Math.abs(nextFeedPrediction.anticipatedMinutes - currentMinutes);
-      const napDistance = Math.abs(nextNapPrediction.anticipatedMinutes - currentMinutes);
+      const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
+      const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
       
-      if (feedDistance <= napDistance) {
+      // Adjust for next-day times (if anticipated time is earlier in day than current time)
+      const adjustedFeedTime = feedTime < currentMinutes ? feedTime + (24 * 60) : feedTime;
+      const adjustedNapTime = napTime < currentMinutes ? napTime + (24 * 60) : napTime;
+      
+      if (adjustedFeedTime <= adjustedNapTime) {
         return {
           type: nextFeedPrediction.type,
           suggestedTime: currentTime,
