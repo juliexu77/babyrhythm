@@ -37,40 +37,32 @@ export const SummaryCards = ({ activities }: SummaryCardsProps) => {
   return (
     <div className="grid grid-cols-2 gap-4 mb-8">
       {/* Total Feeds Card */}
-      <div className="bg-gradient-to-br from-rose-50 to-rose-100/50 rounded-xl p-6 border border-rose-200/30">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-feed flex items-center justify-center">
-            <Baby className="w-5 h-5 text-white" />
-          </div>
-          <div className="text-sm font-medium text-rose-700 uppercase tracking-wide">
-            Total Feeds
-          </div>
+      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+        <div className="flex items-center gap-2 mb-4">
+          <Baby className="h-5 w-5 text-primary" />
+          <h3 className="font-medium text-foreground">Total Feeds</h3>
         </div>
-        <div className="space-y-1">
-          <div className="text-3xl font-serif font-semibold text-rose-900">
+        <div className="space-y-2">
+          <div className="text-3xl font-serif font-semibold text-foreground">
             {feedActivities.length}
           </div>
-          <div className="text-sm text-rose-600 font-medium">
+          <div className="text-sm text-muted-foreground">
             {totalOunces.toFixed(1)} oz total
           </div>
         </div>
       </div>
 
       {/* Total Naps Card */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-6 border border-blue-200/30">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-nap flex items-center justify-center">
-            <Clock className="w-5 h-5 text-white" />
-          </div>
-          <div className="text-sm font-medium text-blue-700 uppercase tracking-wide">
-            Total Naps
-          </div>
+      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="h-5 w-5 text-primary" />
+          <h3 className="font-medium text-foreground">Total Naps</h3>
         </div>
-        <div className="space-y-1">
-          <div className="text-3xl font-serif font-semibold text-blue-900">
+        <div className="space-y-2">
+          <div className="text-3xl font-serif font-semibold text-foreground">
             {napActivities.length}
           </div>
-          <div className="text-sm text-blue-600 font-medium">
+          <div className="text-sm text-muted-foreground">
             {formatNapTime(totalNapTime)}
           </div>
         </div>
