@@ -9,6 +9,7 @@ import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
 import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +64,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // General
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -99,6 +102,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         setEndTime(details.endTime || "");
       } else if (editingActivity.type === "note") {
         setNote(editingActivity.details.note || "");
+        setPhotoUrl((editingActivity.details as any).photoUrl || null);
       }
     } else {
       // Load last used settings for new activities
@@ -135,6 +139,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setTimerStart(null);
     setNote("");
     setPhoto(null);
+    setPhotoUrl(null);
     setShowKeypad(false);
   };
 
@@ -161,7 +166,34 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setQuantity(value);
   };
 
-  const handleSubmit = () => {
+  const uploadPhoto = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `notes/${Date.now()}.${fileExt}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('baby-photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('baby-photos')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload photo. Please try again.",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!activityType) {
       toast({
         title: "Activity type required",
@@ -237,11 +269,22 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         break;
       case "note":
         details.note = note;
+        if (photoUrl) {
+          details.photoUrl = photoUrl;
+        }
         break;
     }
 
-    if (photo) {
-      details.photo = photo;
+    // Upload photo if new one is selected
+    if (photo && !photoUrl) {
+      setUploadingPhoto(true);
+      const uploadedPhotoUrl = await uploadPhoto(photo);
+      setUploadingPhoto(false);
+      
+      if (uploadedPhotoUrl) {
+        details.photoUrl = uploadedPhotoUrl;
+        setPhotoUrl(uploadedPhotoUrl);
+      }
     }
 
     if (editingActivity && onEditActivity) {
@@ -607,10 +650,31 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => {
+                     onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          // Validate file type
+                          if (!file.type.startsWith('image/')) {
+                            toast({
+                              title: "Invalid file type",
+                              description: "Please select an image file.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          
+                          // Validate file size (10MB max)
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast({
+                              title: "File too large",
+                              description: "Please select an image smaller than 10MB.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          
                           setPhoto(file);
+                          setPhotoUrl(null); // Clear existing URL when new file selected
                         }
                       }}
                       className="hidden"
@@ -621,20 +685,25 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <Camera className="h-8 w-8 mb-2" />
-                      {photo ? (
-                        <span className="text-sm font-medium">{photo.name}</span>
+                      {photo || photoUrl ? (
+                        <span className="text-sm font-medium">
+                          {photo ? photo.name : "Photo attached"}
+                        </span>
                       ) : (
                         <>
                           <span className="text-sm font-medium">Tap to add photo</span>
-                          <span className="text-xs mt-1">JPG, PNG up to 20MB</span>
+                          <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
                         </>
                       )}
                     </label>
-                    {photo && (
+                    {(photo || photoUrl) && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPhoto(null)}
+                        onClick={() => {
+                          setPhoto(null);
+                          setPhotoUrl(null);
+                        }}
                         className="mt-2 h-8"
                       >
                         Remove photo
@@ -657,9 +726,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               
               <Button 
                 onClick={handleSubmit} 
+                disabled={uploadingPhoto}
                 className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                {editingActivity ? 'Update' : 'Save'}
+                {uploadingPhoto ? 'Uploading...' : (editingActivity ? 'Update' : 'Save')}
               </Button>
             </div>
           </div>
