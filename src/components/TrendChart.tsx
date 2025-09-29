@@ -140,16 +140,16 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
   const maxNapValue = Math.max(...napData.map(d => d.value));
 
   return (
-    <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-      <div className="flex items-center gap-2 mb-6">
-        <TrendingUp className="w-5 h-5 text-muted-foreground" />
-        <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-          Daily Trends
-        </h3>
-      </div>
-      
-      <div className="space-y-8">
-        {/* Feed Volume Chart */}
+    <div className="space-y-6">
+      {/* Daily Feed Totals */}
+      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+        <div className="flex items-center gap-2 mb-6">
+          <TrendingUp className="w-5 h-5 text-muted-foreground" />
+          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+            Daily Feed Totals
+          </h3>
+        </div>
+        
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-gradient-feed"></div>
@@ -187,8 +187,17 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Sleep Duration Chart */}
+      {/* Daily Sleep Totals */}
+      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+        <div className="flex items-center gap-2 mb-6">
+          <TrendingUp className="w-5 h-5 text-muted-foreground" />
+          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+            Daily Sleep Totals
+          </h3>
+        </div>
+        
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-gradient-nap"></div>

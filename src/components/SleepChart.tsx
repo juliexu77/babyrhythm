@@ -19,9 +19,9 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Daily Sleep Totals */}
+      {/* Sleep Chart */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <h3 className="text-lg font-semibold mb-4">{t('dailySleepTotals')}</h3>
+        <h3 className="text-lg font-semibold mb-4">Sleep Chart</h3>
         <SleepChartControls
           currentWeekOffset={currentWeekOffset}
           setCurrentWeekOffset={setCurrentWeekOffset}
@@ -34,9 +34,6 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           showFullDay={showFullDay}
         />
       </div>
-
-      {/* Average Daily Summary */}
-      <SleepStats averageDailySummary={averageDailySummary} />
     </div>
   );
 };

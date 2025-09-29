@@ -191,19 +191,19 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
 
   if (showPrompt && !showReview) {
     return (
-      <Card className="mb-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
+      <Card className="mb-4 bg-card border-border">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Heart className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+              <Heart className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium text-foreground">
                 Want to hear about your day?
               </span>
             </div>
             <Button 
               onClick={startReview}
               size="sm"
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               Yes, please
             </Button>
@@ -214,12 +214,12 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   }
 
   return (
-    <Card className="mb-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
+    <Card className="mb-4 bg-card border-border">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <Heart className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">
+            <Heart className="w-6 h-6 text-primary" />
+            <h3 className="text-lg font-semibold text-foreground">
               Your Day Together
             </h3>
           </div>
@@ -231,13 +231,13 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
               setShowPrompt(false);
               setTypedText("");
             }}
-            className="text-purple-600 hover:text-purple-700 dark:text-purple-400"
+            className="text-muted-foreground hover:text-foreground"
           >
             {showReview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>
         
-        <div className="text-purple-800 dark:text-purple-200 leading-relaxed">
+        <div className="text-foreground leading-relaxed">
           {typedText}
           {isTyping && <span className="animate-pulse">|</span>}
         </div>
