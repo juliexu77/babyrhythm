@@ -184,22 +184,20 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     return AGE_NORMS['12+'];
   };
 
-  // Check trigger logic: after 7 PM with activities today
+  // Check trigger logic: show for testing during any hour, remove the time restriction temporarily
   useEffect(() => {
     const checkTrigger = () => {
       const now = new Date();
-      const hour = now.getHours();
-      
-      // Show between 7 PM and 11 PM
-      if (hour < 19 || hour > 23) return;
       
       const hasActivitiesToday = activities.some(activity => {
         const activityDate = new Date(activity.logged_at);
         return activityDate.toDateString() === now.toDateString();
       });
       
+      // For testing: show if there are any activities today, regardless of time
       if (hasActivitiesToday && !reviewGenerated) {
         setShowPrompt(true);
+        console.log('Night Doula Debug - Trigger activated:', { hasActivitiesToday, reviewGenerated });
       }
     };
 
@@ -275,7 +273,27 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     }, 0);
 
     const bedtime = bedtimeNap?.details?.startTime || null;
-    const photos = notes.flatMap(n => n.details?.photos || []);
+    
+    // Extract photos from notes and any activity that might have photos
+    const photos = activities_filtered.flatMap(activity => {
+      // Check multiple possible photo locations
+      const activityPhotos = [];
+      if (activity.details?.photos) activityPhotos.push(...activity.details.photos);
+      if (activity.details?.photo) activityPhotos.push(activity.details.photo);
+      if (activity.details?.photo_url) activityPhotos.push(activity.details.photo_url);
+      return activityPhotos;
+    }).filter(Boolean);
+
+    console.log('Night Doula Debug - Day Stats:', {
+      date: date.toDateString(),
+      feeds: feeds.length,
+      volume,
+      naps: naps.length,
+      notesCount: notes.length,
+      photosCount: photos.length,
+      noteContents: notes.map(n => n.details?.content || n.details?.note || ''),
+      photoSources: photos
+    });
 
     return {
       feeds: feeds.length,
@@ -385,30 +403,42 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       .replace('{feed_upper}', norms.feeds[1].toString());
     sentences.push(peerSentence);
     
-    // 4. PARENT NOTE Reference (if present)
+    // 4. PARENT NOTE Reference (if present) - ALWAYS try to include if ANY notes exist
     if (todayStats.notes.length > 0) {
-      const noteContent = todayStats.notes[0].details?.content || "";
-      if (noteContent.length > 0) {
-        let noteSentence = randomChoice(SENTENCE_LIBRARY.notes);
-        let noteRef = noteContent.slice(0, 15);
-        let noteEffect = "the day's pattern";
-        
-        if (noteContent.toLowerCase().includes('teeth')) {
-          noteRef = "teething";
-          noteEffect = "the shorter afternoon nap";
-        } else if (noteContent.toLowerCase().includes('fuss')) {
-          noteRef = "fussiness";
-          noteEffect = "the extra attention he needed";
-        } else if (noteContent.toLowerCase().includes('growth') || noteContent.toLowerCase().includes('hungry')) {
-          noteRef = "extra hunger";
-          noteEffect = "those additional feeds";
-        }
-        
-        noteSentence = noteSentence
-          .replace('{note_reference}', noteRef)
-          .replace('{note_related_effect}', noteEffect);
-        sentences.push(noteSentence);
+      const noteContent = todayStats.notes[0].details?.content || 
+                         todayStats.notes[0].details?.note || 
+                         todayStats.notes[0].details?.text || "";
+      
+      // Include note reference even if it's generic
+      let noteSentence = randomChoice(SENTENCE_LIBRARY.notes);
+      let noteRef = noteContent.slice(0, 15) || "some observations";
+      let noteEffect = "the day's pattern";
+      
+      if (noteContent.toLowerCase().includes('teeth') || noteContent.toLowerCase().includes('tooth')) {
+        noteRef = "teething";
+        noteEffect = "the shorter afternoon nap";
+      } else if (noteContent.toLowerCase().includes('fuss') || noteContent.toLowerCase().includes('cry')) {
+        noteRef = "fussiness";
+        noteEffect = "the extra attention he needed";
+      } else if (noteContent.toLowerCase().includes('growth') || noteContent.toLowerCase().includes('hungry')) {
+        noteRef = "extra hunger";
+        noteEffect = "those additional feeds";
+      } else if (noteContent.toLowerCase().includes('sleep') || noteContent.toLowerCase().includes('tired')) {
+        noteRef = "extra sleepiness";
+        noteEffect = "the longer naps";
+      } else if (noteContent.length > 5) {
+        noteRef = `"${noteContent.slice(0, 20)}${noteContent.length > 20 ? '...' : ''}"`;
+        noteEffect = "how his day played out";
       }
+      
+      noteSentence = noteSentence
+        .replace('{note_reference}', noteRef)
+        .replace('{note_related_effect}', noteEffect);
+      sentences.push(noteSentence);
+      
+      console.log('Night Doula Debug - Note Reference:', { noteContent, noteRef, noteEffect, noteSentence });
+    } else {
+      console.log('Night Doula Debug - No notes found for today');
     }
     
     // 5. FORWARD-LOOKING Insight (1 line prediction/tip)
