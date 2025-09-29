@@ -208,15 +208,6 @@ const Index = () => {
       default:
         return (
           <>
-            {/* Night Doula Review - Top Priority */}
-            <div className="px-4 pt-4">
-              <NightDoulaReview activities={activities.map(a => ({
-                id: a.id,
-                type: a.type,
-                logged_at: a.loggedAt,
-                details: a.details
-              }))} babyName={babyProfile?.name} />
-            </div>
             
             {/* Activities Timeline */}
             <div className="px-4 py-4">              
