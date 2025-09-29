@@ -28,8 +28,11 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
         if (a.type !== "nap") return false;
         if (!a.loggedAt) return false;
         
-        const activityDate = new Date(a.loggedAt).toISOString().split('T')[0];
-        return dateStr === activityDate;
+        // Use consistent local date handling to avoid timezone issues
+        const activityDate = new Date(a.loggedAt);
+        const localActivityDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
+        const localTargetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        return localActivityDate.getTime() === localTargetDate.getTime();
       });
       
       // Create sleep blocks for the time range
