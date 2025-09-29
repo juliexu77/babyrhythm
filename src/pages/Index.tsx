@@ -221,11 +221,12 @@ const Index = () => {
                     // Group activities by date
                     const activityGroups: { [date: string]: typeof activities } = {};
                     
-                    activities.forEach(activity => {
-                      // Use the logged_at date for grouping activities by day
-                      const activityDate = new Date(activity.loggedAt!);
-                      // Use toDateString() and then parse to avoid timezone issues
-                      const localDateString = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+                     activities.forEach(activity => {
+                       // Use the logged_at date for grouping activities by day
+                       const activityDate = new Date(activity.loggedAt!);
+                       // Create date in local timezone to avoid timezone offset issues
+                       const localDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
+                       const localDateString = localDate.toISOString().split('T')[0]; // YYYY-MM-DD format
                       
                       if (!activityGroups[localDateString]) {
                         activityGroups[localDateString] = [];
