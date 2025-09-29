@@ -787,39 +787,41 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             )}
 
 
-            <div className="flex gap-3 pt-6 border-t">
-              <Button 
-                variant="outline" 
-                onClick={() => onClose ? onClose() : setInternalOpen(false)} 
-                className="flex-1 h-12"
-              >
-                Cancel
-              </Button>
-              
-              {/* Show delete button when editing */}
-              {editingActivity && onDeleteActivity && (
+            <div className="space-y-3 pt-6 border-t">
+              <div className="flex gap-3">
                 <Button 
-                  variant="destructive" 
-                  onClick={() => {
-                    if (editingActivity && onDeleteActivity) {
-                      onDeleteActivity(editingActivity.id);
-                      if (onClose) onClose();
-                    }
-                  }}
+                  variant="outline" 
+                  onClick={() => onClose ? onClose() : setInternalOpen(false)} 
                   className="flex-1 h-12"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  Cancel
                 </Button>
-              )}
+                
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={uploadingPhoto}
+                  className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {uploadingPhoto ? 'Uploading...' : (editingActivity ? 'Update' : 'Save')}
+                </Button>
+              </div>
               
-              <Button 
-                onClick={handleSubmit} 
-                disabled={uploadingPhoto}
-                className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                {uploadingPhoto ? 'Uploading...' : (editingActivity ? 'Update' : 'Save')}
-              </Button>
+              {/* Delete link when editing */}
+              {editingActivity && onDeleteActivity && (
+                <div className="text-center">
+                  <button
+                    onClick={() => {
+                      if (editingActivity && onDeleteActivity) {
+                        onDeleteActivity(editingActivity.id);
+                        if (onClose) onClose();
+                      }
+                    }}
+                    className="text-sm text-destructive hover:text-destructive/80 transition-colors underline"
+                  >
+                    Delete this activity
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
