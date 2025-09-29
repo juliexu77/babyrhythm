@@ -186,11 +186,16 @@ function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
     .sort((a, b) => b.start.getTime() - a.start.getTime()); // Most recent first
     
   // Try to infer an end time for open sleeps using the next event after the start
+  // But don't auto-close ongoing night sleep or very recent sleep
   const eventsAsc = [...events].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  const now = new Date();
   sleepSegments.forEach(segment => {
     if (!segment.end) {
+      const timeSinceStart = (now.getTime() - segment.start.getTime()) / 60000; // minutes
       const nextAfter = eventsAsc.find(e => e.timestamp > segment.start);
-      if (nextAfter) {
+      
+      // Don't auto-close night sleep or very recent sleep (< 30 min)
+      if (nextAfter && segment.type !== 'night' && timeSinceStart > 30) {
         segment.end = nextAfter.timestamp;
       }
     }
