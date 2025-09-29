@@ -115,7 +115,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       summary: `${todayFeeds.length} feeds • ${Math.round(totalNapTimeToday / 60)}h sleep • ${todayDiapers.length} diapers`,
       bullets: [
         totalIntakeToday > 0 ? `Total intake: ${totalIntakeToday}${todayFeeds.some(f => f.details?.unit === 'ml') ? 'ml' : 'oz'}` : "No intake tracked yet today",
-        todayNaps.length > 0 ? `Nap time: ${Math.floor(totalNapTimeToday / 60)}h ${totalNapTimeToday % 60}m` : "No naps logged today",
+        todayNaps.length > 0 && totalNapTimeToday > 0 ? `Nap time: ${Math.floor(totalNapTimeToday / 60)}h ${totalNapTimeToday % 60}m` : todayNaps.length > 0 ? "Nap logged (calculating time...)" : "No naps logged today",
         `Status: ${todayStatus}`
       ].filter(Boolean),
       icon: Clock,
