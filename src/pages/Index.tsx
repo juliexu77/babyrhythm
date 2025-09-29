@@ -6,7 +6,6 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { InsightsTab } from "@/components/InsightsTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { Helper } from "@/components/Helper";
-import { DailyReview } from "@/components/DailyReview";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -486,9 +485,6 @@ const Index = () => {
           }
         }}
       />
-
-      {/* Daily Review Component */}
-      <DailyReview activities={activities} />
 
     </div>
   );
