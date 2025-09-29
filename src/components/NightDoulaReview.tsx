@@ -300,7 +300,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
 
     // Collect diaper observations and full notes
     const allNotes = [...notes, ...diapers.filter(d => 
-      d.details?.notes || d.details?.hasLeak || d.details?.blowout || d.details?.rash
+      d.details?.note || d.details?.hasLeak || d.details?.blowout || d.details?.rash
     )];
 
     console.log('Night Doula Debug - Enhanced Day Stats:', {
@@ -312,7 +312,8 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         hasLeak: d.details?.hasLeak, 
         diaperType: d.details?.diaperType,
         hasCream: d.details?.hasCream,
-        notes: d.details?.notes
+        note: d.details?.note,
+        hasRashInNote: d.details?.note?.toLowerCase().includes('rash')
       })),
       notesCount: allNotes.length,
       activitiesWithPhotos: activities_filtered.filter(a => 
@@ -391,20 +392,30 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       let noteEffect = "";
       
       // Check for diaper-specific observations first (using correct field names)
-      const diaperNote = todayStats.notes.find(note => 
-        note.type === 'diaper' && (note.details?.hasLeak || note.details?.blowout || note.details?.rash)
-      );
+      const diaperNote = todayStats.notes.find(note => {
+        if (note.type === 'diaper') {
+          const noteText = note.details?.note || "";
+          return note.details?.hasLeak || 
+                 note.details?.blowout || 
+                 note.details?.rash ||
+                 noteText.toLowerCase().includes('rash') ||
+                 noteText.toLowerCase().includes('red');
+        }
+        return false;
+      });
       
       if (diaperNote) {
+        const noteText = diaperNote.details?.note || "";
+        
         if (diaperNote.details?.hasLeak) {
           noteRef = "a leak";
           noteEffect = "fussiness during that change";
+        } else if (noteText.toLowerCase().includes('rash') || noteText.toLowerCase().includes('red')) {
+          noteRef = "some redness";
+          noteEffect = "why he might have been more sensitive today";
         } else if (diaperNote.details?.blowout) {
           noteRef = "a blowout";
           noteEffect = "the extra attention he needed";
-        } else if (diaperNote.details?.rash) {
-          noteRef = "some redness";
-          noteEffect = "why he might have been more sensitive";
         }
       } else {
         // Regular notes - show full content
