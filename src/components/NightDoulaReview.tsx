@@ -34,108 +34,106 @@ interface DayStats {
 
 // Age norms in months
 const AGE_NORMS = {
-  '0-2': { feeds: [8, 12], naps: [4, 6], napTime: [4, 6] },
-  '3-4': { feeds: [6, 10], naps: [4, 5], napTime: [4, 5] },
-  '5-6': { feeds: [5, 8], naps: [3, 4], napTime: [3, 4] },
-  '7-9': { feeds: [4, 7], naps: [2, 3], napTime: [2.5, 3.5] },
-  '10-12': { feeds: [3, 6], naps: [2, 3], napTime: [2, 3] },
-  '12+': { feeds: [3, 5], naps: [1, 2], napTime: [1.5, 2.5] }
+  '0-2': { feeds: [8, 12], naps: [4, 6] },
+  '3-4': { feeds: [6, 10], naps: [4, 5] },
+  '5-6': { feeds: [5, 8], naps: [3, 4] },
+  '7-9': { feeds: [4, 7], naps: [2, 3] },
+  '10-12': { feeds: [3, 6], naps: [2, 3] },
+  '12+': { feeds: [3, 5], naps: [1, 2] }
 };
 
-// Sentence library for varied responses with improved tone
-const SENTENCE_LIBRARY = {
+// Natural language bank for warm, conversational tone
+const LANGUAGE_BANK = {
   feeds: [
-    "{baby_name} had {feed_count} feeds today, about {feed_total_ml} ml in total.",
-    "{baby_name} finished {feed_count} feeds today, around {feed_total_ml} ml altogether.",
-    "Today's tally: {feed_count} feeds, adding up to about {feed_total_ml} ml.",
-    "{baby_name} got in {feed_count} feeds, for roughly {feed_total_ml} ml overall."
+    "{baby_name} had {feed_count} feeds today, around {feed_total_ml} ml altogether.",
+    "{baby_name} finished {feed_count} feeds today for about {feed_total_ml} ml total.",
+    "Today's tally: {feed_count} feeds, adding up to roughly {feed_total_ml} ml.",
+    "{baby_name} got in {feed_count} feeds, totaling about {feed_total_ml} ml."
   ],
   naps: {
     'all-short': [
-      "All of his naps were on the shorter side, around 30 minutes each.",
-      "He only managed catnaps today, nothing longer than half an hour.",
-      "Every nap was brief today, closer to 30 minutes."
+      "He had a couple of quick catnaps today.",
+      "All shorter stretches, closer to 30 minutes each.",
+      "Everything was on the briefer side today."
     ],
     'all-long': [
       "He took solid stretches today, each well over an hour.",
-      "All of his naps today were longer ones, more than an hour each.",
-      "Nice long naps throughout — each lasting over an hour."
+      "All longer naps today — great hour-plus stretches that gave him real rest.",
+      "Every nap was a strong one, lasting over an hour."
     ],
     'mix': [
-      "His naps were a mix — one solid stretch late morning and two shorter catnaps.",
-      "He balanced a long nap with a couple of shorter ones.",
-      "Today had variety: one good anchor nap and two quicker ones."
+      "He balanced one long nap with a few shorter catnaps.",
+      "A mix today — one good anchor nap plus a couple of quicker ones.",
+      "Variety today: one solid stretch with some shorter ones around it."
     ],
     'single-short': [
-      "He had one shorter nap today, around {duration} minutes.",
-      "Just one catnap today, about {duration} minutes.",
-      "He managed one brief nap, closer to {duration} minutes."
+      "He managed one shorter catnap today.",
+      "Just one brief stretch, around {duration} minutes.",
+      "One quick nap today, about {duration} minutes."
     ],
     'single-long': [
-      "He took one solid stretch today, just over {duration} hours.",
-      "One good long nap today, lasting about {duration} hours.",
-      "He had one anchor nap today, around {duration} hours."
+      "He took one solid stretch today, over an hour.",
+      "One great long nap anchoring the day.",
+      "A strong hour-plus nap that gave him some real rest."
     ]
   },
   bedtime: [
     "Bedtime was {bedtime}.",
-    "He settled for the night at {bedtime}.",
-    "Down for sleep at {bedtime}.",
-    "He was ready for bed by {bedtime}."
+    "He settled down at {bedtime}.",
+    "Down for the night by {bedtime}.",
+    "Ready for sleep around {bedtime}."
   ],
   notes: [
-    "Since you noted {note_reference}, that may explain {note_related_effect}.",
-    "You mentioned {note_reference} — that could explain {note_related_effect}.",
-    "With {note_reference} going on, {note_related_effect} makes sense.",
-    "Given the {note_reference} you tracked, {note_related_effect} is pretty typical.",
-    "I noticed you logged {note_reference} — that often affects {note_related_effect}."
+    "Since you mentioned {note_reference}, that makes sense with how his day went.",
+    "You noted {note_reference}, which could explain {note_related_effect}.",
+    "With {note_reference} happening today, it's no surprise {note_related_effect}.",
+    "Because {note_reference}, his rhythm may have shifted a little.",
+    "I noticed you logged {note_reference} — that often explains {note_related_effect}."
   ],
   comparison: {
-    feeds_more: [
-      "Compared to yesterday, he drank about {diff} ml more",
-      "He took in {diff} ml more than yesterday",
-      "That's {diff} ml extra compared to yesterday"
+    volume_more: [
+      "just a touch more than yesterday",
+      "slightly more than yesterday, showing he's fueling up",
+      "a little extra compared to yesterday"
     ],
-    feeds_less: [
-      "Compared to yesterday, he drank about {diff} ml less", 
-      "That's {diff} ml less than yesterday's intake",
-      "He took in {diff} ml less than the day before"
+    volume_less: [
+      "a little less than yesterday — basically steady",
+      "just a touch less than yesterday",
+      "slightly less than yesterday but still consistent"
     ],
-    naps_more: [
-      "and slept about {diff} minutes more during the day",
-      "with {diff} more minutes of daytime sleep",
-      "and got {diff} extra minutes of nap time"
+    volume_same: [
+      "right in line with what he usually takes",
+      "about the same as yesterday — nice and consistent",
+      "steady with yesterday's amount"
     ],
-    naps_less: [
-      "and slept a bit less during the day",
-      "with shorter naps overall",
-      "and got less daytime sleep"
-    ],
+    naps_more: "and got a bit more daytime sleep",
+    naps_less: "with shorter naps overall",
     growth_spurt: [
-      ", which often points to a growth spurt.",
-      " — classic growth spurt pattern.",
-      ", which lots of babies do right before a leap."
+      ", which often means he's gearing up for a growth spurt.",
+      " — classic signs of fueling up for growth.",
+      ", showing he's likely hitting a growth phase."
     ]
   },
   peer: [
-    "Lots of {age_months}-month-olds do this exact mix — an anchor nap with quick ones around it — so he's right in range.",
-    "Most babies his age have {nap_count} naps with at least one longer stretch, so this pattern is really common.",
-    "For {age_months} months, this feeding rhythm is exactly what I see with lots of babies — {feed_count} feeds is spot on.",
-    "Babies his age typically do {feed_count}-{feed_upper} feeds daily, so he's tracking beautifully."
+    "Most {age_months}-month-olds do something similar, so he's right on track.",
+    "Plenty of babies this age nap this way — he's in a very normal rhythm.",
+    "At {age_months} months, this feeding pattern is really common.",
+    "This is a very typical pattern for his age.",
+    "Lots of babies his age do exactly this — one good long nap with shorter ones around it."
   ],
   insights: [
-    "Tomorrow he may want his first nap a little earlier if he's catching up.",
-    "He might sleep a bit longer overnight after that extra intake.",
-    "Watch for him to be extra sleepy tomorrow morning after this pattern.",
-    "He may cluster feed again tomorrow if this growth spurt continues.",
-    "Tomorrow's first nap might be his longest if he's still adjusting."
+    "Tomorrow his first nap may stretch longer as he catches up.",
+    "He may need that first nap a bit earlier if he's still adjusting.",
+    "If he keeps fueling up like this, expect another solid anchor nap tomorrow.",
+    "Tomorrow might bring a little extra crankiness, so early cues will help.",
+    "Chances are he'll even out by bedtime tomorrow."
   ],
   encouragement: [
-    "You're giving him exactly the rhythm he needs.",
-    "You're reading his cues perfectly.",
-    "He's thriving with your steady guidance.",
-    "You're doing exactly what he needs right now.",
-    "Your instincts are serving him so well."
+    "You're doing a wonderful job reading his needs.",
+    "Your instincts are spot on.",
+    "He's thriving because of the care you're giving.",
+    "Consistency like this builds such a strong foundation.",
+    "You're giving him exactly what he needs to grow."
   ]
 };
 
@@ -149,11 +147,15 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const [reviewGenerated, setReviewGenerated] = useState(false);
   const [fullReviewText, setFullReviewText] = useState("");
   const [isPulsing, setIsPulsing] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(false);
 
   // Random selection helper
   const randomChoice = (array: string[]): string => {
     return array[Math.floor(Math.random() * array.length)];
   };
+
+  // Check if user prefers reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Check if review was already shown today
   useEffect(() => {
@@ -163,12 +165,13 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       setShowReview(true);
       setTypedText(reviewShown);
       setReviewGenerated(true);
+      setShowPhotos(true);
     }
   }, []);
 
   // Calculate baby's age in months
   const getBabyAgeInMonths = (): number => {
-    if (!household?.baby_birthday) return 6; // Default to 6 months
+    if (!household?.baby_birthday) return 6;
     const birthDate = new Date(household.baby_birthday);
     const today = new Date();
     const months = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
@@ -185,7 +188,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     return AGE_NORMS['12+'];
   };
 
-  // Check trigger logic: show for testing during any hour, remove the time restriction temporarily
+  // Check trigger logic: show for testing during any hour
   useEffect(() => {
     const checkTrigger = () => {
       const now = new Date();
@@ -195,10 +198,8 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         return activityDate.toDateString() === now.toDateString();
       });
       
-      // For testing: show if there are any activities today, regardless of time
       if (hasActivitiesToday && !reviewGenerated) {
         setShowPrompt(true);
-        console.log('Night Doula Debug - Trigger activated:', { hasActivitiesToday, reviewGenerated });
       }
     };
 
@@ -219,33 +220,22 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     if (napDurations.length === 1) {
       return {
         type: napDurations[0] <= 40 ? 'single-short' : 'single-long',
-        description: napDurations[0] <= 40 ? 
-          `one shorter nap around ${napDurations[0]} minutes` :
-          `one solid stretch, just over ${Math.round(napDurations[0] / 60 * 10) / 10} hours`
+        description: ''
       };
     }
     
     if (shortNaps.length === napDurations.length) {
-      return {
-        type: 'all-short',
-        description: `all on the shorter side, around ${Math.round(napDurations.reduce((a, b) => a + b) / napDurations.length)} minutes each`
-      };
+      return { type: 'all-short', description: '' };
     }
     
     if (longNaps.length === napDurations.length) {
-      return {
-        type: 'all-long',
-        description: `${longNaps.length} solid stretches, each over an hour`
-      };
+      return { type: 'all-long', description: '' };
     }
     
-    return {
-      type: 'mix',
-      description: `a mix — ${shortNaps.length} short nap${shortNaps.length > 1 ? 's' : ''} and ${longNaps.length} long anchor nap${longNaps.length > 1 ? 's' : ''}`
-    };
+    return { type: 'mix', description: '' };
   };
 
-  // Extract day stats
+  // Extract day stats with comprehensive photo search
   const getDayStats = (date: Date): DayStats => {
     const activities_filtered = activities.filter(activity => {
       const activityDate = new Date(activity.logged_at);
@@ -276,8 +266,8 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
 
     const bedtime = bedtimeNap?.details?.startTime || null;
     
-    // Extract photos from ALL activities, not just notes
-    const photos = activities_filtered.flatMap(activity => {
+    // Comprehensive photo extraction from all activities
+    const allPhotos = activities_filtered.flatMap(activity => {
       const activityPhotos = [];
       
       // Check all possible photo fields
@@ -293,34 +283,20 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       if (activity.details?.image && typeof activity.details.image === 'string') {
         activityPhotos.push(activity.details.image);
       }
+      if (activity.details?.images && Array.isArray(activity.details.images)) {
+        activityPhotos.push(...activity.details.images);
+      }
       
       return activityPhotos;
     }).filter(Boolean);
 
-    // Collect diaper-specific notes and observations
-    const diaperObservations = diapers.flatMap(d => {
-      const observations = [];
-      if (d.details?.notes) observations.push(d.details.notes);
-      if (d.details?.leak) observations.push('leak');
-      if (d.details?.blowout) observations.push('blowout');
-      if (d.details?.rash) observations.push('diaper rash');
-      if (d.details?.type) observations.push(d.details.type);
-      return observations;
-    }).filter(Boolean);
+    // Deduplicate photos
+    const photos = [...new Set(allPhotos)];
 
-    console.log('Night Doula Debug - Enhanced Day Stats:', {
-      date: date.toDateString(),
-      feeds: feeds.length,
-      volume,
-      naps: naps.length,
-      diapers: diapers.length,
-      notesCount: notes.length,
-      photosCount: photos.length,
-      diaperObservations,
-      noteContents: notes.map(n => n.details?.content || n.details?.note || ''),
-      photoSources: photos,
-      allActivityDetails: activities_filtered.map(a => ({ type: a.type, details: a.details }))
-    });
+    // Collect diaper observations and full notes
+    const allNotes = [...notes, ...diapers.filter(d => 
+      d.details?.notes || d.details?.leak || d.details?.blowout || d.details?.rash
+    )];
 
     return {
       feeds: feeds.length,
@@ -329,12 +305,12 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       naps: naps.length,
       napDuration,
       bedtime,
-      notes: [...notes, ...diapers.filter(d => d.details?.notes || d.details?.leak || d.details?.blowout || d.details?.rash)],
+      notes: allNotes,
       photos
     };
   };
 
-  // Generate the night doula message using sentence library - ALWAYS include all 6 sections
+  // Generate natural, conversational message
   const generateNightDoulaMessage = (): string => {
     const name = babyName || household?.baby_name || "your little one";
     const today = new Date();
@@ -342,19 +318,17 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     
     const todayStats = getDayStats(today);
     const yesterdayStats = getDayStats(yesterday);
-    
     const ageInMonths = getBabyAgeInMonths();
-    const norms = getAgeNorms(ageInMonths);
     
-    let sentences: string[] = [];
+    let message = "";
     
-    // 1. RECAP: Feeds, Naps, Bedtime (always include)
-    let feedSentence = randomChoice(SENTENCE_LIBRARY.feeds);
+    // 1. Daily recap - feeds, naps, bedtime
+    let feedSentence = randomChoice(LANGUAGE_BANK.feeds);
     feedSentence = feedSentence
       .replace('{baby_name}', name)
       .replace('{feed_count}', todayStats.feeds.toString())
       .replace('{feed_total_ml}', Math.round(todayStats.volume).toString());
-    sentences.push(feedSentence);
+    message += feedSentence + " ";
     
     // Naps
     if (todayStats.naps > 0) {
@@ -372,184 +346,181 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         .filter(d => d > 0);
       
       const classification = classifyNaps(napDurations);
-      let napSentence = randomChoice(SENTENCE_LIBRARY.naps[classification.type] || SENTENCE_LIBRARY.naps.mix);
-      
-      if (classification.type === 'single-short' || classification.type === 'single-long') {
-        const duration = classification.type === 'single-short' ? 
-          napDurations[0] : 
-          Math.round(napDurations[0] / 60 * 10) / 10;
-        napSentence = napSentence.replace('{duration}', duration.toString());
-      }
-      
-      sentences.push(napSentence);
+      const napSentence = randomChoice(LANGUAGE_BANK.naps[classification.type]);
+      message += napSentence + " ";
     }
     
     // Bedtime
     if (todayStats.bedtime) {
-      let bedtimeSentence = randomChoice(SENTENCE_LIBRARY.bedtime);
+      let bedtimeSentence = randomChoice(LANGUAGE_BANK.bedtime);
       bedtimeSentence = bedtimeSentence.replace('{bedtime}', todayStats.bedtime);
-      sentences.push(bedtimeSentence);
+      message += bedtimeSentence + " ";
     }
-    
-    // 2. COMPARISON to Yesterday (always include at least one concrete diff)
-    const volumeDiff = Math.abs(todayStats.volume - yesterdayStats.volume);
-    const napDiff = Math.abs(todayStats.napDuration - yesterdayStats.napDuration);
-    let comparisonSentence = "";
-    
-    if (volumeDiff > 0 || yesterdayStats.volume === 0) {
-      const isMore = todayStats.volume > yesterdayStats.volume;
-      const feedComp = randomChoice(isMore ? SENTENCE_LIBRARY.comparison.feeds_more : SENTENCE_LIBRARY.comparison.feeds_less);
-      comparisonSentence = feedComp.replace('{diff}', Math.round(volumeDiff).toString());
-      
-      // Add nap comparison
-      if (napDiff > 10) {
-        const napComp = randomChoice(todayStats.napDuration > yesterdayStats.napDuration ? 
-          SENTENCE_LIBRARY.comparison.naps_more : SENTENCE_LIBRARY.comparison.naps_less);
-        comparisonSentence += " " + napComp.replace('{diff}', Math.round(napDiff).toString());
-      }
-      
-      // Add growth spurt indicator if significant increase
-      if (volumeDiff > todayStats.volume * 0.15) {
-        comparisonSentence += randomChoice(SENTENCE_LIBRARY.comparison.growth_spurt);
-      } else {
-        comparisonSentence += ".";
-      }
-    } else {
-      // Fallback comparison
-      comparisonSentence = `Compared to yesterday, his rhythm stayed pretty consistent.`;
-    }
-    
-    sentences.push(comparisonSentence);
-    
-    // 3. PEER Normalization (specific, not vague)
-    let peerSentence = randomChoice(SENTENCE_LIBRARY.peer);
-    peerSentence = peerSentence
-      .replace('{age_months}', ageInMonths.toString())
-      .replace('{nap_count}', todayStats.naps.toString())
-      .replace('{feed_count}', todayStats.feeds.toString())
-      .replace('{feed_upper}', norms.feeds[1].toString());
-    sentences.push(peerSentence);
-    
-    // 4. PARENT NOTE Reference - Focus on diaper observations and specific notes
+
+    // 2. Parent note reference - prioritize diaper observations
     if (todayStats.notes.length > 0) {
-      const allObservations = todayStats.notes.map(note => {
-        // Check for diaper-specific observations first
-        if (note.type === 'diaper') {
-          const diaperNotes = [];
-          if (note.details?.leak) diaperNotes.push('leak');
-          if (note.details?.blowout) diaperNotes.push('blowout');
-          if (note.details?.rash) diaperNotes.push('diaper rash');
-          if (note.details?.notes) diaperNotes.push(note.details.notes);
-          return diaperNotes.join(', ');
-        }
-        
-        // Regular notes - don't truncate
-        return note.details?.content || note.details?.note || note.details?.text || "";
-      }).filter(Boolean);
+      let noteRef = "";
+      let noteEffect = "";
       
-      if (allObservations.length > 0) {
-        let noteSentence = randomChoice(SENTENCE_LIBRARY.notes);
-        let noteRef = allObservations[0];
-        let noteEffect = "how his day went";
-        
-        // Diaper-specific interpretations
-        if (noteRef.includes('leak')) {
+      // Check for diaper-specific observations first
+      const diaperNote = todayStats.notes.find(note => 
+        note.type === 'diaper' && (note.details?.leak || note.details?.blowout || note.details?.rash)
+      );
+      
+      if (diaperNote) {
+        if (diaperNote.details?.leak) {
           noteRef = "a leak";
-          noteEffect = "why he seemed fussier during that change";
-        } else if (noteRef.includes('blowout')) {
+          noteEffect = "fussiness during that change";
+        } else if (diaperNote.details?.blowout) {
           noteRef = "a blowout";
-          noteEffect = "the extra attention he needed after that change";
-        } else if (noteRef.includes('diaper rash') || noteRef.includes('rash')) {
+          noteEffect = "the extra attention he needed";
+        } else if (diaperNote.details?.rash) {
           noteRef = "some redness";
-          noteEffect = "why he might have been more sensitive today";
-        } else if (noteRef.includes('teeth') || noteRef.includes('tooth')) {
-          noteRef = "teething";
-          noteEffect = "the shorter afternoon nap";
-        } else if (noteRef.includes('fuss') || noteRef.includes('cry')) {
-          noteRef = "fussiness";
-          noteEffect = "the extra comfort he needed";
-        } else if (noteRef.includes('growth') || noteRef.includes('hungry')) {
-          noteRef = "extra hunger";
-          noteEffect = "those additional feeds";
-        } else if (noteRef.includes('sleep') || noteRef.includes('tired')) {
-          noteRef = "extra sleepiness";
-          noteEffect = "the longer naps";
-        } else if (noteRef.length > 5) {
-          // Show more of the note without truncating aggressively
-          noteRef = noteRef.length > 40 ? `"${noteRef.slice(0, 40)}..."` : `"${noteRef}"`;
-          noteEffect = "how his day played out";
+          noteEffect = "why he might have been more sensitive";
         }
+      } else {
+        // Regular notes - show full content
+        const noteContent = todayStats.notes[0].details?.content || 
+                           todayStats.notes[0].details?.note || 
+                           todayStats.notes[0].details?.text || "";
         
+        if (noteContent) {
+          // Show more of the note - up to a few sentences
+          const fullNote = noteContent.length > 80 ? 
+            `${noteContent.slice(0, 80)}...` : noteContent;
+          
+          if (noteContent.toLowerCase().includes('teeth') || noteContent.toLowerCase().includes('tooth')) {
+            noteRef = "teething";
+            noteEffect = "shorter naps and extra fussiness";
+          } else if (noteContent.toLowerCase().includes('fuss') || noteContent.toLowerCase().includes('cry')) {
+            noteRef = "fussiness";
+            noteEffect = "extra comfort he needed";
+          } else {
+            noteRef = `"${fullNote}"`;
+            noteEffect = "how his day played out";
+          }
+        }
+      }
+      
+      if (noteRef) {
+        let noteSentence = randomChoice(LANGUAGE_BANK.notes);
         noteSentence = noteSentence
           .replace('{note_reference}', noteRef)
           .replace('{note_related_effect}', noteEffect);
-        sentences.push(noteSentence);
-        
-        console.log('Night Doula Debug - Note Reference:', { 
-          noteRef, 
-          noteEffect, 
-          noteSentence,
-          allObservations 
-        });
+        message += noteSentence + " ";
       }
-    } else {
-      console.log('Night Doula Debug - No notes found for today');
     }
-    
-    // 5. FORWARD-LOOKING Insight (1 line prediction/tip)
-    const insightSentence = randomChoice(SENTENCE_LIBRARY.insights);
-    sentences.push(insightSentence);
-    
-    // 6. ENCOURAGEMENT (always)
-    const encouragementSentence = randomChoice(SENTENCE_LIBRARY.encouragement);
-    sentences.push(encouragementSentence);
-    
-    return sentences.join(' ');
+
+    // 3. Comparison to yesterday - natural language
+    if (yesterdayStats.volume > 0) {
+      const volumeDiff = Math.abs(todayStats.volume - yesterdayStats.volume);
+      const isSignificant = volumeDiff > todayStats.volume * 0.1;
+      
+      if (isSignificant) {
+        const isMore = todayStats.volume > yesterdayStats.volume;
+        const comparison = randomChoice(isMore ? 
+          LANGUAGE_BANK.comparison.volume_more : 
+          LANGUAGE_BANK.comparison.volume_less
+        );
+        
+        message += `Compared to yesterday, he drank ${comparison}`;
+        
+        if (volumeDiff > todayStats.volume * 0.2) {
+          message += randomChoice(LANGUAGE_BANK.comparison.growth_spurt);
+        } else {
+          message += ". ";
+        }
+      } else {
+        message += `He drank ${randomChoice(LANGUAGE_BANK.comparison.volume_same)}. `;
+      }
+    }
+
+    // 4. Peer comparison - normalize
+    let peerSentence = randomChoice(LANGUAGE_BANK.peer);
+    peerSentence = peerSentence.replace('{age_months}', ageInMonths.toString());
+    message += peerSentence + " ";
+
+    // 5. Forward-looking insight
+    const insightSentence = randomChoice(LANGUAGE_BANK.insights);
+    message += insightSentence + " ";
+
+    // 6. Encouragement
+    const encouragementSentence = randomChoice(LANGUAGE_BANK.encouragement);
+    message += encouragementSentence;
+
+    return message;
   };
 
-  // ChatGPT-style streaming effect
+  // Instant reveal on tap
+  const handleMessageClick = () => {
+    if (isTyping) {
+      setTypedText(fullReviewText);
+      setCurrentCharIndex(fullReviewText.length);
+      setIsTyping(false);
+      setIsPulsing(false);
+      setShowPhotos(true);
+    }
+  };
+
+  // ChatGPT-style streaming with natural pauses
   const startReview = useCallback(() => {
     const reviewText = generateNightDoulaMessage();
     setFullReviewText(reviewText);
     setShowReview(true);
     setShowPrompt(false);
-    setIsTyping(true);
     setIsPulsing(true);
     setTypedText("");
     setCurrentCharIndex(0);
+    setShowPhotos(false);
     
     // Store in localStorage
     const today = new Date().toDateString();
     localStorage.setItem(`night-doula-${today}`, reviewText);
-    
     setReviewGenerated(true);
-  }, [activities, babyName, household]);
 
-  // Smooth streaming animation effect - calming and consistent
+    if (prefersReducedMotion) {
+      // Respect reduce motion - show instantly
+      setTypedText(reviewText);
+      setIsTyping(false);
+      setIsPulsing(false);
+      setShowPhotos(true);
+    } else {
+      setIsTyping(true);
+    }
+  }, [activities, babyName, household, prefersReducedMotion]);
+
+  // Smooth, calm typing animation with punctuation pauses
   useEffect(() => {
-    if (!isTyping || !fullReviewText) return;
+    if (!isTyping || !fullReviewText || prefersReducedMotion) return;
     
-    const targetWPM = 60; // Slower, more calming pace
+    const targetWPM = 60; // Calm, thoughtful pace
     const avgCharsPerWord = 4.7;
     const charsPerMinute = targetWPM * avgCharsPerWord;
-    const msPerChar = (60 * 1000) / charsPerMinute;
+    const baseDelay = (60 * 1000) / charsPerMinute;
     
     const timer = setTimeout(() => {
       if (currentCharIndex < fullReviewText.length) {
-        // Consistent character advancement - no jitter for smooth feel
-        const nextIndex = Math.min(currentCharIndex + 1, fullReviewText.length);
+        const currentChar = fullReviewText[currentCharIndex];
+        const nextIndex = currentCharIndex + 1;
+        
         setTypedText(fullReviewText.substring(0, nextIndex));
         setCurrentCharIndex(nextIndex);
+        
+        // Add natural pauses after punctuation
+        const isPunctuation = ['.', '!', '?', ','].includes(currentChar);
+        const extraDelay = isPunctuation ? baseDelay * 2 : 0;
+        
+        setTimeout(() => {}, extraDelay);
       } else {
         setIsTyping(false);
         setIsPulsing(false);
+        setShowPhotos(true);
       }
-    }, msPerChar);
+    }, baseDelay);
     
     return () => clearTimeout(timer);
-  }, [currentCharIndex, fullReviewText, isTyping]);
+  }, [currentCharIndex, fullReviewText, isTyping, prefersReducedMotion]);
 
-  // Don't show if no trigger conditions met
   if (!showPrompt && !showReview) {
     return null;
   }
@@ -582,7 +553,9 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     );
   }
 
-  // Show review with streaming
+  // Show review with smooth streaming
+  const todaysPhotos = getDayStats(new Date()).photos;
+
   return (
     <Card className="mb-6 bg-card border-border shadow-card">
       <CardContent className="p-6">
@@ -599,17 +572,20 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         </div>
         
         <div className="prose prose-sm max-w-none">
-          <div className="text-foreground leading-relaxed text-base">
+          <div 
+            className="text-foreground leading-relaxed text-base cursor-pointer"
+            onClick={handleMessageClick}
+          >
             {typedText}
             {isTyping && (
               <span className="inline-block w-0.5 h-5 bg-primary ml-1 animate-pulse"></span>
             )}
           </div>
           
-          {/* Photos appear after text is complete */}
-          {!isTyping && getDayStats(new Date()).photos.length > 0 && (
+          {/* Photos appear after text is complete - no animation, just like texting */}
+          {showPhotos && todaysPhotos.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
-              {getDayStats(new Date()).photos.map((photo, index) => (
+              {todaysPhotos.map((photo, index) => (
                 <img 
                   key={index}
                   src={photo} 
