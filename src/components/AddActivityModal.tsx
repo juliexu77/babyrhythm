@@ -816,7 +816,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         if (onClose) onClose();
                       }
                     }}
-                    className="text-sm text-destructive hover:text-destructive/80 transition-colors underline"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
                   >
                     Delete this activity
                   </button>
