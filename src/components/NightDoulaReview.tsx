@@ -87,7 +87,8 @@ const SENTENCE_LIBRARY = {
     "Since you noted {note_reference}, that may explain {note_related_effect}.",
     "You mentioned {note_reference} — that could explain {note_related_effect}.",
     "With {note_reference} going on, {note_related_effect} makes sense.",
-    "Given the {note_reference} you tracked, {note_related_effect} is pretty typical."
+    "Given the {note_reference} you tracked, {note_related_effect} is pretty typical.",
+    "I noticed you logged {note_reference} — that often affects {note_related_effect}."
   ],
   comparison: {
     feeds_more: [
@@ -255,6 +256,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     const naps = activities_filtered.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
     const bedtimeNap = activities_filtered.find(a => a.type === 'nap' && a.details?.isNightSleep);
     const notes = activities_filtered.filter(a => a.type === 'note');
+    const diapers = activities_filtered.filter(a => a.type === 'diaper');
 
     const volume = feeds.reduce((sum, f) => {
       const qty = f.details?.quantity || 0;
@@ -274,25 +276,50 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
 
     const bedtime = bedtimeNap?.details?.startTime || null;
     
-    // Extract photos from notes and any activity that might have photos
+    // Extract photos from ALL activities, not just notes
     const photos = activities_filtered.flatMap(activity => {
-      // Check multiple possible photo locations
       const activityPhotos = [];
-      if (activity.details?.photos) activityPhotos.push(...activity.details.photos);
-      if (activity.details?.photo) activityPhotos.push(activity.details.photo);
-      if (activity.details?.photo_url) activityPhotos.push(activity.details.photo_url);
+      
+      // Check all possible photo fields
+      if (activity.details?.photos && Array.isArray(activity.details.photos)) {
+        activityPhotos.push(...activity.details.photos);
+      }
+      if (activity.details?.photo && typeof activity.details.photo === 'string') {
+        activityPhotos.push(activity.details.photo);
+      }
+      if (activity.details?.photo_url && typeof activity.details.photo_url === 'string') {
+        activityPhotos.push(activity.details.photo_url);
+      }
+      if (activity.details?.image && typeof activity.details.image === 'string') {
+        activityPhotos.push(activity.details.image);
+      }
+      
       return activityPhotos;
     }).filter(Boolean);
 
-    console.log('Night Doula Debug - Day Stats:', {
+    // Collect diaper-specific notes and observations
+    const diaperObservations = diapers.flatMap(d => {
+      const observations = [];
+      if (d.details?.notes) observations.push(d.details.notes);
+      if (d.details?.leak) observations.push('leak');
+      if (d.details?.blowout) observations.push('blowout');
+      if (d.details?.rash) observations.push('diaper rash');
+      if (d.details?.type) observations.push(d.details.type);
+      return observations;
+    }).filter(Boolean);
+
+    console.log('Night Doula Debug - Enhanced Day Stats:', {
       date: date.toDateString(),
       feeds: feeds.length,
       volume,
       naps: naps.length,
+      diapers: diapers.length,
       notesCount: notes.length,
       photosCount: photos.length,
+      diaperObservations,
       noteContents: notes.map(n => n.details?.content || n.details?.note || ''),
-      photoSources: photos
+      photoSources: photos,
+      allActivityDetails: activities_filtered.map(a => ({ type: a.type, details: a.details }))
     });
 
     return {
@@ -302,7 +329,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       naps: naps.length,
       napDuration,
       bedtime,
-      notes,
+      notes: [...notes, ...diapers.filter(d => d.details?.notes || d.details?.leak || d.details?.blowout || d.details?.rash)],
       photos
     };
   };
@@ -403,40 +430,68 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       .replace('{feed_upper}', norms.feeds[1].toString());
     sentences.push(peerSentence);
     
-    // 4. PARENT NOTE Reference (if present) - ALWAYS try to include if ANY notes exist
+    // 4. PARENT NOTE Reference - Focus on diaper observations and specific notes
     if (todayStats.notes.length > 0) {
-      const noteContent = todayStats.notes[0].details?.content || 
-                         todayStats.notes[0].details?.note || 
-                         todayStats.notes[0].details?.text || "";
+      const allObservations = todayStats.notes.map(note => {
+        // Check for diaper-specific observations first
+        if (note.type === 'diaper') {
+          const diaperNotes = [];
+          if (note.details?.leak) diaperNotes.push('leak');
+          if (note.details?.blowout) diaperNotes.push('blowout');
+          if (note.details?.rash) diaperNotes.push('diaper rash');
+          if (note.details?.notes) diaperNotes.push(note.details.notes);
+          return diaperNotes.join(', ');
+        }
+        
+        // Regular notes - don't truncate
+        return note.details?.content || note.details?.note || note.details?.text || "";
+      }).filter(Boolean);
       
-      // Include note reference even if it's generic
-      let noteSentence = randomChoice(SENTENCE_LIBRARY.notes);
-      let noteRef = noteContent.slice(0, 15) || "some observations";
-      let noteEffect = "the day's pattern";
-      
-      if (noteContent.toLowerCase().includes('teeth') || noteContent.toLowerCase().includes('tooth')) {
-        noteRef = "teething";
-        noteEffect = "the shorter afternoon nap";
-      } else if (noteContent.toLowerCase().includes('fuss') || noteContent.toLowerCase().includes('cry')) {
-        noteRef = "fussiness";
-        noteEffect = "the extra attention he needed";
-      } else if (noteContent.toLowerCase().includes('growth') || noteContent.toLowerCase().includes('hungry')) {
-        noteRef = "extra hunger";
-        noteEffect = "those additional feeds";
-      } else if (noteContent.toLowerCase().includes('sleep') || noteContent.toLowerCase().includes('tired')) {
-        noteRef = "extra sleepiness";
-        noteEffect = "the longer naps";
-      } else if (noteContent.length > 5) {
-        noteRef = `"${noteContent.slice(0, 20)}${noteContent.length > 20 ? '...' : ''}"`;
-        noteEffect = "how his day played out";
+      if (allObservations.length > 0) {
+        let noteSentence = randomChoice(SENTENCE_LIBRARY.notes);
+        let noteRef = allObservations[0];
+        let noteEffect = "how his day went";
+        
+        // Diaper-specific interpretations
+        if (noteRef.includes('leak')) {
+          noteRef = "a leak";
+          noteEffect = "why he seemed fussier during that change";
+        } else if (noteRef.includes('blowout')) {
+          noteRef = "a blowout";
+          noteEffect = "the extra attention he needed after that change";
+        } else if (noteRef.includes('diaper rash') || noteRef.includes('rash')) {
+          noteRef = "some redness";
+          noteEffect = "why he might have been more sensitive today";
+        } else if (noteRef.includes('teeth') || noteRef.includes('tooth')) {
+          noteRef = "teething";
+          noteEffect = "the shorter afternoon nap";
+        } else if (noteRef.includes('fuss') || noteRef.includes('cry')) {
+          noteRef = "fussiness";
+          noteEffect = "the extra comfort he needed";
+        } else if (noteRef.includes('growth') || noteRef.includes('hungry')) {
+          noteRef = "extra hunger";
+          noteEffect = "those additional feeds";
+        } else if (noteRef.includes('sleep') || noteRef.includes('tired')) {
+          noteRef = "extra sleepiness";
+          noteEffect = "the longer naps";
+        } else if (noteRef.length > 5) {
+          // Show more of the note without truncating aggressively
+          noteRef = noteRef.length > 40 ? `"${noteRef.slice(0, 40)}..."` : `"${noteRef}"`;
+          noteEffect = "how his day played out";
+        }
+        
+        noteSentence = noteSentence
+          .replace('{note_reference}', noteRef)
+          .replace('{note_related_effect}', noteEffect);
+        sentences.push(noteSentence);
+        
+        console.log('Night Doula Debug - Note Reference:', { 
+          noteRef, 
+          noteEffect, 
+          noteSentence,
+          allObservations 
+        });
       }
-      
-      noteSentence = noteSentence
-        .replace('{note_reference}', noteRef)
-        .replace('{note_related_effect}', noteEffect);
-      sentences.push(noteSentence);
-      
-      console.log('Night Doula Debug - Note Reference:', { noteContent, noteRef, noteEffect, noteSentence });
     } else {
       console.log('Night Doula Debug - No notes found for today');
     }
@@ -470,27 +525,26 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     setReviewGenerated(true);
   }, [activities, babyName, household]);
 
-  // Streaming animation effect - much faster like ChatGPT
+  // Smooth streaming animation effect - calming and consistent
   useEffect(() => {
     if (!isTyping || !fullReviewText) return;
     
-    const targetWPM = 120; // Much faster - 120 words per minute like ChatGPT
+    const targetWPM = 60; // Slower, more calming pace
     const avgCharsPerWord = 4.7;
     const charsPerMinute = targetWPM * avgCharsPerWord;
     const msPerChar = (60 * 1000) / charsPerMinute;
     
     const timer = setTimeout(() => {
       if (currentCharIndex < fullReviewText.length) {
-        // Faster chunks (8-12 chars per tick)
-        const jitter = Math.floor(Math.random() * 5) + 8;
-        const nextIndex = Math.min(currentCharIndex + jitter, fullReviewText.length);
+        // Consistent character advancement - no jitter for smooth feel
+        const nextIndex = Math.min(currentCharIndex + 1, fullReviewText.length);
         setTypedText(fullReviewText.substring(0, nextIndex));
         setCurrentCharIndex(nextIndex);
       } else {
         setIsTyping(false);
         setIsPulsing(false);
       }
-    }, msPerChar * 2); // Much shorter delays
+    }, msPerChar);
     
     return () => clearTimeout(timer);
   }, [currentCharIndex, fullReviewText, isTyping]);
