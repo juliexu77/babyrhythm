@@ -493,10 +493,11 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   useEffect(() => {
     if (!isTyping || !fullReviewText || prefersReducedMotion) return;
     
-    const targetWPM = 60; // Calm, thoughtful pace
+    // Much faster - closer to ChatGPT speed but still calm
+    const targetWPM = 150; // Fast enough to feel responsive
     const avgCharsPerWord = 4.7;
     const charsPerMinute = targetWPM * avgCharsPerWord;
-    const baseDelay = (60 * 1000) / charsPerMinute;
+    const baseDelay = (60 * 1000) / charsPerMinute; // About 85ms per char
     
     const timer = setTimeout(() => {
       if (currentCharIndex < fullReviewText.length) {
@@ -506,11 +507,17 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         setTypedText(fullReviewText.substring(0, nextIndex));
         setCurrentCharIndex(nextIndex);
         
-        // Add natural pauses after punctuation
-        const isPunctuation = ['.', '!', '?', ','].includes(currentChar);
-        const extraDelay = isPunctuation ? baseDelay * 2 : 0;
+        // Add small pauses after punctuation for natural feel
+        const isPunctuation = ['.', '!', '?'].includes(currentChar);
+        const isComma = currentChar === ',';
         
-        setTimeout(() => {}, extraDelay);
+        if (isPunctuation) {
+          // Brief pause after sentences
+          setTimeout(() => {}, baseDelay * 1.5);
+        } else if (isComma) {
+          // Tiny pause after commas
+          setTimeout(() => {}, baseDelay * 0.5);
+        }
       } else {
         setIsTyping(false);
         setIsPulsing(false);
