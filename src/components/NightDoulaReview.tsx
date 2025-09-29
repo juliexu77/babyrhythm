@@ -272,12 +272,15 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     const allPhotos = activities_filtered.flatMap(activity => {
       const activityPhotos = [];
       
-      // Check all possible photo fields
+      // Check all possible photo fields (including camelCase from Supabase)
       if (activity.details?.photos && Array.isArray(activity.details.photos)) {
         activityPhotos.push(...activity.details.photos);
       }
       if (activity.details?.photo && typeof activity.details.photo === 'string') {
         activityPhotos.push(activity.details.photo);
+      }
+      if (activity.details?.photoUrl && typeof activity.details.photoUrl === 'string') {
+        activityPhotos.push(activity.details.photoUrl);
       }
       if (activity.details?.photo_url && typeof activity.details.photo_url === 'string') {
         activityPhotos.push(activity.details.photo_url);
@@ -299,6 +302,21 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     const allNotes = [...notes, ...diapers.filter(d => 
       d.details?.notes || d.details?.leak || d.details?.blowout || d.details?.rash
     )];
+
+    console.log('Night Doula Debug - Enhanced Day Stats:', {
+      date: date.toDateString(),
+      photosCount: photos.length,
+      photoSources: photos,
+      activitiesWithPhotos: activities_filtered.filter(a => 
+        a.details?.photoUrl || a.details?.photo || a.details?.photos
+      ).map(a => ({ 
+        type: a.type, 
+        photoUrl: a.details?.photoUrl,
+        photo: a.details?.photo,
+        photos: a.details?.photos 
+      })),
+      allActivitiesDetails: activities_filtered.map(a => ({ type: a.type, details: a.details }))
+    });
 
     return {
       feeds: feeds.length,
