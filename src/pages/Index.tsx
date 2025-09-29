@@ -124,35 +124,41 @@ const Index = () => {
       if (activityDate && activityTime) {
         // Parse the time string (e.g., "7:00 AM")
         const timeMatch = activityTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        let combinedDateTime: Date;
         if (timeMatch) {
-          let hours = parseInt(timeMatch[1]);
-          const minutes = parseInt(timeMatch[2]);
+          let hours = parseInt(timeMatch[1], 10);
+          const minutes = parseInt(timeMatch[2], 10);
           const period = timeMatch[3].toUpperCase();
           
           // Convert to 24-hour format
-          if (period === 'PM' && hours !== 12) {
-            hours += 12;
-          } else if (period === 'AM' && hours === 12) {
-            hours = 0;
-          }
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
           
-          // Create a new date with the selected date and time in LOCAL timezone
-          const combinedDateTime = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate(), hours, minutes, 0, 0);
-          // Store as local time to avoid timezone shift issues
-          const year = combinedDateTime.getFullYear();
-          const month = String(combinedDateTime.getMonth() + 1).padStart(2, '0');
-          const day = String(combinedDateTime.getDate()).padStart(2, '0');
-          const hour = String(combinedDateTime.getHours()).padStart(2, '0');
-          const minute = String(combinedDateTime.getMinutes()).padStart(2, '0');
-          loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
+          // Create a local date-time, then store as UTC ISO
+          combinedDateTime = new Date(
+            activityDate.getFullYear(),
+            activityDate.getMonth(),
+            activityDate.getDate(),
+            hours,
+            minutes,
+            0,
+            0
+          );
         } else {
-          // Store as local time to avoid timezone shift issues
-          const year = activityDate.getFullYear();
-          const month = String(activityDate.getMonth() + 1).padStart(2, '0');
-          const day = String(activityDate.getDate()).padStart(2, '0');
-          loggedAt = `${year}-${month}-${day}T12:00:00.000Z`;
+          // Fallback: noon local time on selected date
+          combinedDateTime = new Date(
+            activityDate.getFullYear(),
+            activityDate.getMonth(),
+            activityDate.getDate(),
+            12,
+            0,
+            0,
+            0
+          );
         }
+        loggedAt = combinedDateTime.toISOString();
       } else {
+        // Default to now (UTC ISO)
         loggedAt = new Date().toISOString();
       }
 
@@ -231,8 +237,15 @@ const Index = () => {
                         const getActivityTime = (activity: any) => {
                           // For naps, use startTime if available, otherwise logged_at
                           if (activity.type === 'nap' && activity.details?.startTime) {
-                            const activityDate = new Date(activity.loggedAt!).toDateString();
-                            return new Date(`${activityDate} ${activity.details.startTime}`).getTime();
+                            const base = new Date(activity.loggedAt!);
+                            const [t, period] = activity.details.startTime.split(' ');
+                            const [hStr, mStr] = t.split(':');
+                            let h = parseInt(hStr, 10);
+                            const m = parseInt(mStr ?? '0', 10);
+                            if (period === 'PM' && h !== 12) h += 12;
+                            if (period === 'AM' && h === 12) h = 0;
+                            base.setHours(h, m, 0, 0);
+                            return base.getTime();
                           }
                           return new Date(activity.loggedAt!).getTime();
                         };
@@ -425,12 +438,16 @@ const Index = () => {
             if (period === 'AM' && hours === 12) hour24 = 0;
             
             // Create timestamp the same way as addActivity to ensure consistency
-            const year = selectedDate.getFullYear();
-            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-            const day = String(selectedDate.getDate()).padStart(2, '0');
-            const hour = String(hour24).padStart(2, '0');
-            const minute = String(minutes).padStart(2, '0');
-            const loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
+            const combinedDateTime = new Date(
+              selectedDate.getFullYear(),
+              selectedDate.getMonth(),
+              selectedDate.getDate(),
+              hour24,
+              minutes,
+              0,
+              0
+            );
+            const loggedAt = combinedDateTime.toISOString();
 
             const { error } = await supabase
               .from('activities')
