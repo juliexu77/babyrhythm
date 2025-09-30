@@ -15,6 +15,7 @@ serve(async (req) => {
 
     console.log("Timezone received:", timezone);
     console.log("Is initial request:", isInitial);
+    console.log("Total activities received:", activities?.length || 0);
 
     // Build context from today's activities using the user's timezone
     const now = new Date();
@@ -22,6 +23,8 @@ serve(async (req) => {
       const activityDate = new Date(a.logged_at);
       return activityDate.toDateString() === now.toDateString();
     }) || [];
+
+    console.log("Today's activities count:", todayActivities.length);
 
     const formatTime = (timestamp: string) => {
       const date = new Date(timestamp);
@@ -33,19 +36,86 @@ serve(async (req) => {
       });
     };
 
-    const activitySummary = todayActivities.length > 0 
-      ? `Today's activities for ${babyName || "baby"} (${babyAge || "unknown"} months old):\n${todayActivities.map((a: any) => {
-          const time = formatTime(a.logged_at);
-          if (a.type === "feed") return `- ${time}: Fed ${a.details?.quantity || ""}${a.details?.unit || ""}`;
-          if (a.type === "nap") {
-            const duration = a.details?.duration ? ` (${Math.round(a.details.duration / 60)} min)` : "";
-            return `- ${time}: Nap${duration}`;
-          }
-          if (a.type === "diaper") return `- ${time}: Diaper change (${a.details?.diaperType || ""})`;
-          if (a.type === "note") return `- ${time}: Note - ${a.details?.note || ""}`;
-          return `- ${time}: ${a.type}`;
-        }).join("\n")}`
-      : "No activities logged yet today.";
+    // Sort activities by time
+    const sortedActivities = [...todayActivities].sort((a, b) => 
+      new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime()
+    );
+
+    // Calculate detailed metrics
+    const feeds = sortedActivities.filter(a => a.type === 'feed');
+    const naps = sortedActivities.filter(a => a.type === 'nap');
+    const diapers = sortedActivities.filter(a => a.type === 'diaper');
+    
+    // Total feed volume
+    const totalFeedVolume = feeds.reduce((sum, f) => {
+      const qty = parseFloat(f.details?.quantity) || 0;
+      return sum + qty;
+    }, 0);
+    const feedUnit = feeds[0]?.details?.unit || 'ml';
+
+    // Total nap time
+    const totalNapMinutes = naps.reduce((sum, n) => {
+      return sum + (n.details?.duration || 0) / 60;
+    }, 0);
+
+    // Wake windows
+    const wakeWindows = [];
+    for (let i = 0; i < naps.length; i++) {
+      if (i === 0 && naps[i]) {
+        // First wake window (from assumed wake up to first nap)
+        const firstNapTime = new Date(naps[i].logged_at);
+        wakeWindows.push({
+          index: 1,
+          duration: "morning wake window"
+        });
+      }
+      if (i < naps.length - 1) {
+        const napEnd = new Date(naps[i].logged_at).getTime() + (naps[i].details?.duration || 0) * 1000;
+        const nextNapStart = new Date(naps[i + 1].logged_at).getTime();
+        const windowMinutes = (nextNapStart - napEnd) / (1000 * 60);
+        wakeWindows.push({
+          index: i + 2,
+          duration: Math.round(windowMinutes)
+        });
+      }
+    }
+
+    // Build detailed activity log
+    const activityLog = sortedActivities.map((a: any) => {
+      const time = formatTime(a.logged_at);
+      if (a.type === "feed") {
+        const qty = a.details?.quantity || "";
+        const unit = a.details?.unit || "";
+        const side = a.details?.feedSide ? ` (${a.details.feedSide})` : "";
+        return `${time}: Fed ${qty}${unit}${side}`;
+      }
+      if (a.type === "nap") {
+        const duration = a.details?.duration ? Math.round(a.details.duration / 60) : 0;
+        return `${time}: Nap (${duration} minutes)`;
+      }
+      if (a.type === "diaper") {
+        return `${time}: Diaper change (${a.details?.diaperType || ""})`;
+      }
+      if (a.type === "note") {
+        return `${time}: Note - ${a.details?.note || ""}`;
+      }
+      return `${time}: ${a.type}`;
+    }).join("\n");
+
+    const metricsContext = `
+TODAY'S DETAILED SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
+
+📊 TOTALS:
+- Feeds: ${feeds.length} (${totalFeedVolume}${feedUnit} total)
+- Naps: ${naps.length} (${Math.round(totalNapMinutes)} minutes total)
+- Diapers: ${diapers.length} changes
+${wakeWindows.length > 0 ? `- Wake windows: ${wakeWindows.map(w => w.duration === "morning wake window" ? w.duration : `${w.duration} min`).join(", ")}` : ""}
+
+📝 CHRONOLOGICAL LOG:
+${activityLog || "No activities logged yet today."}
+`;
+
+    console.log("Metrics context generated:", metricsContext);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -60,18 +130,18 @@ serve(async (req) => {
             role: "system", 
             content: `You are a caring, knowledgeable baby care assistant - warm, comforting, and expert in infant care. You're here to help parents feel confident and successful.
 
-${activitySummary}
+${metricsContext}
 
 IMPORTANT GUIDELINES:
-- Reference specific activities and patterns you notice from today's data
-- Be warm and reassuring, acknowledging the parents' efforts
-- When giving daily summaries, focus on patterns, what's going well, and gentle suggestions
-- Keep responses conversational and supportive - like a trusted expert friend
+- Reference specific numbers and patterns from the data above (feed amounts, nap durations, wake windows)
+- When giving summaries, be thorough - mention ALL feeds with amounts, ALL naps with durations, wake windows between naps
+- Be warm and reassuring, acknowledging the parents' or caregivers' efforts
+- Notice patterns like "the wake windows are getting longer" or "feeds are consistent every 3 hours"
+- For age ${babyAge} months, mention if things are typical/expected or if adjustments might help
 - For medical concerns, recommend consulting their pediatrician while offering general guidance
 - Use the baby's name (${babyName}) naturally in conversation
-- Consider the baby's age (${babyAge} months) for developmentally appropriate advice
 
-${isInitial ? "This is the first message - provide a warm daily summary of how things are going based on today's activities. Keep it to 3-4 sentences, focusing on positives and any gentle observations." : "Provide personalized advice based on their question and the activity data."}` 
+${isInitial ? "This is the first message - provide a DETAILED daily summary. Include: total feeds with volume, each individual nap duration, wake windows, diaper changes, and any patterns you notice. Be thorough but conversational - parents want the full picture. Keep it to 4-6 sentences." : "Provide personalized advice based on their question and the detailed activity data above."}` 
           },
           ...messages,
         ],
