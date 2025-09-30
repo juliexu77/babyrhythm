@@ -243,6 +243,9 @@ export function useActivities() {
 
       if (error) throw error;
 
+      // Optimistically remove from local state for immediate UI update
+      setActivities(prev => prev.filter(a => a.id !== activityId));
+
       toast({
         title: "Activity deleted",
         description: "Activity has been removed."

@@ -30,7 +30,8 @@ const Index = () => {
   const { 
     activities: dbActivities, 
     loading: activitiesLoading, 
-    refetch: refetchActivities 
+    refetch: refetchActivities,
+    deleteActivity
   } = useActivities();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -224,9 +225,11 @@ const Index = () => {
                      activities.forEach(activity => {
                        // Use the logged_at date for grouping activities by day
                        const activityDate = new Date(activity.loggedAt!);
-                       // Create date in local timezone to avoid timezone offset issues
-                       const localDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
-                       const localDateString = localDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+                        // Build a YYYY-MM-DD key in local time (avoid UTC shifting)
+                        const y = activityDate.getFullYear();
+                        const m = String(activityDate.getMonth() + 1).padStart(2, '0');
+                        const d = String(activityDate.getDate()).padStart(2, '0');
+                        const localDateString = `${y}-${m}-${d}`;
                       
                       if (!activityGroups[localDateString]) {
                         activityGroups[localDateString] = [];
@@ -311,20 +314,10 @@ const Index = () => {
                                       onEdit={(activity) => setEditingActivity(activity)}
                                       onDelete={async (activityId) => {
                                         try {
-                                          const { error } = await supabase
-                                            .from('activities')
-                                            .delete()
-                                            .eq('id', activityId);
-                                          
-                                          if (error) throw error;
+                                          await deleteActivity(activityId);
                                           refetchActivities();
                                         } catch (error) {
                                           console.error('Error deleting activity:', error);
-                                          toast({
-                                            title: "Error deleting activity",
-                                            description: "Please try again.",
-                                            variant: "destructive"
-                                          });
                                         }
                                       }}
                                     />
@@ -475,25 +468,11 @@ const Index = () => {
         }}
         onDeleteActivity={async (activityId) => {
           try {
-            const { error } = await supabase
-              .from('activities')
-              .delete()
-              .eq('id', activityId);
-            
-            if (error) throw error;
+            await deleteActivity(activityId);
             refetchActivities();
             setEditingActivity(null);
-            toast({
-              title: "Activity deleted",
-              description: "The activity has been removed.",
-            });
           } catch (error) {
             console.error('Error deleting activity:', error);
-            toast({
-              title: "Error deleting activity",
-              description: "Please make sure you're signed in and try again.",
-              variant: "destructive"
-            });
           }
         }}
       />
