@@ -29,7 +29,6 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const [showQuickActions, setShowQuickActions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -60,8 +59,6 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
   ];
 
   const handleQuickAction = (prompt: string) => {
-    setShowQuickActions(false);
-    setMessages(prev => [...prev, { role: "user", content: prompt }]);
     setIsLoading(true);
     streamChat(prompt, prompt.includes("summary"));
   };
@@ -205,7 +202,6 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
 
     const userMessage = input.trim();
     setInput("");
-    setShowQuickActions(false);
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
 
@@ -255,7 +251,11 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
                       .filter((a: any) => {
                         const activityDate = new Date(a.logged_at);
                         const today = new Date();
-                        return activityDate.toDateString() === today.toDateString() && 
+                        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        const getUserTimezoneDate = (date: Date) => {
+                          return date.toLocaleDateString('en-US', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });
+                        };
+                        return getUserTimezoneDate(activityDate) === getUserTimezoneDate(today) && 
                                ((a.type === 'photo' || a.type === 'note') && a.details?.photoUrl);
                       })
                       .map((photo: any, i: number) => (
@@ -294,38 +294,40 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
         </div>
       </ScrollArea>
 
-      {showQuickActions && messages.length > 0 && (
-        <div className="px-4 pb-4">
-          <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">
-            {quickActions.map((action) => (
-              <Button
-                key={action.label}
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickAction(action.prompt)}
-                disabled={isLoading}
-                className="text-xs"
-              >
-                {action.label}
-              </Button>
-            ))}
+      <div className="fixed bottom-16 left-0 right-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        {messages.length > 0 && !isLoading && (
+          <div className="px-4 pt-3 pb-2">
+            <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">
+              {quickActions.map((action) => (
+                <Button
+                  key={action.label}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickAction(action.prompt)}
+                  disabled={isLoading}
+                  className="text-xs"
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-
-      <div className="fixed bottom-16 left-0 right-0 p-4 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="flex gap-2 max-w-3xl mx-auto">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask helper"
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
+        )}
+        
+        <div className="p-4 pt-2">
+          <div className="flex gap-2 max-w-3xl mx-auto">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask helper"
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

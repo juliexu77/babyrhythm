@@ -18,10 +18,16 @@ serve(async (req) => {
     console.log("Total activities received:", activities?.length || 0);
 
     // Build context from today's activities using the user's timezone
-    const now = new Date();
+    const getUserTimezoneDate = (date: Date, tz: string) => {
+      return date.toLocaleDateString('en-US', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' });
+    };
+    
+    const userToday = getUserTimezoneDate(new Date(), timezone || 'UTC');
+    
     const todayActivities = activities?.filter((a: any) => {
       const activityDate = new Date(a.logged_at);
-      return activityDate.toDateString() === now.toDateString();
+      const activityDateInUserTz = getUserTimezoneDate(activityDate, timezone || 'UTC');
+      return activityDateInUserTz === userToday;
     }) || [];
 
     console.log("Today's activities count:", todayActivities.length);
