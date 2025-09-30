@@ -811,10 +811,19 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 <div className="text-center">
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       if (editingActivity && onDeleteActivity) {
-                        onDeleteActivity(editingActivity.id);
-                        if (onClose) onClose();
+                        try {
+                          await onDeleteActivity(editingActivity.id);
+                          if (onClose) onClose();
+                        } catch (err) {
+                          console.error('Delete failed:', err);
+                          toast({
+                            title: 'Error deleting activity',
+                            description: 'Please sign in and try again.',
+                            variant: 'destructive'
+                          });
+                        }
                       }
                     }}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
