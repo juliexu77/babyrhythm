@@ -39,9 +39,10 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       const dayFeeds = activities.filter(a => {
         if (a.type !== "feed" || !a.loggedAt) return false;
         const activityDate = new Date(a.loggedAt);
-        const activityDateStr = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const targetDateStr = date.toLocaleDateString('en-CA');
-        return activityDateStr === targetDateStr;
+        // Compare dates by year, month, and day to avoid timezone issues
+        return activityDate.getFullYear() === date.getFullYear() &&
+               activityDate.getMonth() === date.getMonth() &&
+               activityDate.getDate() === date.getDate();
       });
       
       let totalValue = 0;
@@ -99,9 +100,10 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       const dayNaps = activities.filter(a => {
         if (a.type !== "nap" || !a.loggedAt) return false;
         const activityDate = new Date(a.loggedAt);
-        const activityDateStr = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
-        const targetDateStr = date.toLocaleDateString('en-CA');
-        return activityDateStr === targetDateStr;
+        // Compare dates by year, month, and day to avoid timezone issues
+        return activityDate.getFullYear() === date.getFullYear() &&
+               activityDate.getMonth() === date.getMonth() &&
+               activityDate.getDate() === date.getDate();
       });
       
       let totalHours = 0;
