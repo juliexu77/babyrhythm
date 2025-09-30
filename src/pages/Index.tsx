@@ -483,8 +483,17 @@ const Index = () => {
             if (error) throw error;
             refetchActivities();
             setEditingActivity(null);
+            toast({
+              title: "Activity deleted",
+              description: "The activity has been removed.",
+            });
           } catch (error) {
             console.error('Error deleting activity:', error);
+            toast({
+              title: "Error deleting activity",
+              description: "Please make sure you're signed in and try again.",
+              variant: "destructive"
+            });
           }
         }}
       />
