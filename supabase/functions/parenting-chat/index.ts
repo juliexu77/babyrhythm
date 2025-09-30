@@ -17,129 +17,79 @@ serve(async (req) => {
     console.log("Is initial request:", isInitial);
     console.log("Total activities received:", activities?.length || 0);
 
-    // Build context from today's activities using the user's timezone
+    // Build context from recent activities to analyze trends
     const getUserTimezoneDate = (date: Date, tz: string) => {
       return date.toLocaleDateString('en-US', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' });
     };
     
     const userToday = getUserTimezoneDate(new Date(), timezone || 'UTC');
     
-    const todayActivities = activities?.filter((a: any) => {
-      const activityDate = new Date(a.logged_at);
-      const activityDateInUserTz = getUserTimezoneDate(activityDate, timezone || 'UTC');
-      return activityDateInUserTz === userToday;
-    }) || [];
-
-    console.log("Today's activities count:", todayActivities.length);
-
-    const formatTime = (timestamp: string) => {
-      const date = new Date(timestamp);
-      return date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true,
-        timeZone: timezone || 'UTC'
-      });
-    };
-
-    // Sort activities by time
-    const sortedActivities = [...todayActivities].sort((a, b) => 
-      new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime()
-    );
-
-    // Calculate detailed metrics
-    const feeds = sortedActivities.filter(a => a.type === 'feed');
-    const naps = sortedActivities.filter(a => a.type === 'nap');
-    const diapers = sortedActivities.filter(a => a.type === 'diaper');
-    const photos = sortedActivities.filter(a => (a.type === 'photo' || a.type === 'note') && a.details?.photoUrl);
+    // Get last 7 days of activities for trend analysis
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
-    // Total feed volume
-    const totalFeedVolume = feeds.reduce((sum, f) => {
-      const qty = parseFloat(f.details?.quantity) || 0;
-      return sum + qty;
-    }, 0);
-    const feedUnit = feeds[0]?.details?.unit || 'ml';
-
-    // Total nap time
-    const totalNapMinutes = naps.reduce((sum, n) => {
-      return sum + (n.details?.duration || 0) / 60;
-    }, 0);
-
-    // Wake windows
-    const wakeWindows = [];
-    for (let i = 0; i < naps.length; i++) {
-      if (i === 0 && naps[i]) {
-        wakeWindows.push({
-          index: 1,
-          duration: "morning wake window"
-        });
+    const recentActivities = activities?.filter((a: any) => {
+      const activityDate = new Date(a.logged_at);
+      return activityDate >= sevenDaysAgo;
+    }) || [];
+    
+    // Group activities by day
+    const activitiesByDay: { [key: string]: any[] } = {};
+    recentActivities.forEach((a: any) => {
+      const activityDate = new Date(a.logged_at);
+      const dayKey = getUserTimezoneDate(activityDate, timezone || 'UTC');
+      if (!activitiesByDay[dayKey]) {
+        activitiesByDay[dayKey] = [];
       }
-      if (i < naps.length - 1) {
-        const napEnd = new Date(naps[i].logged_at).getTime() + (naps[i].details?.duration || 0) * 1000;
-        const nextNapStart = new Date(naps[i + 1].logged_at).getTime();
-        const windowMinutes = (nextNapStart - napEnd) / (1000 * 60);
-        wakeWindows.push({
-          index: i + 2,
-          duration: Math.round(windowMinutes)
-        });
-      }
-    }
-
-    // Build detailed activity log
-    const activityLog = sortedActivities.map((a: any) => {
-      const time = formatTime(a.logged_at);
-      if (a.type === "feed") {
-        const qty = a.details?.quantity || "";
-        const unit = a.details?.unit || "";
-        const side = a.details?.feedSide ? ` (${a.details.feedSide})` : "";
-        return `${time}: Fed ${qty}${unit}${side}`;
-      }
-      if (a.type === "nap") {
-        const duration = a.details?.duration ? Math.round(a.details.duration / 60) : 0;
-        return `${time}: Nap (${duration} minutes)`;
-      }
-      if (a.type === "diaper") {
-        return `${time}: Diaper change (${a.details?.diaperType || ""})`;
-      }
-      if (a.type === "note") {
-        return `${time}: Note - ${a.details?.note || ""}`;
-      }
-      if (a.type === "photo") {
-        return `${time}: Photo ${a.details?.note ? `- ${a.details.note}` : ""}`;
-      }
-      if (a.type === "measure") {
-        const measures = [];
-        if (a.details?.weightLbs || a.details?.weightOz) {
-          measures.push(`Weight: ${a.details.weightLbs || 0}lb ${a.details.weightOz || 0}oz`);
-        }
-        if (a.details?.heightInches) {
-          measures.push(`Height: ${a.details.heightInches}"`);
-        }
-        if (a.details?.headCircumference) {
-          measures.push(`Head: ${a.details.headCircumference}"`);
-        }
-        return `${time}: Measurements - ${measures.join(", ")}`;
-      }
-      return `${time}: ${a.type}`;
-    }).join("\n");
-
-    // Build photo URLs list
-    const photoUrls = photos.map(p => p.details.photoUrl).filter(Boolean);
+      activitiesByDay[dayKey].push(a);
+    });
+    
+    // Calculate daily summaries for trend analysis
+    const dailySummaries = Object.entries(activitiesByDay).map(([date, dayActivities]) => {
+      const feeds = dayActivities.filter(a => a.type === 'feed');
+      const naps = dayActivities.filter(a => a.type === 'nap');
+      const diapers = dayActivities.filter(a => a.type === 'diaper');
+      
+      const totalFeedVolume = feeds.reduce((sum, f) => {
+        const qty = parseFloat(f.details?.quantity) || 0;
+        return sum + qty;
+      }, 0);
+      
+      const totalNapMinutes = naps.reduce((sum, n) => {
+        return sum + (n.details?.duration || 0) / 60;
+      }, 0);
+      
+      const avgNapLength = naps.length > 0 ? Math.round(totalNapMinutes / naps.length) : 0;
+      
+      return {
+        date,
+        isToday: date === userToday,
+        feedCount: feeds.length,
+        totalFeedVolume,
+        feedUnit: feeds[0]?.details?.unit || 'ml',
+        napCount: naps.length,
+        totalNapMinutes: Math.round(totalNapMinutes),
+        avgNapLength,
+        diaperCount: diapers.length
+      };
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const metricsContext = `
-TODAY'S DETAILED SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
+RECENT ACTIVITY SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
 
-📊 TOTALS:
-- Feeds: ${feeds.length} (${totalFeedVolume}${feedUnit} total)
-- Naps: ${naps.length} (${Math.round(totalNapMinutes)} minutes total)
-- Diapers: ${diapers.length} changes
-${photos.length > 0 ? `- Photos: ${photos.length} captured` : ""}
-${wakeWindows.length > 0 ? `- Wake windows: ${wakeWindows.map(w => w.duration === "morning wake window" ? w.duration : `${w.duration} min`).join(", ")}` : ""}
+${dailySummaries.map(day => `
+${day.isToday ? '📅 TODAY' : day.date}:
+- Feeds: ${day.feedCount} feeds (${day.totalFeedVolume}${day.feedUnit} total)
+- Naps: ${day.napCount} naps (${day.totalNapMinutes} min total, avg ${day.avgNapLength} min each)
+- Diapers: ${day.diaperCount} changes
+`).join('\n')}
 
-📝 CHRONOLOGICAL LOG:
-${activityLog || "No activities logged yet today."}
-
-${photoUrls.length > 0 ? `📸 PHOTOS FROM TODAY:\n${photoUrls.map((url, i) => `Photo ${i + 1}: ${url}`).join("\n")}` : ""}
+Focus on TRENDS and INSIGHTS:
+- Are feeding amounts increasing/decreasing?
+- Are nap durations getting longer/shorter?
+- Are wake windows lengthening?
+- Any concerning patterns or positive developments?
+- How do recent days compare?
 `;
 
     console.log("Metrics context generated:", metricsContext);
@@ -159,17 +109,16 @@ ${photoUrls.length > 0 ? `📸 PHOTOS FROM TODAY:\n${photoUrls.map((url, i) => `
 
 ${metricsContext}
 
-GUIDELINES:
-- Reference specific data from above (feed amounts, nap durations, wake windows, exact times)
-- When summarizing, include ALL feeds with amounts, ALL naps with durations, and wake windows
-- Be supportive and reassuring while staying practical and informative
-- Notice patterns: "wake windows are lengthening", "feeds are consistent every 3 hours"
-- For age ${babyAge} months, note if patterns are typical or if adjustments may help
-- For medical concerns, recommend consulting their pediatrician while offering general guidance
-- Use ${babyName}'s name naturally in your responses
-- If there are photos from today, mention them warmly at the END of your response
+CRITICAL INSTRUCTIONS:
+- DO NOT list individual activities, times, or feeds - parents can see those in the UI
+- Focus ONLY on trends, patterns, changes, and insights across multiple days
+- Identify what's changing: "Feeds are consolidating", "Nap lengths are increasing", "Wake windows are stretching"
+- Provide interpretation: What does this mean for a ${babyAge}-month-old? Is this expected development?
+- Offer actionable guidance based on trends, not individual data points
+- Be concise, practical, and supportive - get to the insights quickly
+- Keep responses to 3-4 sentences maximum
 
-${isInitial ? "This is the first message - provide a thorough daily summary. Include: total feeds with volume, each nap duration, wake windows, diaper changes, and patterns you notice. Be comprehensive but conversational. Mention photos at the END if any exist today. Keep response to 4-6 sentences." : "Provide personalized advice based on their question and the activity data above."}` 
+${isInitial ? "Provide a brief trend analysis. What patterns do you notice over the past few days? What's changing? What guidance would help?" : "Answer their question with trend-focused insights."}` 
           },
           ...messages,
         ],
