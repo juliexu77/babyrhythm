@@ -203,18 +203,6 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="p-4 border-b border-border bg-card/50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Bot className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground">Your Care Assistant</h3>
-            <p className="text-xs text-muted-foreground">Personalized guidance for {babyName || "your baby"}</p>
-          </div>
-        </div>
-      </div>
-
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         <div className="space-y-4 max-w-3xl mx-auto">
           {messages.length === 0 && !isLoading && (
