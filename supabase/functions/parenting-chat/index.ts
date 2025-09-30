@@ -43,14 +43,56 @@ serve(async (req) => {
       activitiesByDay[dayKey].push(a);
     });
     
+    
+    // Helper to calculate nap duration from start/end times
+    const calculateNapDuration = (startTime: string, endTime: string): number => {
+      try {
+        const parseTime = (timeStr: string) => {
+          const [time, period] = timeStr.split(' ');
+          const [hours, minutes] = time.split(':').map(Number);
+          let totalMinutes = minutes;
+          let adjustedHours = hours;
+          
+          if (period === 'PM' && hours !== 12) {
+            adjustedHours += 12;
+          } else if (period === 'AM' && hours === 12) {
+            adjustedHours = 0;
+          }
+          
+          totalMinutes += adjustedHours * 60;
+          return totalMinutes;
+        };
+
+        const startMinutes = parseTime(startTime);
+        const endMinutes = parseTime(endTime);
+        
+        let durationMinutes = endMinutes - startMinutes;
+        
+        // Handle case where nap goes past midnight
+        if (durationMinutes < 0) {
+          durationMinutes += 24 * 60;
+        }
+        
+        return durationMinutes;
+      } catch (error) {
+        console.error("Error calculating nap duration:", error);
+        return 0;
+      }
+    };
+    
     // Calculate daily summaries for trend analysis
     const dailySummaries = Object.entries(activitiesByDay).map(([date, dayActivities]) => {
       const feeds = dayActivities.filter(a => a.type === 'feed');
-      const naps = dayActivities.filter(a => a.type === 'nap');
+      const naps = dayActivities.filter(a => a.type === 'nap' && a.details?.startTime && a.details?.endTime);
       const diapers = dayActivities.filter(a => a.type === 'diaper');
       
       const totalFeedVolume = feeds.reduce((sum, f) => sum + (parseFloat(f.details?.quantity) || 0), 0);
-      const totalNapMinutes = naps.reduce((sum, n) => sum + ((n.details?.duration || 0) / 60), 0);
+      
+      const totalNapMinutes = naps.reduce((sum, n) => {
+        const duration = calculateNapDuration(n.details.startTime!, n.details.endTime!);
+        return sum + duration;
+      }, 0);
+      
       const avgNapLength = naps.length > 0 ? Math.round(totalNapMinutes / naps.length) : 0;
       
       return {
@@ -66,17 +108,28 @@ serve(async (req) => {
       };
     }).sort((a, b) => a.date.localeCompare(b.date));
 
+
     console.log("Daily summaries:", JSON.stringify(dailySummaries));
 
+    // Build metrics context focusing only on non-zero activities
     const metricsContext = `
 RECENT ACTIVITY SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
 
-${dailySummaries.map(day => `
-${day.isToday ? '📅 TODAY' : day.date}:
-- Feeds: ${day.feedCount} feeds (${day.totalFeedVolume}${day.feedUnit} total)
-- Naps: ${day.napCount} naps (${day.totalNapMinutes} min total, avg ${day.avgNapLength} min each)
-- Diapers: ${day.diaperCount} changes
-`).join('\n')}
+${dailySummaries.map(day => {
+  const lines = [`${day.isToday ? '📅 TODAY' : day.date}:`];
+  
+  if (day.feedCount > 0) {
+    lines.push(`- Feeds: ${day.feedCount} feeds (${day.totalFeedVolume}${day.feedUnit} total)`);
+  }
+  if (day.napCount > 0) {
+    lines.push(`- Naps: ${day.napCount} naps (${day.totalNapMinutes} min total, avg ${day.avgNapLength} min each)`);
+  }
+  if (day.diaperCount > 0) {
+    lines.push(`- Diapers: ${day.diaperCount} changes`);
+  }
+  
+  return lines.join('\n');
+}).join('\n\n')}
 
 Focus on TRENDS and INSIGHTS:
 - Are feeding amounts increasing/decreasing?
@@ -105,7 +158,8 @@ ${metricsContext}
 
 CRITICAL INSTRUCTIONS:
 - DO NOT list individual activities, times, or feeds - parents can see those in the UI
-- Focus ONLY on trends, patterns, changes, and insights across multiple days
+- DO NOT mention activity types with zero count (e.g., if no diapers were logged, don't discuss diapers)
+- Focus ONLY on trends, patterns, changes, and insights across days where activities were logged
 - Identify what's changing: "Feeds are consolidating", "Nap lengths are increasing", "Wake windows are stretching"
 - Provide interpretation: What does this mean for a ${babyAge}-month-old? Is this expected development?
 - Offer actionable guidance based on trends, not individual data points
