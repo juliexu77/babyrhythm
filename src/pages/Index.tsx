@@ -260,9 +260,7 @@ const Index = () => {
                       });
                     });
 
-                    const sortedDates = Object.keys(activityGroups).sort((a, b) => 
-                      new Date(b).getTime() - new Date(a).getTime()
-                    );
+                    const sortedDates = Object.keys(activityGroups).sort((a, b) => b.localeCompare(a));
 
                     // Filter dates based on showFullTimeline
                     const today = new Date();
@@ -274,9 +272,7 @@ const Index = () => {
                                        String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
                                        String(yesterday.getDate()).padStart(2, '0');
 
-                    const visibleDates = showFullTimeline 
-                      ? sortedDates 
-                      : sortedDates.filter(date => date === todayKey || date === yesterdayKey);
+                    const visibleDates = showFullTimeline ? sortedDates : sortedDates.slice(0, 2);
 
                     return (
                       <>
