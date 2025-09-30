@@ -168,27 +168,14 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const { household } = useHousehold();
   const [showReview, setShowReview] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typedText, setTypedText] = useState("");
-  const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [reviewGenerated, setReviewGenerated] = useState(false);
-  const [fullReviewText, setFullReviewText] = useState("");
-  const [isPulsing, setIsPulsing] = useState(false);
+  const [reviewText, setReviewText] = useState("");
   const [showPhotos, setShowPhotos] = useState(false);
-  const [useWordMode, setUseWordMode] = useState(false);
-  const [lastRenderTime, setLastRenderTime] = useState(0);
-
-  // Detect mobile devices for optimal animation
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                   window.innerWidth <= 768;
 
   // Random selection helper
   const randomChoice = (array: string[]): string => {
     return array[Math.floor(Math.random() * array.length)];
   };
-
-  // Check if user prefers reduced motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Check if review was already shown today
   useEffect(() => {
@@ -196,7 +183,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     const reviewShown = localStorage.getItem(`night-doula-${today}`);
     if (reviewShown) {
       setShowReview(true);
-      setTypedText(reviewShown);
+      setReviewText(reviewShown);
       setReviewGenerated(true);
       setShowPhotos(true);
     }
@@ -552,121 +539,19 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     return message;
   };
 
-  // Instant reveal on tap
-  const handleMessageClick = () => {
-    if (isTyping) {
-      setTypedText(fullReviewText);
-      setCurrentCharIndex(fullReviewText.length);
-      setIsTyping(false);
-      setIsPulsing(false);
-      setShowPhotos(true);
-    }
-  };
-
-  // ChatGPT-style streaming with natural pauses
+  // Simple start review - just show with fade-in
   const startReview = useCallback(() => {
     const reviewText = generateNightDoulaMessage();
-    setFullReviewText(reviewText);
+    setReviewText(reviewText);
     setShowReview(true);
     setShowPrompt(false);
-    setIsPulsing(true);
-    setTypedText("");
-    setCurrentCharIndex(0);
-    setShowPhotos(false);
-    setUseWordMode(isMobile); // Start mobile devices in word mode
-    setLastRenderTime(0);
+    setReviewGenerated(true);
+    setShowPhotos(true);
     
     // Store in localStorage
     const today = new Date().toDateString();
     localStorage.setItem(`night-doula-${today}`, reviewText);
-    setReviewGenerated(true);
-
-    if (prefersReducedMotion) {
-      // Respect reduce motion - show instantly
-      setTypedText(reviewText);
-      setIsTyping(false);
-      setIsPulsing(false);
-      setShowPhotos(true);
-    } else {
-      setIsTyping(true);
-    }
-  }, [activities, babyName, household, prefersReducedMotion]);
-
-  // Smart performance-optimized animation with mobile detection
-  useEffect(() => {
-    if (!isTyping || !fullReviewText || prefersReducedMotion) return;
-    
-    // Mobile-optimized settings
-    const targetWPM = isMobile ? 120 : 90; // Faster on mobile for less processing
-    const avgCharsPerWord = 4.7;
-    const charsPerMinute = targetWPM * avgCharsPerWord;
-    const baseDelay = (60 * 1000) / charsPerMinute;
-    
-    // Mobile uses word-by-word, desktop uses small chunks
-    const useMobileMode = isMobile || useWordMode;
-    
-    const startTime = performance.now();
-    
-    const timer = setTimeout(() => {
-      if (currentCharIndex < fullReviewText.length) {
-        let nextIndex = currentCharIndex;
-        
-        if (useMobileMode) {
-          // Mobile: Word-by-word for better performance
-          const remainingText = fullReviewText.slice(currentCharIndex);
-          const nextSpace = remainingText.indexOf(' ');
-          const nextPunctuation = remainingText.search(/[.!?]/);
-          
-          if (nextSpace === -1 && nextPunctuation === -1) {
-            nextIndex = fullReviewText.length;
-          } else if (nextPunctuation !== -1 && (nextSpace === -1 || nextPunctuation < nextSpace)) {
-            nextIndex = currentCharIndex + nextPunctuation + 1;
-          } else if (nextSpace !== -1) {
-            nextIndex = currentCharIndex + nextSpace + 1;
-          }
-        } else {
-          // Desktop: Larger chunks for smooth animation
-          const chunkSize = Math.random() > 0.5 ? 4 : 6; // Bigger chunks
-          nextIndex = Math.min(currentCharIndex + chunkSize, fullReviewText.length);
-        }
-        
-        setTypedText(fullReviewText.substring(0, nextIndex));
-        setCurrentCharIndex(nextIndex);
-        
-        // Performance fallback: switch to word mode if rendering is slow
-        const renderTime = performance.now() - startTime;
-        if (renderTime > 50 && !useMobileMode && !isMobile) {
-          setUseWordMode(true);
-        }
-        
-        // Natural pauses based on content
-        const currentChar = fullReviewText[nextIndex - 1];
-        const isPunctuation = ['.', '!', '?'].includes(currentChar);
-        const isComma = currentChar === ',';
-        
-        let delay = useMobileMode ? baseDelay * 2.5 : baseDelay;
-        
-        if (isPunctuation) {
-          delay *= 1.8; // Pause after sentences
-        } else if (isComma) {
-          delay *= 1.2; // Brief pause after commas
-        }
-        
-        // Adjust for chunk size to maintain consistent WPM
-        if (!useMobileMode) {
-          const charsAdded = nextIndex - currentCharIndex;
-          delay = delay * charsAdded;
-        }
-        
-      } else {
-        setIsTyping(false);
-        setIsPulsing(false);
-        setShowPhotos(true);
-      }
-    }, useMobileMode ? baseDelay * 2.5 : baseDelay);
-    
-    return () => clearTimeout(timer);
-  }, [currentCharIndex, fullReviewText, isTyping, prefersReducedMotion, useWordMode, isMobile]);
+  }, [activities, babyName, household]);
 
   if (!showPrompt && !showReview) {
     return null;
@@ -704,34 +589,23 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const todaysPhotos = getDayStats(new Date()).photos;
 
   return (
-    <Card className="mb-6 bg-card border-border shadow-card">
+    <Card className="mb-6 bg-card border-border shadow-card animate-fade-in">
       <CardContent className="p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="relative">
-            <Moon className="w-6 h-6 text-primary" />
-            {isPulsing && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            )}
-          </div>
+          <Moon className="w-6 h-6 text-primary" />
           <h3 className="text-lg font-semibold text-foreground">
             Night Doula
           </h3>
         </div>
         
         <div className="prose prose-sm max-w-none">
-          <div 
-            className="text-foreground leading-relaxed text-base cursor-pointer"
-            onClick={handleMessageClick}
-          >
-            {typedText}
-            {isTyping && (
-              <span className="inline-block w-0.5 h-5 bg-primary ml-1 animate-pulse"></span>
-            )}
+          <div className="text-foreground leading-relaxed text-base">
+            {reviewText}
           </div>
           
-          {/* Photos appear after text is complete - full width like social media */}
+          {/* Photos - full width like social media */}
           {showPhotos && todaysPhotos.length > 0 && (
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-3 animate-fade-in">
               {todaysPhotos.map((photo, index) => (
                 <img 
                   key={index}

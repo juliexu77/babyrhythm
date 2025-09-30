@@ -1,4 +1,5 @@
 import { NightDoulaReview } from "@/components/NightDoulaReview";
+import { ParentingChat } from "@/components/ParentingChat";
 import { useHousehold } from "@/hooks/useHousehold";
 
 interface Activity {
@@ -22,6 +23,8 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
         activities={activities} 
         babyName={household?.baby_name} 
       />
+      
+      <ParentingChat />
     </div>
   );
 };
