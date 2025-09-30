@@ -241,7 +241,7 @@ export function useActivities() {
         .delete()
         .eq('id', activityId)
         .select('id')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
