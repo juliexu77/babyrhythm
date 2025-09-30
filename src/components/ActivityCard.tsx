@@ -1,10 +1,10 @@
-import { Clock, Baby, Palette, Moon, StickyNote } from "lucide-react";
+import { Clock, Baby, Palette, Moon, StickyNote, Ruler, Camera } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export interface Activity {
   id: string;
-  type: "feed" | "diaper" | "nap" | "note";
+  type: "feed" | "diaper" | "nap" | "note" | "measure" | "photo";
   time: string;
   loggedAt?: string; // Add the original logged timestamp
   details: {
@@ -23,6 +23,13 @@ export interface Activity {
     // Nap details
     startTime?: string;
     endTime?: string;
+    // Measure details
+    weightLbs?: string;
+    weightOz?: string;
+    heightInches?: string;
+    headCircumference?: string;
+    // Photo details
+    photoUrl?: string;
     // General
     note?: string;
   };
@@ -45,6 +52,10 @@ const getActivityIcon = (type: string) => {
       return <Moon className="h-4 w-4" />;
     case "note":
       return <StickyNote className="h-4 w-4" />;
+    case "measure":
+      return <Ruler className="h-4 w-4" />;
+    case "photo":
+      return <Camera className="h-4 w-4" />;
     default:
       return <Clock className="h-4 w-4" />;
   }
@@ -60,6 +71,10 @@ const getActivityGradient = (type: string) => {
       return "bg-gradient-nap";
     case "note":
       return "bg-gradient-note";
+    case "measure":
+      return "bg-gradient-primary";
+    case "photo":
+      return "bg-gradient-primary";
     default:
       return "bg-gradient-primary";
   }
@@ -156,6 +171,22 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
       return `${babyName} took a nap`;
     case "note":
       return activity.details.note || `${babyName} note`;
+    case "measure":
+      const measurements = [];
+      if (activity.details.weightLbs || activity.details.weightOz) {
+        measurements.push(`${activity.details.weightLbs || 0}lb ${activity.details.weightOz || 0}oz`);
+      }
+      if (activity.details.heightInches) {
+        measurements.push(`${activity.details.heightInches}" tall`);
+      }
+      if (activity.details.headCircumference) {
+        measurements.push(`${activity.details.headCircumference}" head`);
+      }
+      return measurements.length > 0 
+        ? `${babyName} measured: ${measurements.join(", ")}`
+        : `${babyName} measurements taken`;
+    case "photo":
+      return activity.details.note || `${babyName} photo`;
     default:
       return `${babyName} activity`;
   }

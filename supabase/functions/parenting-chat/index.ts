@@ -45,6 +45,7 @@ serve(async (req) => {
     const feeds = sortedActivities.filter(a => a.type === 'feed');
     const naps = sortedActivities.filter(a => a.type === 'nap');
     const diapers = sortedActivities.filter(a => a.type === 'diaper');
+    const photos = sortedActivities.filter(a => (a.type === 'photo' || a.type === 'note') && a.details?.photoUrl);
     
     // Total feed volume
     const totalFeedVolume = feeds.reduce((sum, f) => {
@@ -62,8 +63,6 @@ serve(async (req) => {
     const wakeWindows = [];
     for (let i = 0; i < naps.length; i++) {
       if (i === 0 && naps[i]) {
-        // First wake window (from assumed wake up to first nap)
-        const firstNapTime = new Date(naps[i].logged_at);
         wakeWindows.push({
           index: 1,
           duration: "morning wake window"
@@ -99,8 +98,27 @@ serve(async (req) => {
       if (a.type === "note") {
         return `${time}: Note - ${a.details?.note || ""}`;
       }
+      if (a.type === "photo") {
+        return `${time}: Photo ${a.details?.note ? `- ${a.details.note}` : ""}`;
+      }
+      if (a.type === "measure") {
+        const measures = [];
+        if (a.details?.weightLbs || a.details?.weightOz) {
+          measures.push(`Weight: ${a.details.weightLbs || 0}lb ${a.details.weightOz || 0}oz`);
+        }
+        if (a.details?.heightInches) {
+          measures.push(`Height: ${a.details.heightInches}"`);
+        }
+        if (a.details?.headCircumference) {
+          measures.push(`Head: ${a.details.headCircumference}"`);
+        }
+        return `${time}: Measurements - ${measures.join(", ")}`;
+      }
       return `${time}: ${a.type}`;
     }).join("\n");
+
+    // Build photo URLs list
+    const photoUrls = photos.map(p => p.details.photoUrl).filter(Boolean);
 
     const metricsContext = `
 TODAY'S DETAILED SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
@@ -109,10 +127,13 @@ TODAY'S DETAILED SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} mont
 - Feeds: ${feeds.length} (${totalFeedVolume}${feedUnit} total)
 - Naps: ${naps.length} (${Math.round(totalNapMinutes)} minutes total)
 - Diapers: ${diapers.length} changes
+${photos.length > 0 ? `- Photos: ${photos.length} captured` : ""}
 ${wakeWindows.length > 0 ? `- Wake windows: ${wakeWindows.map(w => w.duration === "morning wake window" ? w.duration : `${w.duration} min`).join(", ")}` : ""}
 
 📝 CHRONOLOGICAL LOG:
 ${activityLog || "No activities logged yet today."}
+
+${photoUrls.length > 0 ? `📸 PHOTOS FROM TODAY:\n${photoUrls.map((url, i) => `Photo ${i + 1}: ${url}`).join("\n")}` : ""}
 `;
 
     console.log("Metrics context generated:", metricsContext);
@@ -140,8 +161,9 @@ IMPORTANT GUIDELINES:
 - For age ${babyAge} months, mention if things are typical/expected or if adjustments might help
 - For medical concerns, recommend consulting their pediatrician while offering general guidance
 - Use the baby's name (${babyName}) naturally in conversation
+- If there are photos from today, mention them warmly at the END of your response (e.g., "And what sweet moments captured today!")
 
-${isInitial ? "This is the first message - provide a DETAILED daily summary. Include: total feeds with volume, each individual nap duration, wake windows, diaper changes, and any patterns you notice. Be thorough but conversational - parents want the full picture. Keep it to 4-6 sentences." : "Provide personalized advice based on their question and the detailed activity data above."}` 
+${isInitial ? "This is the first message - provide a DETAILED daily summary. Include: total feeds with volume, each individual nap duration, wake windows, diaper changes, and any patterns you notice. Be thorough but conversational - parents want the full picture. At the END, if there are photos from today, mention them warmly. Keep it to 4-6 sentences." : "Provide personalized advice based on their question and the detailed activity data above."}` 
           },
           ...messages,
         ],

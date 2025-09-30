@@ -247,6 +247,28 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                
+                {/* Display photos if they are in the message */}
+                {msg.role === "assistant" && msg.content.includes("📸") && activities && (
+                  <div className="mt-3 space-y-2">
+                    {activities
+                      .filter((a: any) => {
+                        const activityDate = new Date(a.logged_at);
+                        const today = new Date();
+                        return activityDate.toDateString() === today.toDateString() && 
+                               ((a.type === 'photo' || a.type === 'note') && a.details?.photoUrl);
+                      })
+                      .map((photo: any, i: number) => (
+                        <img
+                          key={i}
+                          src={photo.details.photoUrl}
+                          alt={`Photo from today ${i + 1}`}
+                          className="rounded-lg max-w-full h-auto"
+                        />
+                      ))
+                    }
+                  </div>
+                )}
               </div>
               {msg.role === "user" && (
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">

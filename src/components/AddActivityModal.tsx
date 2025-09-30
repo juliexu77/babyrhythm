@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2 } from "lucide-react";
+import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +32,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
-  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "">(""); 
+  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "measure" | "photo" | "">(""); 
   const [time, setTime] = useState(() => {
     const now = new Date();
     return now.toLocaleTimeString("en-US", { 
@@ -71,6 +71,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  
+  // Measure state
+  const [weightLbs, setWeightLbs] = useState("");
+  const [weightOz, setWeightOz] = useState("");
+  const [heightInches, setHeightInches] = useState("");
+  const [headCircumference, setHeadCircumference] = useState("");
 
   // Load last used settings and handle editing
   useEffect(() => {
@@ -108,6 +114,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       } else if (editingActivity.type === "note") {
         setNote(editingActivity.details.note || "");
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
+      } else if (editingActivity.type === "measure") {
+        const details = editingActivity.details;
+        setWeightLbs(details.weightLbs || "");
+        setWeightOz(details.weightOz || "");
+        setHeightInches(details.heightInches || "");
+        setHeadCircumference(details.headCircumference || "");
+        setNote(details.note || "");
+      } else if (editingActivity.type === "photo") {
+        setPhotoUrl((editingActivity.details as any).photoUrl || null);
+        setNote(editingActivity.details.note || "");
       }
     } else {
       // Load last used settings for new activities
@@ -148,6 +164,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setPhoto(null);
     setPhotoUrl(null);
     setShowKeypad(false);
+    setWeightLbs("");
+    setWeightOz("");
+    setHeightInches("");
+    setHeadCircumference("");
   };
 
   const startNapTimer = async () => {
@@ -317,6 +337,19 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           details.photoUrl = photoUrl;
         }
         break;
+      case "measure":
+        if (weightLbs) details.weightLbs = weightLbs;
+        if (weightOz) details.weightOz = weightOz;
+        if (heightInches) details.heightInches = heightInches;
+        if (headCircumference) details.headCircumference = headCircumference;
+        if (note) details.note = note;
+        break;
+      case "photo":
+        if (note) details.note = note;
+        if (photoUrl) {
+          details.photoUrl = photoUrl;
+        }
+        break;
     }
 
     // Upload photo if new one is selected
@@ -335,7 +368,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       // Update existing activity
       const updatedActivity: Activity = {
         ...editingActivity,
-        type: activityType as "feed" | "diaper" | "nap" | "note",
+        type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
         time: activityType === "nap" ? startTime : time,
         details,
       };
@@ -344,7 +377,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     } else {
       // Create new activity
       const newActivity: Omit<Activity, "id"> = {
-        type: activityType as "feed" | "diaper" | "nap" | "note",
+        type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
         time: activityType === "nap" ? startTime : time,
         details,
       };
@@ -366,6 +399,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       case "diaper": return <Palette className="h-4 w-4" />;
       case "nap": return <Moon className="h-4 w-4" />;
       case "note": return <StickyNote className="h-4 w-4" />;
+      case "measure": return <Ruler className="h-4 w-4" />;
+      case "photo": return <Camera className="h-4 w-4" />;
       default: return null;
     }
   };
@@ -394,12 +429,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           
           <div className="space-y-4">
             {/* Activity Type Selection - Clean Grid */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {[
                 { type: "feed", icon: Baby, label: "Feed" },
                 { type: "diaper", icon: Palette, label: "Diaper" },
                 { type: "nap", icon: Moon, label: "Sleep" },
-                { type: "note", icon: StickyNote, label: "Note" }
+                { type: "note", icon: StickyNote, label: "Note" },
+                { type: "measure", icon: Ruler, label: "Measure" },
+                { type: "photo", icon: Camera, label: "Photo" }
               ].map(({ type, icon: Icon, label }) => (
                 <Button
                   key={type}
@@ -785,6 +822,179 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
               </div>
             )}
+
+            {/* Measure Details */}
+            {activityType === "measure" && (
+              <div className="space-y-4">
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label="Time" 
+                />
+
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Weight</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1 block">Pounds</Label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={weightLbs}
+                        onChange={(e) => setWeightLbs(e.target.value)}
+                        className="text-center"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground mb-1 block">Ounces</Label>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={weightOz}
+                        onChange={(e) => setWeightOz(e.target.value)}
+                        className="text-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Height (inches)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="0.0"
+                    value={heightInches}
+                    onChange={(e) => setHeightInches(e.target.value)}
+                    className="text-center"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Head Circumference (inches)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="0.0"
+                    value={headCircumference}
+                    onChange={(e) => setHeadCircumference(e.target.value)}
+                    className="text-center"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="measure-note" className="text-sm font-medium mb-2 block">Notes</Label>
+                  <Textarea
+                    id="measure-note"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Doctor visit, growth check..."
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Photo Activity Details */}
+            {activityType === "photo" && (
+              <div className="space-y-4">
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label="Time" 
+                />
+
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Photo</Label>
+                  <div className="space-y-3">
+                    {(photo || photoUrl) && (
+                      <div className="relative">
+                        <img
+                          src={photo ? URL.createObjectURL(photo) : photoUrl!}
+                          alt="Selected photo"
+                          className="w-full h-48 object-cover rounded-lg border"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPhoto(null);
+                            setPhotoUrl(null);
+                          }}
+                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                    
+                    <div className="border-2 border-dashed border-border rounded-lg p-6">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (!file.type.startsWith('image/')) {
+                              toast({
+                                title: "Invalid file type",
+                                description: "Please select an image file.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast({
+                                title: "File too large",
+                                description: "Please select an image smaller than 10MB.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            setPhoto(file);
+                            setPhotoUrl(null);
+                          }
+                        }}
+                        className="hidden"
+                        id="photo-activity-input"
+                      />
+                      <label
+                        htmlFor="photo-activity-input"
+                        className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Camera className="h-10 w-10 mb-2" />
+                        {photo || photoUrl ? (
+                          <span className="text-sm font-medium">Change photo</span>
+                        ) : (
+                          <>
+                            <span className="text-sm font-medium">Tap to add photo</span>
+                            <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="photo-caption" className="text-sm font-medium mb-2 block">Caption (optional)</Label>
+                  <Textarea
+                    id="photo-caption"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Add a caption..."
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+              </div>
+            )}
+
 
 
             <div className="space-y-3 pt-6 border-t">
