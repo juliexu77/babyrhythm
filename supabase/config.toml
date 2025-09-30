@@ -2,3 +2,6 @@ project_id = "ufpavzvrtdzxwcwasaqj"
 
 [functions.parenting-chat]
 verify_jwt = false
+
+[functions.night-doula]
+verify_jwt = false

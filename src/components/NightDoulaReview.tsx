@@ -171,6 +171,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const [reviewGenerated, setReviewGenerated] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [showPhotos, setShowPhotos] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Random selection helper
   const randomChoice = (array: string[]): string => {
@@ -539,18 +540,55 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     return message;
   };
 
-  // Simple start review - just show with fade-in
-  const startReview = useCallback(() => {
-    const reviewText = generateNightDoulaMessage();
-    setReviewText(reviewText);
-    setShowReview(true);
+  // Generate review using AI
+  const handleGenerateReview = useCallback(async () => {
+    setIsGenerating(true);
     setShowPrompt(false);
-    setReviewGenerated(true);
-    setShowPhotos(true);
+    setShowReview(true);
     
-    // Store in localStorage
-    const today = new Date().toDateString();
-    localStorage.setItem(`night-doula-${today}`, reviewText);
+    const ageInMonths = getBabyAgeInMonths();
+    
+    try {
+      const response = await fetch("https://ufpavzvrtdzxwcwasaqj.supabase.co/functions/v1/night-doula", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmcGF2enZydGR6eHdjd2FzYXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODk0ODMsImV4cCI6MjA3NDI2NTQ4M30.KWdhL3IiQ0YWW2Q6MBHkXOwEz41ZU7EVS_eKG0Hn600",
+        },
+        body: JSON.stringify({
+          activities,
+          babyName: babyName || household?.baby_name || "your little one",
+          babyAge: ageInMonths
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate review");
+      }
+
+      const data = await response.json();
+      const generatedReview = data.review;
+      
+      setReviewText(generatedReview);
+      setReviewGenerated(true);
+      setShowPhotos(true);
+      
+      // Save to localStorage
+      const today = new Date().toDateString();
+      localStorage.setItem(`night-doula-${today}`, generatedReview);
+    } catch (error) {
+      console.error("Error generating Night Doula review:", error);
+      // Fallback to original message if AI fails
+      const fallbackMessage = generateNightDoulaMessage();
+      setReviewText(fallbackMessage);
+      setReviewGenerated(true);
+      setShowPhotos(true);
+      
+      const today = new Date().toDateString();
+      localStorage.setItem(`night-doula-${today}`, fallbackMessage);
+    } finally {
+      setIsGenerating(false);
+    }
   }, [activities, babyName, household]);
 
   if (!showPrompt && !showReview) {
@@ -573,7 +611,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
               </span>
             </div>
             <Button 
-              onClick={startReview}
+              onClick={handleGenerateReview}
               size="sm"
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
@@ -599,9 +637,20 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         </div>
         
         <div className="prose prose-sm max-w-none">
-          <div className="text-foreground leading-relaxed text-base">
-            {reviewText}
-          </div>
+          {isGenerating ? (
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+              <span className="text-sm">Reflecting on today...</span>
+            </div>
+          ) : (
+            <div className="text-foreground leading-relaxed text-base">
+              {reviewText}
+            </div>
+          )}
           
           {/* Photos - full width like social media */}
           {showPhotos && todaysPhotos.length > 0 && (
