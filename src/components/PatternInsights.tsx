@@ -36,10 +36,10 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
           <div className="text-center py-8">
             <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
             <p className="text-muted-foreground">
-              Keep logging activities to discover patterns in your baby's routine.
+              {t('keepLoggingActivities')}
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              Insights appear after logging multiple activities of the same type.
+              {t('insightsAppearAfter')}
             </p>
           </div>
         </CardContent>
@@ -75,7 +75,9 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
                   </div>
                   <div className="flex items-center gap-2">
                     {insight.confidence === 'high' && (
-                      <span className="text-xs opacity-75 capitalize">{insight.confidence} confidence</span>
+                      <span className="text-xs opacity-75 capitalize">
+                        {t('highConfidence')}
+                      </span>
                     )}
                     {expandedInsight === index ? (
                       <ChevronUp className="h-3 w-3 opacity-50" />
@@ -94,13 +96,13 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
                     {insight.details.data.length > 0 && (
                        <div className="space-y-2">
                          <h5 className="text-xs font-medium opacity-75 uppercase tracking-wide">
-                           Supporting Data
+                           {t('supportingData')}
                          </h5>
                          <div className="space-y-1">
                            {insight.details.data.slice(0, 3).map((dataPoint, dataIndex) => (
                              <div key={dataIndex} className="flex justify-between items-center text-xs">
                                <span className="opacity-75">
-                                 Activity
+                                 {t('activity')}
                                </span>
                                <span className="font-medium">
                                  {dataPoint.value}
@@ -122,7 +124,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
           <div className="flex items-start gap-2">
             <span className="text-purple-600 text-lg">💡</span>
             <p className="text-sm text-purple-700">
-              These patterns are based on your recent activities. The more you track, the more accurate they become!
+              {t('patternsBasedOnRecent')}
             </p>
           </div>
         </div>

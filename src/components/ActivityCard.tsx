@@ -1,6 +1,7 @@
 import { Clock, Baby, Palette, Moon, StickyNote, Ruler, Camera } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface Activity {
   id: string;
@@ -121,79 +122,80 @@ const calculateNapDuration = (startTime: string, endTime: string): string => {
   }
 };
 
-const getPersonalizedActivityText = (activity: Activity, babyName: string = "Baby") => {
+const getPersonalizedActivityText = (activity: Activity, babyName: string = "Baby", t: (key: string) => string) => {
   switch (activity.type) {
     case "feed":
       const { feedType, quantity, unit, minutesLeft, minutesRight, solidDescription, isDreamFeed } = activity.details;
       let feedText = "";
       
       if (feedType === "bottle" && quantity && unit) {
-        feedText = `${babyName} drank ${quantity} ${unit}`;
+        feedText = `${babyName} ${t('drank')} ${quantity} ${unit}`;
       } else if (feedType === "nursing") {
         const leftTime = minutesLeft ? parseInt(minutesLeft) : 0;
         const rightTime = minutesRight ? parseInt(minutesRight) : 0;
         const totalTime = leftTime + rightTime;
         
         if (totalTime > 0) {
-          feedText = `${babyName} nursed ${totalTime} min total`;
+          feedText = `${babyName} ${t('nursed')} ${totalTime} ${t('minTotal')}`;
         } else {
-          feedText = `${babyName} nursed`;
+          feedText = `${babyName} ${t('nursed')}`;
         }
       } else if (feedType === "solid") {
         if (solidDescription) {
-          feedText = `${babyName} ate ${solidDescription}`;
+          feedText = `${babyName} ${t('ate')} ${solidDescription}`;
         } else {
-          feedText = `${babyName} had solids`;
+          feedText = `${babyName} ${t('hadSolids')}`;
         }
       } else {
-        feedText = `${babyName} had a feeding`;
+        feedText = `${babyName} ${t('hadAFeeding')}`;
       }
       
       // Add dream feed indicator
-      return isDreamFeed ? `${feedText} (dream feed)` : feedText;
+      return isDreamFeed ? `${feedText} (${t('dreamFeed')})` : feedText;
     case "diaper":
       const type = activity.details.diaperType;
       if (type === "wet") {
-        return `${babyName} had a wet diaper`;
+        return `${babyName} ${t('hadAWetDiaper')}`;
       } else if (type === "poopy") {
-        return `${babyName} had a poop diaper`;
+        return `${babyName} ${t('hadAPoopDiaper')}`;
       } else if (type === "both") {
-        return `${babyName} had a wet and poop diaper`;
+        return `${babyName} ${t('hadAWetAndPoopDiaper')}`;
       }
-      return `${babyName} had a diaper change`;
+      return `${babyName} ${t('hadADiaperChange')}`;
     case "nap":
       if (activity.details.startTime && activity.details.endTime) {
         const duration = calculateNapDuration(activity.details.startTime, activity.details.endTime);
-        return `${babyName} slept ${duration}`;
+        return `${babyName} ${t('slept')} ${duration}`;
       } else if (activity.details.startTime && !activity.details.endTime) {
-        return `${babyName} is sleeping (started at ${activity.details.startTime})`;
+        return `${babyName} ${t('isSleeping')} (${t('startedAt')} ${activity.details.startTime})`;
       }
-      return `${babyName} took a nap`;
+      return `${babyName} ${t('tookANap')}`;
     case "note":
-      return activity.details.note || `${babyName} note`;
+      return activity.details.note || `${babyName} ${t('note')}`;
     case "measure":
       const measurements = [];
       if (activity.details.weightLbs || activity.details.weightOz) {
         measurements.push(`${activity.details.weightLbs || 0}lb ${activity.details.weightOz || 0}oz`);
       }
       if (activity.details.heightInches) {
-        measurements.push(`${activity.details.heightInches}" tall`);
+        measurements.push(`${activity.details.heightInches}" ${t('tall')}`);
       }
       if (activity.details.headCircumference) {
-        measurements.push(`${activity.details.headCircumference}" head`);
+        measurements.push(`${activity.details.headCircumference}" ${t('head')}`);
       }
       return measurements.length > 0 
-        ? `${babyName} measured: ${measurements.join(", ")}`
-        : `${babyName} measurements taken`;
+        ? `${babyName} ${t('measured')}: ${measurements.join(", ")}`
+        : `${babyName} ${t('measurementsTaken')}`;
     case "photo":
-      return activity.details.note || `${babyName} photo`;
+      return activity.details.note || `${babyName} ${t('photo')}`;
     default:
-      return `${babyName} activity`;
+      return `${babyName} ${t('activity')}`;
   }
 };
 
 export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: ActivityCardProps) => {
-  const activityText = getPersonalizedActivityText(activity, babyName);
+  const { t } = useLanguage();
+  const activityText = getPersonalizedActivityText(activity, babyName, t);
 
   const handleClick = () => {
     if (onEdit) {

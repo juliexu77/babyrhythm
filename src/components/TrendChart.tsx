@@ -2,12 +2,14 @@ import { Activity } from "./ActivityCard";
 import { TrendingUp } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TrendChartProps {
   activities: Activity[];
 }
 
 export const TrendChart = ({ activities }: TrendChartProps) => {
+  const { t } = useLanguage();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
 
   // Determine preferred unit from last feed entry
@@ -78,7 +80,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         value,
         feedCount,
         unit,
-        detail: value > 0 ? `${value} ${unit}, ${feedCount} feeds` : "No feeds"
+        detail: value > 0 ? `${value} ${unit}, ${feedCount} ${t('feeds')}` : t('noFeeds')
       });
     }
     
@@ -129,7 +131,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         date: date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3),
         value,
         napCount,
-        detail: value > 0 ? `${value}h, ${napCount} naps` : "No naps"
+        detail: value > 0 ? `${value}h, ${napCount} ${t('naps')}` : t('noNaps')
       });
     }
     
@@ -148,14 +150,14 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="w-5 h-5 text-muted-foreground" />
           <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-            Daily Feed Totals
+            {t('dailyFeedTotals')}
           </h3>
         </div>
         
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-gradient-feed"></div>
-            <span className="text-sm text-muted-foreground">Feed Volume ({preferredUnit})</span>
+            <span className="text-sm text-muted-foreground">{t('feedVolume')} ({preferredUnit})</span>
           </div>
 
           <div className="grid grid-cols-7 gap-2 h-32">
@@ -196,14 +198,14 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="w-5 h-5 text-muted-foreground" />
           <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-            Daily Sleep Totals
+            {t('dailySleepTotalsChart')}
           </h3>
         </div>
         
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-gradient-nap"></div>
-            <span className="text-sm text-muted-foreground">Sleep Hours</span>
+            <span className="text-sm text-muted-foreground">{t('sleepHours')}</span>
           </div>
 
           <div className="grid grid-cols-7 gap-2 h-32">

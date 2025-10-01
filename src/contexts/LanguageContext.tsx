@@ -184,7 +184,60 @@ const translations = {
     showLess: "Show less",
     
     // Activities
-    noActivitiesStartAdding: "No activities yet. Start by adding your first activity!"
+    noActivitiesStartAdding: "No activities yet. Start by adding your first activity!",
+    
+    // Activity timeline text
+    drank: "drank",
+    nursed: "nursed",
+    ate: "ate",
+    hadSolids: "had solids",
+    hadAFeeding: "had a feeding",
+    dreamFeed: "dream feed",
+    hadAWetDiaper: "had a wet diaper",
+    hadAPoopDiaper: "had a poop diaper",
+    hadAWetAndPoopDiaper: "had a wet and poop diaper",
+    hadADiaperChange: "had a diaper change",
+    slept: "slept",
+    isSleeping: "is sleeping",
+    startedAt: "started at",
+    tookANap: "took a nap",
+    measured: "measured",
+    measurementsTaken: "measurements taken",
+    tall: "tall",
+    head: "head",
+    photo: "photo",
+    minTotal: "min total",
+    
+    // Feed types
+    bottle: "Bottle",
+    nursing: "Nursing",
+    solid: "Solid",
+    
+    // Diaper types
+    wet: "Wet",
+    poopy: "Poopy",
+    both: "Both",
+    
+    // Trend chart
+    dailyFeedTotals: "Daily Feed Totals",
+    dailySleepTotalsChart: "Daily Sleep Totals",
+    feedVolume: "Feed Volume",
+    sleepHours: "Sleep Hours",
+    feeds: "feeds",
+    naps: "naps",
+    noFeeds: "No feeds",
+    noNaps: "No naps",
+    
+    // Pattern insights
+    keepLoggingActivities: "Keep logging activities to discover patterns in your baby's routine.",
+    insightsAppearAfter: "Insights appear after logging multiple activities of the same type.",
+    supportingData: "Supporting Data",
+    activity: "Activity",
+    patternsBasedOnRecent: "These patterns are based on your recent activities. The more you track, the more accurate they become!",
+    highConfidence: "High confidence",
+    mediumConfidence: "Medium confidence",
+    lowConfidence: "Low confidence",
+    confidence: "confidence"
   },
   zh: {
     // App name and core  
@@ -360,7 +413,60 @@ const translations = {
     showLess: "显示更少",
     
     // Activities
+    noActivitiesStartAdding: "还没有活动记录。从添加第一个活动开始吧！",
     
+    // Activity timeline text
+    drank: "喝了",
+    nursed: "哺乳",
+    ate: "吃了",
+    hadSolids: "吃了固体食物",
+    hadAFeeding: "进行了喂养",
+    dreamFeed: "梦中喂养",
+    hadAWetDiaper: "换了湿尿布",
+    hadAPoopDiaper: "换了大便尿布",
+    hadAWetAndPoopDiaper: "换了大小便尿布",
+    hadADiaperChange: "换了尿布",
+    slept: "睡了",
+    isSleeping: "正在睡觉",
+    startedAt: "开始于",
+    tookANap: "小睡了一会",
+    measured: "测量",
+    measurementsTaken: "已测量",
+    tall: "高",
+    head: "头围",
+    photo: "照片",
+    minTotal: "分钟总计",
+    
+    // Feed types
+    bottle: "奶瓶",
+    nursing: "母乳喂养",
+    solid: "固体食物",
+    
+    // Diaper types
+    wet: "湿",
+    poopy: "大便",
+    both: "大小便",
+    
+    // Trend chart
+    dailyFeedTotals: "每日喂养总计",
+    dailySleepTotalsChart: "每日睡眠总计",
+    feedVolume: "喂养量",
+    sleepHours: "睡眠小时",
+    feeds: "次喂养",
+    naps: "次小睡",
+    noFeeds: "无喂养",
+    noNaps: "无小睡",
+    
+    // Pattern insights
+    keepLoggingActivities: "继续记录活动以发现宝宝日常的模式。",
+    insightsAppearAfter: "记录多个相同类型的活动后会出现洞察。",
+    supportingData: "支持数据",
+    activity: "活动",
+    patternsBasedOnRecent: "这些模式基于您最近的活动。追踪得越多，就越准确！",
+    highConfidence: "高置信度",
+    mediumConfidence: "中等置信度",
+    lowConfidence: "低置信度",
+    confidence: "置信度"
   }
 };
 
