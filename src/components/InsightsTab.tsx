@@ -326,14 +326,6 @@ return (
                       {household?.baby_name}'s Patterns
                     </span>
                   </div>
-                  {feedingMetrics.avgFrequency && (
-                    <div className="flex items-start justify-between gap-2 text-xs">
-                      <div className="flex items-start gap-2 flex-1">
-                        <Clock className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                        <span className="text-primary/90">Feed frequency: Every {feedingMetrics.avgFrequency}h</span>
-                      </div>
-                    </div>
-                  )}
                   {feedingMetrics.avgAmount && (
                     <div className="flex items-start justify-between gap-2 text-xs">
                       <div className="flex items-start gap-2 flex-1">
