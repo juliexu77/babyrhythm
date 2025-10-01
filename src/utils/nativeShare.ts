@@ -20,7 +20,7 @@ export const shareInviteLink = async (inviteLink: string, babyName?: string): Pr
       // Use Capacitor Share plugin for native platforms
       await Share.share({
         title,
-        text: `${text}\n\n${inviteLink}`,
+        text,
         url: inviteLink,
         dialogTitle: 'Share Baby Tracking Invite'
       });
@@ -29,7 +29,7 @@ export const shareInviteLink = async (inviteLink: string, babyName?: string): Pr
       // Use Web Share API for web platforms that support it
       await navigator.share({
         title,
-        text: `${text}\n\n${inviteLink}`,
+        text,
         url: inviteLink
       });
       return true;
