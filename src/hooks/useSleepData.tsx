@@ -2,9 +2,11 @@ import { Activity } from "@/components/ActivityCard";
 import { useHousehold } from "./useHousehold";
 import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
 import { SleepDataDay, AverageDailySummary, SleepBlock } from "@/types/sleep";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const useSleepData = (activities: Activity[], showFullDay: boolean, currentWeekOffset: number) => {
   const { household } = useHousehold();
+  const { language } = useLanguage();
   const ageInWeeks = household?.baby_birthday ? calculateAgeInWeeks(household.baby_birthday) : 0;
 
   const generateSleepData = (): SleepDataDay[] => {
@@ -140,7 +142,7 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
       });
       
       const dayData: SleepDataDay = {
-        date: date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3),
+        date: date.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { weekday: "short" }).slice(0, 3),
         fullDate: date,
         sleepBlocks,
         hasData: dayNaps.length > 0,

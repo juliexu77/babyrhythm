@@ -3,6 +3,7 @@ import { Activity } from "@/components/ActivityCard";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Moon } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SleepChartVisualizationProps {
   sleepData: SleepDataDay[];
@@ -10,6 +11,7 @@ interface SleepChartVisualizationProps {
 }
 
 export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVisualizationProps) => {
+  const { t } = useLanguage();
   const [selectedNaps, setSelectedNaps] = useState<{ naps: Activity[], day: string } | null>(null);
   return (
     <>
@@ -114,24 +116,24 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
               <Moon className="h-5 w-5 text-nap" />
-              Sleep on {selectedNaps?.day}
+              {t('sleepOn')} {selectedNaps?.day}
             </SheetTitle>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             {selectedNaps?.naps.map((nap) => (
               <div key={nap.id} className="p-4 rounded-lg bg-muted/30 border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Sleep Session</span>
+                  <span className="text-sm font-medium">{t('sleepSession')}</span>
                   <span className="text-sm text-muted-foreground">{nap.time}</span>
                 </div>
                 {nap.details.startTime && nap.details.endTime && (
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Start:</span>
+                      <span className="text-muted-foreground">{t('start')}:</span>
                       <span className="font-medium">{nap.details.startTime}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">End:</span>
+                      <span className="text-muted-foreground">{t('end')}:</span>
                       <span className="font-medium">{nap.details.endTime}</span>
                     </div>
                   </div>

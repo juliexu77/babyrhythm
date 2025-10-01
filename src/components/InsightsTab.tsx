@@ -111,7 +111,12 @@ return (
               </div>
               {feedingGuidance.notes && (
                 <div className="pt-2 text-xs text-muted-foreground border-t border-border/50">
-                  {feedingGuidance.notes}
+                  {feedingGuidance.notes === "Newborns need frequent small feeds. Follow baby's hunger cues." && t('newbornsFeedFrequent')}
+                  {feedingGuidance.notes === "Feeding patterns are becoming more predictable." && t('feedingPatternsBecoming')}
+                  {feedingGuidance.notes === "Baby can go longer between feeds now." && t('babyCanGoLonger')}
+                  {feedingGuidance.notes === "Sleep periods are getting longer, affecting feeding schedule." && t('sleepPeriodsLonger')}
+                  {feedingGuidance.notes === "May start showing interest in solid foods around 4-6 months." && t('mayStartSolids')}
+                  {feedingGuidance.notes === "Solid foods are becoming a bigger part of nutrition." && t('solidsBecomingBigger')}
                 </div>
               )}
             </div>

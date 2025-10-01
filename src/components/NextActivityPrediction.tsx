@@ -93,8 +93,10 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     } else if (prediction.next_action === "START_WIND_DOWN") {
       type = "nap";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
-      const awakeHours = Math.round((prediction.rationale.t_awake_now_min || 0) / 60 * 10) / 10;
-      reason = `${awakeHours}h ${t('awake')}`;
+      const totalMins = prediction.rationale.t_awake_now_min || 0;
+      const awakeHours = Math.floor(totalMins / 60);
+      const awakeMins = Math.round(totalMins % 60);
+      reason = `${t('wakeWindow')} (~${awakeHours}h ${awakeMins}m ${t('awake')})`;
     } else if (prediction.next_action === "LET_SLEEP_CONTINUE") {
       type = "nap";
       anticipatedTime = undefined;

@@ -23,7 +23,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
       {/* Sleep Chart */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Weekly Sleep Schedule</h3>
+          <h3 className="text-lg font-semibold">{t('weeklySleepSchedule')}</h3>
           <div className="flex items-center gap-2">
             <div className="flex bg-muted/30 rounded-lg p-1">
               <Button
@@ -32,7 +32,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
                 onClick={() => setCurrentWeekOffset(0)}
                 className="h-8 px-3 rounded-md"
               >
-                This Week
+                {t('thisWeek')}
               </Button>
               <Button
                 variant={currentWeekOffset === 1 ? "default" : "ghost"}
@@ -40,7 +40,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
                 onClick={() => setCurrentWeekOffset(1)}
                 className="h-8 px-3 rounded-md"
               >
-                Last Week
+                {t('lastWeek')}
               </Button>
             </div>
           </div>
@@ -53,7 +53,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
             onClick={() => setShowFullDay(!showFullDay)}
             className="text-muted-foreground text-caption hover:text-foreground"
           >
-            {showFullDay ? "Show condensed (6am-9pm)" : "Show full day (12am-12am)"}
+            {showFullDay ? t('showCondensed') : t('showFullDay')}
           </Button>
         </div>
         

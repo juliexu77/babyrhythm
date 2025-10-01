@@ -1,5 +1,6 @@
 import { Activity } from "@/components/ActivityCard";
 import { Brain, Clock, TrendingUp, Baby, Moon } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface PatternInsight {
   icon: any;
@@ -18,6 +19,7 @@ export interface PatternInsight {
 }
 
 export const usePatternAnalysis = (activities: Activity[]) => {
+  const { t } = useLanguage();
   const getTimeInMinutes = (timeString: string) => {
     const [time, period] = timeString.split(' ');
     const [hours, minutes] = time.split(':').map(Number);
@@ -53,11 +55,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         
         insights.push({
           icon: Baby,
-          text: `Usually feeds every ${hours}h`,
+          text: `${t('usuallyFeedsEvery')} ${hours}h`,
           confidence: intervals.length >= 5 ? 'high' : intervals.length >= 3 ? 'medium' : 'low',
           type: 'feeding',
           details: {
-            description: `Based on ${intervals.length} feeding intervals, the average time between feeds is ${hours} hours.`,
+            description: t('basedOnIntervals').replace('{count}', intervals.length.toString()).replace('{hours}', hours.toString()),
             data: intervals.map(({ interval, feed1, feed2 }) => ({
               activity: feed1,
               value: `${Math.round(interval / 60 * 10) / 10}h`,
@@ -74,11 +76,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         if (stdDev < 30) { // Very consistent timing
           insights.push({
             icon: Clock,
-            text: `Feeds every ${hours}h ±${Math.round(stdDev)}min`,
+            text: `${t('feedsEvery')} ${hours}h ±${Math.round(stdDev)}min`,
             confidence: 'high',
             type: 'feeding',
             details: {
-              description: `Highly predictable feeding pattern with only ${Math.round(stdDev)} minutes variation from ${hours}h average.`,
+              description: t('highlyPredictable').replace('{minutes}', Math.round(stdDev).toString()).replace('{hours}', hours.toString()),
               data: intervals.map(({ interval, feed1, feed2 }) => ({
                 activity: feed1,
                 value: `${Math.round(interval / 60 * 10) / 10}h`,
@@ -89,11 +91,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         } else if (stdDev > 90) {
           insights.push({
             icon: TrendingUp,
-            text: 'Feeding times vary - growing appetite?',
+            text: t('feedingTimesVary'),
             confidence: 'medium',
             type: 'feeding',
             details: {
-              description: `Feeding intervals vary by ${Math.round(stdDev)} minutes on average, which could indicate growth spurts or changing needs.`,
+              description: t('feedingIntervalsVary').replace('{minutes}', Math.round(stdDev).toString()),
               data: intervals.map(({ interval, feed1, feed2 }) => ({
                 activity: feed1,
                 value: `${Math.round(interval / 60 * 10) / 10}h`,
@@ -141,11 +143,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         const morningNapActivities = naps.filter(nap => getTimeInMinutes(nap.time) < 12 * 60);
         insights.push({
           icon: Moon,
-          text: `${morningNaps.length}/${naps.length} naps before noon`,
+          text: `${morningNaps.length}/${naps.length} ${t('napsBeforeNoon')}`,
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `Strong morning nap pattern detected. ${morningNaps.length} out of ${naps.length} naps occur before 12 PM.`,
+            description: t('strongMorningNap').replace('{morning}', morningNaps.length.toString()).replace('{total}', naps.length.toString()),
             data: morningNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
@@ -160,11 +162,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         });
         insights.push({
           icon: Moon,
-          text: `${afternoonNaps.length}/${naps.length} naps after lunch`,
+          text: `${afternoonNaps.length}/${naps.length} ${t('napsAfterLunch')}`,
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `Afternoon sleep preference identified. ${afternoonNaps.length} out of ${naps.length} naps happen between 12-6 PM.`,
+            description: t('afternoonSleepPreference').replace('{afternoon}', afternoonNaps.length.toString()).replace('{total}', naps.length.toString()),
             data: afternoonNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
@@ -271,11 +273,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
 
         insights.push({
           icon: Clock,
-          text: `Your baby stays awake ~${timeText} between naps`,
+          text: `${t('yourBabyStaysAwake')} ~${timeText} ${t('betweenNaps')}`,
           confidence: wakeWindows.length >= 3 ? 'high' : 'medium',
           type: 'sleep',
           details: {
-            description: `Based on ${wakeWindows.length} wake windows between naps over the past week, your baby typically stays awake for ${timeText} between naps. This pattern helps predict optimal nap timing across days.`,
+            description: t('wakeWindowPattern').replace('{count}', wakeWindows.length.toString()).replace('{time}', timeText),
             data: wakeWindows.map(({ duration, afterNap, beforeNap }) => {
               const wHours = Math.floor(duration / 60);
               const wMinutes = Math.round(duration % 60);
@@ -360,14 +362,19 @@ export const usePatternAnalysis = (activities: Activity[]) => {
 
         if (timeDiff >= 30) {
           const isGettingLater = secondAvg > firstAvg;
-          const direction = isGettingLater ? 'later' : 'earlier';
+          const direction = isGettingLater ? t('later') : t('earlier');
           insights.push({
             icon: Moon,
-            text: `Bedtime trending ${direction} - now ~${bedtimeText}`,
+            text: `${t('bedtimeTrending')} ${direction} ${t('nowAround')} ~${bedtimeText}`,
             confidence: 'medium',
             type: 'sleep',
             details: {
-              description: `Over the past ${bedtimes.length} days, bedtime has been trending ${direction}. Current average is ${bedtimeText}, which is ${Math.round(timeDiff)} minutes ${direction} than earlier this week.`,
+              description: t('bedtimeOver')
+                .replace('{days}', bedtimes.length.toString())
+                .replace('{direction}', direction)
+                .replace('{time}', bedtimeText)
+                .replace('{minutes}', Math.round(timeDiff).toString())
+                .replace('{direction}', direction),
               data: bedtimes.map(({ time, activity, date }) => {
                 const h = Math.floor(time / 60);
                 const m = Math.round(time % 60);
@@ -383,11 +390,11 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         } else {
           insights.push({
             icon: Moon,
-            text: `Consistent bedtime routine ~${bedtimeText}`,
+            text: `${t('consistentBedtime')} ~${bedtimeText}`,
             confidence: 'high',
             type: 'sleep',
             details: {
-              description: `Your baby has a consistent bedtime around ${bedtimeText}. This stable routine is great for healthy sleep patterns.`,
+              description: t('consistentBedtimeDesc').replace('{time}', bedtimeText),
               data: bedtimes.map(({ time, activity, date }) => {
                 const h = Math.floor(time / 60);
                 const m = Math.round(time % 60);
@@ -404,11 +411,13 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       } else {
         insights.push({
           icon: Moon,
-          text: `Average bedtime this week ~${bedtimeText}`,
+          text: `${t('averageBedtime')} ~${bedtimeText}`,
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `Based on ${bedtimes.length} recent days, your baby's average bedtime is around ${bedtimeText}. Keep tracking to see if patterns emerge.`,
+            description: t('avgBedtimeDesc')
+              .replace('{days}', bedtimes.length.toString())
+              .replace('{time}', bedtimeText),
             data: bedtimes.map(({ time, activity, date }) => {
               const h = Math.floor(time / 60);
               const m = Math.round(time % 60);
@@ -636,16 +645,18 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         const weekendAvg = weekendFeeds / Math.min(2, weekendActivities.length / 3);
         
         if (Math.abs(weekendAvg - weekdayAvg) >= 1) {
-          const more = weekendAvg > weekdayAvg ? 'more' : 'fewer';
+          const more = weekendAvg > weekdayAvg ? t('moreFeeds') : t('lessFeeds');
           const diff = Math.round(Math.abs(weekendAvg - weekdayAvg) * 10) / 10;
           
           additionalInsights.push({
             icon: Clock,
-            text: `${diff} ${more} feeds on weekends`,
+            text: `${diff} ${more} ${t('onWeekends')}`,
             confidence: 'medium',
             type: 'general',
             details: {
-              description: `Weekend feeding patterns differ from weekdays. Averaging ${Math.round(weekendAvg * 10) / 10} feeds on weekends vs ${Math.round(weekdayAvg * 10) / 10} on weekdays.`,
+              description: t('weekendFeedsDesc')
+                .replace('{weekend}', (Math.round(weekendAvg * 10) / 10).toString())
+                .replace('{weekday}', (Math.round(weekdayAvg * 10) / 10).toString()),
               data: [
                 ...weekdayActivities.filter(a => a.type === 'feed').slice(-3).map(a => ({
                   activity: a,
