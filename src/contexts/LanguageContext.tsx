@@ -254,6 +254,8 @@ const translations = {
     showMoreDays: "Show",
     moreDays: "more days",
     showLess: "Show less",
+    babyDay: "'s Day",
+    babyTracker: "Baby Tracker",
     
     // Activities
     noActivitiesStartAdding: "No activities yet. Start by adding your first activity!",
@@ -620,6 +622,8 @@ const translations = {
     showMoreDays: "显示",
     moreDays: "更多天",
     showLess: "显示更少",
+    babyDay: "的一天",
+    babyTracker: "宝宝追踪",
     
     // Activities
     noActivitiesStartAdding: "还没有活动记录。从添加第一个活动开始吧！",

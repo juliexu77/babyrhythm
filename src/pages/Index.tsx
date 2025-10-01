@@ -371,7 +371,7 @@ const Index = () => {
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
           <h1 className="text-xl font-semibold">
-            {babyProfile?.name ? `${babyProfile.name}'s Day` : "Baby Tracker"}
+            {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
           </h1>
           <Button 
             variant="ghost" 
