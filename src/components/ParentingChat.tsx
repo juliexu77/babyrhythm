@@ -63,6 +63,25 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
     streamChat(prompt, prompt.includes("summary"));
   };
 
+  // Format durations: 90 -> 1h 30min, 120 -> 2h, 45 -> 45min
+  const minutesToText = (m: number) => {
+    if (m < 60) return `${m}min`;
+    const h = Math.floor(m / 60);
+    const r = m % 60;
+    return r > 0 ? `${h}h ${r}min` : `${h}h`;
+  };
+
+  // Convert any "100 minutes", "100-minute", or "100min" to the compact form
+  const formatDurationsInText = (text: string) => {
+    return text
+      // e.g., 100-minute / 100-minutes
+      .replace(/(\d+)\s*-\s*minute(?:s)?\b/gi, (_m, num) => minutesToText(parseInt(num)))
+      // e.g., 100 minutes / 1 minute
+      .replace(/(\d+)\s*minutes?\b/gi, (_m, num) => minutesToText(parseInt(num)))
+      // e.g., 100min
+      .replace(/(\d+)\s*min\b/gi, (_m, num) => minutesToText(parseInt(num)));
+  };
+
   const streamChat = async (userMessage: string, isInitial = false) => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -139,11 +158,12 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantContent += content;
+              const display = formatDurationsInText(assistantContent);
               setMessages(prev => {
                 const newMessages = [...prev];
                 newMessages[newMessages.length - 1] = {
                   role: "assistant",
-                  content: assistantContent,
+                  content: display,
                 };
                 return newMessages;
               });
@@ -169,11 +189,12 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantContent += content;
+              const display = formatDurationsInText(assistantContent);
               setMessages(prev => {
                 const newMessages = [...prev];
                 newMessages[newMessages.length - 1] = {
                   role: "assistant",
-                  content: assistantContent,
+                  content: display,
                 };
                 return newMessages;
               });

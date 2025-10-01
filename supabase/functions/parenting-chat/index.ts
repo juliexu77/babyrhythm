@@ -234,6 +234,7 @@ RESPONSE GUIDELINES:
 - Discuss nap timing (morning vs afternoon) and wake window variations
 - Provide developmental context for ${babyAge} months
 - Keep responses concise - 3-4 key insights
+- Format all durations as Hh Mmin (e.g., 1h 30min); under 60 as Nmin; never write "minutes"
 
 ${isInitial ? "Analyze nap patterns, wake windows, and feeding trends with developmental context." : "Answer with pattern-focused insights."}`
           },
