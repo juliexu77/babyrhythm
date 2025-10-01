@@ -184,9 +184,9 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       const startTime = getTimeInMinutes(nap.details.startTime);
       const endTime = getTimeInMinutes(nap.details.endTime);
       
-      // Only consider daytime naps (start between 6 AM and 6 PM)
+      // Only consider daytime naps (start between 7 AM and 7 PM)
       // Exclude overnight sleep periods
-      if (startTime < 6 * 60 || startTime >= 18 * 60) return false;
+      if (startTime < 7 * 60 || startTime >= 19 * 60) return false;
       
       // Also exclude naps that span too long (likely overnight sleep)
       const duration = endTime >= startTime ? endTime - startTime : (24 * 60) - startTime + endTime;
@@ -235,34 +235,7 @@ export const usePatternAnalysis = (activities: Activity[]) => {
           }
         }
         
-        // Calculate wake window from last nap of previous day to first nap of current day
-        if (dayIndex > 0) {
-          const prevDayNaps = napsByDay.get(sortedDays[dayIndex - 1])!.sort((a, b) => {
-            const aTime = getTimeInMinutes(a.details.startTime!);
-            const bTime = getTimeInMinutes(b.details.startTime!);
-            return aTime - bTime;
-          });
-          
-          if (prevDayNaps.length > 0 && dayNaps.length > 0) {
-            const lastNapPrevDay = prevDayNaps[prevDayNaps.length - 1];
-            const firstNapCurrentDay = dayNaps[0];
-            
-            const prevDayNapEnd = getTimeInMinutes(lastNapPrevDay.details.endTime!);
-            const currentDayNapStart = getTimeInMinutes(firstNapCurrentDay.details.startTime!);
-            
-            // Calculate cross-day wake window (add 24 hours for next day)
-            let crossDayWakeTime = (24 * 60) - prevDayNapEnd + currentDayNapStart;
-            
-            // Only include reasonable cross-day wake windows (4 to 18 hours)
-            if (crossDayWakeTime >= 240 && crossDayWakeTime <= 1080) {
-              wakeWindows.push({
-                duration: crossDayWakeTime,
-                afterNap: lastNapPrevDay,
-                beforeNap: firstNapCurrentDay
-              });
-            }
-          }
-        }
+        // Cross-day wake windows excluded — daytime-only (same-day) wake windows between naps
       }
 
       if (wakeWindows.length >= 1) {
