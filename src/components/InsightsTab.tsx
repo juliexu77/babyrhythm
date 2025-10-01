@@ -217,7 +217,7 @@ return (
               </div>
               
               {/* Nested actual patterns from baby's data */}
-              {(sleepInsights.length > 0 || sleepMetrics.avgWakeWindowHours || sleepMetrics.napsPerDay > 0) && (
+              {(sleepInsights.length > 0 || sleepMetrics.avgWakeWindowHours) && (
                 <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-3 w-3 text-primary/70" />
@@ -233,15 +233,10 @@ return (
                       </div>
                     </div>
                   )}
-                  {sleepMetrics.napsPerDay > 0 && (
-                    <div className="flex items-start justify-between gap-2 text-xs">
-                      <div className="flex items-start gap-2 flex-1">
-                        <Moon className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                        <span className="text-primary/90">{sleepMetrics.napsPerDay} naps per day</span>
-                      </div>
-                    </div>
-                  )}
-                  {sleepInsights.map((insight, idx) => {
+                  {sleepInsights.filter(insight => 
+                    !insight.text.toLowerCase().includes('naps before noon') &&
+                    !insight.text.toLowerCase().includes('naps per day')
+                  ).map((insight, idx) => {
                     const IconComponent = insight.icon;
                     const wakeWindowRange = wakeWindowData.wakeWindows.join('-');
                     const match = getPatternMatch(insight, wakeWindowRange, 'wake');
