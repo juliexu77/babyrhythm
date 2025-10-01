@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Baby, Clock, Milk, Moon, Lightbulb } from "lucide-react";
 import { calculateAgeInWeeks, getWakeWindowForAge, getFeedingGuidanceForAge } from "@/utils/huckleberrySchedules";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface InsightsTabProps {
   activities: Activity[];
@@ -11,6 +12,7 @@ interface InsightsTabProps {
 
 export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
+  const { t } = useLanguage();
   
   // Show loading state while household data is being fetched
   if (householdLoading || !household) {
@@ -29,11 +31,19 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const feedingGuidance = getFeedingGuidanceForAge(ageInWeeks);
 
   const getAgeStage = (weeks: number) => {
-    if (weeks < 4) return "Newborn";
-    if (weeks < 12) return "Young Infant";
-    if (weeks < 26) return "Older Infant";
-    if (weeks < 52) return "Mobile Infant";
-    return "Toddler";
+    if (weeks < 4) return t('newborn');
+    if (weeks < 12) return t('youngInfant');
+    if (weeks < 26) return t('olderInfant');
+    if (weeks < 52) return t('mobileInfant');
+    return t('toddler');
+  };
+
+  const getDevelopmentFocus = (weeks: number) => {
+    if (weeks < 4) return t('devFocus0to4');
+    if (weeks >= 4 && weeks < 12) return t('devFocus4to12');
+    if (weeks >= 12 && weeks < 26) return t('devFocus12to26');
+    if (weeks >= 26 && weeks < 52) return t('devFocus26to52');
+    return t('devFocus52plus');
   };
 
 return (
@@ -46,12 +56,12 @@ return (
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-sans font-semibold text-foreground dark:font-bold">
-          What to Expect at {Math.floor(ageInWeeks)} Weeks
+          {t('whatToExpectAt')} {Math.floor(ageInWeeks)} {t('weeks')}
         </h2>
       </div>
       
       <div className="text-sm text-muted-foreground mb-4">
-        {getAgeStage(ageInWeeks)} Stage
+        {getAgeStage(ageInWeeks)} {t('stage')}
       </div>
 
       <div className="grid gap-4">
@@ -60,19 +70,19 @@ return (
           <div className="p-4 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Moon className="h-4 w-4 text-primary" />
-              <h3 className="font-medium text-foreground">Sleep Patterns</h3>
+              <h3 className="font-medium text-foreground">{t('sleepPatterns')}</h3>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Wake Windows:</span>
+                <span className="text-muted-foreground">{t('wakeWindows')}:</span>
                 <span className="font-medium">{wakeWindowData.wakeWindows.join(", ")}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Expected Naps:</span>
-                <span className="font-medium">{wakeWindowData.napCount} per day</span>
+                <span className="text-muted-foreground">{t('expectedNaps')}:</span>
+                <span className="font-medium">{wakeWindowData.napCount} {t('perDay')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Sleep Need:</span>
+                <span className="text-muted-foreground">{t('totalSleepNeed')}:</span>
                 <span className="font-medium">{wakeWindowData.totalSleep}</span>
               </div>
             </div>
@@ -84,19 +94,19 @@ return (
           <div className="p-4 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Milk className="h-4 w-4 text-primary" />
-              <h3 className="font-medium text-foreground">Feeding Patterns</h3>
+              <h3 className="font-medium text-foreground">{t('feedingPatterns')}</h3>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Frequency:</span>
+                <span className="text-muted-foreground">{t('frequency')}:</span>
                 <span className="font-medium">{feedingGuidance.frequency}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount per Feed:</span>
+                <span className="text-muted-foreground">{t('amountPerFeed')}:</span>
                 <span className="font-medium">{feedingGuidance.amount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Daily Total:</span>
+                <span className="text-muted-foreground">{t('dailyTotal')}:</span>
                 <span className="font-medium">{feedingGuidance.dailyTotal}</span>
               </div>
               {feedingGuidance.notes && (
@@ -112,14 +122,10 @@ return (
         <div className="p-4 bg-muted/30 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <Baby className="h-4 w-4 text-primary" />
-            <h3 className="font-medium text-foreground">Development Focus</h3>
+            <h3 className="font-medium text-foreground">{t('developmentFocus')}</h3>
           </div>
           <div className="text-sm text-muted-foreground">
-            {ageInWeeks < 4 && "Focus on establishing feeding routines and lots of skin-to-skin contact. Sleep is irregular but will gradually improve."}
-            {ageInWeeks >= 4 && ageInWeeks < 12 && "Baby is developing more predictable patterns. Tummy time becomes important for neck and shoulder strength."}
-            {ageInWeeks >= 12 && ageInWeeks < 26 && "Sleep patterns are becoming more consolidated. Baby may start showing interest in toys and faces."}
-            {ageInWeeks >= 26 && ageInWeeks < 52 && "Baby is becoming more mobile and curious. Sleep may be disrupted by developmental leaps."}
-            {ageInWeeks >= 52 && "Your little one is becoming more independent. Routine and consistency remain important."}
+            {getDevelopmentFocus(ageInWeeks)}
           </div>
         </div>
       </div>

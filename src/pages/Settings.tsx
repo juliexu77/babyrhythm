@@ -118,13 +118,13 @@ export const Settings = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays < 30) {
-      return `${diffDays} days old`;
+      return `${diffDays} ${t('daysOld')}`;
     } else if (diffDays < 365) {
       const months = Math.floor(diffDays / 30);
-      return `${months} ${months === 1 ? 'month' : 'months'} old`;
+      return `${months} ${months === 1 ? t('monthOld') : t('monthsOld')}`;
     } else {
       const years = Math.floor(diffDays / 365);
-      return `${years} ${years === 1 ? 'year' : 'years'} old`;
+      return `${years} ${years === 1 ? t('yearOld') : t('yearsOld')}`;
     }
   };
 

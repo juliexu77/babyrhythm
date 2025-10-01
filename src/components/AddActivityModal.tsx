@@ -11,6 +11,7 @@ import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffe
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,7 @@ interface AddActivityModalProps {
 }
 
 export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity }: AddActivityModalProps) => {
+  const { t } = useLanguage();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
@@ -425,7 +427,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           <DialogHeader className="pb-4">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-lg font-medium">
-                {editingActivity ? "Edit Activity" : "Add Activity"}
+                {editingActivity ? t('editActivity') : t('addActivity')}
               </DialogTitle>
             </div>
           </DialogHeader>
@@ -434,12 +436,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Activity Type Selection - Clean Grid */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { type: "feed", icon: Baby, label: "Feed" },
-                { type: "diaper", icon: Palette, label: "Diaper" },
-                { type: "nap", icon: Moon, label: "Sleep" },
-                { type: "note", icon: StickyNote, label: "Note" },
-                { type: "measure", icon: Ruler, label: "Measure" },
-                { type: "photo", icon: Camera, label: "Photo" }
+                { type: "feed", icon: Baby, label: t('feeding') },
+                { type: "diaper", icon: Palette, label: t('diaper') },
+                { type: "nap", icon: Moon, label: t('sleep') },
+                { type: "note", icon: StickyNote, label: t('noteText') },
+                { type: "measure", icon: Ruler, label: t('measure') },
+                { type: "photo", icon: Camera, label: t('photo') }
               ].map(({ type, icon: Icon, label }) => (
                 <Button
                   key={type}
@@ -461,12 +463,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "feed" && (
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Type</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                     { type: "bottle", icon: Milk, label: "Bottle" },
-                      { type: "nursing", icon: Baby, label: "Nursing" },
-                      { type: "solid", icon: Carrot, label: "Solid" }
+                     { type: "bottle", icon: Milk, label: t('bottle') },
+                      { type: "nursing", icon: Baby, label: t('nursing') },
+                      { type: "solid", icon: Carrot, label: t('solid') }
                     ].map(({ type, icon: Icon, label }) => (
                       <Button
                         key={type}
@@ -491,7 +493,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   selectedDate={selectedDate}
                   onChange={setTime} 
                   onDateChange={setSelectedDate}
-                  label="Time" 
+                  label={t('time')} 
                 />
 
                 {/* Dynamic amount/details based on feed type */}
@@ -499,14 +501,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <div className="space-y-3">
                     <div className="flex items-end gap-3">
                       <div className="flex-1">
-                        <Label className="text-sm font-medium mb-2 block">Amount</Label>
+                        <Label className="text-sm font-medium mb-2 block">{t('amount')}</Label>
                         <Button
                           variant="outline"
                           className="w-full h-12 text-left"
                           onClick={() => setShowKeypad(true)}
                         >
                           <span className="text-foreground">
-                            {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
+                            {quantity ? `${quantity} ${unit}` : t('tapToEnterAmount')}
                           </span>
                         </Button>
                       </div>
@@ -520,7 +522,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           htmlFor="dream-feed" 
                           className="text-sm font-medium cursor-pointer whitespace-nowrap"
                         >
-                          Dream feed
+                          {t('dreamFeed')}
                         </Label>
                       </div>
                     </div>
@@ -529,10 +531,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {feedType === "nursing" && (
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium">Nursing Time</Label>
+                    <Label className="text-sm font-medium">{t('nursingTime')}</Label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label className="text-xs text-muted-foreground mb-1 block">Left Side (min)</Label>
+                        <Label className="text-xs text-muted-foreground mb-1 block">{t('leftSide')}</Label>
                         <Input
                           type="number"
                           placeholder="0"
@@ -542,7 +544,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         />
                       </div>
                       <div>
-                        <Label className="text-xs text-muted-foreground mb-1 block">Right Side (min)</Label>
+                        <Label className="text-xs text-muted-foreground mb-1 block">{t('rightSide')}</Label>
                         <Input
                           type="number"
                           placeholder="0"
@@ -557,7 +559,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {feedType === "solid" && (
                   <div>
-                    <Label htmlFor="solid-description" className="text-sm font-medium mb-2 block">What did they eat?</Label>
+                    <Label htmlFor="solid-description" className="text-sm font-medium mb-2 block">{t('whatDidTheyEat')}</Label>
                     <Textarea
                       id="solid-description"
                       value={solidDescription}
@@ -570,12 +572,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                  )}
 
                 <div>
-                  <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">Notes</Label>
+                  <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
                   <Textarea
                     id="feed-note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Additional notes about feeding..."
+                    placeholder={t('additionalNotesFeeding')}
                     rows={3}
                     className="resize-none"
                   />
@@ -592,16 +594,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   selectedDate={selectedDate}
                   onChange={setTime} 
                   onDateChange={setSelectedDate}
-                  label="Time" 
+                  label={t('time')} 
                 />
                 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Type</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { type: "wet", label: "Wet" },
-                      { type: "poopy", label: "Poopy" },
-                      { type: "both", label: "Both" }
+                      { type: "wet", label: t('wet') },
+                      { type: "poopy", label: t('poopy') },
+                      { type: "both", label: t('both') }
                     ].map(({ type, label }) => (
                       <Button
                         key={type}
@@ -621,7 +623,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-3">
-                    <Label className="text-sm">Leak</Label>
+                    <Label className="text-sm">{t('leak')}</Label>
                     <Button
                       variant={hasLeak ? "default" : "outline"}
                       size="sm"
@@ -636,7 +638,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     </Button>
                   </div>
                   <div className="flex items-center justify-between py-3">
-                    <Label className="text-sm">Diaper Cream</Label>
+                    <Label className="text-sm">{t('diaperingCream')}</Label>
                     <Button
                       variant={hasCream ? "default" : "outline"}
                       size="sm"
@@ -653,12 +655,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div>
-                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block">Notes</Label>
+                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
                   <Textarea
                     id="diaper-note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Color, consistency, rash notes..."
+                    placeholder={t('additionalNotesDiaper')}
                     rows={3}
                     className="resize-none"
                   />
@@ -687,7 +689,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     selectedDate={selectedDate}
                     onChange={setStartTime} 
                     onDateChange={setSelectedDate}
-                    label="Start Time" 
+                    label={t('startTime')} 
                   />
                   
                   {/* End Time Checkbox */}
@@ -703,7 +705,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       }}
                     />
                     <Label htmlFor="has-end-time" className="text-sm font-medium">
-                      Include end time
+                      {t('includeEndTime')}
                     </Label>
                   </div>
 
@@ -714,7 +716,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       selectedDate={selectedEndDate}
                       onChange={setEndTime} 
                       onDateChange={setSelectedEndDate}
-                      label="End Time" 
+                      label={t('endTime')} 
                     />
                   )}
                 </div>
@@ -730,16 +732,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   selectedDate={selectedDate}
                   onChange={setTime} 
                   onDateChange={setSelectedDate}
-                  label="Time" 
+                  label={t('time')} 
                 />
 
                 <div>
-                  <Label htmlFor="note" className="text-sm font-medium mb-2 block">Note</Label>
+                  <Label htmlFor="note" className="text-sm font-medium mb-2 block">{t('noteText')}</Label>
                   <Textarea
                     id="note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Enter your note here..."
+                    placeholder={t('enterNoteHere')}
                     rows={4}
                     className="resize-none"
                   />
@@ -747,14 +749,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {/* Photo Upload for Notes */}
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Photo (optional)</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t('photoOptional')}</Label>
                   <div className="space-y-3">
                     {/* Photo Preview */}
                     {(photo || photoUrl) && (
                       <div className="relative">
                         <img
                           src={photo ? URL.createObjectURL(photo) : photoUrl!}
-                          alt="Selected photo"
+                          alt={t('selectedPhoto')}
                           className="w-full h-32 object-cover rounded-lg border"
                         />
                         <Button
@@ -766,7 +768,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           }}
                           className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm"
                         >
-                          Remove
+                          {t('remove')}
                         </Button>
                       </div>
                     )}
@@ -779,7 +781,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                        onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            // Validate file type
                             if (!file.type.startsWith('image/')) {
                               toast({
                                 title: "Invalid file type",
@@ -788,8 +789,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                               });
                               return;
                             }
-                            
-                            // Validate file size (10MB max)
                             if (file.size > 10 * 1024 * 1024) {
                               toast({
                                 title: "File too large",
@@ -798,9 +797,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                               });
                               return;
                             }
-                            
                             setPhoto(file);
-                            setPhotoUrl(null); // Clear existing URL when new file selected
+                            setPhotoUrl(null);
                           }
                         }}
                         className="hidden"
@@ -812,11 +810,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       >
                         <Camera className="h-8 w-8 mb-2" />
                         {photo || photoUrl ? (
-                          <span className="text-sm font-medium">Change photo</span>
+                          <span className="text-sm font-medium">{t('changePhoto')}</span>
                         ) : (
                           <>
-                            <span className="text-sm font-medium">Tap to add photo</span>
-                            <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
+                            <span className="text-sm font-medium">{t('tapToAddPhoto')}</span>
+                            <span className="text-xs mt-1">{t('jpgPngUpTo10mb')}</span>
                           </>
                         )}
                       </label>
@@ -834,14 +832,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   selectedDate={selectedDate}
                   onChange={setTime} 
                   onDateChange={setSelectedDate}
-                  label="Time" 
+                  label={t('time')} 
                 />
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Weight</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t('weight')}</Label>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">Pounds</Label>
+                      <Label className="text-xs text-muted-foreground mb-1 block">{t('pounds')}</Label>
                       <Input
                         type="number"
                         placeholder="0"
@@ -851,7 +849,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       />
                     </div>
                     <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">Ounces</Label>
+                      <Label className="text-xs text-muted-foreground mb-1 block">{t('ounces')}</Label>
                       <Input
                         type="number"
                         placeholder="0"
@@ -864,7 +862,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Height (inches)</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t('heightInches')}</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -876,7 +874,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Head Circumference (inches)</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t('headCircumferenceInches')}</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -888,12 +886,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div>
-                  <Label htmlFor="measure-note" className="text-sm font-medium mb-2 block">Notes</Label>
+                  <Label htmlFor="measure-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
                   <Textarea
                     id="measure-note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Doctor visit, growth check..."
+                    placeholder={t('doctorVisitGrowthCheck')}
                     rows={3}
                     className="resize-none"
                   />
