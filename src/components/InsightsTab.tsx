@@ -49,29 +49,49 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       return totalMinutes;
     };
     
+    // Get date from loggedAt timestamp
+    const getDateKey = (activity: Activity) => {
+      if (activity.loggedAt) {
+        return new Date(activity.loggedAt).toDateString();
+      }
+      return new Date().toDateString(); // Fallback to today
+    };
+    
     // Filter for daytime naps only (7 AM - 7 PM)
     const daytimeNaps = naps.filter(nap => {
       const startMinutes = parseTimeToMinutes(nap.details.startTime!);
       return startMinutes >= 7 * 60 && startMinutes < 19 * 60; // 7 AM to 7 PM
     });
     
+    // Group naps by date
+    const napsByDate = daytimeNaps.reduce((acc, nap) => {
+      const dateKey = getDateKey(nap);
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(nap);
+      return acc;
+    }, {} as Record<string, Activity[]>);
+    
     // Count naps per day
-    const napsPerDay = daytimeNaps.length > 0 ? Math.round(daytimeNaps.length / 7) : 0;
+    const daysWithNaps = Object.keys(napsByDate).length;
+    const napsPerDay = daysWithNaps > 0 ? Math.round(daytimeNaps.length / daysWithNaps) : 0;
     
-    // Calculate wake windows between naps
+    // Calculate wake windows only within the same day
     const wakeWindows: number[] = [];
-    const sortedNaps = [...daytimeNaps].sort((a, b) => 
-      parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!)
-    );
     
-    for (let i = 1; i < sortedNaps.length; i++) {
-      const prevNapEnd = parseTimeToMinutes(sortedNaps[i - 1].details.endTime!);
-      const currentNapStart = parseTimeToMinutes(sortedNaps[i].details.startTime!);
-      const wakeWindow = currentNapStart - prevNapEnd;
-      if (wakeWindow > 0 && wakeWindow < 360) { // Valid wake window (< 6 hours)
-        wakeWindows.push(wakeWindow);
+    Object.values(napsByDate).forEach(dayNaps => {
+      const sortedDayNaps = [...dayNaps].sort((a, b) => 
+        parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!)
+      );
+      
+      for (let i = 1; i < sortedDayNaps.length; i++) {
+        const prevNapEnd = parseTimeToMinutes(sortedDayNaps[i - 1].details.endTime!);
+        const currentNapStart = parseTimeToMinutes(sortedDayNaps[i].details.startTime!);
+        const wakeWindow = currentNapStart - prevNapEnd;
+        if (wakeWindow > 0 && wakeWindow < 360) { // Valid wake window (< 6 hours)
+          wakeWindows.push(wakeWindow);
+        }
       }
-    }
+    });
     
     const avgWakeWindow = wakeWindows.length > 0 
       ? wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length 
