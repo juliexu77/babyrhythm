@@ -1,10 +1,10 @@
 import { Activity } from "./ActivityCard";
-import { PatternInsights } from "./PatternInsights";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Baby, Clock, Milk, Moon, Lightbulb } from "lucide-react";
+import { Baby, Clock, Milk, Moon, Lightbulb, Brain } from "lucide-react";
 import { calculateAgeInWeeks, getWakeWindowForAge, getFeedingGuidanceForAge } from "@/utils/huckleberrySchedules";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
 
 interface InsightsTabProps {
   activities: Activity[];
@@ -13,6 +13,7 @@ interface InsightsTabProps {
 export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { t } = useLanguage();
+  const { insights } = usePatternAnalysis(activities);
   
   // Show loading state while household data is being fetched
   if (householdLoading || !household) {
@@ -29,6 +30,10 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const ageInWeeks = household?.baby_birthday ? calculateAgeInWeeks(household.baby_birthday) : 0;
   const wakeWindowData = getWakeWindowForAge(ageInWeeks);
   const feedingGuidance = getFeedingGuidanceForAge(ageInWeeks);
+  
+  // Categorize insights by type
+  const sleepInsights = insights.filter(i => i.type === 'sleep');
+  const feedingInsights = insights.filter(i => i.type === 'feeding');
 
   const getAgeStage = (weeks: number) => {
     if (weeks < 4) return t('newborn');
@@ -48,10 +53,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
 return (
   <div className="space-y-6">
-    {/* Pattern Insights FIRST */}
-    <PatternInsights activities={activities} />
-
-    {/* Age-Appropriate Guidance */}
+    {/* Age-Appropriate Guidance - NOW FIRST */}
     <div className="bg-card rounded-xl p-6 shadow-card border border-border">
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-5 w-5 text-primary" />
@@ -65,10 +67,10 @@ return (
       </div>
 
       <div className="grid gap-4">
-        {/* Sleep Guidance */}
+        {/* Sleep Guidance with actual patterns nested */}
         {wakeWindowData && (
           <div className="p-4 bg-muted/30 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <Moon className="h-4 w-4 text-primary" />
               <h3 className="font-medium text-foreground">{t('sleepPatterns')}</h3>
             </div>
@@ -85,14 +87,35 @@ return (
                 <span className="text-muted-foreground">{t('totalSleepNeed')}:</span>
                 <span className="font-medium">{wakeWindowData.totalSleep}</span>
               </div>
+              
+              {/* Nested actual patterns from baby's data */}
+              {sleepInsights.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Brain className="h-3 w-3 text-primary/70" />
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {household?.baby_name}'s Patterns
+                    </span>
+                  </div>
+                  {sleepInsights.map((insight, idx) => {
+                    const IconComponent = insight.icon;
+                    return (
+                      <div key={idx} className="flex items-start gap-2 text-xs">
+                        <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                        <span className="text-primary/90">{insight.text}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Feeding Guidance */}
+        {/* Feeding Guidance with actual patterns nested */}
         {feedingGuidance && (
           <div className="p-4 bg-muted/30 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <Milk className="h-4 w-4 text-primary" />
               <h3 className="font-medium text-foreground">{t('feedingPatterns')}</h3>
             </div>
@@ -117,6 +140,27 @@ return (
                   {feedingGuidance.notes === "Sleep periods are getting longer, affecting feeding schedule." && t('sleepPeriodsLonger')}
                   {feedingGuidance.notes === "May start showing interest in solid foods around 4-6 months." && t('mayStartSolids')}
                   {feedingGuidance.notes === "Solid foods are becoming a bigger part of nutrition." && t('solidsBecomingBigger')}
+                </div>
+              )}
+              
+              {/* Nested actual patterns from baby's data */}
+              {feedingInsights.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Brain className="h-3 w-3 text-primary/70" />
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {household?.baby_name}'s Patterns
+                    </span>
+                  </div>
+                  {feedingInsights.map((insight, idx) => {
+                    const IconComponent = insight.icon;
+                    return (
+                      <div key={idx} className="flex items-start gap-2 text-xs">
+                        <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                        <span className="text-primary/90">{insight.text}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
