@@ -64,21 +64,19 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
                 {day.sleepBlocks.map((block, hourIndex) => {
                   if (!block.isAsleep) return null;
                   
-                  // Find continuous sleep blocks to avoid overlapping bars
-                  let blockStart = hourIndex;
-                  let blockEnd = hourIndex;
+                  // Only render if this is the start of a continuous sleep block
+                  // Skip if the previous block was also asleep (already rendered as part of that block)
+                  if (hourIndex > 0 && day.sleepBlocks[hourIndex - 1].isAsleep) return null;
                   
-                  // Find the end of this sleep block
+                  // Find the end of this continuous sleep block
+                  let blockEnd = hourIndex;
                   while (blockEnd < day.sleepBlocks.length - 1 && day.sleepBlocks[blockEnd + 1].isAsleep) {
                     blockEnd++;
                   }
                   
-                  // Only render if this is the start of a block (prevents duplicates)
-                  if (blockStart !== hourIndex) return null;
-                  
                   // Collect all naps from this continuous block
                   const blockNaps: Activity[] = [];
-                  for (let i = blockStart; i <= blockEnd; i++) {
+                  for (let i = hourIndex; i <= blockEnd; i++) {
                     day.sleepBlocks[i].naps.forEach(nap => {
                       if (!blockNaps.some(n => n.id === nap.id)) {
                         blockNaps.push(nap);
@@ -86,13 +84,13 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
                     });
                   }
                   
-                  const blockLength = blockEnd - blockStart + 1;
+                  const blockLength = blockEnd - hourIndex + 1;
                   const blockHeight = (blockLength / (showFullDay ? 24 : 15)) * 100;
-                  const blockTop = (blockStart / (showFullDay ? 24 : 15)) * 100;
+                  const blockTop = (hourIndex / (showFullDay ? 24 : 15)) * 100;
                   
                   return (
                     <div
-                      key={`sleep-block-${blockStart}-${blockEnd}`}
+                      key={`sleep-block-${hourIndex}-${blockEnd}`}
                       className="absolute w-full bg-gradient-to-b from-nap to-nap/80 rounded-sm border border-nap/20 cursor-pointer hover:opacity-80 transition-opacity"
                       style={{
                         top: `${blockTop}%`,
