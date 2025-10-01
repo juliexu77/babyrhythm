@@ -87,20 +87,23 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (prediction.next_action === "FEED_NOW") {
       type = "feed";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
-      reason = `t_since_last_feed (~${Math.floor((prediction.rationale.t_since_last_feed_min || 0) / 60)}h ${(prediction.rationale.t_since_last_feed_min || 0) % 60}m)`;
+      const hours = Math.floor((prediction.rationale.t_since_last_feed_min || 0) / 60);
+      const mins = (prediction.rationale.t_since_last_feed_min || 0) % 60;
+      reason = `${t('lastFed')} ${hours}h ${mins}m ${t('ago')}`;
     } else if (prediction.next_action === "START_WIND_DOWN") {
       type = "nap";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
-      reason = `wake window (~${Math.round((prediction.rationale.t_awake_now_min || 0) / 60 * 10) / 10}h awake)`;
+      const awakeHours = Math.round((prediction.rationale.t_awake_now_min || 0) / 60 * 10) / 10;
+      reason = `${awakeHours}h ${t('awake')}`;
     } else if (prediction.next_action === "LET_SLEEP_CONTINUE") {
       type = "nap";
       anticipatedTime = undefined;
-      reason = "currently sleeping";
+      reason = t('currentlySleeping');
     } else {
       // INDEPENDENT_TIME or HOLD - default to feed
       type = "feed";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes * 2);
-      reason = `continue current activity`;
+      reason = t('continueCurrentActivity');
     }
 
     // Map confidence scores
@@ -150,11 +153,12 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
   const getPredictionText = () => {
     if (prediction.anticipatedTime) {
-      return `${prediction.type === "feed" ? "Feeding" : "Nap"} around ${prediction.anticipatedTime}`;
+      const prefix = prediction.type === "feed" ? t('feedingAround') : t('napAround');
+      return `${prefix} ${prediction.anticipatedTime}`;
     }
     
     // For sleeping babies, show what's likely next after they wake up
-    if (prediction.reason === "currently sleeping") {
+    if (prediction.reason === t('currentlySleeping')) {
       const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
       const currentPrediction = engine.getNextAction();
       
@@ -164,14 +168,14 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         const sleepScore = currentPrediction.rationale.scores.sleep;
         
         if (feedScore > sleepScore) {
-          return "Likely feeding when baby wakes up";
+          return t('likelyFeedingWhenWakesUp');
         } else {
-          return "May need another nap after this sleep";
+          return t('mayNeedAnotherNap');
         }
       }
     }
     
-    return `${prediction.type === "feed" ? "Consider feeding" : "Watch for sleepy cues"}`;
+    return prediction.type === "feed" ? t('considerFeeding') : t('watchForSleepyCues');
   };
 
   return (
@@ -180,7 +184,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         <div className="flex items-center gap-3">
           <Clock className="h-5 w-5 text-muted-foreground" />
           <div>
-            <h3 className="font-semibold text-lg text-foreground">Next Predicted Action</h3>
+            <h3 className="font-semibold text-lg text-foreground">{t('nextPredictedAction')}</h3>
           </div>
         </div>
         <button
