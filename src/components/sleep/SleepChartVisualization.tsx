@@ -58,50 +58,78 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
           
           {/* Sleep blocks */}
           <div className="grid gap-2 h-full" style={{ gridTemplateColumns: `repeat(${sleepData.length}, 1fr)` }}>
-            {sleepData.map((day, dayIndex) => (
+            {sleepData.map((day) => (
               <div key={day.fullDate.getTime()} className="relative">
-                {/* Sleep bars - render continuous blocks */}
-                {day.sleepBlocks.map((block, hourIndex) => {
-                  if (!block.isAsleep) return null;
-                  
-                  // Only render if this is the start of a continuous sleep block
-                  // Skip if the previous block was also asleep (already rendered as part of that block)
-                  if (hourIndex > 0 && day.sleepBlocks[hourIndex - 1].isAsleep) return null;
-                  
-                  // Find the end of this continuous sleep block
-                  let blockEnd = hourIndex;
-                  while (blockEnd < day.sleepBlocks.length - 1 && day.sleepBlocks[blockEnd + 1].isAsleep) {
-                    blockEnd++;
-                  }
-                  
-                  // Collect all naps from this continuous block
-                  const blockNaps: Activity[] = [];
-                  for (let i = hourIndex; i <= blockEnd; i++) {
-                    day.sleepBlocks[i].naps.forEach(nap => {
-                      if (!blockNaps.some(n => n.id === nap.id)) {
-                        blockNaps.push(nap);
-                      }
+                {(() => {
+                  // Collect unique naps that overlap this day
+                  const uniqueNaps: Activity[] = [];
+                  day.sleepBlocks.forEach((blk) => {
+                    blk.naps.forEach((nap) => {
+                      if (!uniqueNaps.some((n) => n.id === nap.id)) uniqueNaps.push(nap);
                     });
-                  }
-                  
-                  const blockLength = blockEnd - hourIndex + 1;
-                  const blockHeight = (blockLength / (showFullDay ? 24 : 15)) * 100;
-                  const blockTop = (hourIndex / (showFullDay ? 24 : 15)) * 100;
-                  
-                  return (
-                    <div
-                      key={`sleep-block-${hourIndex}-${blockEnd}`}
-                      className="absolute w-full bg-gradient-to-b from-nap to-nap/80 rounded-sm border border-nap/20 cursor-pointer hover:opacity-80 transition-opacity"
-                      style={{
-                        top: `${blockTop}%`,
-                        height: `${blockHeight}%`,
-                        minHeight: '2px',
-                      }}
-                      onClick={() => setSelectedNaps({ naps: blockNaps, day: day.date })}
-                      title={`Tap to view details`}
-                    />
-                  );
-                })}
+                  });
+
+                  // Helper to parse "10:30 AM" -> minutes since midnight
+                  const parseTime = (timeStr: string) => {
+                    const cleaned = timeStr.trim();
+                    const [time, period] = cleaned.split(" ");
+                    if (!time || !period) return null;
+                    const [hStr, mStr] = time.split(":");
+                    if (!hStr || !mStr) return null;
+                    let h = parseInt(hStr, 10);
+                    const m = parseInt(mStr, 10);
+                    if (period.toUpperCase() === "PM" && h !== 12) h += 12;
+                    if (period.toUpperCase() === "AM" && h === 12) h = 0;
+                    return h * 60 + m;
+                  };
+
+                  const rangeStart = (showFullDay ? 0 : 6) * 60;
+                  const rangeEnd = (showFullDay ? 24 : 21) * 60;
+                  const totalRange = rangeEnd - rangeStart;
+                  const targetDate = new Date(day.fullDate.getFullYear(), day.fullDate.getMonth(), day.fullDate.getDate());
+
+                  return uniqueNaps.map((nap) => {
+                    if (!nap.details.startTime || !nap.details.endTime) return null;
+                    const start = parseTime(nap.details.startTime);
+                    const end = parseTime(nap.details.endTime);
+                    if (start === null || end === null) return null;
+
+                    const loggedAt = nap.loggedAt ? new Date(nap.loggedAt) : null;
+                    const napDate = loggedAt ? new Date(loggedAt.getFullYear(), loggedAt.getMonth(), loggedAt.getDate()) : null;
+
+                    let segStart = start;
+                    let segEnd = end;
+
+                    // Handle overnight by splitting logically per day
+                    if (end < start) {
+                      // If the nap started on this day (logged_at matches), show evening portion until midnight
+                      if (napDate && napDate.getTime() === targetDate.getTime()) {
+                        segEnd = 24 * 60;
+                      } else {
+                        // Otherwise, show morning portion from midnight to end
+                        segStart = 0;
+                      }
+                    }
+
+                    // Clip to visible range
+                    segStart = Math.max(segStart, rangeStart);
+                    segEnd = Math.min(segEnd, rangeEnd);
+                    if (segEnd <= segStart) return null;
+
+                    const top = ((segStart - rangeStart) / totalRange) * 100;
+                    const height = ((segEnd - segStart) / totalRange) * 100;
+
+                    return (
+                      <div
+                        key={`nap-${nap.id}-${day.fullDate.getTime()}`}
+                        className="absolute w-full bg-gradient-to-b from-nap to-nap/80 rounded-sm border border-nap/20 cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{ top: `${top}%`, height: `${height}%`, minHeight: "2px" }}
+                        onClick={() => setSelectedNaps({ naps: [nap], day: day.date })}
+                        title={`Tap to view details`}
+                      />
+                    );
+                  });
+                })()}
               </div>
             ))}
           </div>
