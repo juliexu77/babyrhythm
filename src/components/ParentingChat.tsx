@@ -46,7 +46,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
       setHasInitialized(true);
       setMessages([{
         role: "assistant",
-        content: `Hi! Would you like to hear how ${babyName || "your baby"}'s day is going?`
+        content: `Hi! I'm here to help you with ${babyName || "your baby"}'s care.`
       }]);
     }
   }, [hasInitialized, babyName]);
