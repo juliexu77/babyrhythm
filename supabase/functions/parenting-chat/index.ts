@@ -231,12 +231,13 @@ ${metricsContext}
 
 RESPONSE GUIDELINES:
 - Focus on patterns and insights, not individual activities
+- When today's data is limited, ALWAYS reference recent trends from previous days
 - Discuss nap timing (morning vs afternoon) and wake window variations
 - Provide developmental context for ${babyAge} months
 - Keep responses concise - 3-4 key insights
 - Format all durations as Hh Mmin (e.g., 1h 30min); under 60 as Nmin; never write "minutes"
 
-${isInitial ? "Analyze nap patterns, wake windows, and feeding trends with developmental context." : "Answer with pattern-focused insights."}`
+${isInitial ? "Analyze nap patterns, wake windows, and feeding trends with developmental context. If today has limited data, reference patterns from recent days." : "Answer with pattern-focused insights. Reference recent trends when today's data is sparse."}`
           },
           ...messages,
         ],
