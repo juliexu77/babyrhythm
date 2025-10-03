@@ -260,13 +260,15 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       return;
     }
 
-    if (!time && activityType !== "nap") {
-      toast({
-        title: "Time required",
-        description: "Please select a time for this activity.",
-        variant: "destructive",
+    // Ensure time has a value, use current time if not set
+    let activityTime = time;
+    if (!activityTime && activityType !== "nap") {
+      activityTime = new Date().toLocaleTimeString("en-US", { 
+        hour: "numeric", 
+        minute: "2-digit",
+        hour12: true 
       });
-      return;
+      setTime(activityTime);
     }
 
     if (activityType === "feed" && feedType === "bottle" && !quantity) {
@@ -387,7 +389,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         details,
       };
 
-      onAddActivity(newActivity, selectedDate, time);
+      onAddActivity(newActivity, selectedDate, activityTime);
     }
     
     resetForm();
