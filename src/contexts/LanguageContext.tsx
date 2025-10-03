@@ -279,7 +279,7 @@ const translations = {
     measurementsTaken: "measurements taken",
     tall: "tall",
     head: "head",
-    photo: "photo",
+    photo: "Photo",
     minTotal: "min total",
     
     // Feed types
