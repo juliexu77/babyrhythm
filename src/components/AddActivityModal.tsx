@@ -437,10 +437,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             <div className="grid grid-cols-3 gap-2">
               {[
                 { type: "feed", icon: Baby, label: t('feeding') },
-                { type: "nap", icon: Moon, label: t('sleep') },
                 { type: "diaper", icon: Palette, label: t('diaper') },
-                { type: "measure", icon: Ruler, label: t('measure') },
                 { type: "note", icon: StickyNote, label: t('noteText') },
+                { type: "nap", icon: Moon, label: t('sleep') },
+                { type: "measure", icon: Ruler, label: t('measure') },
                 { type: "photo", icon: Camera, label: t('photo') }
               ].map(({ type, icon: Icon, label }) => (
                 <Button
@@ -454,7 +454,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   onClick={() => setActivityType(type as any)}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="text-xs font-medium uppercase">{label}</span>
+                  <span className="text-xs font-medium">{label}</span>
                 </Button>
               ))}
             </div>

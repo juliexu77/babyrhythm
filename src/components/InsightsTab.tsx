@@ -258,7 +258,14 @@ return (
                     !insight.text.toLowerCase().includes('naps per day')
                   ).map((insight, idx) => {
                     const IconComponent = insight.icon;
-                    const wakeWindowRange = wakeWindowData.wakeWindows.join('-');
+                    // Get min and max from wake window array for proper range
+                    const wakeWindowValues = wakeWindowData.wakeWindows.map((w: string) => {
+                      const match = w.match(/(\d+\.?\d*)/);
+                      return match ? parseFloat(match[1]) : 0;
+                    }).filter(v => v > 0);
+                    const minWW = Math.min(...wakeWindowValues);
+                    const maxWW = Math.max(...wakeWindowValues);
+                    const wakeWindowRange = `${minWW}-${maxWW}hrs`;
                     const match = getPatternMatch(insight, wakeWindowRange, 'wake');
                     
                     const TrendIcon = match?.trend === 'up' ? TrendingUp : 
