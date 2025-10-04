@@ -88,15 +88,40 @@ useEffect(() => {
         
         <div className="space-y-4">
           {/* Display */}
-          <div className="bg-muted/50 rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-foreground min-h-[40px] flex items-center justify-center">
+          <div className="bg-muted/50 rounded-lg p-4 text-center space-y-3">
+            <div className="text-3xl font-bold text-foreground min-h-[40px] flex items-center justify-center gap-2">
               {value || "0"}
-              <button
-                className="text-xl text-muted-foreground ml-2 hover:text-foreground transition-colors border border-muted-foreground/30 rounded px-2 py-1"
-                onClick={() => { const next = unit === "oz" ? "ml" : "oz"; onUnitChange?.(next); try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} }}
+              <span className="text-xl text-muted-foreground">{unit}</span>
+            </div>
+            
+            {/* Prominent unit toggle */}
+            <div className="flex gap-2 justify-center">
+              <Button
+                type="button"
+                variant={unit === "oz" ? "default" : "outline"}
+                size="sm"
+                className={`flex-1 ${unit === "oz" ? 'bg-primary text-primary-foreground' : ''}`}
+                onClick={() => { 
+                  const next = "oz"; 
+                  onUnitChange?.(next); 
+                  try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
+                }}
               >
-                {unit === "ml" ? "ml" : unit}
-              </button>
+                oz
+              </Button>
+              <Button
+                type="button"
+                variant={unit === "ml" ? "default" : "outline"}
+                size="sm"
+                className={`flex-1 ${unit === "ml" ? 'bg-primary text-primary-foreground' : ''}`}
+                onClick={() => { 
+                  const next = "ml"; 
+                  onUnitChange?.(next); 
+                  try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
+                }}
+              >
+                ml
+              </Button>
             </div>
           </div>
 

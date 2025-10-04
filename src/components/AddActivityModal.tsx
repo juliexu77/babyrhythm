@@ -86,7 +86,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     if (editingActivity) {
       // Populate form with editing activity data
       setActivityType(editingActivity.type);
-      setTime(editingActivity.time);
+      
+      // Only set time if we're starting to edit (not on subsequent rerenders)
+      const currentTime = editingActivity.time;
+      setTime(currentTime);
       
       // Set the selected date based on the original logged date
       if (editingActivity.loggedAt) {
@@ -131,17 +134,24 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         setNote(editingActivity.details.note || "");
       }
     } else {
-      // Load last used settings for new activities
+      // Load last used settings for new activities only
       const lastUnit = localStorage.getItem('lastUsedUnit') as "oz" | "ml";
-      const lastQuantity = localStorage.getItem('lastFeedQuantity');
       if (lastUnit) {
         setUnit(lastUnit);
       }
-      if (lastQuantity && feedType === "bottle" && !editingActivity) {
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingActivity]); // Only depend on editingActivity, not feedType
+
+  // Separate effect for loading last quantity only when creating new bottle feeds
+  useEffect(() => {
+    if (!editingActivity && feedType === "bottle" && !quantity) {
+      const lastQuantity = localStorage.getItem('lastFeedQuantity');
+      if (lastQuantity) {
         setQuantity(lastQuantity);
       }
     }
-  }, [editingActivity, feedType]);
+  }, [feedType, editingActivity, quantity]);
 
   const resetForm = () => {
     const now = new Date();
