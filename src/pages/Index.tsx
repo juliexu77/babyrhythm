@@ -43,6 +43,14 @@ const Index = () => {
   // Convert database activities to UI activities
   const activities: Activity[] = user && household && dbActivities 
     ? dbActivities.map(dbActivity => {
+        // Debug logging
+        console.log('Activity:', {
+          type: dbActivity.type,
+          logged_at: dbActivity.logged_at,
+          logged_at_parsed: new Date(dbActivity.logged_at).toString(),
+          details: dbActivity.details
+        });
+
         let displayTime = new Date(dbActivity.logged_at).toLocaleTimeString('en-US', { 
           hour: 'numeric', 
           minute: '2-digit', 
