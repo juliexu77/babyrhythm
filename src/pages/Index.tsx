@@ -342,7 +342,10 @@ const Index = () => {
                                       key={activity.id}
                                       activity={activity}
                                       babyName={babyProfile?.name}
-                                      onEdit={(activity) => setEditingActivity(activity)}
+                                      onEdit={(clickedActivity) => {
+                                        console.log('Clicked activity:', clickedActivity);
+                                        setEditingActivity(clickedActivity);
+                                      }}
                                       onDelete={async (activityId) => {
                                         try {
                                           // Get activity data before deleting for undo tracking
