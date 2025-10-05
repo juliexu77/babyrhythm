@@ -16,13 +16,14 @@ interface HelperProps {
 export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
   const { household } = useHousehold();
   
-  const calculateBabyAge = () => {
+  const calculateBabyAgeInWeeks = () => {
     if (!household?.baby_birthday) return 0;
     const birthDate = new Date(household.baby_birthday);
     const today = new Date();
-    const months = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
-                   (today.getMonth() - birthDate.getMonth());
-    return Math.max(0, months);
+    const diffTime = today.getTime() - birthDate.getTime();
+    const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+    const weeks = Math.floor(diffDays / 7);
+    return weeks;
   };
 
   return (
@@ -30,7 +31,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       <ParentingChat 
         activities={activities}
         babyName={household?.baby_name}
-        babyAge={calculateBabyAge()}
+        babyAgeInWeeks={calculateBabyAgeInWeeks()}
       />
     </div>
   );

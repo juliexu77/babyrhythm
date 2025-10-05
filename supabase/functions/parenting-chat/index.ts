@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, activities, babyName, babyAge, timezone, isInitial } = await req.json();
+    const { messages, activities, babyName, babyAgeInWeeks, timezone, isInitial } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -171,7 +171,7 @@ serve(async (req) => {
     
     // Build metrics context focusing only on non-zero activities
     const metricsContext = `
-RECENT ACTIVITY SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
+RECENT ACTIVITY SUMMARY for ${babyName || "baby"} (${babyAgeInWeeks || "unknown"} weeks old):
 
 ${dailySummaries.map(day => {
   const lines = [`${day.isToday ? '📅 TODAY' : day.date}:`];
@@ -209,7 +209,7 @@ ${dailySummaries.map(day => {
 
 ANALYSIS FOCUS:
 - Compare morning vs afternoon nap lengths and wake window variations
-- Identify trends over multiple days and developmental patterns for ${babyAge} months
+- Identify trends over multiple days and developmental patterns for ${babyAgeInWeeks} weeks old
 `;
 
     console.log("Metrics context generated:", metricsContext);
@@ -233,7 +233,7 @@ RESPONSE GUIDELINES:
 - Focus on patterns and insights, not individual activities
 - When today's data is limited, ALWAYS reference recent trends from previous days
 - Discuss nap timing (morning vs afternoon) and wake window variations
-- Provide developmental context for ${babyAge} months
+- Provide developmental context for ${babyAgeInWeeks} weeks old baby
 - Keep responses concise - 3-4 key insights
 - Format all durations as Hh Mmin (e.g., 1h 30min); under 60 as Nmin; never write "minutes"
 

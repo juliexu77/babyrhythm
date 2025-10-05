@@ -21,10 +21,10 @@ interface Activity {
 interface ParentingChatProps {
   activities: Activity[];
   babyName?: string;
-  babyAge?: number;
+  babyAgeInWeeks?: number;
 }
 
-export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatProps) => {
+export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: ParentingChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +96,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
           messages: [...messages, { role: "user", content: userMessage }],
           activities,
           babyName,
-          babyAge,
+          babyAgeInWeeks,
           timezone,
           isInitial
         }),
