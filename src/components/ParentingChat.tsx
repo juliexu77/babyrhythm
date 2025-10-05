@@ -86,6 +86,15 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
+      console.log('Sending to edge function:', {
+        messagesCount: messages.length,
+        activitiesCount: activities.length,
+        babyName,
+        babyAgeInWeeks,
+        timezone,
+        isInitial
+      });
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {

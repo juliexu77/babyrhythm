@@ -10,6 +10,7 @@ serve(async (req) => {
 
   try {
     const { messages, activities, babyName, babyAgeInWeeks, timezone, isInitial } = await req.json();
+    console.log('Edge function received:', { babyName, babyAgeInWeeks, timezone, isInitial, activitiesCount: activities?.length });
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
