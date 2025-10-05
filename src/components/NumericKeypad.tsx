@@ -88,40 +88,41 @@ useEffect(() => {
         
         <div className="space-y-4">
           {/* Display */}
-          <div className="bg-muted/50 rounded-lg p-4 text-center space-y-3">
-            <div className="text-3xl font-bold text-foreground min-h-[40px] flex items-center justify-center gap-2">
-              {value || "0"}
-              <span className="text-xl text-muted-foreground">{unit}</span>
-            </div>
-            
-            {/* Prominent unit toggle */}
-            <div className="flex gap-2 justify-center">
-              <Button
-                type="button"
-                variant={unit === "oz" ? "default" : "outline"}
-                size="sm"
-                className={`flex-1 ${unit === "oz" ? 'bg-primary text-primary-foreground' : ''}`}
-                onClick={() => { 
-                  const next = "oz"; 
-                  onUnitChange?.(next); 
-                  try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
-                }}
-              >
-                oz
-              </Button>
-              <Button
-                type="button"
-                variant={unit === "ml" ? "default" : "outline"}
-                size="sm"
-                className={`flex-1 ${unit === "ml" ? 'bg-primary text-primary-foreground' : ''}`}
-                onClick={() => { 
-                  const next = "ml"; 
-                  onUnitChange?.(next); 
-                  try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
-                }}
-              >
-                ml
-              </Button>
+          <div className="bg-muted/50 rounded-lg p-4 text-center">
+            <div className="flex items-center justify-center gap-3">
+              <div className="text-3xl font-bold text-foreground">
+                {value || "0"}
+              </div>
+              
+              {/* Unit toggle inline */}
+              <div className="flex gap-1">
+                <Button
+                  type="button"
+                  variant={unit === "oz" ? "default" : "outline"}
+                  size="sm"
+                  className={`h-8 px-3 text-sm ${unit === "oz" ? 'bg-primary text-primary-foreground' : ''}`}
+                  onClick={() => { 
+                    const next = "oz"; 
+                    onUnitChange?.(next); 
+                    try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
+                  }}
+                >
+                  oz
+                </Button>
+                <Button
+                  type="button"
+                  variant={unit === "ml" ? "default" : "outline"}
+                  size="sm"
+                  className={`h-8 px-3 text-sm ${unit === "ml" ? 'bg-primary text-primary-foreground' : ''}`}
+                  onClick={() => { 
+                    const next = "ml"; 
+                    onUnitChange?.(next); 
+                    try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
+                  }}
+                >
+                  ml
+                </Button>
+              </div>
             </div>
           </div>
 
