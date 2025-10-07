@@ -234,30 +234,51 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   const uploadPhoto = async (file: File): Promise<string | null> => {
     try {
+      console.log('Starting photo upload:', { 
+        fileName: file.name, 
+        fileSize: file.size, 
+        fileType: file.type,
+        householdId 
+      });
+
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('Upload failed: User not authenticated');
+        throw new Error('User not authenticated');
+      }
       
-      if (!householdId) throw new Error('Household not found');
+      if (!householdId) {
+        console.error('Upload failed: Household ID missing');
+        throw new Error('Household not found');
+      }
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${householdId}/${Date.now()}.${fileExt}`;
+      console.log('Generated file path:', fileName);
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('baby-photos')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('Upload successful:', uploadData);
 
       const { data: { publicUrl } } = supabase.storage
         .from('baby-photos')
         .getPublicUrl(fileName);
 
+      console.log('Generated public URL:', publicUrl);
       return publicUrl;
     } catch (error) {
       console.error('Error uploading photo:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo';
       toast({
         title: "Upload failed",
-        description: "Failed to upload photo. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
       return null;
@@ -269,6 +290,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       toast({
         title: "Activity type required",
         description: "Please select an activity type.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate photo activity
+    if (activityType === "photo" && !photo && !photoUrl) {
+      toast({
+        title: "Photo required",
+        description: "Please select a photo to upload.",
         variant: "destructive",
       });
       return;
@@ -382,6 +413,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       if (uploadedPhotoUrl) {
         details.photoUrl = uploadedPhotoUrl;
         setPhotoUrl(uploadedPhotoUrl);
+      } else {
+        // If photo upload failed for a photo activity, don't proceed
+        if (activityType === "photo") {
+          return;
+        }
       }
     }
 
