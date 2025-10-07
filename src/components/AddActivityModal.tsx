@@ -238,17 +238,28 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         fileName: file.name, 
         fileSize: file.size, 
         fileType: file.type,
-        householdId 
+        householdId,
+        householdIdExists: !!householdId
       });
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.error('Upload failed: User not authenticated');
+        toast({
+          title: "Authentication required",
+          description: "Please log in to upload photos.",
+          variant: "destructive"
+        });
         throw new Error('User not authenticated');
       }
       
       if (!householdId) {
         console.error('Upload failed: Household ID missing');
+        toast({
+          title: "Household not found",
+          description: "Unable to upload photo. Please try reloading the page.",
+          variant: "destructive"
+        });
         throw new Error('Household not found');
       }
 
@@ -262,6 +273,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
+        toast({
+          title: "Upload failed",
+          description: uploadError.message || "Storage error occurred.",
+          variant: "destructive"
+        });
         throw uploadError;
       }
 
@@ -276,11 +292,15 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     } catch (error) {
       console.error('Error uploading photo:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo';
-      toast({
-        title: "Upload failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      
+      // Only show toast if we haven't already shown one
+      if (!errorMessage.includes('authenticated') && !errorMessage.includes('Household')) {
+        toast({
+          title: "Upload failed",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      }
       return null;
     }
   };

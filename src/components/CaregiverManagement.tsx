@@ -66,7 +66,20 @@ const handleAddCaregiver = async () => {
     try {
       const inviteData = await generateInviteLink();
       if (inviteData?.link) {
-        await (navigator as any).clipboard.writeText(inviteData.link);
+        // Try modern Clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(inviteData.link);
+        } else {
+          // Fallback for older browsers or non-secure contexts
+          const textArea = document.createElement("textarea");
+          textArea.value = inviteData.link;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
         toast({
           title: "Invite link copied!",
           description: "Share this link with your caregiver."
@@ -74,6 +87,11 @@ const handleAddCaregiver = async () => {
       }
     } catch (error) {
       console.error('Error generating invite:', error);
+      toast({
+        title: "Error copying link",
+        description: "Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -103,7 +121,21 @@ const handleAddCaregiver = async () => {
         // In a real app, you'd send this via email service
         // For now, we'll copy and show instructions
         const message = `Hi! You've been invited to help track ${household?.baby_name || "a baby"}'s activities. Click this link to join: ${inviteData.link}`;
-        await (navigator as any).clipboard.writeText(message);
+        
+        // Try modern Clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(message);
+        } else {
+          // Fallback for older browsers or non-secure contexts
+          const textArea = document.createElement("textarea");
+          textArea.value = message;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+        }
         
         toast({
           title: "Invite message copied!",
