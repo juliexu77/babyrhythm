@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler } from "lucide-react";
+import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -538,7 +538,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                     { type: "bottle", icon: Coffee, label: t('bottle') },
+                     { type: "bottle", icon: Milk, label: t('bottle') },
                       { type: "nursing", icon: Baby, label: t('nursing') },
                       { type: "solid", icon: Carrot, label: t('solid') }
                     ].map(({ type, icon: Icon, label }) => (
