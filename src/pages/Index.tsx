@@ -38,7 +38,7 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { trackCreate, trackUpdate, trackDelete, undo, canUndo, undoCount } = useActivityUndo();
-  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
 
   // Convert database activities to UI activities
@@ -410,7 +410,7 @@ const Index = () => {
     }
   };
 
-  if (loading || householdLoading || hasProfile === null) {
+  if (loading || householdLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
