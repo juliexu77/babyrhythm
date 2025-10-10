@@ -87,6 +87,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   const minuteRef = useRef<HTMLDivElement>(null);
   const periodRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLDivElement>(null);
+  const isProgrammaticHourScroll = useRef(false);
+  const isProgrammaticMinuteScroll = useRef(false);
+  const isProgrammaticDateScroll = useRef(false);
 
   // Create extended arrays for infinite scrolling
   const hours = [
@@ -116,34 +119,51 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     }
   }, [selectedDateIndex, dates, onDateChange, hasUserInteracted]);
 
-  const scrollToValue = (ref: React.RefObject<HTMLDivElement>, value: number, items: any[]) => {
+  const scrollToValue = (
+    ref: React.RefObject<HTMLDivElement>,
+    value: number,
+    items: any[],
+    programmaticRef?: React.MutableRefObject<boolean>
+  ) => {
     if (ref.current) {
       const itemHeight = 32;
-      // Find the middle occurrence of the value for smooth infinite scrolling
-      const middleIndex = 12 + items.slice(0, 12).indexOf(value);
-      if (middleIndex >= 12) {
+      const baseSectionSize = 12;
+      const valueIndex = items.slice(0, baseSectionSize).indexOf(value);
+      if (valueIndex >= 0) {
+        const middleIndex = baseSectionSize + valueIndex;
+        if (programmaticRef) programmaticRef.current = true;
         ref.current.scrollTop = middleIndex * itemHeight;
+        // Allow scroll event to fire, then clear programmatic flag
+        requestAnimationFrame(() => {
+          if (programmaticRef) programmaticRef.current = false;
+        });
       }
     }
   };
 
   useEffect(() => {
-    // Scroll to selected values whenever they change
-    scrollToValue(hourRef, selectedHour, hours);
-    scrollToValue(minuteRef, selectedMinute, minutes);
+    // Scroll to selected values whenever they change (programmatic)
+    scrollToValue(hourRef, selectedHour, hours, isProgrammaticHourScroll);
+    scrollToValue(minuteRef, selectedMinute, minutes, isProgrammaticMinuteScroll);
     
-    // Scroll to selected date
+    // Scroll to selected date (programmatic)
     if (dateRef.current) {
       const itemHeight = 32;
+      isProgrammaticDateScroll.current = true;
       dateRef.current.scrollTop = selectedDateIndex * itemHeight;
+      requestAnimationFrame(() => {
+        isProgrammaticDateScroll.current = false;
+      });
     }
   }, [selectedHour, selectedMinute, selectedDateIndex]);
 
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement>,
     items: any[],
-    setter: (value: any) => void
+    setter: (value: any) => void,
+    programmaticRef?: React.MutableRefObject<boolean>
   ) => {
+    if (programmaticRef?.current) return;
     if (ref.current) {
       const itemHeight = 32;
       const scrollTop = ref.current.scrollTop;
@@ -203,6 +223,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           ref={dateRef}
           className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
           onScroll={() => {
+            if (isProgrammaticDateScroll.current) return;
             if (dateRef.current) {
               const itemHeight = 32;
               const scrollTop = dateRef.current.scrollTop;
@@ -212,6 +233,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               setSelectedDateIndex(clampedIndex);
             }
           }}
+          onMouseDown={() => setHasUserInteracted(true)}
+          onTouchStart={() => setHasUserInteracted(true)}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <div className="flex flex-col">
@@ -239,7 +262,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         <div 
           ref={hourRef}
           className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-          onScroll={() => handleScroll(hourRef, hours, setSelectedHour)}
+          onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
+          onMouseDown={() => setHasUserInteracted(true)}
+          onTouchStart={() => setHasUserInteracted(true)}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <div className="flex flex-col">
@@ -268,7 +293,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         <div 
           ref={minuteRef}
           className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-          onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute)}
+          onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
+          onMouseDown={() => setHasUserInteracted(true)}
+          onTouchStart={() => setHasUserInteracted(true)}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <div className="flex flex-col">
