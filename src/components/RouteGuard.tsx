@@ -31,13 +31,10 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     }
 
     // Redirect authenticated users away from auth and onboarding pages to the main app
-    // Add small delay to allow household creation to complete
     if (user && !isAuthWithRedirect && (location.pathname === "/auth" || location.pathname === "/onboarding")) {
       console.log('Redirecting authenticated user to main app');
-      const timer = setTimeout(() => {
-        navigate("/app", { replace: true });
-      }, 100);
-      return () => clearTimeout(timer);
+      navigate("/app", { replace: true });
+      return;
     }
     
     // Redirect from root to app if authenticated
