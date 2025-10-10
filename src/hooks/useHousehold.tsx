@@ -30,6 +30,7 @@ export const useHousehold = () => {
   const [household, setHousehold] = useState<Household | null>(null);
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch user's household and collaborators
   useEffect(() => {
@@ -72,6 +73,7 @@ export const useHousehold = () => {
     if (!user) return;
 
     try {
+      setError(null);
       console.log('Fetching household for user:', user.id);
       
       // Try to use the active household from localStorage first
@@ -115,6 +117,7 @@ export const useHousehold = () => {
 
         if (collaboratorError) {
           console.error('Error fetching collaborator data:', collaboratorError);
+          setError('Failed to load your household. Please try again.');
           setLoading(false);
           return;
         }
@@ -122,6 +125,7 @@ export const useHousehold = () => {
         if (!collaboratorData || collaboratorData.length === 0) {
           console.log('No household found for user');
           setHousehold(null);
+          setError(null); // No error - user just doesn't have a household
           setLoading(false);
           return;
         }
@@ -145,17 +149,20 @@ export const useHousehold = () => {
 
       if (householdError) {
         console.error('Error fetching household:', householdError);
+        setError('Failed to load household data. Please try again.');
         setLoading(false);
         return;
       }
 
       console.log('Household data:', householdData);
       setHousehold(householdData);
+      setError(null);
       
       // Fetch collaborators immediately after setting household
       await fetchCollaborators(householdData.id);
     } catch (error) {
       console.error('Error in fetchHousehold:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -443,6 +450,7 @@ export const useHousehold = () => {
     household,
     collaborators,
     loading,
+    error,
     createHousehold,
     updateHousehold,
     generateInviteLink,

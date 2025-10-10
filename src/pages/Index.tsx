@@ -28,6 +28,7 @@ const Index = () => {
   const { 
     household, 
     loading: householdLoading,
+    error: householdError,
     refetch: refetchHousehold
   } = useHousehold();
   const { 
@@ -424,25 +425,34 @@ const Index = () => {
     );
   }
 
-  // If authenticated but no household found, guide the user to fix it
-  if (user && !household) {
+  // Show error state with retry option
+  if (user && !household && !householdLoading && householdError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center space-y-4">
-          <h2 className="text-xl font-semibold">No household available</h2>
-          <p className="text-muted-foreground">We couldn't load your household. This can happen after switching devices or if an old link was removed.</p>
-          <div className="flex gap-3 justify-center">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                try { localStorage.removeItem('active_household_id'); } catch {}
-                refetchHousehold();
-              }}
-            >
-              Retry
-            </Button>
-            <Button onClick={() => navigate('/onboarding')}>Go to Onboarding</Button>
-          </div>
+          <h2 className="text-xl font-semibold">Connection Issue</h2>
+          <p className="text-muted-foreground">{householdError}</p>
+          <Button
+            onClick={() => {
+              try { localStorage.removeItem('active_household_id'); } catch {}
+              refetchHousehold();
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated but no household exists (not an error, just no data)
+  if (user && !household && !householdLoading && !householdError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center space-y-4">
+          <h2 className="text-xl font-semibold">No household found</h2>
+          <p className="text-muted-foreground">Let's set up your household to get started.</p>
+          <Button onClick={() => navigate('/onboarding')}>Go to Onboarding</Button>
         </div>
       </div>
     );
