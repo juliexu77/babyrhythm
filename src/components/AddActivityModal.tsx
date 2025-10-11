@@ -221,7 +221,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   const stopNapTimer = () => {
     setIsTimerActive(false);
-    setEndTime(new Date().toLocaleTimeString("en-US", { 
+    const now = new Date();
+    const mins = now.getMinutes();
+    const safeMins = Math.min(59, Math.max(0, mins));
+    setEndTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), safeMins, 0, 0).toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
       hour12: true 

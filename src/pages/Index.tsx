@@ -61,7 +61,9 @@ const Index = () => {
 
         // For naps, show start-end time range
         if (dbActivity.type === 'nap' && dbActivity.details.startTime && dbActivity.details.endTime) {
-          displayTime = `${dbActivity.details.startTime} - ${dbActivity.details.endTime}`;
+          // Ensure endTime is valid (avoid :60)
+          const normalizedEnd = dbActivity.details.endTime?.replace(/:(60)\b/, ':55');
+          displayTime = `${dbActivity.details.startTime} - ${normalizedEnd}`;
         }
 
         return {

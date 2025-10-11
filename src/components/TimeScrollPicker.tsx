@@ -29,7 +29,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     } else {
       const now = new Date();
       setSelectedHour(now.getHours() % 12 || 12);
-      setSelectedMinute(Math.round(now.getMinutes() / 5) * 5);
+      const rounded = Math.round(now.getMinutes() / 5) * 5;
+      setSelectedMinute(Math.min(55, Math.max(0, rounded))); // prevent 60
       setSelectedPeriod(now.getHours() >= 12 ? "PM" : "AM");
     }
   }, []); // Only run on mount
@@ -63,7 +64,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       if (match) {
         setSelectedHour(parseInt(match[1]));
-        setSelectedMinute(parseInt(match[2]));
+        const minuteParsed = parseInt(match[2]);
+        setSelectedMinute(Math.min(55, Math.max(0, minuteParsed)));
         setSelectedPeriod(match[3].toUpperCase() as "AM" | "PM");
         setHasUserInteracted(false); // Reset interaction flag
       }
@@ -107,7 +109,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   useEffect(() => {
     // Only update the time if user has actually interacted with the picker
     if (hasUserInteracted) {
-      const timeString = `${selectedHour}:${selectedMinute.toString().padStart(2, '0')} ${selectedPeriod}`;
+      const minuteSafe = Math.min(55, Math.max(0, selectedMinute));
+      if (minuteSafe !== selectedMinute) setSelectedMinute(minuteSafe);
+      const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
       onChange(timeString);
     }
   }, [selectedHour, selectedMinute, selectedPeriod, onChange, hasUserInteracted]);
