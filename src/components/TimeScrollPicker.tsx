@@ -107,14 +107,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   const periods = ["AM", "PM"];
 
   useEffect(() => {
-    // Only update the time if user has actually interacted with the picker
-    if (hasUserInteracted) {
-      const minuteSafe = Math.min(55, Math.max(0, selectedMinute));
-      if (minuteSafe !== selectedMinute) setSelectedMinute(minuteSafe);
-      const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
-      onChange(timeString);
-    }
-  }, [selectedHour, selectedMinute, selectedPeriod, onChange, hasUserInteracted]);
+    // Always update the time to ensure :00 default for minutes
+    const minuteSafe = Math.min(55, Math.max(0, selectedMinute));
+    if (minuteSafe !== selectedMinute) setSelectedMinute(minuteSafe);
+    const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
+    onChange(timeString);
+  }, [selectedHour, selectedMinute, selectedPeriod, onChange]);
 
   useEffect(() => {
     // Update selected date when index changes
