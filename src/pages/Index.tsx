@@ -444,12 +444,17 @@ const ongoingNap = activities
                                 </div>
                               </div>
                               
-                              {/* Next Predicted Action - Show after most recent day's activities (today if present, otherwise yesterday) */}
-                              {index === 0 && activities.length > 0 && (
-                                <div className="mt-4 mb-4">
-                                  <NextActivityPrediction activities={activities} />
-                                </div>
-                              )}
+              {/* Next Predicted Action - Show after most recent day's activities (today if present, otherwise yesterday) */}
+              {index === 0 && activities.length > 0 && (
+                <div className="mt-4 mb-4">
+                  <NextActivityPrediction 
+                    activities={activities} 
+                    ongoingNap={ongoingNap}
+                    onMarkWakeUp={markWakeUp}
+                    babyName={babyProfile?.name}
+                  />
+                </div>
+              )}
                             </div>
                           );
                         })}
@@ -530,16 +535,6 @@ return (
               {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
             </h1>
               <div className="flex items-center gap-2">
-                {ongoingNap && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={markWakeUp}
-                    className="px-3"
-                  >
-                    {(babyProfile?.name || 'Baby') + ' woke up'}
-                  </Button>
-                )}
               {canUndo && (
                 <Button 
                   variant="ghost" 

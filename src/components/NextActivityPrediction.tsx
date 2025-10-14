@@ -4,9 +4,13 @@ import { Clock, Baby, Moon, ChevronDown, ChevronUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BabyCarePredictionEngine } from "@/utils/predictionEngine";
 import { useHousehold } from "@/hooks/useHousehold";
+import { Button } from "@/components/ui/button";
 
 interface NextActivityPredictionProps {
   activities: Activity[];
+  ongoingNap?: Activity | null;
+  onMarkWakeUp?: () => void;
+  babyName?: string;
 }
 
 // Keep the original time utility functions for UI compatibility
@@ -45,7 +49,7 @@ const addMinutesToTime = (timeString: string, minutes: number): string => {
   return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
 };
 
-export const NextActivityPrediction = ({ activities }: NextActivityPredictionProps) => {
+export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, babyName }: NextActivityPredictionProps) => {
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true);
   const { household } = useHousehold();
@@ -199,6 +203,18 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
       {isExpanded && (
         <div className="mt-4">
+          {ongoingNap && onMarkWakeUp && (
+            <div className="mb-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onMarkWakeUp}
+                className="w-full"
+              >
+                {(babyName || 'Baby') + ' woke up'}
+              </Button>
+            </div>
+          )}
           <div className="flex items-center gap-2 mb-2">
             {getIcon(prediction.type)}
             <span className="font-medium text-foreground">{getPredictionText()}</span>
