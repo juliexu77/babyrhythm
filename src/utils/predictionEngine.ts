@@ -319,12 +319,14 @@ export class BabyCarePredictionEngine {
   }
 
   private getTimeAwakeNow(now: Date): number | null {
-    // Check if baby is currently sleeping (ongoing nap without end time)
-    const ongoingSleep = this.sleepSegments.find(s => !s.end && s.start <= now);
-    if (ongoingSleep) {
-      console.log('😴 Currently sleeping since:', ongoingSleep.start.toISOString());
-      return null; // Currently asleep
-    }
+// Only treat as ongoing sleep if it started today (local time)
+const todayStart = new Date(now);
+todayStart.setHours(0, 0, 0, 0);
+const ongoingSleep = this.sleepSegments.find(s => !s.end && s.start >= todayStart && s.start <= now);
+if (ongoingSleep) {
+  console.log('😴 Currently sleeping since:', ongoingSleep.start.toISOString());
+  return null; // Currently asleep
+}
     
     const completeSleepSegments = this.sleepSegments.filter(s => s.end);
     if (completeSleepSegments.length === 0) return null;

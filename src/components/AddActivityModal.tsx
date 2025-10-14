@@ -155,6 +155,20 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     }
   }, [feedType, editingActivity, quantity]);
 
+  // Ensure new entries default to current local time when opening
+  useEffect(() => {
+    if (open && !editingActivity) {
+      const now = new Date();
+      const current = now.toLocaleTimeString("en-US", { 
+        hour: "numeric", 
+        minute: "2-digit", 
+        hour12: true 
+      });
+      setTime(current);
+      if (!startTime) setStartTime(current);
+    }
+  }, [open, editingActivity]);
+
   const resetForm = () => {
     const now = new Date();
     setTime(now.toLocaleTimeString("en-US", { 
