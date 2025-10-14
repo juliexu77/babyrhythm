@@ -26,8 +26,8 @@ export const MinuteScrollPicker = ({ value, onChange, label }: MinuteScrollPicke
   useEffect(() => {
     // Scroll to selected minute
     if (minuteRef.current) {
-      const itemHeight = 40;
-      minuteRef.current.scrollTop = selectedMinute * itemHeight - itemHeight * 2;
+      const itemHeight = 32;
+      minuteRef.current.scrollTop = selectedMinute * itemHeight;
     }
   }, [selectedMinute]);
 
@@ -39,41 +39,28 @@ export const MinuteScrollPicker = ({ value, onChange, label }: MinuteScrollPicke
   return (
     <div>
       <Label className="text-sm font-medium mb-2 block">{label}</Label>
-      <div className="relative">
-        {/* Selected indicator overlay */}
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="w-full h-10 bg-primary/10 border-y-2 border-primary/20 rounded" />
-        </div>
-
+      <div className="flex items-center justify-center border rounded-lg p-2 bg-background">
         {/* Scrollable minute picker */}
         <div
           ref={minuteRef}
-          className="h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent scroll-smooth"
-          style={{
-            scrollSnapType: 'y mandatory',
-          }}
+          className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {/* Top padding for centering */}
-          <div className="h-20" />
-          
-          {minutes.map((minute) => (
-            <div
-              key={minute}
-              className="h-10 flex items-center justify-center cursor-pointer transition-all scroll-snap-align-center"
-              style={{
-                scrollSnapAlign: 'center',
-                opacity: selectedMinute === minute ? 1 : 0.4,
-                fontSize: selectedMinute === minute ? '1.25rem' : '1rem',
-                fontWeight: selectedMinute === minute ? 600 : 400,
-              }}
-              onClick={() => handleMinuteChange(minute)}
-            >
-              {minute}
-            </div>
-          ))}
-          
-          {/* Bottom padding for centering */}
-          <div className="h-20" />
+          <div className="flex flex-col">
+            {minutes.map((minute) => (
+              <div
+                key={minute}
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                  selectedMinute === minute 
+                    ? 'text-foreground font-bold' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => handleMinuteChange(minute)}
+              >
+                {minute}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
