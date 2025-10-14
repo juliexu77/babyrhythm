@@ -88,7 +88,10 @@ export const useHousehold = () => {
       let preferredHouseholdId: string | null = null;
       try {
         preferredHouseholdId = localStorage.getItem('active_household_id');
-      } catch {}
+        console.log('Active household from localStorage:', preferredHouseholdId);
+      } catch (e) {
+        console.error('Error reading from localStorage:', e);
+      }
       
       let householdId: string | null = null;
 
@@ -99,70 +102,107 @@ export const useHousehold = () => {
           .select('household_id')
           .eq('user_id', user.id)
           .eq('household_id', preferredHouseholdId)
-          .limit(1);
+          .maybeSingle();
 
         if (preferredError) {
           console.error('Error verifying preferred household access:', preferredError);
           // Clear invalid household ID
-          localStorage.removeItem('active_household_id');
-        } else if (preferredCollab && preferredCollab.length > 0) {
-          householdId = preferredCollab[0].household_id;
+          try {
+            localStorage.removeItem('active_household_id');
+          } catch (e) {
+            console.error('Error clearing localStorage:', e);
+          }
+        } else if (preferredCollab) {
+          householdId = preferredCollab.household_id;
+          console.log('Verified access to preferred household:', householdId);
         } else {
           // User no longer has access to this household, clear it
           console.log('User no longer has access to preferred household, clearing');
-          localStorage.removeItem('active_household_id');
+          try {
+            localStorage.removeItem('active_household_id');
+          } catch (e) {
+            console.error('Error clearing localStorage:', e);
+          }
         }
       }
 
       if (!householdId) {
+        console.log('No preferred household, fetching oldest household for user');
         // Fallback to the oldest (original) household as default
         const { data: collaboratorData, error: collaboratorError } = await supabase
           .from('collaborators')
           .select('household_id, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: true })
-          .limit(1);
+          .limit(1)
+          .maybeSingle();
 
         if (collaboratorError) {
           console.error('Error fetching collaborator data:', collaboratorError);
           setError('Failed to load your household. Please try again.');
+          setHousehold(null);
           setLoading(false);
           return;
         }
 
-        if (!collaboratorData || collaboratorData.length === 0) {
+        if (!collaboratorData) {
           console.log('No household found for user');
           setHousehold(null);
+          setCollaborators([]);
           setError(null); // No error - user just doesn't have a household
           setLoading(false);
           return;
         }
 
-        householdId = collaboratorData[0].household_id;
+        householdId = collaboratorData.household_id;
+        console.log('Found oldest household:', householdId);
 
-        // Persist as active if none was set
+        // Persist as active
         try {
-          if (!preferredHouseholdId) {
-            localStorage.setItem('active_household_id', householdId);
-          }
-        } catch {}
+          localStorage.setItem('active_household_id', householdId);
+          console.log('Set active household in localStorage:', householdId);
+        } catch (e) {
+          console.error('Error setting localStorage:', e);
+        }
       }
 
       // Fetch the actual household data
+      console.log('Fetching household data for ID:', householdId);
       const { data: householdData, error: householdError } = await supabase
         .from('households')
         .select('*')
         .eq('id', householdId)
-        .single();
+        .maybeSingle();
 
       if (householdError) {
         console.error('Error fetching household:', householdError);
         setError('Failed to load household data. Please try again.');
+        setHousehold(null);
+        // Clear the invalid household ID
+        try {
+          localStorage.removeItem('active_household_id');
+        } catch (e) {
+          console.error('Error clearing localStorage:', e);
+        }
         setLoading(false);
         return;
       }
 
-      console.log('Household data:', householdData);
+      if (!householdData) {
+        console.error('Household not found for ID:', householdId);
+        setError('Household not found. It may have been deleted.');
+        setHousehold(null);
+        // Clear the invalid household ID
+        try {
+          localStorage.removeItem('active_household_id');
+        } catch (e) {
+          console.error('Error clearing localStorage:', e);
+        }
+        setLoading(false);
+        return;
+      }
+
+      console.log('Household data loaded successfully:', householdData);
       setHousehold(householdData);
       setError(null);
       
