@@ -244,7 +244,11 @@ const ongoingNap = activities
   };
 
   const markWakeUp = async () => {
-    if (!ongoingNap) return;
+    console.log('markWakeUp called, ongoingNap:', ongoingNap);
+    if (!ongoingNap) {
+      console.log('No ongoing nap found');
+      return;
+    }
     // Hide the button immediately to avoid lingering UI while we save
     setJustEndedNapId(ongoingNap.id);
     try {
@@ -261,17 +265,23 @@ const ongoingNap = activities
         0
       ).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
+      console.log('Updating nap with endTime:', endStr);
       const { error } = await supabase
         .from('activities')
         .update({ details: { ...ongoingNap.details, endTime: endStr } })
         .eq('id', ongoingNap.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      console.log('Successfully updated nap');
       toast({ title: "Saved", description: `${babyProfile?.name || 'Baby'} woke up at ${endStr}` });
       refetchActivities();
       // Clear the temporary hide after refresh
       setTimeout(() => setJustEndedNapId(null), 1500);
     } catch (e) {
+      console.error('Error in markWakeUp:', e);
       setJustEndedNapId(null);
       toast({ title: "Error", description: "Could not mark wake-up", variant: "destructive" });
     }
