@@ -73,10 +73,10 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   }, [hasInitialized, activities.length, babyName, babyAgeInWeeks]);
 
   const quickActions = [
-    { label: "What's shifting for us?", prompt: "What's shifting for us as we move through this stage?" },
-    { label: "How can we make this calmer?", prompt: "How can we make this part of the day feel calmer and more connected?" },
-    { label: "What's unfolding next?", prompt: "What's unfolding next in this developmental stage?" },
-    { label: "How does today fit?", prompt: "How does today's rhythm fit into this bigger stage?" },
+    { label: "Compare with others", prompt: "How does this compare to others his age?" },
+    { label: "Sleep rhythm help", prompt: "I'd like help with sleep rhythm and patterns." },
+    { label: "Feeding questions", prompt: "I have questions about feeding at this stage." },
+    { label: "What's coming next?", prompt: "What's coming in the next week or two developmentally?" },
   ];
 
   const handleQuickAction = (prompt: string) => {
