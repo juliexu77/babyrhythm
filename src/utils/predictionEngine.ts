@@ -721,22 +721,33 @@ if (ongoingSleep) {
     if (rationale.t_awake_now_min === null && this.sleepSegments.length > 0) {
       const ongoingSleep = this.sleepSegments.find(s => !s.end);
       if (ongoingSleep) {
-        // Use age-appropriate nap duration
-        let expectedNapDuration = 90;
-        if (this.ageInMonths < 3) expectedNapDuration = 120;
-        else if (this.ageInMonths < 6) expectedNapDuration = 90;
-        else if (this.ageInMonths < 12) expectedNapDuration = 75;
-        else expectedNapDuration = 60;
+        // For night sleep, use much longer expected duration
+        if (ongoingSleep.type === 'night') {
+          // Night sleep: 8-12 hours depending on age
+          let expectedNightDuration = 600; // 10 hours default
+          if (this.ageInMonths < 3) expectedNightDuration = 480; // 8 hours for newborns (more frequent wakes)
+          else if (this.ageInMonths < 6) expectedNightDuration = 600; // 10 hours
+          else expectedNightDuration = 660; // 11 hours for older babies
+          
+          timing.nextWakeAt = new Date(ongoingSleep.start.getTime() + expectedNightDuration * 60000);
+        } else {
+          // Day nap: use age-appropriate nap duration
+          let expectedNapDuration = 90;
+          if (this.ageInMonths < 3) expectedNapDuration = 120;
+          else if (this.ageInMonths < 6) expectedNapDuration = 90;
+          else if (this.ageInMonths < 12) expectedNapDuration = 75;
+          else expectedNapDuration = 60;
 
-        // Blend with learned if available
-        if (this.internals.learnedDaySleepMedian && this.internals.dataStability !== 'sparse') {
-          const dayNaps = this.getDayProgress(now).napsToday || 3;
-          const learnedAvgNap = this.internals.learnedDaySleepMedian / Math.max(dayNaps, 2);
-          expectedNapDuration = expectedNapDuration * this.internals.blendRatio.age + 
-                               learnedAvgNap * this.internals.blendRatio.learned;
+          // Blend with learned if available
+          if (this.internals.learnedDaySleepMedian && this.internals.dataStability !== 'sparse') {
+            const dayNaps = this.getDayProgress(now).napsToday || 3;
+            const learnedAvgNap = this.internals.learnedDaySleepMedian / Math.max(dayNaps, 2);
+            expectedNapDuration = expectedNapDuration * this.internals.blendRatio.age + 
+                                 learnedAvgNap * this.internals.blendRatio.learned;
+          }
+
+          timing.nextWakeAt = new Date(ongoingSleep.start.getTime() + expectedNapDuration * 60000);
         }
-
-        timing.nextWakeAt = new Date(ongoingSleep.start.getTime() + expectedNapDuration * 60000);
       }
     }
 

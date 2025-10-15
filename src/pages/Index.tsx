@@ -279,7 +279,7 @@ const ongoingNap = activities
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "insights":
+      case "home":
         return <HomeTab 
           activities={activities} 
           babyName={babyProfile?.name}
@@ -304,7 +304,7 @@ const ongoingNap = activities
       }))} babyBirthDate={babyProfile?.birthday ? new Date(babyProfile.birthday) : undefined} />;
     case "settings":
       return <SettingsPage />;
-      default:
+      case "insights":
         return (
           <>
             

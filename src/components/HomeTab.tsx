@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
@@ -449,24 +450,27 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           )}
 
-          {/* Currently Sleeping - Tappable */}
+          {/* Currently Sleeping - Button */}
           {ongoingNap && onEndNap && (
-            <button
-              onClick={onEndNap}
-              className="flex items-center gap-3 text-foreground w-full text-left py-2 px-3 -mx-3 rounded-lg hover:bg-primary/5 transition-colors group"
-            >
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse group-hover:bg-primary/20 transition-colors">
-                <Moon className="w-4 h-4 text-primary" />
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 text-foreground">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+                  <Moon className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm">
+                    Currently sleeping since <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm">
-                  Currently sleeping since <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5 group-hover:text-foreground transition-colors">
-                  Tap to mark wake-up
-                </p>
-              </div>
-            </button>
+              <Button
+                onClick={onEndNap}
+                className="w-full"
+                size="sm"
+              >
+                {babyName?.split(' ')[0] || 'Baby'} woke up
+              </Button>
+            </div>
           )}
         </div>
 
