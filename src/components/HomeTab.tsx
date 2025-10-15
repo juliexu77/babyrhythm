@@ -18,9 +18,10 @@ interface HomeTabProps {
   userName?: string;
   babyBirthday?: string;
   onAddActivity: () => void;
+  onEndNap?: () => void;
 }
 
-export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap }: HomeTabProps) => {
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
@@ -254,11 +255,114 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
   };
 
+  // Get next predicted action
+  const getNextPredictedAction = () => {
+    const expectedNaps = getExpectedNaps(babyAgeMonths);
+    
+    if (ongoingNap) {
+      // Baby is sleeping - predict wake time and next feed
+      const startTime = ongoingNap.details?.startTime || ongoingNap.time;
+      const [time, period] = startTime.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let hour24 = hours;
+      if (period === 'PM' && hours !== 12) hour24 += 12;
+      if (period === 'AM' && hours === 12) hour24 = 0;
+      
+      const napStart = new Date(ongoingNap.loggedAt!);
+      napStart.setHours(hour24, minutes, 0, 0);
+      
+      // Calculate average nap duration based on age
+      let expectedNapDuration = 90; // default 90 minutes
+      if (babyAgeMonths !== null) {
+        if (babyAgeMonths < 3) expectedNapDuration = 120; // 2 hours for newborns
+        else if (babyAgeMonths < 6) expectedNapDuration = 90; // 1.5 hours
+        else if (babyAgeMonths < 12) expectedNapDuration = 75; // 1h 15m
+        else expectedNapDuration = 60; // 1 hour for older babies
+      }
+      
+      const currentDuration = differenceInMinutes(currentTime, napStart);
+      const expectedWakeTime = new Date(napStart.getTime() + expectedNapDuration * 60000);
+      const expectedFeedTime = new Date(expectedWakeTime.getTime() + 10 * 60000); // 10 min after wake
+      
+      const wakeTimeStr = expectedWakeTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+      const feedTimeStr = expectedFeedTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+      
+      // Get last feed to estimate amount
+      const recentFeeds = todayActivities
+        .filter(a => a.type === 'feed' && a.details?.amount)
+        .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime());
+      const avgAmount = recentFeeds.length > 0 
+        ? Math.round(recentFeeds.slice(0, 3).reduce((sum, f) => sum + (f.details.amount || 0), 0) / Math.min(3, recentFeeds.length))
+        : 180;
+      
+      // If nap is longer than expected, adjust message
+      if (currentDuration > expectedNapDuration + 20) {
+        return `${babyName?.split(' ')[0] || 'Baby'} has been asleep ${Math.floor(currentDuration / 60)}h ${currentDuration % 60}m — might be ready to wake soon.`;
+      }
+      
+      return `May wake around ${wakeTimeStr} — consider offering feed around ${feedTimeStr} (typically ${avgAmount} ml).`;
+    } else {
+      // Baby is awake - predict next nap
+      const awakeMinutes = awakeTime ? parseInt(awakeTime) : 0;
+      let expectedAwakeWindow = 120; // default 2 hours
+      
+      if (babyAgeMonths !== null) {
+        if (babyAgeMonths < 3) expectedAwakeWindow = 90; // 1.5 hours
+        else if (babyAgeMonths < 6) expectedAwakeWindow = 120; // 2 hours
+        else if (babyAgeMonths < 9) expectedAwakeWindow = 150; // 2.5 hours
+        else expectedAwakeWindow = 180; // 3 hours
+      }
+      
+      const lastNap = todayActivities
+        .filter(a => a.type === 'nap' && a.details?.endTime)
+        .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+      
+      if (lastNap && lastNap.details?.endTime) {
+        const [time, period] = lastNap.details.endTime.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+        let hour24 = hours;
+        if (period === 'PM' && hours !== 12) hour24 += 12;
+        if (period === 'AM' && hours === 12) hour24 = 0;
+        
+        const wakeTime = new Date(lastNap.loggedAt!);
+        wakeTime.setHours(hour24, minutes, 0, 0);
+        
+        const expectedNapTime = new Date(wakeTime.getTime() + expectedAwakeWindow * 60000);
+        const napTimeStr = expectedNapTime.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit', 
+          hour12: true 
+        });
+        
+        const minutesUntilNap = differenceInMinutes(expectedNapTime, currentTime);
+        
+        if (minutesUntilNap < 15 && minutesUntilNap > 0) {
+          return `Next nap expected around ${napTimeStr} — watch for sleepy cues soon.`;
+        } else if (awakeMinutes > expectedAwakeWindow + 30) {
+          return `Awake for ${awakeTime} — consider starting wind-down routine.`;
+        } else {
+          return `Next nap expected around ${napTimeStr} — watch for sleepy cues.`;
+        }
+      }
+      
+      return `Watch for sleepy cues — typical wake window is ${Math.floor(expectedAwakeWindow / 60)}h ${expectedAwakeWindow % 60}m.`;
+    }
+  };
+
   const summary = getDailySummary();
   const awakeTime = getAwakeTime();
   const sleepStatus = getSleepStatus();
   const sentiment = getDailySentiment();
   const developmentalPhase = getDevelopmentalPhase();
+  const nextAction = getNextPredictedAction();
 
   return (
     <div className="px-4 py-6 space-y-6 pb-24">
@@ -289,6 +393,16 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           )}
         </div>
       </div>
+
+      {/* Next Predicted Action */}
+      <Card className="p-4 space-y-2 bg-primary/5 border-primary/10">
+        <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
+          🔮 Next up
+        </h2>
+        <p className="text-sm text-foreground/90 leading-relaxed">
+          {nextAction}
+        </p>
+      </Card>
 
       {/* Today's Quick View */}
       <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
@@ -349,18 +463,24 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           )}
 
-          {/* Currently Sleeping */}
-          {ongoingNap && (
-            <div className="flex items-center gap-3 text-foreground">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+          {/* Currently Sleeping - Tappable */}
+          {ongoingNap && onEndNap && (
+            <button
+              onClick={onEndNap}
+              className="flex items-center gap-3 text-foreground w-full text-left py-2 px-3 -mx-3 rounded-lg hover:bg-primary/5 transition-colors group"
+            >
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse group-hover:bg-primary/20 transition-colors">
                 <Moon className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1">
                 <p className="text-sm">
                   Currently sleeping since <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
                 </p>
+                <p className="text-xs text-muted-foreground mt-0.5 group-hover:text-foreground transition-colors">
+                  Tap to mark wake-up
+                </p>
               </div>
-            </div>
+            </button>
           )}
         </div>
 

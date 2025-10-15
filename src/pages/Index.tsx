@@ -286,6 +286,7 @@ const ongoingNap = activities
           babyBirthday={babyProfile?.birthday}
           userName={userProfile?.full_name?.split(' ')[0]}
           onAddActivity={() => setShowAddActivity(true)}
+          onEndNap={markWakeUp}
         />;
       case "trends":
         return (
