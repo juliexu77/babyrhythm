@@ -63,7 +63,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto animate-pulse">
             <span className="text-2xl">🌿</span>
           </div>
-          <p className="text-sm text-muted-foreground">The Quiet Village is preparing...</p>
+          <p className="text-sm text-muted-foreground">Preparing your guide...</p>
         </div>
       </div>
     );

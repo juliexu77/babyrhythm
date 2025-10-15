@@ -184,8 +184,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
         setMessages(prev => [...prev, { role: "assistant", content: "" }]);
       }
 
-      // Add thoughtful delay before starting stream
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // For initial greeting, batch first few tokens for smoother appearance
+      let initialBatchSize = isGreeting ? 50 : 0;
+      let batchedTokens = "";
 
       while (!streamDone) {
         const { done, value } = await reader.read();
@@ -212,6 +213,18 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
             if (content) {
               assistantContent += content;
+              
+              // Batch initial tokens for smoother greeting appearance
+              if (initialBatchSize > 0) {
+                batchedTokens += content;
+                initialBatchSize -= content.length;
+                if (initialBatchSize > 0) {
+                  continue; // Keep batching
+                }
+                // Flush the batch
+                assistantContent = batchedTokens;
+              }
+              
               const display = formatDurationsInText(assistantContent);
               
               if (isGreeting) {
