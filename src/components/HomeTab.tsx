@@ -75,8 +75,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
   const showingYesterday = todayActivities.length === 0 && yesterdayActivities.length > 0;
 
-  // Find ongoing nap (only from today)
-  const ongoingNap = todayActivities.find(
+  // Find ongoing nap (check today and yesterday for naps that haven't ended)
+  const ongoingNap = [...todayActivities, ...yesterdayActivities].find(
     a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime
   );
 
