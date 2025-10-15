@@ -435,7 +435,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Wake-up button if sleeping */}
           {ongoingNap && onEndNap && (
             <Button
-              onClick={onEndNap}
+              onClick={() => {
+                console.log('Wake up button clicked in HomeTab');
+                console.log('onEndNap exists:', !!onEndNap);
+                console.log('ongoingNap:', ongoingNap);
+                onEndNap();
+              }}
               className="w-full mt-2"
               size="sm"
             >
