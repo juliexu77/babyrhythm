@@ -111,6 +111,11 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
   const handleChipClick = (chipText: string) => {
     setInput("");
+    
+    // Add the chip as a user message to maintain conversation continuity
+    const chipMessage: Message = { role: "user", content: chipText };
+    setMessages(prev => [...prev, chipMessage]);
+    
     setIsLoading(true);
     streamChat(chipText, false, false);
   };
