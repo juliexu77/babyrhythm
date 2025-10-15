@@ -474,17 +474,6 @@ const ongoingNap = activities
                                 </div>
                               </div>
                               
-              {/* Next Predicted Action - Show after most recent day's activities (today if present, otherwise yesterday) */}
-              {index === 0 && activities.length > 0 && (
-                <div className="mt-4 mb-4">
-                  <NextActivityPrediction 
-                    activities={activities} 
-                    ongoingNap={ongoingNap}
-                    onMarkWakeUp={markWakeUp}
-                    babyName={babyProfile?.name}
-                  />
-                </div>
-              )}
                             </div>
                           );
                         })}
