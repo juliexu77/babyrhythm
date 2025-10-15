@@ -14,9 +14,10 @@ interface HomeTabProps {
   babyBirthday?: string;
   onAddActivity: () => void;
   onEndNap?: () => void;
+  ongoingNap?: Activity | null;
 }
 
-export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap, ongoingNap: passedOngoingNap }: HomeTabProps) => {
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
@@ -75,10 +76,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
   const showingYesterday = todayActivities.length === 0 && yesterdayActivities.length > 0;
 
-  // Find ongoing nap (check today and yesterday for naps that haven't ended)
-  const ongoingNap = [...todayActivities, ...yesterdayActivities].find(
-    a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime
-  );
+  // Use the ongoingNap passed from parent (Index.tsx) for consistency
+  const ongoingNap = passedOngoingNap;
 
   // Calculate awake time
   const getAwakeTime = () => {

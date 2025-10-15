@@ -297,6 +297,7 @@ const ongoingNap = activities
           userName={userProfile?.full_name?.split(' ')[0]}
           onAddActivity={() => setShowAddActivity(true)}
           onEndNap={markWakeUp}
+          ongoingNap={ongoingNap}
         />;
       case "trends":
         return (
