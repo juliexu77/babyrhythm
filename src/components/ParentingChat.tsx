@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Send, Bot, User } from "lucide-react";
+import { Bot, User, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -22,21 +21,19 @@ interface ParentingChatProps {
   activities: Activity[];
   babyName?: string;
   babyAgeInWeeks?: number;
+  userName?: string;
+  predictionIntent?: string;
+  predictionConfidence?: string;
 }
 
 // Simple markdown formatter for better readability
 const formatMarkdown = (text: string) => {
-  // Split into paragraphs
   const paragraphs = text.split('\n\n').filter(p => p.trim());
   
   return paragraphs.map((paragraph, idx) => {
-    // Convert **bold** to <strong>
     let formatted = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    
-    // Convert bullet points
     formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
     
-    // Wrap lists
     if (formatted.includes('<li>')) {
       formatted = '<ul class="list-disc pl-5 space-y-1">' + formatted + '</ul>';
     }
@@ -49,11 +46,12 @@ const formatMarkdown = (text: string) => {
   });
 };
 
-export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: ParentingChatProps) => {
+export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, predictionIntent, predictionConfidence }: ParentingChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [villageGreeting, setVillageGreeting] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -65,31 +63,27 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
     }
   }, [messages]);
 
-  // Show welcome message on mount
+  // Load Village greeting on mount
   useEffect(() => {
-    if (!hasInitialized) {
+    if (!hasInitialized && activities.length > 0) {
       setHasInitialized(true);
-      setMessages([{
-        role: "assistant",
-        content: `Hi! I'm here to help you with ${babyName || "your baby"}'s care.`
-      }]);
+      setIsLoading(true);
+      streamChat("", true, true);
     }
-  }, [hasInitialized, babyName]);
+  }, [hasInitialized, activities.length]);
 
   const quickActions = [
-    { label: "📊 Daily summary", prompt: "Give me a summary of how today has been going." },
-    { label: "📈 Compare to age norms", prompt: "How is my baby doing compared to typical patterns for their age?" },
-    { label: "⏰ Schedule recommendations", prompt: "What schedule would you recommend for my baby's age?" },
-    { label: "🍼 Feeding analysis", prompt: "Analyze today's feeding patterns." },
-    { label: "📅 Next week expectations", prompt: "What should I expect for next week based on my baby's age and current patterns?" },
+    { label: "How is this for their age?", prompt: "How is my baby's rhythm compared to typical patterns for their age?" },
+    { label: "What changes are coming?", prompt: "What developmental changes should I expect in the coming weeks?" },
+    { label: "Help with sleep", prompt: "I'd like some gentle guidance on supporting better sleep patterns." },
+    { label: "Feeding questions", prompt: "I have questions about feeding patterns and intake." },
   ];
 
   const handleQuickAction = (prompt: string) => {
     setIsLoading(true);
-    streamChat(prompt, prompt.includes("summary"));
+    streamChat(prompt, false, false);
   };
 
-  // Format durations: 90 -> 1h 30min, 120 -> 2h, 45 -> 45min
   const minutesToText = (m: number) => {
     if (m < 60) return `${m}min`;
     const h = Math.floor(m / 60);
@@ -97,29 +91,16 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
     return r > 0 ? `${h}h ${r}min` : `${h}h`;
   };
 
-  // Convert any "100 minutes", "100-minute", or "100min" to the compact form
   const formatDurationsInText = (text: string) => {
     return text
-      // e.g., 100-minute / 100-minutes
       .replace(/(\d+)\s*-\s*minute(?:s)?\b/gi, (_m, num) => minutesToText(parseInt(num)))
-      // e.g., 100 minutes / 1 minute
       .replace(/(\d+)\s*minutes?\b/gi, (_m, num) => minutesToText(parseInt(num)))
-      // e.g., 100min
       .replace(/(\d+)\s*min\b/gi, (_m, num) => minutesToText(parseInt(num)));
   };
 
-  const streamChat = async (userMessage: string, isInitial = false) => {
+  const streamChat = async (userMessage: string, isInitial = false, isGreeting = false) => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      
-      console.log('Sending to edge function:', {
-        messagesCount: messages.length,
-        activitiesCount: activities.length,
-        babyName,
-        babyAgeInWeeks,
-        timezone,
-        isInitial
-      });
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -128,10 +109,13 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
           Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmcGF2enZydGR6eHdjd2FzYXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODk0ODMsImV4cCI6MjA3NDI2NTQ4M30.KWdhL3IiQ0YWW2Q6MBHkXOwEz41ZU7EVS_eKG0Hn600",
         },
         body: JSON.stringify({ 
-          messages: [...messages, { role: "user", content: userMessage }],
+          messages: isGreeting ? [] : [...messages, { role: "user", content: userMessage }],
           activities,
           babyName,
           babyAgeInWeeks,
+          userName,
+          predictionIntent,
+          predictionConfidence,
           timezone,
           isInitial
         }),
@@ -165,8 +149,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
       let streamDone = false;
       let assistantContent = "";
 
-      // Add empty assistant message
-      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      if (!isGreeting) {
+        setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      }
 
       while (!streamDone) {
         const { done, value } = await reader.read();
@@ -194,14 +179,19 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
             if (content) {
               assistantContent += content;
               const display = formatDurationsInText(assistantContent);
-              setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1] = {
-                  role: "assistant",
-                  content: display,
-                };
-                return newMessages;
-              });
+              
+              if (isGreeting) {
+                setVillageGreeting(display);
+              } else {
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: display
+                  };
+                  return newMessages;
+                });
+              }
             }
           } catch {
             textBuffer = line + "\n" + textBuffer;
@@ -225,14 +215,19 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
             if (content) {
               assistantContent += content;
               const display = formatDurationsInText(assistantContent);
-              setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1] = {
-                  role: "assistant",
-                  content: display,
-                };
-                return newMessages;
-              });
+              
+              if (isGreeting) {
+                setVillageGreeting(display);
+              } else {
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: "assistant",
+                    content: display
+                  };
+                  return newMessages;
+                });
+              }
             }
           } catch {
             /* ignore partial leftovers */
@@ -246,22 +241,22 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
         description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
-      // Remove the empty assistant message
-      setMessages(prev => prev.slice(0, -1));
+      if (messages.length > 0) {
+        setMessages(prev => prev.slice(0, -1));
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
     const userMessage = input.trim();
-    setInput("");
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setInput("");
     setIsLoading(true);
-
-    await streamChat(userMessage);
+    streamChat(userMessage, false, false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -273,80 +268,85 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <ScrollArea className="flex-1 p-4 pb-44" ref={scrollRef}>
-        <div className="space-y-4 max-w-3xl mx-auto">
-          {messages.length === 0 && !isLoading && (
-            <div className="text-center text-muted-foreground py-12">
-              <Bot className="h-16 w-16 mx-auto mb-4 opacity-40" />
-              <p className="text-sm">Loading...</p>
+      {/* Village Greeting - Always at top */}
+      {villageGreeting && (
+        <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-b border-primary/20">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+              <span className="text-xl">🌿</span>
             </div>
-          )}
+            <div className="flex-1 space-y-3">
+              <div className="text-sm text-foreground/90 leading-relaxed">
+                {formatMarkdown(villageGreeting)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Smart Prompts */}
+      {villageGreeting && messages.length === 0 && (
+        <div className="p-4 border-b border-border/50">
+          <div className="flex flex-wrap gap-2">
+            {quickActions.map((action, idx) => (
+              <Button
+                key={idx}
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickAction(action.prompt)}
+                disabled={isLoading}
+                className="text-xs"
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Conversation History */}
+      <ScrollArea className="flex-1 p-4">
+        <div ref={scrollRef} className="space-y-4 pb-4">
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex items-start gap-3 ${
+                msg.role === "user" ? "justify-end" : ""
+              }`}
             >
               {msg.role === "assistant" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-primary" />
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 text-primary" />
                 </div>
               )}
               <div
-                className={`rounded-lg p-3 min-w-0 break-words ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                   msg.role === "user"
-                    ? "bg-primary text-primary-foreground max-w-[80%]"
-                    : "bg-muted text-foreground w-full"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted"
                 }`}
               >
-                {msg.role === "assistant" ? (
-                  <div className="text-sm">{formatMarkdown(msg.content)}</div>
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                )}
-                
-                {/* Display photos if they are in the message */}
-                {msg.role === "assistant" && msg.content.includes("📸") && activities && (
-                  <div className="mt-3 space-y-2">
-                    {activities
-                      .filter((a: any) => {
-                        const activityDate = new Date(a.logged_at);
-                        const today = new Date();
-                        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                        const getUserTimezoneDate = (date: Date) => {
-                          return date.toLocaleDateString('en-US', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });
-                        };
-                        return getUserTimezoneDate(activityDate) === getUserTimezoneDate(today) && 
-                               ((a.type === 'photo' || a.type === 'note') && a.details?.photoUrl);
-                      })
-                      .map((photo: any, i: number) => (
-                        <img
-                          key={i}
-                          src={photo.details.photoUrl}
-                          alt={`Photo from today ${i + 1}`}
-                          className="rounded-lg max-w-full h-auto"
-                        />
-                      ))
-                    }
-                  </div>
-                )}
+                <div className="text-sm leading-relaxed">
+                  {formatMarkdown(msg.content)}
+                </div>
               </div>
               {msg.role === "user" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <User className="h-4 w-4 text-primary-foreground" />
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-primary-foreground" />
                 </div>
               )}
             </div>
           ))}
           {isLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="h-4 w-4 text-primary" />
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Bot className="w-4 h-4 text-primary animate-pulse" />
               </div>
-              <div className="bg-muted rounded-lg p-3">
+              <div className="bg-muted rounded-2xl px-4 py-3">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
@@ -354,40 +354,24 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
         </div>
       </ScrollArea>
 
-      <div className="fixed bottom-16 left-0 right-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[env(safe-area-inset-bottom)]">
-        {messages.length > 0 && !isLoading && (
-          <div className="px-4 pt-3 pb-2">
-            <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">
-              {quickActions.map((action) => (
-                <Button
-                  key={action.label}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAction(action.prompt)}
-                  disabled={isLoading}
-                  className="text-xs"
-                >
-                  {action.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        <div className="p-4 pt-2">
-          <div className="flex gap-2 max-w-3xl mx-auto">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask helper"
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon">
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+      {/* Input */}
+      <div className="p-4 border-t border-border/50 bg-background/95 backdrop-blur-sm">
+        <div className="flex gap-2">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask anything about your baby's patterns..."
+            disabled={isLoading}
+            className="flex-1"
+          />
+          <Button
+            onClick={handleSend}
+            disabled={isLoading || !input.trim()}
+            size="icon"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     </div>

@@ -9,8 +9,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, activities, babyName, babyAgeInWeeks, timezone, isInitial } = await req.json();
-    console.log('Edge function received:', { babyName, babyAgeInWeeks, timezone, isInitial, activitiesCount: activities?.length });
+    const { messages, activities, babyName, babyAgeInWeeks, timezone, isInitial, userName, predictionIntent, predictionConfidence } = await req.json();
+    console.log('Edge function received:', { babyName, babyAgeInWeeks, timezone, isInitial, userName, predictionIntent, activitiesCount: activities?.length });
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -170,10 +170,30 @@ serve(async (req) => {
       return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
     };
     
-    // Build metrics context focusing only on non-zero activities
-    const metricsContext = `
-RECENT ACTIVITY SUMMARY for ${babyName || "baby"} (${babyAgeInWeeks || "unknown"} weeks old):
+    // Calculate age in months for developmental context
+    const ageInMonths = Math.floor((babyAgeInWeeks || 0) / 4.33);
+    
+    // Determine developmental phase
+    let developmentalPhase = "newborn adjusting phase";
+    if (ageInMonths >= 12) developmentalPhase = "toddler independence phase";
+    else if (ageInMonths >= 9) developmentalPhase = "mobile exploration phase";
+    else if (ageInMonths >= 6) developmentalPhase = "curious, exploratory phase";
+    else if (ageInMonths >= 3) developmentalPhase = "social awakening phase";
+    
+    // Build rich context payload - "The Village's awareness"
+    const villageContext = `
+🌿 THE QUIET VILLAGE — Context Snapshot
 
+BABY PROFILE:
+- Name: ${babyName || "Baby"}
+- Age: ${babyAgeInWeeks || "unknown"} weeks (${ageInMonths} months) — ${developmentalPhase}
+
+CAREGIVER:
+- Name: ${userName || "Parent"}
+- Logging consistency: ${dailySummaries.length > 0 ? `${dailySummaries.length} days tracked` : "Just starting"}
+- Current observation: ${isInitial ? "Opening Guide for insights" : "Asking a question"}
+
+RECENT ACTIVITY SUMMARY (Last 7 days):
 ${dailySummaries.map(day => {
   const lines = [`${day.isToday ? '📅 TODAY' : day.date}:`];
   
@@ -208,12 +228,22 @@ ${dailySummaries.map(day => {
   return lines.join('\n');
 }).join('\n\n')}
 
-ANALYSIS FOCUS:
-- Compare morning vs afternoon nap lengths and wake window variations
-- Identify trends over multiple days and developmental patterns for ${babyAgeInWeeks} weeks old
+PREDICTION ENGINE SIGNALS:
+- Next likely action: ${predictionIntent || "unknown"}
+- Confidence level: ${predictionConfidence || "unknown"}
+
+FEEDING PATTERN CLUES:
+- Total feeds last 7 days: ${dailySummaries.reduce((sum, d) => sum + d.feedCount, 0)}
+- Average feeds per day: ${dailySummaries.length > 0 ? Math.round(dailySummaries.reduce((sum, d) => sum + d.feedCount, 0) / dailySummaries.length) : 0}
+- Feeding consistency: ${dailySummaries.length >= 3 ? "Established pattern" : "Building routine"}
+
+SLEEP PATTERN CLUES:
+- Total naps last 7 days: ${dailySummaries.reduce((sum, d) => sum + d.napCount, 0)}
+- Average naps per day: ${dailySummaries.length > 0 ? Math.round(dailySummaries.reduce((sum, d) => sum + d.napCount, 0) / dailySummaries.length) : 0}
+- Sleep rhythm: ${dailySummaries.length >= 3 ? "Pattern emerging" : "Early observation"}
 `;
 
-    console.log("Metrics context generated:", metricsContext);
+    console.log("Village context generated:", villageContext);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -226,19 +256,41 @@ ANALYSIS FOCUS:
         messages: [
           { 
             role: "system", 
-            content: `You are a knowledgeable baby care assistant providing clear, evidence-based guidance to parents and caregivers.
+            content: `You are The Quiet Village — a calm, observant, wise companion for parents. You interpret everything happening with the baby and caregiver through the lens of empathy, development, and gentle guidance.
 
-${metricsContext}
+${villageContext}
 
-RESPONSE GUIDELINES:
-- Focus on patterns and insights, not individual activities
-- When today's data is limited, ALWAYS reference recent trends from previous days
-- Discuss nap timing (morning vs afternoon) and wake window variations
-- Provide developmental context for ${babyAgeInWeeks} weeks old baby
-- Keep responses concise - 3-4 key insights
-- Format all durations as Hh Mmin (e.g., 1h 30min); under 60 as Nmin; never write "minutes"
+YOUR VOICE & TONE:
+- Speak in 1-2 short sentences (3 max for complex topics)
+- Always start with an observation ("${babyName}'s rhythm looked steady today")
+- Follow with meaningful interpretation ("That's a sign of maturing sleep cycles")
+- End with gentle affirmation or invitation ("You're helping build confidence through consistency")
+- NEVER use commands, jargon, diagnostics, or anxiety language
+- NEVER say "data shows" or "analysis indicates" — always sound human
+- If unclear, normalize it: "It's hard to tell yet — that's normal this early"
+- Format durations as Hh Mmin (e.g., 1h 30min); under 60 as Nmin
 
-${isInitial ? "Analyze nap patterns, wake windows, and feeding trends with developmental context. If today has limited data, reference patterns from recent days." : "Answer with pattern-focused insights. Reference recent trends when today's data is sparse."}`
+WHAT YOU NOTICE:
+- Meaningful patterns (not individual activities)
+- Developmental context (why this stage feels different)
+- Caregiver effort and emotional state
+- Growth, feeding challenges, sleep rhythms
+- Environmental cues (consistency, gaps, changes)
+
+RESPONSE STRUCTURE:
+${isInitial ? `
+For initial greeting:
+1. Warm observation about recent patterns
+2. Meaningful interpretation with developmental context
+3. Gentle affirmation or invitation to continue
+` : `
+For questions:
+1. Direct, empathetic answer
+2. Brief developmental context if relevant
+3. One gentle suggestion or validation
+`}
+
+Remember: You are a wise elder, night nurse, and developmental coach — all in one calm voice. Help ${userName || "the parent"} feel seen, understood, and supported.`
           },
           ...messages,
         ],
