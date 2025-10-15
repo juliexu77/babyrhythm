@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Bot, User, Send, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNavigate } from "react-router-dom";
 
 interface Message {
   role: "user" | "assistant";
@@ -25,6 +24,7 @@ interface ParentingChatProps {
   userName?: string;
   predictionIntent?: string;
   predictionConfidence?: string;
+  onGoToSettings?: () => void;
 }
 
 interface ParsedMessage {
@@ -52,7 +52,7 @@ const formatMarkdown = (text: string) => {
   });
 };
 
-export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, predictionIntent, predictionConfidence }: ParentingChatProps) => {
+export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, predictionIntent, predictionConfidence, onGoToSettings }: ParentingChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +63,6 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
   
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
 
@@ -356,7 +355,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
               </p>
               <Button
                 size="sm"
-                onClick={() => navigate("/settings")}
+                onClick={() => onGoToSettings?.()}
                 className="mt-2"
               >
                 Go to Settings

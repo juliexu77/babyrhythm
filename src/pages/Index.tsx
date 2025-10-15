@@ -296,12 +296,19 @@ const ongoingNap = activities
           </div>
         );
     case "helper":
-      return <Helper activities={activities.map(a => ({
-        id: a.id,
-        type: a.type,
-        logged_at: a.loggedAt,
-        details: a.details
-      }))} babyBirthDate={babyProfile?.birthday ? new Date(babyProfile.birthday) : undefined} />;
+      return <Helper 
+        activities={activities.map(a => ({
+          id: a.id,
+          type: a.type,
+          logged_at: a.loggedAt,
+          details: a.details
+        }))} 
+        babyBirthDate={babyProfile?.birthday ? new Date(babyProfile.birthday) : undefined}
+        onGoToSettings={() => {
+          setPreviousTab(activeTab);
+          setActiveTab("settings");
+        }}
+      />;
     case "settings":
       return <SettingsPage />;
       case "insights":

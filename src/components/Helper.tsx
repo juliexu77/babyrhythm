@@ -12,9 +12,10 @@ interface Activity {
 interface HelperProps {
   activities: Activity[];
   babyBirthDate?: Date;
+  onGoToSettings?: () => void;
 }
 
-export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
+export const Helper = ({ activities, babyBirthDate, onGoToSettings }: HelperProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { userProfile, loading: profileLoading } = useUserProfile();
   
@@ -78,6 +79,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
         userName={userName || 'Parent'}
         predictionIntent={predictionSignals.intent}
         predictionConfidence={predictionSignals.confidence}
+        onGoToSettings={onGoToSettings}
       />
     </div>
   );
