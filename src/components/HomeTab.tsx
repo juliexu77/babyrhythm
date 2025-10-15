@@ -62,7 +62,20 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     a.loggedAt && isToday(new Date(a.loggedAt))
   );
 
-  // Find ongoing nap
+  // Get yesterday's activities for context when today is empty
+  const yesterdayActivities = activities.filter(a => {
+    if (!a.loggedAt) return false;
+    const activityDate = new Date(a.loggedAt);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return activityDate.toDateString() === yesterday.toDateString();
+  });
+
+  // Use yesterday's data as context if nothing logged today
+  const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
+  const showingYesterday = todayActivities.length === 0 && yesterdayActivities.length > 0;
+
+  // Find ongoing nap (only from today)
   const ongoingNap = todayActivities.find(
     a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime
   );
@@ -71,7 +84,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const getAwakeTime = () => {
     if (ongoingNap) return null;
     
-    const lastNap = todayActivities
+    const lastNap = displayActivities
       .filter(a => a.type === 'nap' && a.details?.endTime)
       .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
     
@@ -98,12 +111,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   };
 
   // Get last feed
-  const lastFeed = todayActivities
+  const lastFeed = displayActivities
     .filter(a => a.type === 'feed')
     .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
 
   // Get last diaper
-  const lastDiaper = todayActivities
+  const lastDiaper = displayActivities
     .filter(a => a.type === 'diaper')
     .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
 
@@ -139,6 +152,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return {
         main: `${babyName || 'Baby'} has been sleeping since ${startTime}`,
         sub: `${babyName?.split(' ')[0] || 'Baby'} has been resting for ${durationText} — ${qualityText}.`
+      };
+    }
+    
+    // If showing yesterday's data, adapt the message
+    if (showingYesterday) {
+      return {
+        main: `Starting a new day with ${babyName || 'Baby'}`,
+        sub: "Yesterday's rhythm shows below — ready to log today's first moment?"
       };
     }
     
@@ -199,9 +220,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   // Activity summary data
   const getDailySummary = () => {
-    const feedCount = todayActivities.filter(a => a.type === 'feed').length;
-    const napCount = todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
-    const diaperCount = todayActivities.filter(a => a.type === 'diaper').length;
+    const feedCount = displayActivities.filter(a => a.type === 'feed').length;
+    const napCount = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
+    const diaperCount = displayActivities.filter(a => a.type === 'diaper').length;
 
     return { feedCount, napCount, diaperCount };
   };
@@ -399,7 +420,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       </div>
 
       {/* What's Next - Predictive Card (High Priority) */}
-      {nextAction && (
+      {nextAction && !showingYesterday && (
         <Card className="p-4 space-y-3 bg-gradient-to-br from-card/80 to-card/60 backdrop-blur border-primary/20">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -424,9 +445,16 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
       {/* Today's Flow - Rhythm Summary */}
       <Card className="p-4 space-y-4 bg-card/50 backdrop-blur">
-        <h2 className="text-base font-semibold text-foreground">
-          🌿 Today's Flow
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-foreground">
+            🌿 {showingYesterday ? "Yesterday's Flow" : "Today's Flow"}
+          </h2>
+          {showingYesterday && (
+            <span className="text-xs text-muted-foreground italic">
+              showing recent context
+            </span>
+          )}
+        </div>
         
         {/* Current Activity Status */}
         <div className="space-y-2.5 pb-3 border-b border-border/50">
@@ -498,7 +526,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </div>
 
         {/* Subtle Add Prompt */}
-        {todayActivities.length === 0 && (
+        {!showingYesterday && todayActivities.length === 0 && (
           <button
             onClick={onAddActivity}
             className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg"
@@ -508,13 +536,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         )}
 
         {/* Daily Progress & Comparisons */}
-        {todayActivities.length > 0 && (
+        {displayActivities.length > 0 && (
         <div className="space-y-2.5 pt-3">
           <div className="flex items-start gap-2">
             <span className="text-lg">🌤️</span>
             <div className="flex-1">
               <p className="text-sm text-foreground">
-                <span className="font-medium">Feeds:</span> {summary.feedCount} logged today
+                <span className="font-medium">Feeds:</span> {summary.feedCount} logged {showingYesterday ? 'yesterday' : 'today'}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
@@ -550,7 +578,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       </Card>
 
       {/* Affirmation Footer */}
-      {todayActivities.length > 0 && (
+      {displayActivities.length > 0 && (
         <div className="flex items-start gap-2 px-2">
           <span className="text-lg">💚</span>
           <p className="text-sm text-muted-foreground leading-relaxed italic">
@@ -560,7 +588,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       )}
 
       {/* Recent Activity Summary - Tappable */}
-      {todayActivities.length > 0 && (
+      {displayActivities.length > 0 && (
         <Card className="p-4">
           <button
             onClick={() => setShowTimeline(!showTimeline)}
@@ -568,7 +596,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           >
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
-                Recent activity
+                {showingYesterday ? "Yesterday's activity" : "Recent activity"}
               </h2>
               {showTimeline ? (
                 <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -583,14 +611,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
             {!showTimeline && (
               <p className="text-xs text-muted-foreground">
-                Tap to see today's rhythm
+                Tap to see {showingYesterday ? "yesterday's" : "today's"} rhythm
               </p>
             )}
           </button>
           
           {showTimeline && (
             <div className="mt-4 pt-4 border-t border-border space-y-2">
-              {todayActivities
+              {displayActivities
                 .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
                 .slice(0, 8)
                 .map((activity) => (
