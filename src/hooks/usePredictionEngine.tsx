@@ -36,7 +36,7 @@ export function usePredictionEngine(activities: Activity[]) {
         case 'FEED_SOON':
           return timing.nextFeedAt
             ? `Next feed around ${formatTime(timing.nextFeedAt)}${timing.expectedFeedVolume ? ` — typically ${timing.expectedFeedVolume} ml` : ''}`
-            : `${name}'ll likely be ready for a feed soon`;
+            : `${name} will likely be ready for a feed soon`;
         case 'START_WIND_DOWN':
           return timing.nextNapWindowStart
             ? `Nap window starting around ${formatTime(timing.nextNapWindowStart)}`
@@ -66,9 +66,9 @@ export function usePredictionEngine(activities: Activity[]) {
         case 'LET_SLEEP_CONTINUE':
           return timing.nextWakeAt
             ? `Likely waking around ${formatTime(timing.nextWakeAt)}`
-            : `${name}'s napping — let them rest`;
+            : `${name} is napping — let them rest`;
         case 'INDEPENDENT_TIME':
-          return `${name} is showing flexible patterns — that's okay`;
+          return `${name} is showing flexible patterns — that is okay`;
         default:
           return 'You are finding your rhythm';
       }
@@ -123,8 +123,8 @@ export function usePredictionEngine(activities: Activity[]) {
 
     if (count >= min && count <= max) {
       return type === 'feeds'
-        ? 'Right on rhythm — stable days build confident nights'
-        : 'Solid nap balance — learning to self-regulate';
+        ? 'Right on rhythm — steady days help build confident nights'
+        : 'Solid nap rhythm — practicing self-regulation beautifully';
     }
 
     if (count < min) {

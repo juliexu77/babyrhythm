@@ -130,9 +130,15 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         ? `${sleepHours}h ${remainingMinutes}m` 
         : `${remainingMinutes}m`;
       
+      const qualityText = sleepHours >= 2 
+        ? 'a strong, restorative nap' 
+        : sleepHours >= 1 
+          ? 'resting deeply'
+          : 'settling in';
+      
       return {
         main: `${babyName || 'Baby'} has been sleeping since ${startTime}`,
-        sub: `${babyName?.split(' ')[0] || 'Baby'} has been asleep for ${durationText} — ${sleepHours >= 2 ? 'a solid nap' : 'resting peacefully'}.`
+        sub: `${babyName?.split(' ')[0] || 'Baby'} has been resting for ${durationText} — ${qualityText}.`
       };
     }
     
@@ -223,16 +229,16 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   const getFeedComparison = (count: number, months: number | null) => {
     const expected = getExpectedFeeds(months);
-    if (!expected) return "Feeds are consistent — stable days build confident nights.";
+    if (!expected) return "Feeds are consistent — steady days help build confident nights.";
     
     if (count >= expected.min && count <= expected.max) {
-      return `Right on rhythm for ${months} months — stable days build confident nights.`;
+      return `Right on rhythm for ${months} months — steady days help build confident nights.`;
     } else if (count < expected.min && count === 0) {
       return "Just getting started today — every feed adds to your routine.";
     } else if (count < expected.min) {
       return `Light feeding day — still within healthy range for ${months} months.`;
     } else {
-      return `Extra feeds today — often a sign of a growth spurt or comfort need.`;
+      return `Extra feeds today — often a sign of growth spurt or comfort needs.`;
     }
   };
 
@@ -241,7 +247,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (!expected) return "Every nap is progress — building healthy sleep habits.";
     
     if (count >= expected.min && count <= expected.max) {
-      return `Solid nap balance — ${babyName?.split(' ')[0] || 'baby'} is learning to self-regulate.`;
+      return `Solid nap rhythm — ${babyName?.split(' ')[0] || 'baby'} is practicing self-regulation beautifully.`;
     } else if (count < expected.min && count === 0) {
       return "Working on today's first nap — every rest counts.";
     } else if (count < expected.min) {
@@ -363,9 +369,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const developmentalPhase = getDevelopmentalPhase();
 
   return (
-    <div className="px-4 py-6 space-y-6 pb-24">
-      {/* Now Moment - Unified Header */}
-      <div className="space-y-2">
+    <div className="px-4 py-6 space-y-5 pb-24">
+      {/* Greeting + Phase */}
+      <div className="space-y-1.5">
         <h1 className="text-2xl font-semibold text-foreground">
           {getGreeting()}{userName ? `, ${userName}` : ''}
         </h1>
@@ -374,26 +380,52 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             {babyAge.months} month{babyAge.months !== 1 ? 's' : ''}{babyAge.weeks > 0 ? `, ${babyAge.weeks} week${babyAge.weeks !== 1 ? 's' : ''}` : ''} — {developmentalPhase}
           </p>
         )}
-        <div className="space-y-1.5 pt-2">
-          <p className="text-base text-foreground leading-relaxed">
-            {sleepStatus.main}
-          </p>
-          {sleepStatus.sub && (
-            <p className="text-sm text-muted-foreground/80 italic">
-              {sleepStatus.sub}
-            </p>
-          )}
-          <div className="flex items-center gap-2 pt-1">
-            <span className="text-lg">{sentiment.emoji}</span>
-            <span className="text-sm font-medium text-foreground/80">{sentiment.text}</span>
-          </div>
-        </div>
       </div>
 
-      {/* Today's Rhythm - Combined Section */}
+      {/* Status Card - Current State */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{sentiment.emoji}</span>
+          <span className="text-sm font-medium text-foreground/80">{sentiment.text}</span>
+        </div>
+        <p className="text-base text-foreground leading-relaxed">
+          {sleepStatus.main}
+        </p>
+        {sleepStatus.sub && (
+          <p className="text-sm text-muted-foreground/80 italic">
+            {sleepStatus.sub}
+          </p>
+        )}
+      </div>
+
+      {/* What's Next - Predictive Card (High Priority) */}
+      {nextAction && (
+        <Card className="p-4 space-y-3 bg-gradient-to-br from-card/80 to-card/60 backdrop-blur border-primary/20">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <h2 className="text-sm font-semibold text-foreground">What's next</h2>
+          </div>
+          <p className="text-base text-foreground leading-relaxed">
+            {nextAction}
+          </p>
+          
+          {/* Wake-up button if sleeping */}
+          {ongoingNap && onEndNap && (
+            <Button
+              onClick={onEndNap}
+              className="w-full mt-2"
+              size="sm"
+            >
+              {babyName?.split(' ')[0] || 'Baby'} woke up
+            </Button>
+          )}
+        </Card>
+      )}
+
+      {/* Today's Flow - Rhythm Summary */}
       <Card className="p-4 space-y-4 bg-card/50 backdrop-blur">
         <h2 className="text-base font-semibold text-foreground">
-          Today's Rhythm
+          🌿 Today's Flow
         </h2>
         
         {/* Current Activity Status */}
@@ -450,26 +482,17 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           )}
 
-          {/* Currently Sleeping - Button */}
-          {ongoingNap && onEndNap && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 text-foreground">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
-                  <Moon className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    Currently sleeping since <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
-                  </p>
-                </div>
+          {/* Currently Sleeping Status */}
+          {ongoingNap && (
+            <div className="flex items-center gap-3 text-foreground">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+                <Moon className="w-4 h-4 text-primary" />
               </div>
-              <Button
-                onClick={onEndNap}
-                className="w-full"
-                size="sm"
-              >
-                {babyName?.split(' ')[0] || 'Baby'} woke up
-              </Button>
+              <div className="flex-1">
+                <p className="text-sm">
+                  Sleeping since <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -489,11 +512,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         <div className="space-y-2.5 pt-3">
           <div className="flex items-start gap-2">
             <span className="text-lg">🌤️</span>
-            <div>
+            <div className="flex-1">
               <p className="text-sm text-foreground">
                 <span className="font-medium">Feeds:</span> {summary.feedCount} logged today
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
               </p>
             </div>
@@ -501,23 +524,23 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
           <div className="flex items-start gap-2">
             <span className="text-lg">🌈</span>
-            <div>
+            <div className="flex-1">
               <p className="text-sm text-foreground">
                 <span className="font-medium">Sleep:</span> {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} completed
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {prediction ? getProgressText(prediction, 'naps') : getNapComparison(summary.napCount, babyAgeMonths)}
               </p>
             </div>
           </div>
 
           <div className="flex items-start gap-2">
-            <span className="text-lg">🌿</span>
-            <div>
+            <span className="text-lg">💫</span>
+            <div className="flex-1">
               <p className="text-sm text-foreground">
                 <span className="font-medium">Overall:</span> Calm and steady
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 You're building confidence, one small rhythm at a time.
               </p>
             </div>
@@ -526,7 +549,17 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         )}
       </Card>
 
-      {/* Next Predicted Action */}
+      {/* Affirmation Footer */}
+      {todayActivities.length > 0 && (
+        <div className="flex items-start gap-2 px-2">
+          <span className="text-lg">💚</span>
+          <p className="text-sm text-muted-foreground leading-relaxed italic">
+            You're doing great{userName ? `, ${userName}` : ''}. These small rhythms are adding up.
+          </p>
+        </div>
+      )}
+
+      {/* Activity Recap - Collapsible */}
       {nextAction && (
         <Card className="p-4 space-y-2 bg-primary/5 border-primary/10">
           <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
