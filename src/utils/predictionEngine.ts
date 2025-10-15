@@ -602,6 +602,19 @@ if (ongoingSleep) {
       return 'START_WIND_DOWN';
     }
     
+    // When both are approaching thresholds, favor the one closer to its limit
+    if (tSinceLastFeed && tAwakeNow) {
+      const feedProgress = tSinceLastFeed / this.adaptiveParams.feed_interval_max;
+      const napProgress = tAwakeNow / this.adaptiveParams.wake_window_max;
+      
+      // If either is > 80% of max, choose it
+      if (feedProgress > 0.8) return 'FEED_NOW';
+      if (napProgress > 0.8) return 'START_WIND_DOWN';
+      
+      // Otherwise choose whichever is further along
+      return feedProgress > napProgress ? 'FEED_NOW' : 'START_WIND_DOWN';
+    }
+    
     return 'INDEPENDENT_TIME';
   }
 
@@ -854,11 +867,14 @@ if (ongoingSleep) {
     if (dataGap) confidenceScore -= 0.1;
     confidenceScore = clamp(confidenceScore, 0.2, 0.95);
 
-    // Map to confidence level
+    // Map to confidence level - improved logic to avoid persistent low confidence
     let confidence: 'high' | 'medium' | 'low';
     if (confidenceScore >= 0.7 && !conflictZone && this.internals.dataStability === 'stable') {
       confidence = 'high';
-    } else if (confidenceScore >= 0.5 || this.internals.dataStability === 'unstable') {
+    } else if (confidenceScore >= 0.5 || this.internals.dataStability === 'stable') {
+      // If data is stable, default to medium confidence even in conflict zones
+      confidence = 'medium';
+    } else if (confidenceScore >= 0.4 && this.internals.dataStability === 'unstable') {
       confidence = 'medium';
     } else {
       confidence = 'low';
