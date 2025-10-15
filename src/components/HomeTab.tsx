@@ -559,18 +559,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </div>
       )}
 
-      {/* Activity Recap - Collapsible */}
-      {nextAction && (
-        <Card className="p-4 space-y-2 bg-primary/5 border-primary/10">
-          <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
-            🔮 What's next
-          </h2>
-          <p className="text-sm text-foreground/90 leading-relaxed">
-            {nextAction}
-          </p>
-        </Card>
-      )}
-
       {/* Recent Activity Summary - Tappable */}
       {todayActivities.length > 0 && (
         <Card className="p-4">
