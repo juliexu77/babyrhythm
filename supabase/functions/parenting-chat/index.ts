@@ -174,11 +174,20 @@ serve(async (req) => {
     const ageInMonths = Math.floor((babyAgeInWeeks || 0) / 4.33);
     
     // Determine developmental phase
-    let developmentalPhase = "newborn adjusting phase";
-    if (ageInMonths >= 12) developmentalPhase = "toddler independence phase";
-    else if (ageInMonths >= 9) developmentalPhase = "mobile exploration phase";
-    else if (ageInMonths >= 6) developmentalPhase = "curious, exploratory phase";
-    else if (ageInMonths >= 3) developmentalPhase = "social awakening phase";
+    let developmentalPhase = "early parenting journey";
+    if (!babyAgeInWeeks || babyAgeInWeeks === 0) {
+      developmentalPhase = "early parenting journey (age not set)";
+    } else if (ageInMonths >= 12) {
+      developmentalPhase = "toddler independence phase";
+    } else if (ageInMonths >= 9) {
+      developmentalPhase = "mobile exploration phase";
+    } else if (ageInMonths >= 6) {
+      developmentalPhase = "curious, exploratory phase";
+    } else if (ageInMonths >= 3) {
+      developmentalPhase = "social awakening phase";
+    } else {
+      developmentalPhase = "newborn adjusting phase";
+    }
     
     // Build rich context payload - "The Village's awareness"
     const villageContext = `
@@ -186,7 +195,7 @@ serve(async (req) => {
 
 BABY PROFILE:
 - Name: ${babyName || "Baby"}
-- Age: ${babyAgeInWeeks || "unknown"} weeks (${ageInMonths} months) — ${developmentalPhase}
+- Age: ${babyAgeInWeeks && babyAgeInWeeks > 0 ? `${babyAgeInWeeks} weeks (${ageInMonths} months)` : "not set — birthday needs to be added in Settings"} — ${developmentalPhase}
 
 CAREGIVER:
 - Name: ${userName || "Parent"}
