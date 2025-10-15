@@ -80,9 +80,12 @@ const Index = () => {
     : [];
 
 const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
-// Show wake-up if there is any open nap (even if it started yesterday)
+// Show wake-up for open naps from today or yesterday only (ignore older accidentally open naps)
+const yesterdayStart = new Date(); 
+yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+yesterdayStart.setHours(0, 0, 0, 0);
 const ongoingNap = activities
-  .filter(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime && a.id !== justEndedNapId)
+  .filter(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime && a.id !== justEndedNapId && new Date(a.loggedAt!) >= yesterdayStart)
   .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
   const [activeTab, setActiveTab] = useState("home");
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
