@@ -101,8 +101,11 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
       const chipsText = chipsMatch[1];
       const chips = chipsText.split('|').map(c => c.trim()).filter(c => c.length > 0);
       const content = text.replace(/CHIPS:\s*.+$/m, '').trim();
+      console.log('Parsed chips from AI:', chips);
+      console.log('Content excerpt:', content.substring(0, 100) + '...');
       return { content, chips };
     }
+    console.log('No chips found in AI response');
     return { content: text, chips: [] };
   };
 
