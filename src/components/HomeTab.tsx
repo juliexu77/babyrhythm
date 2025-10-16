@@ -415,32 +415,24 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   return (
     <div className="px-4 py-6 space-y-5 pb-24">
-      {/* Greeting + Phase */}
-      <div className="space-y-1.5">
-        <h1 className="text-2xl font-semibold text-foreground">
-          {getGreeting()}{userName ? `, ${userName}` : ''}
-        </h1>
-        {babyAge && (
-          <p className="text-sm text-muted-foreground">
-            {babyAge.months} month{babyAge.months !== 1 ? 's' : ''}{babyAge.weeks > 0 ? `, ${babyAge.weeks} week${babyAge.weeks !== 1 ? 's' : ''}` : ''} — {developmentalPhase}
-          </p>
-        )}
-      </div>
-
-      {/* Status Card - Current State */}
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{sentiment.emoji}</span>
-          <span className="text-sm font-medium text-foreground/80">{sentiment.text}</span>
-        </div>
+      {/* Unified Opening Narrative */}
+      <div className="space-y-2">
         <p className="text-base text-foreground leading-relaxed">
-          {sleepStatus.main}
+          {getGreeting()}{userName ? `, ${userName}` : ''}. 
+          {babyAge && developmentalPhase && (
+            <> At {babyAge.months === 1 ? 'one month' : `${babyAge.months} months`}, {babyName || 'baby'}'s {developmentalPhase}</>
+          )}
+          {sentiment.emoji && sentiment.text && (
+            <> — and {showingYesterday ? "yesterday was" : "today's been"} a {sentiment.text.toLowerCase().replace('day', '').replace('week', '').trim()} rhythm so far</>
+          )}. 
+          {ongoingNap ? (
+            <> {babyName?.split(' ')[0] || 'Baby'} has been sleeping since {ongoingNap.details?.startTime || ongoingNap.time}; {sleepStatus.sub?.toLowerCase() || 'resting peacefully'}.</>
+          ) : awakeTime ? (
+            <> {babyName?.split(' ')[0] || 'Baby'}'s been awake about {awakeTime}; you'll likely start seeing sleepy cues soon.</>
+          ) : (
+            <> {sleepStatus.main}.</>
+          )}
         </p>
-        {sleepStatus.sub && (
-          <p className="text-sm text-muted-foreground/80 italic">
-            {sleepStatus.sub}
-          </p>
-        )}
       </div>
 
       {/* What's Next - Predictive Card (High Priority) */}
@@ -599,16 +591,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <p className="text-sm text-foreground">
                 <span className="font-medium">Overall:</span> Calm and steady
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                You're building confidence, one small rhythm at a time.
-              </p>
             </div>
           </div>
         </div>
         )}
       </Card>
 
-      {/* Affirmation Footer */}
+      {/* Emotional Reassurance */}
       {displayActivities.length > 0 && (
         <div className="flex items-start gap-2 px-2">
           <span className="text-lg">💚</span>
@@ -618,64 +607,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </div>
       )}
 
-      {/* Recent Activity Summary - Tappable */}
+      {/* Simplified Activity Summary */}
       {displayActivities.length > 0 && (
-        <Card className="p-4">
-          <button
-            onClick={() => setShowTimeline(!showTimeline)}
-            className="w-full text-left space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
-                {showingYesterday ? "Yesterday's activity" : "Recent activity"}
-              </h2>
-              {showTimeline ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
-            </div>
-            <div className="text-sm text-foreground font-medium">
-              {summary.feedCount} feed{summary.feedCount !== 1 ? 's' : ''} • {' '}
-              {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} • {' '}
-              {summary.diaperCount} diaper{summary.diaperCount !== 1 ? 's' : ''}
-            </div>
-            {!showTimeline && (
-              <p className="text-xs text-muted-foreground">
-                Tap to see {showingYesterday ? "yesterday's" : "today's"} rhythm
-              </p>
-            )}
-          </button>
-          
-          {showTimeline && (
-            <div className="mt-4 pt-4 border-t border-border space-y-2">
-              {displayActivities
-                .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
-                .slice(0, 8)
-                .map((activity) => (
-                  <div key={activity.id} className="flex items-center gap-3 text-sm">
-                    <span className="text-muted-foreground w-16">{activity.time}</span>
-                    <div className="flex-1 flex items-center gap-2">
-                      {activity.type === 'feed' && <Baby className="w-3 h-3 text-primary" />}
-                      {activity.type === 'diaper' && <Droplet className="w-3 h-3 text-primary" />}
-                      {activity.type === 'nap' && <Moon className="w-3 h-3 text-primary" />}
-                      <span className="capitalize text-foreground">{activity.type}</span>
-                      {activity.details?.quantity && (
-                        <span className="text-muted-foreground text-xs">
-                          {activity.details.quantity} {activity.details.unit || 'ml'}
-                        </span>
-                      )}
-                      {activity.type === 'nap' && activity.details?.endTime && (
-                        <span className="text-muted-foreground text-xs">
-                          → {activity.details.endTime}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </Card>
+        <div className="px-2">
+          <p className="text-sm text-muted-foreground text-center">
+            {showingYesterday ? 'Yesterday' : 'Today'}: {summary.feedCount} feed{summary.feedCount !== 1 ? 's' : ''} • {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} • {summary.diaperCount} diaper{summary.diaperCount !== 1 ? 's' : ''} — building a calm rhythm together.
+          </p>
+        </div>
       )}
     </div>
   );
