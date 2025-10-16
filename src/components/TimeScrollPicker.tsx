@@ -17,9 +17,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     if (value) {
       const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       if (match) {
+        const minuteParsed = parseInt(match[2]);
+        // Round to nearest 5-minute increment to handle legacy data
+        const minuteRounded = Math.round(minuteParsed / 5) * 5;
         return {
           hour: parseInt(match[1]),
-          minute: Math.min(55, Math.max(0, parseInt(match[2]))),
+          minute: Math.min(55, Math.max(0, minuteRounded)),
           period: match[3].toUpperCase() as "AM" | "PM",
         };
       }
@@ -67,7 +70,10 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       if (match) {
         setSelectedHour(parseInt(match[1]));
         const minuteParsed = parseInt(match[2]);
-        setSelectedMinute(Math.min(55, Math.max(0, minuteParsed)));
+        // Round to nearest 5-minute increment to handle legacy data
+        const minuteRounded = Math.round(minuteParsed / 5) * 5;
+        const minuteSafe = Math.min(55, Math.max(0, minuteRounded));
+        setSelectedMinute(minuteSafe);
         setSelectedPeriod(match[3].toUpperCase() as "AM" | "PM");
         setHasUserInteracted(false); // Reset interaction flag
       }
