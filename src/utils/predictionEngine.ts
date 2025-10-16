@@ -284,13 +284,14 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const recentEvents = events.filter(e => e.timestamp >= sevenDaysAgo);
 
-  // Calculate wake windows
+  // Calculate wake windows (ONLY between naps, exclude night sleep)
   const sleepSegments = extractSleepSegments(recentEvents);
+  const napSegments = sleepSegments.filter(s => s.type === 'nap');
   const wakeWindows: number[] = [];
   
-  for (let i = 0; i < sleepSegments.length - 1; i++) {
-    const current = sleepSegments[i];
-    const next = sleepSegments[i + 1];
+  for (let i = 0; i < napSegments.length - 1; i++) {
+    const current = napSegments[i];
+    const next = napSegments[i + 1];
     if (current.end && next.start) {
       const wakeWindow = Math.round((next.start.getTime() - current.end.getTime()) / 60000);
       if (wakeWindow > 0 && wakeWindow < 480) {
