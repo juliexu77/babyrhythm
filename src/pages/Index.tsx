@@ -550,9 +550,20 @@ return (
       <div className="min-h-screen bg-background pb-16">
         <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
           <div className="flex items-center justify-between p-4">
-            <h1 className="text-xl font-semibold">
-              {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
-            </h1>
+            <div>
+              <h1 className="text-xl font-semibold">Parenting Partner</h1>
+              {babyProfile?.name && (
+                <p className="text-sm text-muted-foreground">
+                  {babyProfile.name} · {babyProfile.birthday ? (() => {
+                    const birthDate = new Date(babyProfile.birthday);
+                    const today = new Date();
+                    const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+                    const weeks = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) % 4;
+                    return ageInMonths === 0 ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
+                  })() : 'age unknown'}
+                </p>
+              )}
+            </div>
               <div className="flex items-center gap-2">
               {canUndo && (
                 <Button 
