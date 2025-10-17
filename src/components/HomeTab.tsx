@@ -673,14 +673,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </div>
       )}
 
-      {/* Simplified Activity Summary */}
-      {displayActivities.length > 0 && (
-        <div className="px-2">
-          <p className="text-sm text-muted-foreground text-center">
-            {showingYesterday ? 'Yesterday' : 'Today'}: {summary.feedCount} feed{summary.feedCount !== 1 ? 's' : ''} • {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} • {summary.diaperCount} diaper{summary.diaperCount !== 1 ? 's' : ''} — building a calm rhythm together.
-          </p>
-        </div>
-      )}
     </div>
   );
 };
