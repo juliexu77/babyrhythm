@@ -219,9 +219,26 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return { emoji: "🌱", text: "Growth spurt week" };
     }
     
+    // Cluster feeding pattern (many feeds, shorter naps)
+    if (expected && summary.feedCount > expected.max && summary.napCount < (expectedNaps?.min || 2)) {
+      return { emoji: "🌸", text: "Comfort day" };
+    }
+    
     // Early morning with no data yet
     if (hour < 9 && summary.feedCount === 0 && summary.napCount === 0) {
       return { emoji: "🌅", text: "Fresh start" };
+    }
+    
+    // Peaceful day - longer/more naps, fewer feeds
+    if (expectedNaps && summary.napCount >= expectedNaps.max && expected && summary.feedCount <= expected.max) {
+      return { emoji: "🕊️", text: "Peaceful day" };
+    }
+    
+    // Perfect alignment with expectations
+    if (expected && expectedNaps && 
+        summary.feedCount === expected.max && 
+        summary.napCount === expectedNaps.max) {
+      return { emoji: "🎯", text: "On target" };
     }
     
     // Smooth transition: feeds and naps in range
@@ -231,9 +248,27 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return { emoji: "☀️", text: "Smooth flow" };
     }
     
+    // Mixed patterns - some in range, some not
+    if (expected && expectedNaps &&
+        ((summary.feedCount >= expected.min && summary.feedCount <= expected.max && summary.napCount < expectedNaps.min) ||
+         (summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max && summary.feedCount < expected.min))) {
+      return { emoji: "🌤️", text: "Mixed patterns" };
+    }
+    
+    // Adjustment phase - off from expected but not extreme
+    if (expected && expectedNaps &&
+        (summary.feedCount < expected.min - 1 || summary.napCount < expectedNaps.min - 1)) {
+      return { emoji: "🔄", text: "Adjustment phase" };
+    }
+    
     // Lots of activity
-    if (summary.feedCount + summary.napCount + summary.diaperCount > 10) {
+    if (summary.feedCount + summary.napCount + summary.diaperCount > 12) {
       return { emoji: "⚡", text: "Active rhythm" };
+    }
+    
+    // Irregular but positive
+    if (hour > 12 && summary.feedCount >= 2 && summary.napCount >= 1) {
+      return { emoji: "🌊", text: "Going with the flow" };
     }
     
     // Settled rhythm: consistent patterns
@@ -241,9 +276,20 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return { emoji: "✨", text: "Settled rhythm day" };
     }
     
+    // Milestone development period (varies by age)
+    if (babyAgeMonths !== null && [3, 4, 6, 9, 12].includes(babyAgeMonths) && 
+        (summary.feedCount !== expected?.max || summary.napCount !== expectedNaps?.max)) {
+      return { emoji: "💫", text: "Finding balance" };
+    }
+    
     // Light day
     if (hour > 16 && summary.feedCount < 3 && summary.napCount < 2) {
       return { emoji: "🌙", text: "Gentle pace" };
+    }
+    
+    // First activities of the day
+    if (hour < 12 && (summary.feedCount === 1 || summary.napCount === 1)) {
+      return { emoji: "🌈", text: "Learning together" };
     }
     
     // Default: building routine
