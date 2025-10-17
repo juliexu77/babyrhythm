@@ -64,6 +64,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   const [currentChips, setCurrentChips] = useState<string[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [turnCount, setTurnCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const savedGreetingRef = useRef(false);
   const { toast } = useToast();
@@ -138,7 +139,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
   // Load initial greeting on mount - wait for required data
   useEffect(() => {
-    if (!hasInitialized && !hasHistory && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined)) {
+    if (!hasInitialized && !hasHistory && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined) && household?.id) {
       setHasInitialized(true);
       setIsLoading(true);
       streamChat("", true, true);
@@ -159,6 +160,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
     return { content: text, chips: [] };
   };
 
+  const emphasizeMicrolearning = (text: string) => {
+    return text.replace(/^\s*Light learning:/gim, '**💡 Light learning:**');
+  };
   const handleChipClick = async (chipText: string) => {
     setInput("");
     
@@ -345,6 +349,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
       if (!isGreeting && assistantContent) {
         const parsed = parseMessageWithChips(formatDurationsInText(assistantContent));
         await saveMessageToDatabase({ role: "assistant", content: parsed.content });
+        setTurnCount((prev) => prev + 1);
       }
 
       // Final flush
@@ -482,7 +487,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
             </div>
             <div className="flex-1 space-y-3">
               <div className="text-sm text-foreground/90 leading-relaxed">
-                {formatMarkdown(greetingMessage.content)}
+                {formatMarkdown(emphasizeMicrolearning(greetingMessage.content))}
               </div>
             </div>
           </div>
@@ -512,7 +517,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
                 }`}
               >
                 <div className="text-sm leading-relaxed">
-                  {formatMarkdown(msg.content)}
+                  {formatMarkdown(emphasizeMicrolearning(msg.content))}
                 </div>
               </div>
               {msg.role === "user" && (
@@ -540,9 +545,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
       </ScrollArea>
 
       {/* Input with Contextual Chips */}
-      <div className="sticky bottom-0 border-t border-border/30 bg-background">
+      <div className="sticky bottom-0 border-t border-border/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         {/* Chips - only show when not loading and not focused */}
-        {currentChips.length > 0 && !isLoading && (
+        {currentChips.length > 0 && !isLoading && turnCount < 2 && (
           <div className={`px-4 pt-4 pb-2 transition-all duration-300 ${inputFocused ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'}`}>
             <div className="flex flex-wrap gap-2">
               {currentChips.map((chip, idx) => (
@@ -562,24 +567,30 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
         )}
 
         {/* Input area */}
-        <div className="p-4">
+        <div className="p-4 pb-[max(env(safe-area-inset-bottom),0px)]">
           <div className="relative flex gap-3 items-end">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               onFocus={() => setInputFocused(true)}
               onBlur={() => setInputFocused(false)}
               placeholder={placeholders[placeholderIndex]}
               disabled={isLoading}
               rows={1}
-              className="flex-1 min-h-[44px] max-h-32 transition-all duration-200 rounded-2xl border-border/40 bg-muted/50 dark:bg-muted/30 resize-none px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50"
+              inputMode="text"
+              enterKeyHint="send"
+              autoComplete="off"
+              autoCorrect="on"
+              spellCheck
+              className="flex-1 min-h-[48px] max-h-36 transition-all duration-200 rounded-2xl border-border/40 bg-muted/50 dark:bg-muted/30 resize-none px-4 py-3 text-[16px] leading-6 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50"
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
               size="icon"
-              className="flex-shrink-0 h-11 w-11 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50"
+              aria-label="Send message"
+              className="flex-shrink-0 h-12 w-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-95 transition-transform disabled:opacity-50"
             >
               <Send className="h-5 w-5" />
             </Button>
