@@ -405,8 +405,16 @@ const ongoingNap = activities
                 Today · {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
               </h2>
               
-              {/* Quick Summary Line */}
-              <p className="text-[13px] text-muted-foreground">
+              {/* Quick Summary Line with Time-based Emoji */}
+              <p className="text-[13px] text-muted-foreground flex items-center gap-2">
+                <span className="text-base">
+                  {(() => {
+                    const hour = new Date().getHours();
+                    if (hour >= 5 && hour < 12) return "🌤";
+                    if (hour >= 12 && hour < 18) return "🌇";
+                    return "🌙";
+                  })()}
+                </span>
                 {(() => {
                   const today = new Date();
                   const todayKey = today.getFullYear() + '-' + 
@@ -426,7 +434,15 @@ const ongoingNap = activities
                   const feeds = todayActivities.filter(a => a.type === 'feed').length;
                   const diapers = todayActivities.filter(a => a.type === 'diaper').length;
                   
-                  return `${naps} naps · ${feeds} feeds · ${diapers} diapers`;
+                  return (
+                    <>
+                      <span className="animate-in fade-in duration-300">{naps} naps</span>
+                      <span>·</span>
+                      <span className="animate-in fade-in duration-300 delay-75">{feeds} feeds</span>
+                      <span>·</span>
+                      <span className="animate-in fade-in duration-300 delay-150">{diapers} diapers</span>
+                    </>
+                  );
                 })()}
               </p>
             </div>
@@ -537,43 +553,70 @@ const ongoingNap = activities
                                 
                                 {/* Activities for this date */}
                                 <div className="space-y-1">
-                                  {activityGroups[dateKey].map((activity) => (
-                                    <ActivityCard
-                                      key={activity.id}
-                                      activity={activity}
-                                      babyName={babyProfile?.name}
-                                      onEdit={(clickedActivity) => {
-                                        console.log('Clicked activity:', clickedActivity);
-                                        setEditingActivity(clickedActivity);
-                                      }}
-                                      onDelete={async (activityId) => {
-                                        try {
-                                          // Get activity data before deleting for undo tracking
-                                          const { data: activityToDelete } = await supabase
-                                            .from('activities')
-                                            .select('*')
-                                            .eq('id', activityId)
-                                            .single();
+                                  {activityGroups[dateKey].map((activity, activityIndex) => {
+                                    // Get time period for rhythm divider
+                                    const getTimePeriod = (act: any) => {
+                                      if (!act.loggedAt) return null;
+                                      const hour = new Date(act.loggedAt).getHours();
+                                      if (hour >= 5 && hour < 12) return 'morning';
+                                      if (hour >= 12 && hour < 18) return 'afternoon';
+                                      return 'evening';
+                                    };
+                                    
+                                    const currentPeriod = getTimePeriod(activity);
+                                    const previousPeriod = activityIndex > 0 ? getTimePeriod(activityGroups[dateKey][activityIndex - 1]) : null;
+                                    const showDivider = currentPeriod !== previousPeriod && activityIndex > 0;
+                                    
+                                    return (
+                                      <div key={activity.id}>
+                                        {showDivider && (
+                                          <div className="flex items-center gap-2 py-3 my-2">
+                                            <div className="flex-1 h-px bg-border/50" />
+                                            <span className="text-xs text-muted-foreground/60 italic">
+                                              {currentPeriod === 'morning' && 'Morning rhythm'}
+                                              {currentPeriod === 'afternoon' && 'Afternoon'}
+                                              {currentPeriod === 'evening' && 'Evening'}
+                                            </span>
+                                            <div className="flex-1 h-px bg-border/50" />
+                                          </div>
+                                        )}
+                                        <ActivityCard
+                                          activity={activity}
+                                          babyName={babyProfile?.name}
+                                          onEdit={(clickedActivity) => {
+                                            console.log('Clicked activity:', clickedActivity);
+                                            setEditingActivity(clickedActivity);
+                                          }}
+                                          onDelete={async (activityId) => {
+                                            try {
+                                              // Get activity data before deleting for undo tracking
+                                              const { data: activityToDelete } = await supabase
+                                                .from('activities')
+                                                .select('*')
+                                                .eq('id', activityId)
+                                                .single();
 
-                                          await deleteActivity(activityId);
+                                              await deleteActivity(activityId);
 
-                                          // Track for undo
-                                          if (activityToDelete) {
-                                            trackDelete({
-                                              id: activityToDelete.id,
-                                              type: activityToDelete.type,
-                                              logged_at: activityToDelete.logged_at,
-                                              details: activityToDelete.details,
-                                              household_id: activityToDelete.household_id,
-                                              created_by: activityToDelete.created_by
-                                            });
-                                          }
-                                        } catch (error) {
-                                          console.error('Error deleting activity:', error);
-                                        }
-                                      }}
-                                    />
-                                  ))}
+                                              // Track for undo
+                                              if (activityToDelete) {
+                                                trackDelete({
+                                                  id: activityToDelete.id,
+                                                  type: activityToDelete.type,
+                                                  logged_at: activityToDelete.logged_at,
+                                                  details: activityToDelete.details,
+                                                  household_id: activityToDelete.household_id,
+                                                  created_by: activityToDelete.created_by
+                                                });
+                                              }
+                                            } catch (error) {
+                                              console.error('Error deleting activity:', error);
+                                            }
+                                          }}
+                                        />
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                               
@@ -581,15 +624,40 @@ const ongoingNap = activities
                           );
                         })}
 
-                        {/* Show More/Less Button */}
-                        {sortedDates.length > visibleDates.length && (
+                        {/* Show More/Less Button with gradient overlay */}
+                        {sortedDates.length > visibleDates.length && !showFullTimeline && (
+                          <div className="relative pt-8">
+                            {/* Gradient overlay */}
+                            <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background/0 to-background pointer-events-none" />
+                            <div className="text-center relative">
+                              <button
+                                onClick={() => setShowFullTimeline(!showFullTimeline)}
+                                className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
+                              >
+                                {`${t('showMoreDays')} ${sortedDates.length - visibleDates.length} ${t('moreDays')}`}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Show less button when expanded */}
+                        {showFullTimeline && sortedDates.length > 2 && (
                           <div className="text-center pt-4">
                             <button
-                              onClick={() => setShowFullTimeline(!showFullTimeline)}
+                              onClick={() => setShowFullTimeline(false)}
                               className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
                             >
-                              {showFullTimeline ? t('showLess') : `${t('showMoreDays')} ${sortedDates.length - visibleDates.length} ${t('moreDays')}`}
+                              {t('showLess')}
                             </button>
+                          </div>
+                        )}
+                        
+                        {/* Total moments counter */}
+                        {activities.length > 0 && (
+                          <div className="text-center pt-8 pb-4">
+                            <p className="text-sm text-muted-foreground">
+                              You've logged <span className="font-medium text-foreground">{activities.length}</span> moments together so far 🌿
+                            </p>
                           </div>
                         )}
                       </>
