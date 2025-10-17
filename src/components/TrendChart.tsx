@@ -140,6 +140,56 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
 
   const feedData = generateFeedData();
   const napData = generateNapData();
+  
+  // Generate interpretive text based on patterns
+  const getFeedInterpretation = () => {
+    const nonZeroDays = feedData.filter(d => d.value > 0);
+    if (nonZeroDays.length === 0) return "Still gathering data to understand patterns.";
+    
+    const values = nonZeroDays.map(d => d.value);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
+    const stdDev = Math.sqrt(variance);
+    
+    // Low variance = consistent
+    if (stdDev < avg * 0.15) {
+      return "Steady feeding rhythm — confidence comes from consistency.";
+    }
+    // High variance = still finding balance
+    if (stdDev > avg * 0.3) {
+      return "Finding balance day to day — every rhythm is unique.";
+    }
+    // Moderate
+    return "Natural variation — responding beautifully to needs.";
+  };
+  
+  const getSleepInterpretation = () => {
+    const nonZeroDays = napData.filter(d => d.value > 0);
+    if (nonZeroDays.length === 0) return "Building sleep data to find patterns.";
+    
+    const values = nonZeroDays.map(d => d.value);
+    const napCounts = nonZeroDays.map(d => d.napCount);
+    const avgDuration = values.reduce((a, b) => a + b, 0) / values.length;
+    const avgNapCount = napCounts.reduce((a, b) => a + b, 0) / napCounts.length;
+    
+    // Check if naps are getting longer (consolidating)
+    const firstHalf = values.slice(0, Math.ceil(values.length / 2));
+    const secondHalf = values.slice(Math.ceil(values.length / 2));
+    const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+    
+    if (secondAvg > firstAvg * 1.2) {
+      return "Longer naps midweek — body finding its groove.";
+    }
+    if (avgNapCount < 2.5) {
+      return "Consolidating beautifully into fewer, longer stretches.";
+    }
+    if (avgDuration > 2.5) {
+      return "Strong sleep patterns emerging — lovely consistency.";
+    }
+    return "Natural sleep rhythm developing day by day.";
+  };
+
   const maxFeedValue = Math.max(...feedData.map(d => d.value));
   const maxNapValue = Math.max(...napData.map(d => d.value));
 
@@ -147,11 +197,16 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
     <div className="space-y-6">
       {/* Daily Feed Totals */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-            {t('dailyFeedTotals')}
-          </h3>
+        <div className="space-y-1 mb-6">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+              {t('dailyFeedTotals')}
+            </h3>
+          </div>
+          <p className="text-[13px] text-muted-foreground pl-7">
+            {getFeedInterpretation()}
+          </p>
         </div>
         
         <div className="space-y-4">
@@ -164,15 +219,19 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
             {feedData.map((day, index) => (
               <div key={index} className="flex flex-col items-center gap-1">
                 <div className="flex-1 flex flex-col justify-end w-full">
-                  <button
-                    className="bg-gradient-feed rounded-t opacity-80 w-3/4 mx-auto relative hover:opacity-100 transition-opacity cursor-pointer border-none p-0"
-                    style={{ height: `${(day.value / maxFeedValue) * 100}%` }}
-                    onClick={() => setSelectedDetail(selectedDetail === `feed-${index}` ? null : `feed-${index}`)}
-                  >
-                    <span className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium">
-                      {day.value}
-                    </span>
-                  </button>
+                  {day.value === 0 ? (
+                    <div className="w-3/4 mx-auto h-1 bg-muted rounded opacity-30" />
+                  ) : (
+                    <button
+                      className="bg-gradient-feed rounded-t opacity-80 w-3/4 mx-auto relative hover:opacity-100 transition-opacity cursor-pointer border-none p-0"
+                      style={{ height: `${(day.value / maxFeedValue) * 100}%` }}
+                      onClick={() => setSelectedDetail(selectedDetail === `feed-${index}` ? null : `feed-${index}`)}
+                    >
+                      <span className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium">
+                        {day.value}
+                      </span>
+                    </button>
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground font-medium">
                   {day.date}
@@ -190,16 +249,28 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
               </div>
             ))}
           </div>
+          
+          {/* Missing data note */}
+          {feedData.filter(d => d.value === 0).length > 0 && (
+            <p className="text-xs text-muted-foreground italic mt-2">
+              Missing data — skip day or travel?
+            </p>
+          )}
         </div>
       </div>
 
       {/* Daily Sleep Totals */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-            {t('dailySleepTotalsChart')}
-          </h3>
+        <div className="space-y-1 mb-6">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+              {t('dailySleepTotalsChart')}
+            </h3>
+          </div>
+          <p className="text-[13px] text-muted-foreground pl-7">
+            {getSleepInterpretation()}
+          </p>
         </div>
         
         <div className="space-y-4">
@@ -212,15 +283,19 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
             {napData.map((day, index) => (
               <div key={index} className="flex flex-col items-center gap-1 relative">
                 <div className="flex-1 flex flex-col justify-end w-full">
-                  <button
-                    className="bg-gradient-nap rounded-t opacity-80 w-3/4 mx-auto relative hover:opacity-100 transition-opacity cursor-pointer border-none p-0"
-                    style={{ height: `${(day.value / maxNapValue) * 100}%` }}
-                    onClick={() => setSelectedDetail(selectedDetail === `nap-${index}` ? null : `nap-${index}`)}
-                  >
-                    <span className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium">
-                      {day.value}h
-                    </span>
-                  </button>
+                  {day.value === 0 ? (
+                    <div className="w-3/4 mx-auto h-1 bg-muted rounded opacity-30" />
+                  ) : (
+                    <button
+                      className="bg-gradient-nap rounded-t opacity-80 w-3/4 mx-auto relative hover:opacity-100 transition-opacity cursor-pointer border-none p-0"
+                      style={{ height: `${(day.value / maxNapValue) * 100}%` }}
+                      onClick={() => setSelectedDetail(selectedDetail === `nap-${index}` ? null : `nap-${index}`)}
+                    >
+                      <span className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium">
+                        {day.value}h
+                      </span>
+                    </button>
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground font-medium">
                   {day.date}
@@ -238,6 +313,13 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
               </div>
             ))}
           </div>
+          
+          {/* Missing data note */}
+          {napData.filter(d => d.value === 0).length > 0 && (
+            <p className="text-xs text-muted-foreground italic mt-2">
+              Missing data — skip day or travel?
+            </p>
+          )}
         </div>
       </div>
     </div>

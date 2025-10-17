@@ -12,6 +12,7 @@ import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
 import { SleepChart } from "@/components/SleepChart";
+import { WeeklyReflection } from "@/components/WeeklyReflection";
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -320,9 +321,63 @@ const ongoingNap = activities
               <h2 className="text-[18px] font-semibold text-foreground">
                 This week's rhythm at a glance.
               </h2>
+              <p className="text-[13px] text-muted-foreground">
+                {(() => {
+                  // Generate contextual subtitle based on weekly patterns
+                  const last7Days = new Date();
+                  last7Days.setDate(last7Days.getDate() - 7);
+                  
+                  const weekActivities = activities.filter(a => 
+                    a.loggedAt && new Date(a.loggedAt) >= last7Days
+                  );
+                  
+                  // Analyze nap consistency
+                  const naps = weekActivities.filter(a => a.type === 'nap' && a.details.startTime && a.details.endTime);
+                  const napDurations: number[] = [];
+                  naps.forEach(nap => {
+                    const start = new Date(`2000/01/01 ${nap.details.startTime}`);
+                    const end = new Date(`2000/01/01 ${nap.details.endTime}`);
+                    let diff = end.getTime() - start.getTime();
+                    if (diff < 0) diff += (24 * 60 * 60 * 1000);
+                    if (diff > 0) napDurations.push(diff / (1000 * 60 * 60));
+                  });
+                  
+                  const avgNapDuration = napDurations.length > 0 ? 
+                    napDurations.reduce((a, b) => a + b, 0) / napDurations.length : 0;
+                  
+                  // Analyze feed consistency
+                  const feeds = weekActivities.filter(a => a.type === 'feed');
+                  const feedsByDay: { [key: string]: number } = {};
+                  feeds.forEach(f => {
+                    if (!f.loggedAt) return;
+                    const day = new Date(f.loggedAt).toDateString();
+                    feedsByDay[day] = (feedsByDay[day] || 0) + 1;
+                  });
+                  const feedCounts = Object.values(feedsByDay);
+                  const avgFeeds = feedCounts.length > 0 ? feedCounts.reduce((a, b) => a + b, 0) / feedCounts.length : 0;
+                  const feedVariance = feedCounts.length > 1 ? 
+                    feedCounts.reduce((sum, count) => sum + Math.pow(count - avgFeeds, 2), 0) / feedCounts.length : 0;
+                  
+                  // Determine contextual message
+                  if (napDurations.length >= 10 && avgNapDuration > 1.5) {
+                    return "🌙 Settling beautifully into longer stretches";
+                  }
+                  if (feedVariance > 3) {
+                    return "🍃 Still finding balance day to day";
+                  }
+                  if (avgNapDuration > 2 && feedVariance < 2) {
+                    return "✨ Stronger nights, steadier rhythm";
+                  }
+                  if (napDurations.length >= 15 || (avgNapDuration > 0 && avgNapDuration < 1.2)) {
+                    return "🌱 Expanding wake windows and curiosity";
+                  }
+                  return "🌿 Building rhythm together";
+                })()}
+              </p>
             </div>
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />
+            <WeeklyReflection activities={activities} />
           </div>
         );
     case "helper":
