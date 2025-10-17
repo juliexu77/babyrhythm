@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Bot, User, Send, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -444,7 +444,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
       </ScrollArea>
 
       {/* Input with Contextual Chips */}
-      <div className="border-t border-border/50 bg-background/95 backdrop-blur-sm">
+      <div className="sticky bottom-0 border-t border-border/50 bg-background/95 backdrop-blur-sm">
         {/* Chips - only show when not loading and not focused */}
         {currentChips.length > 0 && !isLoading && (
           <div className={`px-4 pt-4 pb-2 transition-all duration-300 ${inputFocused ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'}`}>
@@ -467,8 +467,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
         {/* Input area */}
         <div className="p-4">
-          <div className="flex gap-2">
-            <Input
+          <div className="flex gap-2 items-end">
+            <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -476,7 +476,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
               onBlur={() => setInputFocused(false)}
               placeholder={placeholders[placeholderIndex]}
               disabled={isLoading}
-              className="flex-1 transition-all duration-200 dark:border-muted-foreground/40 dark:bg-muted/30"
+              rows={2}
+              className="flex-1 transition-all duration-200 dark:border-muted-foreground/40 dark:bg-muted/30 resize-none"
             />
             <Button
               onClick={handleSend}
