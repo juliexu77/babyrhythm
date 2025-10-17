@@ -323,9 +323,10 @@ FORM & CADENCE
 • Use sensory detail over abstraction.  
 • End with contextual CHIPS unless it's an Empowered Close.  
 • Hide chips after 1–2 turns.  
-• Format:  
-  CHIPS: [option 1 | option 2 | option 3]  
-  Chips reflect *emotional states, next steps, or choices.*
+• Format chips as:  
+  CHIPS: option 1 | option 2 | option 3  
+  (Just the options separated by pipes, no brackets)
+• Chips reflect emotional states, next steps, or choices.
 
 ═══════════════════════════════════════════════════════════
 BOUNDARIES
