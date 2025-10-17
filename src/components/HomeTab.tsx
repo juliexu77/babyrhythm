@@ -58,6 +58,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return "Good evening";
   };
 
+  // Get the greeting line including user name
+  const getGreetingLine = () => {
+    const greeting = getGreeting();
+    return userName ? `${greeting}, ${userName}` : greeting;
+  };
+
   // Get today's activities only
   const todayActivities = activities.filter(a => 
     a.loggedAt && isToday(new Date(a.loggedAt))
@@ -201,22 +207,33 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     };
   };
 
-  // Get daily sentiment based on patterns
+  // Get daily sentiment based on patterns - varied and context-aware
   const getDailySentiment = () => {
     const summary = getDailySummary();
     const expected = getExpectedFeeds(babyAgeMonths);
     const expectedNaps = getExpectedNaps(babyAgeMonths);
+    const hour = currentTime.getHours();
     
     // Growth spurt indicators: more frequent feeds than typical
     if (expected && summary.feedCount > expected.max + 2) {
       return { emoji: "🌱", text: "Growth spurt week" };
     }
     
+    // Early morning with no data yet
+    if (hour < 9 && summary.feedCount === 0 && summary.napCount === 0) {
+      return { emoji: "🌅", text: "Fresh start" };
+    }
+    
     // Smooth transition: feeds and naps in range
     if (expected && expectedNaps && 
         summary.feedCount >= expected.min && summary.feedCount <= expected.max &&
         summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max) {
-      return { emoji: "☀️", text: "Smooth transition" };
+      return { emoji: "☀️", text: "Smooth flow" };
+    }
+    
+    // Lots of activity
+    if (summary.feedCount + summary.napCount + summary.diaperCount > 10) {
+      return { emoji: "⚡", text: "Active rhythm" };
     }
     
     // Settled rhythm: consistent patterns
@@ -224,8 +241,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return { emoji: "✨", text: "Settled rhythm day" };
     }
     
+    // Light day
+    if (hour > 16 && summary.feedCount < 3 && summary.napCount < 2) {
+      return { emoji: "🌙", text: "Gentle pace" };
+    }
+    
     // Default: building routine
-    return { emoji: "🌿", text: "Building rhythm together" };
+    return { emoji: "🌿", text: "Building rhythm" };
   };
 
   // Get developmental phase description
@@ -417,31 +439,20 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     <div className="px-4 py-6 space-y-5 pb-24">
       {/* Greeting Section */}
       <div className="space-y-2">
-        <h2 className="text-2xl font-medium text-foreground">
-          {getGreeting()}{userName ? `, ${userName}` : ''}
-        </h2>
+        <h1 className="text-[22px] font-bold text-foreground dark:text-white">
+          {getGreetingLine()}
+        </h1>
         
-        {babyAge && developmentalPhase && (
-          <p className="text-sm text-muted-foreground">
-            {babyAge.months} {babyAge.months === 1 ? 'month' : 'months'} {babyAge.weeks > 0 && `and ${babyAge.weeks} ${babyAge.weeks === 1 ? 'week' : 'weeks'}`} — {developmentalPhase}
+        {developmentalPhase && babyName && (
+          <p className="text-[15px] text-muted-foreground">
+            {babyName} is {developmentalPhase}
           </p>
         )}
         
-        {sentiment.emoji && sentiment.text && (
-          <p className="text-sm font-medium text-foreground">
-            {sentiment.emoji} {sentiment.text}
-          </p>
-        )}
-        
-        <p className="text-base text-muted-foreground">
-          {sleepStatus.main}
-        </p>
-        
-        {sleepStatus.sub && (
-          <p className="text-sm text-muted-foreground">
-            {sleepStatus.sub}
-          </p>
-        )}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
+          <span className="text-sm">{sentiment.emoji}</span>
+          <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+        </div>
       </div>
 
       {/* What's Next - Predictive Card (High Priority) */}

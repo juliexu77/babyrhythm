@@ -360,4 +360,13 @@
     background: hsl(var(--divider));
     margin: var(--s-3) 0;
   }
+  
+  /* Global header scroll fade effect */
+  .scroll-fade {
+    transition: opacity 0.2s ease;
+  }
+  
+  .scroll-fade.scrolled {
+    opacity: 0.85;
+  }
 }

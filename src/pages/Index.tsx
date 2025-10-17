@@ -92,7 +92,18 @@ const ongoingNap = activities
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   
+
+  // Handle scroll for header fade effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Check user authentication and household status
   useEffect(() => {
@@ -548,12 +559,11 @@ const ongoingNap = activities
 return (
     <ErrorBoundary onRetry={() => { refetchHousehold(); refetchActivities(); }}>
       <div className="min-h-screen bg-background pb-16">
-        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="flex items-center justify-between p-4">
+        <div className={`sticky top-0 z-30 bg-background border-b border-[#E5E7EB] dark:border-[#1F2937] h-16 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
+          <div className="flex items-center justify-between w-full px-4">
             <div>
-              <h1 className="text-xl font-semibold">Parenting Partner</h1>
               {babyProfile?.name && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium text-[#374151] dark:text-[#9BA3AA]">
                   {babyProfile.name} · {babyProfile.birthday ? (() => {
                     const birthDate = new Date(babyProfile.birthday);
                     const today = new Date();
