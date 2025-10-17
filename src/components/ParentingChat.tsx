@@ -139,7 +139,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
   // Load initial greeting on mount - wait for required data
   useEffect(() => {
-    if (!hasInitialized && !hasHistory && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined) && household?.id) {
+    if (!hasInitialized && !hasHistory && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined)) {
       setHasInitialized(true);
       setIsLoading(true);
       streamChat("", true, true);
