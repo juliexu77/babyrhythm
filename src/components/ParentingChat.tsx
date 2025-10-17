@@ -467,11 +467,6 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
         {/* Input area */}
         <div className="p-4">
-          {!inputFocused && currentChips.length > 0 && (
-            <p className="text-xs text-muted-foreground text-center mb-3 transition-opacity duration-200">
-              💬 Or tell me what's been on your mind…
-            </p>
-          )}
           <div className="flex gap-2">
             <Input
               value={input}
@@ -479,9 +474,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
               onKeyPress={handleKeyPress}
               onFocus={() => setInputFocused(true)}
               onBlur={() => setInputFocused(false)}
-              placeholder={inputFocused || currentChips.length === 0 ? placeholders[placeholderIndex] : ""}
+              placeholder={placeholders[placeholderIndex]}
               disabled={isLoading}
-              className="flex-1 transition-all duration-200"
+              className="flex-1 transition-all duration-200 dark:border-muted-foreground/40 dark:bg-muted/30"
             />
             <Button
               onClick={handleSend}
