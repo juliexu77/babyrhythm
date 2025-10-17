@@ -4,6 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Bot, User, Send, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { useHousehold } from "@/hooks/useHousehold";
 
 interface Message {
   role: "user" | "assistant";
@@ -63,6 +65,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { household } = useHousehold();
   
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
 
@@ -89,6 +92,45 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
     }
   }, [messages, greetingMessage]);
 
+  // Load chat history from database on mount
+  useEffect(() => {
+    const loadChatHistory = async () => {
+      if (!household?.id) return;
+
+      try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const now = new Date();
+        
+        // Calculate chat_date using the same 6am logic as the database function
+        const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+        const chatDate = localTime.getHours() < 6 
+          ? new Date(localTime.setDate(localTime.getDate() - 1)).toISOString().split('T')[0]
+          : localTime.toISOString().split('T')[0];
+
+        const { data, error } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('household_id', household.id)
+          .eq('chat_date', chatDate)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const loadedMessages: Message[] = data.map(msg => ({
+            role: msg.role as "user" | "assistant",
+            content: msg.content
+          }));
+          setMessages(loadedMessages);
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+      }
+    };
+
+    loadChatHistory();
+  }, [household?.id]);
+
   // Load initial greeting on mount - wait for required data
   useEffect(() => {
     if (!hasInitialized && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined)) {
@@ -112,12 +154,15 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
     return { content: text, chips: [] };
   };
 
-  const handleChipClick = (chipText: string) => {
+  const handleChipClick = async (chipText: string) => {
     setInput("");
     
     // Add the chip as a user message to maintain conversation continuity
     const chipMessage: Message = { role: "user", content: chipText };
     setMessages(prev => [...prev, chipMessage]);
+    
+    // Save user message to database
+    await saveMessageToDatabase(chipMessage);
     
     setIsLoading(true);
     streamChat(chipText, false, false);
@@ -135,6 +180,34 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
       .replace(/(\d+)\s*-\s*minute(?:s)?\b/gi, (_m, num) => minutesToText(parseInt(num)))
       .replace(/(\d+)\s*minutes?\b/gi, (_m, num) => minutesToText(parseInt(num)))
       .replace(/(\d+)\s*min\b/gi, (_m, num) => minutesToText(parseInt(num)));
+  };
+
+  const saveMessageToDatabase = async (message: Message) => {
+    if (!household?.id) return;
+
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
+      
+      // Calculate chat_date using the same 6am logic
+      const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+      const chatDate = localTime.getHours() < 6 
+        ? new Date(localTime.setDate(localTime.getDate() - 1)).toISOString().split('T')[0]
+        : localTime.toISOString().split('T')[0];
+
+      const { error } = await supabase
+        .from('chat_messages')
+        .insert({
+          household_id: household.id,
+          role: message.role,
+          content: message.content,
+          chat_date: chatDate
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving message to database:', error);
+    }
   };
 
   const streamChat = async (userMessage: string, isInitial = false, isGreeting = false) => {
@@ -189,7 +262,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
       let assistantContent = "";
 
       if (!isGreeting) {
-        setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+        const assistantMsg: Message = { role: "assistant", content: "" };
+        setMessages(prev => [...prev, assistantMsg]);
       }
 
       // For initial greeting, batch first few tokens for smoother appearance
@@ -263,6 +337,12 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
         }
       }
 
+      // Save complete assistant message to database
+      if (!isGreeting && assistantContent) {
+        const parsed = parseMessageWithChips(formatDurationsInText(assistantContent));
+        await saveMessageToDatabase({ role: "assistant", content: parsed.content });
+      }
+
       // Final flush
       if (textBuffer.trim()) {
         for (let raw of textBuffer.split("\n")) {
@@ -320,11 +400,16 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
     }
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     
     const userMessage = input.trim();
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    const msg: Message = { role: "user", content: userMessage };
+    setMessages(prev => [...prev, msg]);
+    
+    // Save user message to database
+    await saveMessageToDatabase(msg);
+    
     setInput("");
     setIsLoading(true);
     streamChat(userMessage, false, false);
