@@ -174,11 +174,23 @@
     @apply border-border;
   }
 
+  html {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-ui-light);
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  #root {
+    overflow-x: hidden;
+    width: 100%;
   }
 
   .dark body {
