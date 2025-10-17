@@ -55,6 +55,41 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          chat_date: string
+          content: string
+          created_at: string
+          household_id: string
+          id: string
+          role: string
+        }
+        Insert: {
+          chat_date: string
+          content: string
+          created_at?: string
+          household_id: string
+          id?: string
+          role: string
+        }
+        Update: {
+          chat_date?: string
+          content?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collaborators: {
         Row: {
           created_at: string
@@ -218,6 +253,10 @@ export type Database = {
         Returns: {
           household_id: string
         }[]
+      }
+      get_chat_date: {
+        Args: { timestamp_tz: string; user_timezone: string }
+        Returns: string
       }
       get_collaborators_with_profiles: {
         Args: { _household_id: string }
