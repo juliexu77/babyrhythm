@@ -25,17 +25,17 @@
     --s-6: 24px;
     --s-7: 32px;
     
-    /* Light Mode - "Calm & Supportive" */
-    --bg: 35 15% 98%; /* #FBF9F6 - warmer cream */
-    --surface: 0 0% 100%; /* #FFFFFF */
-    --surface-muted: 35 12% 97%; /* Reduced contrast from surface by 12% */
-    --text: 0 0% 18%; /* #2F2F2F */
-    --text-muted: 0 0% 46%; /* #757575 */
-    --divider: 0 0% 88%; /* #E0E0E0 */
-    --accent-1: var(--pp-mint); /* feeding */
-    --accent-2: var(--pp-lavender); /* sleep/insights */
-    --chart-feed: 153 45% 75%; /* #7ED9B5 - mint tint 60% */
-    --chart-sleep: 264 30% 84%; /* #C1B2D7 - lavender tint 60% */
+    /* Light Mode - "Calm & Supportive" - Greige Linen Base */
+    --bg: 40 23% 96%; /* #F8F6F3 - Soft Greige Linen */
+    --surface: 0 0% 100%; /* #FFFFFF - Clean White */
+    --surface-muted: 36 35% 84%; /* #E5D9C7 - Linen Beige */
+    --text: 210 6% 11%; /* #1B1D1F - Ink Gray */
+    --text-muted: 210 3% 35%; /* #54575A - Warm Graphite */
+    --divider: 40 12% 87%; /* #E1DFDB - Subtle Warm Divider */
+    --accent-1: 162 63% 33%; /* #1F8A6E - Mint Fern */
+    --accent-2: 28 58% 81%; /* #EACBB4 - Peach Blush */
+    --chart-feed: 152 44% 66%; /* #89CBAA - Soft Green Tea */
+    --chart-sleep: 28 58% 81%; /* #EACBB4 - Peach Blush */
     
     /* Card elevation */
     --elev-shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
@@ -51,35 +51,35 @@
     --card-foreground: var(--text);
     --popover: var(--surface);
     --popover-foreground: var(--text);
-    --primary: var(--pp-mint);
+    --primary: var(--accent-1); /* Mint Fern */
     --primary-foreground: 0 0% 100%;
-    --secondary: var(--pp-lavender);
-    --secondary-foreground: 0 0% 100%;
+    --secondary: var(--surface-muted); /* Linen Beige */
+    --secondary-foreground: var(--text);
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
-    --accent: var(--pp-lavender);
-    --accent-foreground: 0 0% 100%;
+    --accent: var(--accent-2); /* Peach Blush */
+    --accent-foreground: var(--text);
     --destructive: var(--pp-coral);
     --destructive-foreground: 0 0% 100%;
     --border: var(--divider);
-    --input: var(--surface-muted);
-    --ring: var(--pp-mint);
+    --input: 48 100% 95%; /* #FFF9E6 - Morning Sunlight */
+    --ring: var(--accent-1);
     --radius: 16px;
     
     /* Activity colors */
-    --feed-color: var(--pp-mint);
-    --diaper-color: var(--pp-lavender);
-    --nap-color: var(--pp-lavender);
-    --note-color: 45 35% 80%;
-    --chat-color: var(--pp-mint);
+    --feed-color: 162 63% 33%; /* Mint Fern */
+    --diaper-color: 28 58% 81%; /* Peach Blush */
+    --nap-color: 152 44% 66%; /* Soft Green Tea */
+    --note-color: 36 35% 84%; /* Linen Beige */
+    --chat-color: 162 63% 33%; /* Mint Fern */
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 35% 65%));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--chart-feed)), hsl(153 40% 85%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 20% 90%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 20% 90%));
-    --gradient-note: linear-gradient(135deg, hsl(45 40% 85%), hsl(45 35% 90%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 35% 65%));
+    --gradient-primary: linear-gradient(135deg, hsl(162 63% 33%), hsl(152 44% 66%));
+    --gradient-feed: linear-gradient(135deg, hsl(152 44% 66%), hsl(162 50% 75%));
+    --gradient-diaper: linear-gradient(135deg, hsl(28 58% 81%), hsl(28 48% 88%));
+    --gradient-nap: linear-gradient(135deg, hsl(152 44% 66%), hsl(152 35% 78%));
+    --gradient-note: linear-gradient(135deg, hsl(36 35% 84%), hsl(36 28% 90%));
+    --gradient-chat: linear-gradient(135deg, hsl(162 63% 33%), hsl(152 44% 66%));
     
     /* Shadows */
     --shadow-soft: var(--elev-shadow);
@@ -97,17 +97,17 @@
   }
 
   .dark {
-    /* Dark Mode - "Confident & Data-Driven" */
-    --bg: 0 0% 7%; /* #121212 */
-    --surface: 0 0% 12%; /* #1E1E1E */
-    --surface-muted: 0 0% 9%; /* #161616 */
-    --text: 0 0% 100%; /* #FFFFFF */
-    --text-muted: 0 0% 62%; /* #9E9E9E */
-    --divider: 0 0% 20%; /* #333333 */
-    --accent-1: var(--pp-mint); /* feeding */
-    --accent-2: var(--pp-lavender); /* sleep/insights */
-    --chart-feed: 164 82% 68%; /* #36E2AE - brighter mint */
-    --chart-sleep: 264 40% 75%; /* #B095D1 - brighter lavender */
+    /* Dark Mode - "Confident & Data-Driven" - Charcoal Night Base */
+    --bg: 210 20% 5%; /* #0B0D0F - Charcoal Night */
+    --surface: 210 8% 11%; /* #1A1C1E - Near Black */
+    --surface-muted: 36 15% 40%; /* #756A58 - Muted Taupe */
+    --text: 0 1% 93%; /* #EDECEC - Off-White */
+    --text-muted: 220 2% 66%; /* #A7A8AB - Slate Gray */
+    --divider: 210 6% 18%; /* #2B2D2F - Deep Graphite Divider */
+    --accent-1: 162 67% 46%; /* #2BC197 - Seafoam Glow */
+    --accent-2: 28 43% 61%; /* #C59577 - Clay Rose */
+    --chart-feed: 162 37% 48%; /* #4CA687 - Herbal Mint */
+    --chart-sleep: 28 43% 61%; /* #C59577 - Clay Rose */
     
     /* Card elevation - flat design */
     --elev-shadow: none;
@@ -123,35 +123,35 @@
     --card-foreground: var(--text);
     --popover: var(--surface);
     --popover-foreground: var(--text);
-    --primary: var(--pp-mint);
-    --primary-foreground: 0 0% 0%;
-    --secondary: var(--pp-lavender);
-    --secondary-foreground: 0 0% 100%;
+    --primary: var(--accent-1); /* Seafoam Glow */
+    --primary-foreground: 210 20% 5%;
+    --secondary: var(--surface-muted); /* Muted Taupe */
+    --secondary-foreground: var(--text);
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
-    --accent: var(--pp-lavender);
-    --accent-foreground: 0 0% 100%;
+    --accent: var(--accent-2); /* Clay Rose */
+    --accent-foreground: var(--text);
     --destructive: var(--pp-coral);
     --destructive-foreground: 0 0% 100%;
     --border: var(--divider);
-    --input: var(--surface-muted);
-    --ring: var(--pp-mint);
+    --input: 48 33% 9%; /* #1E1C0F - Muted Amber Glow */
+    --ring: var(--accent-1);
     --radius: 8px;
     
     /* Activity colors */
-    --feed-color: var(--pp-mint);
-    --diaper-color: var(--pp-lavender);
-    --nap-color: var(--pp-lavender);
-    --note-color: 190 100% 55%;
-    --chat-color: var(--pp-mint);
+    --feed-color: 162 67% 46%; /* Seafoam Glow */
+    --diaper-color: 28 43% 61%; /* Clay Rose */
+    --nap-color: 162 37% 48%; /* Herbal Mint */
+    --note-color: 36 15% 40%; /* Muted Taupe */
+    --chat-color: 162 67% 46%; /* Seafoam Glow */
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 45% 65%));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--chart-feed)), hsl(164 75% 75%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 35% 80%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 35% 80%));
-    --gradient-note: linear-gradient(135deg, hsl(190 100% 55%), hsl(190 90% 65%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 45% 65%));
+    --gradient-primary: linear-gradient(135deg, hsl(162 67% 46%), hsl(162 37% 48%));
+    --gradient-feed: linear-gradient(135deg, hsl(162 37% 48%), hsl(162 45% 55%));
+    --gradient-diaper: linear-gradient(135deg, hsl(28 43% 61%), hsl(28 35% 68%));
+    --gradient-nap: linear-gradient(135deg, hsl(162 37% 48%), hsl(162 30% 58%));
+    --gradient-note: linear-gradient(135deg, hsl(36 15% 40%), hsl(36 12% 48%));
+    --gradient-chat: linear-gradient(135deg, hsl(162 67% 46%), hsl(162 37% 48%));
     
     /* Shadows - flat design */
     --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.4);
