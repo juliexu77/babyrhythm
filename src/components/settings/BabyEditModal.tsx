@@ -24,6 +24,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Save status states
   const [babyNameSaveStatus, setBabyNameSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
@@ -34,6 +35,10 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
     if (open && household) {
       setBabyName(household.baby_name || "");
       setBabyBirthday(household.baby_birthday || null);
+      setIsInitialized(true);
+    } else if (!open) {
+      // Reset initialized state when modal closes
+      setIsInitialized(false);
     }
   }, [open, household]);
 
@@ -59,14 +64,18 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
 
   // Auto-save baby birthday changes
   useEffect(() => {
-    if (!user || !household || babyBirthday === household.baby_birthday) return;
+    // Don't save until component is initialized and user has made a change
+    if (!user || !household || !isInitialized) return;
+    if (babyBirthday === household.baby_birthday) return;
     
+    console.log('Baby birthday changed, will save:', babyBirthday);
     setBabyBirthdaySaveStatus("unsaved");
     setBabyBirthdaySaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         // Convert empty string to null for database
         await updateHousehold({ baby_birthday: babyBirthday || null });
+        console.log('Baby birthday saved successfully:', babyBirthday);
         setBabyBirthdaySaveStatus("saved");
         setTimeout(() => setBabyBirthdaySaveStatus("idle"), 3000);
       } catch (error) {
@@ -76,7 +85,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [babyBirthday, household, updateHousehold, user]);
+  }, [babyBirthday, household, updateHousehold, user, isInitialized]);
 
   const handleBabyPhotoUpdate = async (photoUrl: string | null) => {
     try {
