@@ -25,13 +25,13 @@
     --s-6: 24px;
     --s-7: 32px;
     
-    /* Light Mode - "Sage & Serene" */
+    /* Light Mode - "Warm & Serene" */
     --bg: 26 45% 90%; /* #f1e4da - warm oatmeal background */
     --surface: 30 33% 96%; /* #F6F4F2 - warm card surface */
-    --surface-muted: 141 35% 89%; /* #DDEBE2 - muted mint surface */
+    --surface-muted: 28 30% 88%; /* #E5DED5 - warm taupe surface */
     --text: 0 0% 18%; /* #2E2E2E - dark text */
-    --text-muted: 147 4% 44%; /* #6C7570 - sage subtext */
-    --divider: 156 26% 91%; /* #E2ECE8 - soft border */
+    --text-muted: 25 10% 45%; /* #796E65 - warm gray subtext */
+    --divider: 30 20% 88%; /* #E8E2DC - warm neutral border */
     --accent-1: 107 19% 66%; /* #A2B79C - sage primary */
     --accent-2: 32 73% 91%; /* #F8E9D8 - warm accent */
     --chart-feed: 107 19% 66%; /* #A2B79C - sage for charts */
