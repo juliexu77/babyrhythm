@@ -26,7 +26,7 @@
     --s-7: 32px;
     
     /* Light Mode - "Sage & Serene" */
-    --bg: 27 45% 80%; /* #E3CAB6 - warm peachy-tan background */
+    --bg: 26 45% 90%; /* #f1e4da - warm oatmeal background */
     --surface: 30 33% 96%; /* #F6F4F2 - warm card surface */
     --surface-muted: 141 35% 89%; /* #DDEBE2 - muted mint surface */
     --text: 0 0% 18%; /* #2E2E2E - dark text */
@@ -206,7 +206,7 @@
 
   /* Component base styles */
   .card {
-    background: hsl(var(--surface));
+    background: hsl(var(--surface) / 0.5);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
   }
@@ -321,7 +321,7 @@
   }
   
   .supportive-card {
-    @apply rounded-2xl shadow-card bg-white border border-border/20 backdrop-blur-sm;
+    @apply rounded-2xl shadow-card bg-white/50 border border-border/20 backdrop-blur-sm;
   }
   
   .dark .supportive-card {
@@ -355,7 +355,7 @@
   
   /* Component utilities */
   .pp-card {
-    background: hsl(var(--surface));
+    background: hsl(var(--surface) / 0.5);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
     padding: var(--s-4) var(--s-5);
