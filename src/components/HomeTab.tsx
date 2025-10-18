@@ -21,6 +21,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
+  const [showGrowthDetails, setShowGrowthDetails] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Calculate baby's age in months and weeks
@@ -404,6 +405,28 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       };
     }
     
+    // Generate contextual summary
+    if (result.weight || result.length) {
+      const avgPercentile = [
+        result.weight?.percentile,
+        result.length?.percentile
+      ].filter(p => p !== undefined).reduce((a, b) => a! + b!, 0)! / 
+        [result.weight?.percentile, result.length?.percentile].filter(p => p !== undefined).length;
+      
+      let summary = '';
+      if (avgPercentile >= 85) {
+        summary = 'Growing strong — tracking above average';
+      } else if (avgPercentile >= 50) {
+        summary = 'Gaining steadily — right on track for his age';
+      } else if (avgPercentile >= 25) {
+        summary = 'Growing at his own pace — steady and healthy';
+      } else {
+        summary = 'Following his own growth curve — consistent progress';
+      }
+      
+      result.summary = summary;
+    }
+    
     return Object.keys(result).length > 1 ? result : null;
   };
 
@@ -754,25 +777,45 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           </div>
           
           {latestMeasurement && (
-            <div className="flex items-start gap-2">
+            <button
+              onClick={() => setShowGrowthDetails(!showGrowthDetails)}
+              className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
+            >
               <span className="text-lg">🌱</span>
               <div className="flex-1">
                 <p className="text-sm text-foreground">
-                  <span className="font-medium">Growth</span> · {format(new Date(latestMeasurement.date), 'MMM d')}
+                  <span className="font-medium">Growth</span>
                 </p>
-                <div className="text-xs text-muted-foreground leading-relaxed space-y-0.5">
-                  {latestMeasurement.weight && (
-                    <div>Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)</div>
-                  )}
-                  {latestMeasurement.length && (
-                    <div>Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)</div>
-                  )}
-                  {latestMeasurement.headCirc && (
-                    <div>Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)</div>
-                  )}
-                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {latestMeasurement.summary || 'Tracked recently'}
+                </p>
+                {showGrowthDetails && (
+                  <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
+                    <div className="text-xs text-muted-foreground">
+                      Measured {format(new Date(latestMeasurement.date), 'MMM d')}
+                    </div>
+                    {latestMeasurement.weight && (
+                      <div className="text-xs text-muted-foreground">
+                        Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)
+                      </div>
+                    )}
+                    {latestMeasurement.length && (
+                      <div className="text-xs text-muted-foreground">
+                        Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)
+                      </div>
+                    )}
+                    {latestMeasurement.headCirc && (
+                      <div className="text-xs text-muted-foreground">
+                        Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+              <ChevronDown 
+                className={`h-4 w-4 text-muted-foreground transition-transform ${showGrowthDetails ? 'rotate-180' : ''}`}
+              />
+            </button>
           )}
 
           <div className="flex items-start gap-2">
