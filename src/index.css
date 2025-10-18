@@ -212,7 +212,7 @@
 
   /* Component base styles */
   .card {
-    background: hsl(var(--card) / 0.5);
+    background: hsl(var(--card) / 0.3);
     backdrop-filter: blur(8px);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
@@ -364,7 +364,7 @@
   
   /* Component utilities */
   .pp-card {
-    background: hsl(var(--card) / 0.5);
+    background: hsl(var(--card) / 0.3);
     backdrop-filter: blur(8px);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
