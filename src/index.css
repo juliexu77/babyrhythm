@@ -11,9 +11,10 @@
     --font-ui-dark: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-num: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     
-    /* Brand colors - Warm Sage/Taupe/Terracotta palette */
+    /* Brand colors - base definitions */
     --pp-mint: 100 20% 52%; /* #8AA883 - warm sage green */
-    --pp-lavender: 18 45% 60%; /* #C88866 - warm terracotta/clay */
+    --pp-lavender: 264 28% 65%; /* #A08DC5 - soft lavender (for dark mode) */
+    --pp-terracotta: 18 45% 60%; /* #C88866 - warm terracotta/clay (for light mode) */
     --pp-coral: 20 60% 68%; /* #E09B7E - warmer coral */
     
     /* Spacing scale (8pt grid) */
@@ -35,7 +36,7 @@
     --accent-1: var(--pp-mint); /* warmer sage primary */
     --accent-2: 32 73% 91%; /* #F8E9D8 - warm accent */
     --chart-feed: var(--pp-mint); /* warmer sage for charts */
-    --chart-sleep: var(--pp-lavender); /* warm terracotta tint */
+    --chart-sleep: var(--pp-terracotta); /* warm terracotta for sleep */
     
     /* Card elevation */
     --elev-shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
@@ -53,11 +54,11 @@
     --popover-foreground: var(--text);
     --primary: var(--pp-mint);
     --primary-foreground: 0 0% 100%;
-    --secondary: var(--pp-lavender);
+    --secondary: var(--pp-terracotta);
     --secondary-foreground: 0 0% 100%;
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
-    --accent: var(--pp-lavender);
+    --accent: var(--pp-terracotta);
     --accent-foreground: 0 0% 100%;
     --destructive: var(--pp-coral);
     --destructive-foreground: 0 0% 100%;
@@ -68,16 +69,16 @@
     
     /* Activity colors */
     --feed-color: var(--pp-mint); /* warmer sage green */
-    --diaper-color: var(--pp-lavender); /* warm terracotta */
-    --nap-color: var(--pp-lavender); /* warm terracotta */
+    --diaper-color: var(--pp-terracotta); /* warm terracotta */
+    --nap-color: var(--pp-terracotta); /* warm terracotta */
     --note-color: 32 73% 91%; /* warm peach */
     --chat-color: var(--pp-mint); /* warmer sage green */
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(100 20% 62%));
     --gradient-feed: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(100 20% 66%));
-    --gradient-diaper: linear-gradient(135deg, hsl(18 45% 60%), hsl(18 45% 70%));
-    --gradient-nap: linear-gradient(135deg, hsl(18 45% 60%), hsl(18 45% 70%));
+    --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(18 45% 70%));
+    --gradient-nap: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(18 45% 70%));
     --gradient-note: linear-gradient(135deg, hsl(32 73% 91%), hsl(32 65% 95%));
     --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(100 20% 62%));
     
