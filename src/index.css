@@ -36,9 +36,10 @@
     /* Light mode color overrides - fall latte palette */
     --pp-mint-light: 25 38% 42%; /* #8B5E3C - espresso (buttons/interactive) */
     --pp-terracotta: 25 30% 61%; /* #B8927C - cinnamon (charts/accents) */
+    --pp-peach: 15 65% 72%; /* #E5997A - warm peachy-coral accent */
     
     --accent-1: var(--pp-terracotta); /* cinnamon accents */
-    --accent-2: 32 73% 91%; /* #F8E9D8 - warm accent */
+    --accent-2: var(--pp-peach); /* peachy-coral for visual interest */
     --chart-feed: var(--pp-terracotta); /* cinnamon for charts */
     --chart-sleep: var(--pp-terracotta); /* cinnamon for sleep */
     
@@ -58,11 +59,11 @@
     --popover-foreground: var(--text);
     --primary: var(--pp-mint-light);
     --primary-foreground: 0 0% 100%;
-    --secondary: var(--pp-terracotta);
+    --secondary: var(--pp-peach);
     --secondary-foreground: 0 0% 100%;
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
-    --accent: var(--pp-terracotta);
+    --accent: var(--pp-peach);
     --accent-foreground: 0 0% 100%;
     --destructive: var(--pp-coral);
     --destructive-foreground: 0 0% 100%;
