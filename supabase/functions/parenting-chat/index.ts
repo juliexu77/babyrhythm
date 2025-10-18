@@ -99,6 +99,24 @@ serve(async (req) => {
       }
     };
     
+    // Helper to detect if a sleep session is overnight/nighttime sleep (not a daytime nap)
+    const isOvernightSleep = (startTime: string, endTime: string): boolean => {
+      const startMinutes = parseTimeToMinutes(startTime);
+      const endMinutes = parseTimeToMinutes(endTime);
+      const duration = calculateNapDuration(startTime, endTime);
+      
+      // Overnight sleep typically:
+      // 1. Starts between 6 PM (18:00) and 11:59 PM (23:59) - 1080-1439 minutes
+      // 2. Or ends between 5 AM (05:00) and 9 AM (09:00) - 300-540 minutes
+      // 3. Or has a duration longer than 5 hours (300 minutes)
+      
+      const startsInEvening = startMinutes >= 1080 && startMinutes <= 1439; // 6 PM - 11:59 PM
+      const endsInMorning = endMinutes >= 300 && endMinutes <= 540; // 5 AM - 9 AM
+      const isLongDuration = duration > 300; // More than 5 hours
+      
+      return (startsInEvening || endsInMorning) && isLongDuration;
+    };
+    
     // Helper function to calculate WHO growth percentiles using actual reference data
     const calculatePercentile = (value: number, ageInWeeks: number, gender: 'male' | 'female', measurementType: 'weight' | 'length' | 'headCirc'): number => {
       const ageMonths = Math.floor(ageInWeeks / 4.33);
@@ -228,8 +246,13 @@ serve(async (req) => {
     // Calculate daily summaries for trend analysis
     const dailySummaries = Object.entries(activitiesByDay).map(([date, dayActivities]) => {
       const feeds = dayActivities.filter(a => a.type === 'feed');
-      const naps = dayActivities.filter(a => a.type === 'nap' && a.details?.startTime && a.details?.endTime)
-        .sort((a, b) => parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!));
+      // Filter out overnight sleep - only include daytime naps
+      const naps = dayActivities.filter(a => 
+        a.type === 'nap' && 
+        a.details?.startTime && 
+        a.details?.endTime &&
+        !isOvernightSleep(a.details.startTime, a.details.endTime)
+      ).sort((a, b) => parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!));
       const diapers = dayActivities.filter(a => a.type === 'diaper');
       const measures = dayActivities.filter(a => a.type === 'measure');
       
