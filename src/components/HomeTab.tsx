@@ -315,8 +315,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     const feedCount = displayActivities.filter(a => a.type === 'feed').length;
     const napCount = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
     const diaperCount = displayActivities.filter(a => a.type === 'diaper').length;
+    const measureCount = displayActivities.filter(a => a.type === 'measure').length;
 
-    return { feedCount, napCount, diaperCount };
+    return { feedCount, napCount, diaperCount, measureCount };
   };
 
   // Get age-appropriate expectations
@@ -650,6 +651,20 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               </p>
             </div>
           </div>
+          
+          {summary.measureCount > 0 && (
+            <div className="flex items-start gap-2">
+              <span className="text-lg">📏</span>
+              <div className="flex-1">
+                <p className="text-sm text-foreground">
+                  <span className="font-medium">{t('measurementsLabel') || 'Growth'}</span> {summary.measureCount} {summary.measureCount !== 1 ? 'measurements' : 'measurement'} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
+                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Open the Guide for growth percentiles and developmental context.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-start gap-2">
             <span className="text-lg">💫</span>
