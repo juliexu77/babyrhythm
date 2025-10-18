@@ -15,6 +15,7 @@
     --pp-mint: 153 35% 50%; /* #54AF7D - original sage mint */
     --pp-lavender: 264 28% 65%; /* #A08DC5 - soft lavender */
     --pp-coral: 15 55% 70%; /* #D89B82 - muted coral/taupe */
+    --warm-gray: 20 8% 48%; /* #7C6F67 - warm gray for microcopy */
     
     /* Spacing scale (8pt grid) */
     --s-1: 4px;

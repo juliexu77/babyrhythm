@@ -17,6 +17,8 @@ export default {
         sans: ["Nunito Sans", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
         "sans-dark": ["Inter", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
         mono: ["Roboto Mono", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"],
+        heading: ["DM Sans", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+        body: ["Work Sans", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -57,6 +59,7 @@ export default {
         nap: "hsl(var(--nap-color))",
         note: "hsl(var(--note-color))",
         chat: "hsl(var(--chat-color))",
+        "warm-gray": "hsl(var(--warm-gray))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -164,6 +167,16 @@ export default {
             transform: "scale(1.02)",
             boxShadow: "0 0 15px rgba(76, 175, 125, 0.4)"
           }
+        },
+        "pulse-plum": {
+          "0%, 100%": {
+            opacity: "0.15",
+            transform: "scale(1)"
+          },
+          "50%": {
+            opacity: "0.25",
+            transform: "scale(1.05)"
+          }
         }
       },
       animation: {
@@ -176,6 +189,7 @@ export default {
         "glow": "glow 1s ease-in-out infinite",
         "breathe": "breathe 2s ease-in-out infinite",
         "breathe-dark": "breathe-dark 1.8s ease-out infinite",
+        "pulse-plum": "pulse-plum 3s ease-in-out infinite",
       },
     },
   },
