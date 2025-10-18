@@ -758,7 +758,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <span className="text-lg">📏</span>
               <div className="flex-1">
                 <p className="text-sm text-foreground">
-                  <span className="font-medium">{t('measurementsLabel') || 'Growth'}</span> {format(new Date(latestMeasurement.date), 'MMM d')}
+                  <span className="font-medium">Growth Check</span> · {format(new Date(latestMeasurement.date), 'MMM d')}
                 </p>
                 <div className="text-xs text-muted-foreground leading-relaxed space-y-0.5">
                   {latestMeasurement.weight && (
