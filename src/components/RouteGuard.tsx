@@ -14,7 +14,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     console.log('RouteGuard - Current path:', location.pathname, 'User:', !!user, 'Loading:', loading);
 
     // Require authentication for all protected routes
-    const publicRoutes = ['/auth', '/invite', '/onboarding', '/demo'];
+    const publicRoutes = ['/auth', '/invite', '/onboarding'];
     const isPublicRoute = publicRoutes.some(route => 
       location.pathname === route || location.pathname.startsWith(route + '/')
     );

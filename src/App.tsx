@@ -10,7 +10,6 @@ import { RouteGuard } from "@/components/RouteGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import InviteAccept from "./pages/InviteAccept";
-import DemoTour from "./pages/DemoTour";
 import Onboarding from "./pages/Onboarding";
 import BabySetup from "./pages/BabySetup";
 import VillageInvite from "./pages/VillageInvite";
@@ -44,7 +43,6 @@ const App = () => (
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/login" element={<Auth />} />
                   <Route path="/invite/:code" element={<InviteAccept />} />
-                  <Route path="/demo" element={<DemoTour />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

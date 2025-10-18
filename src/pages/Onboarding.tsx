@@ -51,19 +51,12 @@ const Onboarding = () => {
               {t('getStarted')}
             </Button>
             
-            <div className="flex flex-col items-center gap-3">
+            <div className="text-center">
               <button
                 onClick={() => navigate("/auth")}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
               >
                 {t('alreadyHaveAccount')}
-              </button>
-              
-              <button
-                onClick={() => navigate("/demo")}
-                className="text-sm text-warm-gray italic hover:text-foreground transition-colors"
-              >
-                or explore the demo first
               </button>
             </div>
           </div>
