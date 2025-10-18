@@ -375,9 +375,9 @@ const ongoingNap = activities
                 })()}
               </p>
             </div>
+            <WeeklyReflection activities={activities} />
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />
-            <WeeklyReflection activities={activities} />
           </div>
         );
     case "helper":
