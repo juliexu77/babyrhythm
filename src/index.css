@@ -34,7 +34,8 @@
     --divider: 30 20% 88%; /* #E8E2DC - warm neutral border */
     
     /* Light mode color overrides - fall latte palette */
-    --pp-mint-light: 25 38% 42%; /* #8B5E3C - espresso (buttons/interactive) */
+    --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
+    --pp-grey: 0 0% 45%; /* #737373 - grey (neutral accents) */
     --pp-terracotta: 25 30% 61%; /* #B8927C - cinnamon (charts/accents) */
     
     --accent-1: var(--pp-terracotta); /* cinnamon accents */
@@ -56,7 +57,7 @@
     --card-foreground: var(--text);
     --popover: var(--surface);
     --popover-foreground: var(--text);
-    --primary: var(--pp-mint-light);
+    --primary: var(--pp-blackberry);
     --primary-foreground: 0 0% 100%;
     --secondary: var(--pp-terracotta);
     --secondary-foreground: 0 0% 100%;
@@ -79,12 +80,12 @@
     --chat-color: var(--pp-terracotta); /* cinnamon */
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(25 38% 42%), hsl(25 38% 52%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-blackberry)), hsl(320 61% 40%));
     --gradient-feed: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(25 30% 70%));
     --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(25 30% 70%));
     --gradient-nap: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(25 30% 70%));
     --gradient-note: linear-gradient(135deg, hsl(32 73% 91%), hsl(32 65% 95%));
-    --gradient-chat: linear-gradient(135deg, hsl(25 38% 42%), hsl(25 38% 52%));
+    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-blackberry)), hsl(320 61% 40%));
     
     /* Shadows */
     --shadow-soft: var(--elev-shadow);
