@@ -33,14 +33,14 @@
     --text-muted: 25 10% 45%; /* #796E65 - warm gray subtext */
     --divider: 30 20% 88%; /* #E8E2DC - warm neutral border */
     
-    /* Light mode color overrides - warm palette */
-    --pp-mint-light: 100 20% 52%; /* #8AA883 - warm sage for light mode */
-    --pp-terracotta: 18 45% 60%; /* #C88866 - warm terracotta for light mode */
+    /* Light mode color overrides - warm terracotta palette */
+    --pp-mint-light: 18 45% 60%; /* #C88866 - terracotta primary */
+    --pp-terracotta: 18 45% 60%; /* #C88866 - warm terracotta */
     
-    --accent-1: var(--pp-mint-light); /* warm sage primary */
+    --accent-1: var(--pp-terracotta); /* terracotta primary */
     --accent-2: 32 73% 91%; /* #F8E9D8 - warm accent */
-    --chart-feed: var(--pp-mint-light); /* warm sage for charts */
-    --chart-sleep: var(--pp-terracotta); /* warm terracotta for sleep */
+    --chart-feed: var(--pp-terracotta); /* terracotta for charts */
+    --chart-sleep: var(--pp-terracotta); /* terracotta for sleep */
     
     /* Card elevation */
     --elev-shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
@@ -72,19 +72,19 @@
     --radius: 16px;
     
     /* Activity colors */
-    --feed-color: var(--pp-mint-light); /* warm sage green */
-    --diaper-color: var(--pp-terracotta); /* warm terracotta */
-    --nap-color: var(--pp-terracotta); /* warm terracotta */
+    --feed-color: var(--pp-terracotta); /* terracotta */
+    --diaper-color: var(--pp-terracotta); /* terracotta */
+    --nap-color: var(--pp-terracotta); /* terracotta */
     --note-color: 32 73% 91%; /* warm peach */
-    --chat-color: var(--pp-mint-light); /* warm sage green */
+    --chat-color: var(--pp-terracotta); /* terracotta */
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint-light)), hsl(100 20% 62%));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--pp-mint-light)), hsl(100 20% 66%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(18 45% 70%));
+    --gradient-feed: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(18 45% 72%));
     --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(18 45% 70%));
     --gradient-nap: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(18 45% 70%));
     --gradient-note: linear-gradient(135deg, hsl(32 73% 91%), hsl(32 65% 95%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint-light)), hsl(100 20% 62%));
+    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(18 45% 70%));
     
     /* Shadows */
     --shadow-soft: var(--elev-shadow);
