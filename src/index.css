@@ -72,18 +72,18 @@
     --ring: var(--pp-mint);
     --radius: 16px;
     
-    /* Activity colors */
-    --feed-color: var(--pp-terracotta); /* cinnamon */
-    --diaper-color: var(--pp-terracotta); /* cinnamon */
-    --nap-color: var(--pp-terracotta); /* cinnamon */
-    --note-color: 32 73% 91%; /* warm peach */
-    --chat-color: var(--pp-terracotta); /* cinnamon */
+    /* Activity colors - varied palette */
+    --feed-color: var(--pp-terracotta); /* terracotta for feeds */
+    --diaper-color: var(--pp-grey); /* grey for diapers */
+    --nap-color: var(--pp-blackberry); /* blackberry for sleep */
+    --note-color: 32 73% 91%; /* warm peach for notes */
+    --chat-color: var(--pp-blackberry); /* blackberry for chat */
     
-    /* Gradients */
+    /* Gradients - varied for each activity */
     --gradient-primary: linear-gradient(135deg, hsl(var(--pp-blackberry)), hsl(320 61% 40%));
     --gradient-feed: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(25 30% 70%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(25 30% 70%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--pp-terracotta)), hsl(25 30% 70%));
+    --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-grey)), hsl(0 0% 55%));
+    --gradient-nap: linear-gradient(135deg, hsl(var(--pp-blackberry)), hsl(320 61% 40%));
     --gradient-note: linear-gradient(135deg, hsl(32 73% 91%), hsl(32 65% 95%));
     --gradient-chat: linear-gradient(135deg, hsl(var(--pp-blackberry)), hsl(320 61% 40%));
     
