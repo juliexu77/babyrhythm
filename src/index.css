@@ -60,11 +60,11 @@
     --primary: var(--pp-blackberry);
     --primary-foreground: 0 0% 100%;
     --secondary: var(--pp-terracotta);
-    --secondary-foreground: 0 0% 100%;
+    --secondary-foreground: 0 0% 13%;
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
     --accent: var(--pp-terracotta);
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 0 0% 13%;
     --destructive: var(--pp-coral);
     --destructive-foreground: 0 0% 100%;
     --border: var(--divider);
