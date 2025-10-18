@@ -99,31 +99,130 @@ serve(async (req) => {
       }
     };
     
-    // Helper function to calculate WHO growth percentiles
+    // Helper function to calculate WHO growth percentiles using actual reference data
     const calculatePercentile = (value: number, ageInWeeks: number, gender: 'male' | 'female', measurementType: 'weight' | 'length' | 'headCirc'): number => {
-      // Simplified WHO percentile approximation
-      // In production, use actual WHO tables
-      const genderMultiplier = gender === 'male' ? 1.0 : 0.95; // Rough adjustment
+      const ageMonths = Math.floor(ageInWeeks / 4.33);
       
-      if (measurementType === 'weight') {
-        // Weight in kg, approximate 50th percentile
-        const expectedWeight = (3.5 + (ageInWeeks * 0.15)) * genderMultiplier;
-        const percentile = 50 + ((value - expectedWeight) / expectedWeight) * 30;
-        return Math.max(5, Math.min(95, Math.round(percentile)));
+      // WHO Growth Standards - selected percentile values (3rd, 15th, 50th, 85th, 97th)
+      // Length/Height in cm by month for boys
+      const lengthBoysTable: { [month: number]: number[] } = {
+        0: [46.1, 48.0, 49.9, 51.8, 53.7],
+        1: [50.8, 52.8, 54.7, 56.7, 58.6],
+        2: [54.4, 56.4, 58.4, 60.4, 62.4],
+        3: [57.3, 59.4, 61.4, 63.5, 65.5],
+        4: [59.7, 61.8, 63.9, 66.0, 68.0],
+        5: [61.7, 63.8, 65.9, 68.0, 70.1],
+        6: [63.3, 65.5, 67.6, 69.8, 71.9],
+        9: [67.7, 70.1, 72.0, 74.2, 76.5],
+        12: [71.0, 73.4, 75.7, 78.1, 80.5],
+        18: [76.0, 78.7, 81.3, 83.9, 86.5],
+        24: [79.9, 82.8, 85.6, 88.4, 91.2]
+      };
+      
+      // Length/Height in cm by month for girls
+      const lengthGirlsTable: { [month: number]: number[] } = {
+        0: [45.4, 47.3, 49.1, 51.0, 52.9],
+        1: [49.8, 51.7, 53.7, 55.6, 57.6],
+        2: [53.0, 55.0, 57.1, 59.1, 61.1],
+        3: [55.6, 57.7, 59.8, 61.9, 64.0],
+        4: [57.8, 59.9, 62.1, 64.3, 66.4],
+        5: [59.6, 61.8, 64.0, 66.2, 68.5],
+        6: [61.2, 63.5, 65.7, 68.0, 70.3],
+        9: [65.3, 67.7, 70.1, 72.6, 75.0],
+        12: [68.9, 71.4, 74.0, 76.6, 79.2],
+        18: [74.0, 76.8, 79.6, 82.4, 85.2],
+        24: [78.4, 81.4, 84.4, 87.4, 90.4]
+      };
+      
+      // Weight in kg by month for boys
+      const weightBoysTable: { [month: number]: number[] } = {
+        0: [2.5, 2.9, 3.3, 3.9, 4.4],
+        1: [3.4, 3.9, 4.5, 5.1, 5.8],
+        2: [4.3, 4.9, 5.6, 6.3, 7.1],
+        3: [5.0, 5.7, 6.4, 7.2, 8.0],
+        4: [5.6, 6.2, 7.0, 7.8, 8.7],
+        5: [6.0, 6.7, 7.5, 8.4, 9.3],
+        6: [6.4, 7.1, 7.9, 8.8, 9.8],
+        9: [7.1, 8.0, 8.9, 9.9, 10.9],
+        12: [7.7, 8.6, 9.6, 10.8, 11.9],
+        18: [8.8, 9.8, 10.9, 12.2, 13.5],
+        24: [9.7, 10.8, 12.2, 13.6, 15.3]
+      };
+      
+      // Weight in kg by month for girls
+      const weightGirlsTable: { [month: number]: number[] } = {
+        0: [2.4, 2.8, 3.2, 3.7, 4.2],
+        1: [3.2, 3.6, 4.2, 4.8, 5.5],
+        2: [3.9, 4.5, 5.1, 5.8, 6.6],
+        3: [4.5, 5.2, 5.8, 6.6, 7.5],
+        4: [5.0, 5.7, 6.4, 7.3, 8.2],
+        5: [5.4, 6.1, 6.9, 7.8, 8.8],
+        6: [5.7, 6.5, 7.3, 8.2, 9.3],
+        9: [6.4, 7.3, 8.2, 9.3, 10.5],
+        12: [7.0, 7.9, 8.9, 10.1, 11.5],
+        18: [7.9, 9.0, 10.2, 11.6, 13.2],
+        24: [8.7, 9.9, 11.3, 12.8, 14.8]
+      };
+      
+      // Head circumference in cm by month for boys
+      const headCircBoysTable: { [month: number]: number[] } = {
+        0: [32.1, 33.2, 34.5, 35.7, 36.9],
+        1: [35.1, 36.3, 37.6, 38.9, 40.1],
+        2: [36.9, 38.1, 39.5, 40.8, 42.2],
+        3: [38.1, 39.4, 40.8, 42.2, 43.6],
+        4: [39.0, 40.4, 41.8, 43.3, 44.7],
+        5: [39.7, 41.1, 42.6, 44.1, 45.6],
+        6: [40.3, 41.7, 43.3, 44.8, 46.4],
+        9: [41.6, 43.1, 44.7, 46.3, 47.9],
+        12: [42.6, 44.1, 45.8, 47.5, 49.2],
+        18: [44.1, 45.8, 47.5, 49.2, 50.9],
+        24: [45.2, 46.9, 48.7, 50.5, 52.3]
+      };
+      
+      // Head circumference in cm by month for girls
+      const headCircGirlsTable: { [month: number]: number[] } = {
+        0: [31.5, 32.7, 33.9, 35.1, 36.2],
+        1: [34.3, 35.5, 36.8, 38.0, 39.3],
+        2: [36.0, 37.3, 38.6, 39.9, 41.2],
+        3: [37.2, 38.5, 39.9, 41.2, 42.6],
+        4: [38.1, 39.4, 40.8, 42.2, 43.6],
+        5: [38.7, 40.1, 41.5, 42.9, 44.4],
+        6: [39.3, 40.7, 42.2, 43.6, 45.1],
+        9: [40.5, 42.0, 43.5, 45.0, 46.5],
+        12: [41.5, 43.0, 44.6, 46.1, 47.7],
+        18: [43.0, 44.6, 46.2, 47.8, 49.4],
+        24: [44.1, 45.8, 47.5, 49.1, 50.8]
+      };
+      
+      const table = measurementType === 'weight' 
+        ? (gender === 'male' ? weightBoysTable : weightGirlsTable)
+        : measurementType === 'length'
+        ? (gender === 'male' ? lengthBoysTable : lengthGirlsTable)
+        : (gender === 'male' ? headCircBoysTable : headCircGirlsTable);
+      
+      // Find closest age month with data
+      const availableMonths = Object.keys(table).map(Number).sort((a, b) => a - b);
+      let closestMonth = availableMonths[0];
+      let minDiff = Math.abs(ageMonths - closestMonth);
+      
+      for (const month of availableMonths) {
+        const diff = Math.abs(ageMonths - month);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestMonth = month;
+        }
       }
-      if (measurementType === 'length') {
-        // Height in cm, approximate 50th percentile
-        const expectedLength = (50 + (ageInWeeks * 0.5)) * genderMultiplier;
-        const percentile = 50 + ((value - expectedLength) / expectedLength) * 30;
-        return Math.max(5, Math.min(95, Math.round(percentile)));
-      }
-      if (measurementType === 'headCirc') {
-        // Head circumference in cm, approximate 50th percentile
-        const expectedHead = (35 + (ageInWeeks * 0.2)) * genderMultiplier;
-        const percentile = 50 + ((value - expectedHead) / expectedHead) * 30;
-        return Math.max(5, Math.min(95, Math.round(percentile)));
-      }
-      return 50;
+      
+      const percentileValues = table[closestMonth];
+      if (!percentileValues) return 50;
+      
+      // percentileValues = [3rd, 15th, 50th, 85th, 97th]
+      if (value <= percentileValues[0]) return 3;
+      if (value <= percentileValues[1]) return Math.round(3 + ((value - percentileValues[0]) / (percentileValues[1] - percentileValues[0])) * 12);
+      if (value <= percentileValues[2]) return Math.round(15 + ((value - percentileValues[1]) / (percentileValues[2] - percentileValues[1])) * 35);
+      if (value <= percentileValues[3]) return Math.round(50 + ((value - percentileValues[2]) / (percentileValues[3] - percentileValues[2])) * 35);
+      if (value <= percentileValues[4]) return Math.round(85 + ((value - percentileValues[3]) / (percentileValues[4] - percentileValues[3])) * 12);
+      return 97;
     };
     
     // Calculate daily summaries for trend analysis
