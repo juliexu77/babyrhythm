@@ -119,6 +119,8 @@ const ongoingNap = activities
   useEffect(() => {
     if (loading || householdLoading) return;
 
+    // RouteGuard already handles authentication redirects
+    // Only handle household-specific logic here
     if (user) {
       // For authenticated users, always use database as source of truth
       if (household) {
@@ -140,11 +142,8 @@ const ongoingNap = activities
         navigate('/onboarding/baby-setup');
         return;
       }
-    } else {
-      // Redirect unauthenticated users to auth
-      navigate('/auth');
-      return;
     }
+    // Note: Unauthenticated users are handled by RouteGuard
   }, [user, loading, householdLoading, household, householdError, navigate]);
 
   // Clear stale local profile if no user

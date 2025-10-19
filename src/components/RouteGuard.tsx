@@ -23,7 +23,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     const searchParams = new URLSearchParams(location.search);
     const isAuthWithRedirect = location.pathname === '/auth' && searchParams.has('redirect');
 
-    // Redirect unauthenticated users to onboarding first
+    // Redirect unauthenticated users to onboarding
     if (!user && !isPublicRoute) {
       console.log('Redirecting unauthenticated user to onboarding');
       navigate("/onboarding", { replace: true });
@@ -50,9 +50,9 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     
-    // Redirect from root to app if authenticated
+    // Redirect from root to app if authenticated (root now points to Index component)
     if (user && location.pathname === "/") {
-      navigate("/app", { replace: true });
+      // No need to redirect - Index component is already rendered at /
       return;
     }
 

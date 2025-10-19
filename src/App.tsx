@@ -33,7 +33,7 @@ const App = () => (
           <BrowserRouter>
             <RouteGuard>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/app" replace />} />
+                  <Route path="/" element={<Index />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/onboarding/baby-setup" element={<BabySetup />} />
                   <Route path="/onboarding/village" element={<VillageInvite />} />
