@@ -12,7 +12,7 @@ interface HomeTabProps {
   babyName?: string;
   userName?: string;
   babyBirthday?: string;
-  onAddActivity: () => void;
+  onAddActivity: (type?: 'feed' | 'nap', prefillActivity?: Activity) => void;
   onEndNap?: () => void;
   ongoingNap?: Activity | null;
   userRole?: string;
@@ -659,8 +659,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Quick Action Buttons */}
           <div className="flex gap-1.5 ml-auto">
             <Button
-              onClick={onAddActivity}
-              variant="outline"
+              onClick={() => {
+                const lastFeed = [...activities]
+                  .filter(a => a.type === 'feed')
+                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                onAddActivity('feed', lastFeed);
+              }}
               size="sm"
               className="gap-1.5"
             >
@@ -668,8 +672,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               Feed
             </Button>
             <Button
-              onClick={onAddActivity}
-              variant="outline"
+              onClick={() => {
+                const lastNap = [...activities]
+                  .filter(a => a.type === 'nap')
+                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                onAddActivity('nap', lastNap);
+              }}
               size="sm"
               className="gap-1.5"
             >

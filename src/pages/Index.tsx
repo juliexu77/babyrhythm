@@ -101,6 +101,8 @@ const ongoingNap = activities
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [prefillActivity, setPrefillActivity] = useState<Activity | null>(null);
+  const [quickAddType, setQuickAddType] = useState<'feed' | 'nap' | null>(null);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   
@@ -326,7 +328,11 @@ const ongoingNap = activities
           babyName={babyProfile?.name}
           babyBirthday={babyProfile?.birthday}
           userName={userProfile?.full_name?.split(' ')[0]}
-          onAddActivity={() => setShowAddActivity(true)}
+          onAddActivity={(type, prefill) => {
+            setQuickAddType(type || null);
+            setPrefillActivity(prefill || null);
+            setShowAddActivity(true);
+          }}
           onEndNap={markWakeUp}
           ongoingNap={ongoingNap}
           userRole={currentUserRole}
@@ -748,12 +754,18 @@ return (
           onClose={() => {
             setShowAddActivity(false);
             setEditingActivity(null);
+            setPrefillActivity(null);
+            setQuickAddType(null);
           }}
           editingActivity={editingActivity}
+          quickAddType={quickAddType}
+          prefillActivity={prefillActivity}
           householdId={household?.id}
           onAddActivity={async (activity, activityDate, activityTime) => {
             await addActivity(activity.type, activity.details, activityDate, activityTime);
             setShowAddActivity(false);
+            setPrefillActivity(null);
+            setQuickAddType(null);
           }}
           onEditActivity={async (updatedActivity, selectedDate, activityTime) => {
             try {

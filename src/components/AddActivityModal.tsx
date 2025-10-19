@@ -29,9 +29,11 @@ interface AddActivityModalProps {
   onEditActivity?: (activity: Activity, selectedDate: Date, activityTime: string) => Promise<void>;
   onDeleteActivity?: (activityId: string) => void; // Add delete support
   householdId?: string; // Add household ID for photo uploads
+  quickAddType?: 'feed' | 'nap' | null; // Quick add type
+  prefillActivity?: Activity | null; // Activity to prefill from
 }
 
-export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity, householdId }: AddActivityModalProps) => {
+export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity, householdId, quickAddType, prefillActivity }: AddActivityModalProps) => {
   const { t } = useLanguage();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
@@ -179,6 +181,43 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       if (!startTime) setStartTime(current);
     }
   }, [open, editingActivity]);
+
+  // Handle quick add with prefilled data
+  useEffect(() => {
+    if (open && quickAddType && prefillActivity && !editingActivity) {
+      // Set activity type
+      setActivityType(quickAddType);
+      
+      // Keep current time (don't use prefill time)
+      const now = new Date();
+      const currentTime = now.toLocaleTimeString("en-US", { 
+        hour: "numeric", 
+        minute: "2-digit", 
+        hour12: true 
+      });
+      setTime(currentTime);
+      
+      // Pre-fill details based on type
+      if (quickAddType === 'feed' && prefillActivity.type === 'feed') {
+        const details = prefillActivity.details;
+        setFeedType(details.feedType || "bottle");
+        setQuantity(details.quantity || "");
+        setUnit(details.unit || "oz");
+        setMinutesLeft(details.minutesLeft || "");
+        setMinutesRight(details.minutesRight || "");
+        setSolidDescription(details.solidDescription || "");
+        setIsDreamFeed(details.isDreamFeed || false);
+        setNote(details.note || "");
+      } else if (quickAddType === 'nap' && prefillActivity.type === 'nap') {
+        const details = prefillActivity.details;
+        // For naps, set start time to current, don't set end time (they're adding a new nap)
+        setStartTime(currentTime);
+        setEndTime("");
+        setHasEndTime(false);
+        setNote(details.note || "");
+      }
+    }
+  }, [open, quickAddType, prefillActivity, editingActivity]);
 
   const resetForm = () => {
     const now = new Date();
