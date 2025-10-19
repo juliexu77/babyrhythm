@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Sprout } from "lucide-react";
+import { Sun } from "lucide-react";
 
 const ReadyScreen = () => {
   const navigate = useNavigate();
@@ -22,7 +22,12 @@ const ReadyScreen = () => {
       <div className="w-full max-w-md text-center space-y-8 animate-fade-in">
         {/* Icon with animation */}
         <div className="flex items-center justify-center">
-          <div className="text-6xl animate-fade-in">🌞</div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm animate-scale-in">
+              <Sun className="w-10 h-10 text-primary" />
+            </div>
+          </div>
         </div>
 
         {/* Message */}
