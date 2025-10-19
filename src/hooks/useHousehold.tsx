@@ -462,33 +462,19 @@ export const useHousehold = () => {
 
   const updateCollaboratorRole = async (collaboratorId: string, newRole: string) => {
     try {
-      // Attempt direct update first
       const { error } = await supabase
         .from('collaborators')
         .update({ role: newRole })
         .eq('id', collaboratorId);
 
       if (error) {
-        // If promoting to parent fails due to single-parent constraint, use transfer function
-        const message = (error as any)?.message || '';
-        if (newRole === 'parent' && message.includes('User can only be a parent in one household')) {
-          const target = collaborators.find(c => c.id === collaboratorId);
-          if (!target || !household?.id) throw error;
-
-          const { error: rpcError } = await supabase.rpc('transfer_parent_role', {
-            _target_user_id: target.user_id,
-            _to_household_id: household.id
-          });
-
-          if (rpcError) throw rpcError;
-        } else {
-          throw error;
-        }
+        console.error('Error updating collaborator role:', error);
+        throw error;
       }
 
       // Refresh collaborators to ensure UI updates
       await fetchCollaborators();
-
+      
       // Also update local state immediately to ensure instant UI feedback
       setCollaborators(prev => 
         prev.map(collab => 
