@@ -521,14 +521,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         </div>
       )}
 
-      {/* Intro Text */}
-      {!needsBirthdaySetup && (
-        <div className="px-6 pt-4 pb-2 border-b border-border/50">
-          <p className="text-[13px] italic text-muted-foreground">
-            Your digital village is listening.
-          </p>
-        </div>
-      )}
+      {/* Intro Text - Removed as per user request */}
 
       {/* Conversation History */}
       <ScrollArea className="flex-1 p-4">
