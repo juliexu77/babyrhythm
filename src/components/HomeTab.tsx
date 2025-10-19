@@ -640,44 +640,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   return (
     <div className="pb-24">
       {/* 1. Greeting Section - Sticky Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-6 space-y-2 border-b border-border/40">
-        <h1 className="text-[22px] font-semibold text-foreground">
-          {getGreetingLine()}
-        </h1>
-        
-        <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-            <span className="text-sm">{sentiment.emoji}</span>
-            <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-          </div>
-          
-          {/* Quick Action Buttons */}
-          <div className="flex gap-1.5 ml-auto">
-            <Button
-              onClick={() => {
-                const lastFeed = [...activities]
-                  .filter(a => a.type === 'feed')
-                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
-                onAddActivity('feed', lastFeed);
-              }}
-              size="sm"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <Milk className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              onClick={() => {
-                const lastNap = [...activities]
-                  .filter(a => a.type === 'nap')
-                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
-                onAddActivity('nap', lastNap);
-              }}
-              size="sm"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <Moon className="w-3.5 h-3.5" />
-            </Button>
-          </div>
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-4 border-b border-border/40">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
+          <span className="text-sm">{sentiment.emoji}</span>
+          <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
         </div>
       </div>
 
@@ -702,6 +668,19 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     </span>
                   )}
                 </p>
+                <Button
+                  onClick={() => {
+                    const lastFeed = [...activities]
+                      .filter(a => a.type === 'feed')
+                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                    onAddActivity('feed', lastFeed);
+                  }}
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 px-2"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
               </div>
             )}
 
@@ -719,6 +698,19 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <p className="text-sm flex-1 text-muted-foreground">
                   Awake for — <span className="font-medium text-foreground">{awakeTime}</span>
                 </p>
+                <Button
+                  onClick={() => {
+                    const lastNap = [...activities]
+                      .filter(a => a.type === 'nap')
+                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                    onAddActivity('nap', lastNap);
+                  }}
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 px-2"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
               </div>
             )}
 
@@ -741,36 +733,38 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
         {/* 3. What's Next */}
         {(nextAction && !showingYesterday) || ongoingNap ? (
-          <div className="space-y-4 pb-6 border-b border-border">
-            <h2 className="text-base font-medium text-foreground">
-              What's Next
-            </h2>
-            
-            {nextAction && (
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-primary mt-0.5" />
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  {nextAction}
-                </p>
-              </div>
-            )}
-            
-            {/* Wake-up button if sleeping */}
-            {ongoingNap && onEndNap && (
-              <Button
-                onClick={() => {
-                  console.log('Wake up button clicked in HomeTab');
-                  console.log('onEndNap exists:', !!onEndNap);
-                  console.log('ongoingNap:', ongoingNap);
-                  onEndNap();
-                }}
-                className="w-full mt-2"
-                size="sm"
-              >
-                {babyName?.split(' ')[0] || 'Baby'} woke up
-              </Button>
-            )}
-          </div>
+          <Card className="p-4">
+            <div className="space-y-4">
+              <h2 className="text-base font-medium text-foreground">
+                What's Next
+              </h2>
+              
+              {nextAction && (
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-primary mt-0.5" />
+                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                    {nextAction}
+                  </p>
+                </div>
+              )}
+              
+              {/* Wake-up button if sleeping */}
+              {ongoingNap && onEndNap && (
+                <Button
+                  onClick={() => {
+                    console.log('Wake up button clicked in HomeTab');
+                    console.log('onEndNap exists:', !!onEndNap);
+                    console.log('ongoingNap:', ongoingNap);
+                    onEndNap();
+                  }}
+                  className="w-full mt-2"
+                  size="sm"
+                >
+                  {babyName?.split(' ')[0] || 'Baby'} woke up
+                </Button>
+              )}
+            </div>
+          </Card>
         ) : null}
 
         {/* 4. Daily Summary */}
