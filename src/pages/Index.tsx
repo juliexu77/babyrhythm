@@ -345,6 +345,8 @@ const ongoingNap = activities
           onEndNap={markWakeUp}
           ongoingNap={ongoingNap}
           userRole={currentUserRole}
+          showBadge={showBadge}
+          percentile={percentile}
         />;
       case "trends":
         return (
@@ -602,24 +604,6 @@ const ongoingNap = activities
                             >
                               {t('showLess')}
                             </button>
-                          </div>
-                        )}
-                        
-                        {/* Total moments counter */}
-                        {activities.length > 0 && (
-                          <div className="text-center pt-8 pb-4 space-y-1">
-                            <p className="text-sm text-muted-foreground">
-                              {"You've logged "}
-                              <span className="font-medium text-foreground">{activities.length}</span>
-                              {" moments together so far 🌿"}
-                            </p>
-                            {showBadge && percentile !== null && (
-                              <p className="text-xs text-muted-foreground/80">
-                                {"You're in the top "}
-                                <span className="font-medium text-primary">{percentile}%</span>
-                                {" of users"}
-                              </p>
-                            )}
                           </div>
                         )}
                       </>

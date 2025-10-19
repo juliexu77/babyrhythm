@@ -16,9 +16,11 @@ interface HomeTabProps {
   onEndNap?: () => void;
   ongoingNap?: Activity | null;
   userRole?: string;
+  showBadge?: boolean;
+  percentile?: number | null;
 }
 
-export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap, ongoingNap: passedOngoingNap, userRole }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile }: HomeTabProps) => {
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
@@ -915,6 +917,24 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   );
                 })}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Total moments counter */}
+      {activities.length > 0 && (
+        <div className="text-center pt-8 pb-4 space-y-1">
+          <p className="text-sm text-muted-foreground">
+            {"You've logged "}
+            <span className="font-medium text-foreground">{activities.length}</span>
+            {" moments together so far 🌿"}
+          </p>
+          {showBadge && percentile !== null && (
+            <p className="text-xs text-muted-foreground/80">
+              {"You're in the top "}
+              <span className="font-medium text-primary">{percentile}%</span>
+              {" of users"}
+            </p>
           )}
         </div>
       )}
