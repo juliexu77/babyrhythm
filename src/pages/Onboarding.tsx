@@ -23,14 +23,9 @@ const Onboarding = () => {
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="max-w-md mx-auto text-center space-y-8">
-          {/* Icon with animation */}
+          {/* Icon */}
           <div className="flex items-center justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-              <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm">
-                <Baby className="w-8 h-8 text-primary" />
-              </div>
-            </div>
+            <Baby className="w-6 h-6 text-primary" />
           </div>
 
           {/* Message */}

@@ -44,12 +44,7 @@ const VillageInvite = () => {
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-              <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm">
-                <Users className="w-8 h-8 text-primary" />
-              </div>
-            </div>
+            <Users className="w-6 h-6 text-primary" />
           </div>
           <h1 className="text-2xl font-heading font-semibold text-foreground leading-tight">
             Who's in your village?
