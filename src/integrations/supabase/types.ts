@@ -63,6 +63,7 @@ export type Database = {
           household_id: string
           id: string
           role: string
+          user_id: string
         }
         Insert: {
           chat_date: string
@@ -71,6 +72,7 @@ export type Database = {
           household_id: string
           id?: string
           role: string
+          user_id: string
         }
         Update: {
           chat_date?: string
@@ -79,6 +81,7 @@ export type Database = {
           household_id?: string
           id?: string
           role?: string
+          user_id?: string
         }
         Relationships: [
           {

@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Message {
   role: "user" | "assistant";
@@ -74,6 +75,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
   const savedGreetingRef = useRef(false);
   const { toast } = useToast();
   const { household } = useHousehold();
+  const { user } = useAuth();
 
   const handleLikeMessage = (index: number) => {
     setMessages(prev => prev.map((msg, idx) => 
@@ -115,7 +117,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
   // Load chat history from database on mount
   useEffect(() => {
     const loadChatHistory = async () => {
-      if (!household?.id) return;
+      if (!household?.id || !user?.id) return;
 
       try {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -130,7 +132,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         const { data, error } = await supabase
           .from('chat_messages')
           .select('*')
-          .eq('household_id', household.id)
+          .eq('user_id', user.id)
           .eq('chat_date', chatDate as string)
           .order('created_at', { ascending: true });
 
@@ -154,7 +156,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
     };
 
     loadChatHistory();
-  }, [household?.id]);
+  }, [household?.id, user?.id]);
 
   // Load initial greeting on mount - wait for required data
   useEffect(() => {
@@ -211,7 +213,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
   };
 
   const saveMessageToDatabase = async (message: Message) => {
-    if (!household?.id) return;
+    if (!household?.id || !user?.id) return;
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -226,6 +228,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         .from('chat_messages')
         .insert({
           household_id: household.id,
+          user_id: user.id,
           role: message.role,
           content: message.content,
           chat_date: chatDate as string
