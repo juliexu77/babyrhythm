@@ -79,15 +79,6 @@ const Onboarding = () => {
             >
               Get Started
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <button
-                onClick={() => navigate("/auth")}
-                className="text-primary hover:underline font-medium"
-              >
-                Log in
-              </button>
-            </p>
           </div>
         </div>
       </div>
