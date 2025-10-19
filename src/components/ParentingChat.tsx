@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, User, Send, Calendar, Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { Leaf, User, Send, Calendar, Heart, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -562,7 +562,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                   >
                     {msg.role === "assistant" && (
                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-4 h-4 text-primary" />
+                        <Leaf className="w-4 h-4 text-primary" />
                       </div>
                     )}
                     <div
@@ -603,7 +603,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
             >
               {msg.role === "assistant" && (
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-primary" />
+                  <Leaf className="w-4 h-4 text-primary" />
                 </div>
               )}
               <div
@@ -635,7 +635,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
           {isLoading && (
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-primary animate-pulse" />
+                <Leaf className="w-4 h-4 text-primary animate-pulse" />
               </div>
               <div className="bg-muted rounded-2xl px-4 py-3">
                 <div className="flex gap-1">
