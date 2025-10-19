@@ -264,11 +264,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return { emoji: "☀️", text: "Smooth Flow" };
     }
     
-    // 5. 🎯 In Sync Today - perfect alignment with expectations
+    // 5. 🎯 In Sync - perfect alignment with expectations
     if (expected && expectedNaps && 
         (summary.feedCount === expected.max || summary.feedCount === Math.round((expected.min + expected.max) / 2)) && 
         (summary.napCount === expectedNaps.max || summary.napCount === Math.round((expectedNaps.min + expectedNaps.max) / 2))) {
-      return { emoji: "🎯", text: "In Sync Today" };
+      return { emoji: "🎯", text: "In Sync" };
     }
     
     // 6. 🌤️ Mixed Patterns - some metrics in range, others not
