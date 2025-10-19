@@ -26,14 +26,8 @@ serve(async (req) => {
     
     const userToday = getUserTzDayKey(new Date(), timezone || 'UTC');
     
-    // Get last 7 days of activities for trend analysis
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
-    const recentActivities = activities?.filter((a: any) => {
-      const activityDate = new Date(a.logged_at);
-      return activityDate >= sevenDaysAgo;
-    }) || [];
+    // Include ALL activities for complete pattern analysis
+    const recentActivities = activities || [];
     
     // Group activities by day (in user's timezone)
     const activitiesByDay: { [key: string]: any[] } = {};
