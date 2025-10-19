@@ -637,27 +637,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   return (
     <div className="px-4 py-6 space-y-4 pb-24">
-      {/* Quick Action Buttons */}
-      <div className="flex gap-2">
-        <Button
-          onClick={onAddActivity}
-          variant="outline"
-          size="sm"
-          className="flex-1 gap-2"
-        >
-          <Milk className="w-4 h-4" />
-          Add Feed
-        </Button>
-        <Button
-          onClick={onAddActivity}
-          variant="outline"
-          size="sm"
-          className="flex-1 gap-2"
-        >
-          <Moon className="w-4 h-4" />
-          Add Sleep
-        </Button>
-      </div>
 
       {/* 1. Greeting Section */}
       <div className="space-y-1.5">
@@ -671,9 +650,33 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           </p>
         )}
         
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-          <span className="text-sm">{sentiment.emoji}</span>
-          <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
+            <span className="text-sm">{sentiment.emoji}</span>
+            <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+          </div>
+          
+          {/* Quick Action Buttons */}
+          <div className="flex gap-1.5 ml-auto">
+            <Button
+              onClick={onAddActivity}
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+            >
+              <Milk className="w-3.5 h-3.5" />
+              Feed
+            </Button>
+            <Button
+              onClick={onAddActivity}
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+            >
+              <Moon className="w-3.5 h-3.5" />
+              Sleep
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -692,7 +695,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 Last feed — <span className="font-medium">{lastFeed.time}</span>
                 {lastFeed.details?.quantity && (
                   <span className="text-muted-foreground ml-1">
-                    ({lastFeed.details.quantity} {lastFeed.details.unit || 'ml'})
+                    {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
                   </span>
                 )}
               </p>
@@ -724,7 +727,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 Last diaper — <span className="font-medium">{lastDiaper.time}</span>
                 {lastDiaper.details?.diaperType && (
                   <span className="text-muted-foreground ml-1">
-                    ({lastDiaper.details.diaperType})
+                    {lastDiaper.details.diaperType}
                   </span>
                 )}
               </p>
