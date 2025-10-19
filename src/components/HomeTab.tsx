@@ -644,12 +644,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {getGreetingLine()}
         </h1>
         
-        {babyName && babyAge && (
-          <p className="text-base text-muted-foreground">
-            {babyName} · {babyAge.months} months
-          </p>
-        )}
-        
         <div className="flex items-center gap-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
             <span className="text-sm">{sentiment.emoji}</span>
@@ -666,9 +660,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 onAddActivity('feed', lastFeed);
               }}
               size="sm"
-              className="w-8 h-8 p-0"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
+              <Milk className="w-3.5 h-3.5" />
             </Button>
             <Button
               onClick={() => {
@@ -678,9 +672,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 onAddActivity('nap', lastNap);
               }}
               size="sm"
-              className="w-8 h-8 p-0"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
+              <Moon className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
