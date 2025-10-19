@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
-import { DailyRecap } from "@/components/DailyRecap";
 
 interface HomeTabProps {
   activities: Activity[];
@@ -17,17 +16,15 @@ interface HomeTabProps {
   onEndNap?: () => void;
   ongoingNap?: Activity | null;
   userRole?: string;
-  dailyRecapEnabled?: boolean;
 }
 
-export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, dailyRecapEnabled = true }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap, ongoingNap: passedOngoingNap, userRole }: HomeTabProps) => {
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
   const [showFeedDetails, setShowFeedDetails] = useState(false);
   const [showSleepDetails, setShowSleepDetails] = useState(false);
   const [showGrowthDetails, setShowGrowthDetails] = useState(false);
-  const [dailyRecapDismissed, setDailyRecapDismissed] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Calculate baby's age in months and weeks
@@ -54,19 +51,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Update current time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Reset daily recap dismissal at midnight
-  useEffect(() => {
-    const checkMidnight = () => {
-      const now = new Date();
-      if (now.getHours() === 0 && now.getMinutes() === 0) {
-        setDailyRecapDismissed(false);
-      }
-    };
-    
-    const timer = setInterval(checkMidnight, 60000); // Check every minute
     return () => clearInterval(timer);
   }, []);
 
@@ -680,16 +664,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
         </div>
       </div>
-
-      {/* Daily Recap - Parent View (5 PM to Midnight) */}
-      {dailyRecapEnabled && !dailyRecapDismissed && (
-        <DailyRecap
-          activities={activities}
-          babyName={babyName}
-          userRole={userRole}
-          onDismiss={() => setDailyRecapDismissed(true)}
-        />
-      )}
 
       {/* What's Next - Predictive Card (High Priority) */}
       {(nextAction && !showingYesterday) || ongoingNap ? (

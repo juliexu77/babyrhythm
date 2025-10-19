@@ -324,7 +324,6 @@ const ongoingNap = activities
           onEndNap={markWakeUp}
           ongoingNap={ongoingNap}
           userRole={currentUserRole}
-          dailyRecapEnabled={userProfile?.daily_recap_enabled ?? true}
         />;
       case "trends":
         return (
