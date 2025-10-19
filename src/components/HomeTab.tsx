@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
@@ -666,10 +666,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 onAddActivity('feed', lastFeed);
               }}
               size="sm"
-              className="gap-1.5"
+              className="w-8 h-8 p-0"
             >
-              <Milk className="w-3.5 h-3.5" />
-              Feed
+              <Plus className="w-4 h-4" />
             </Button>
             <Button
               onClick={() => {
@@ -679,10 +678,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 onAddActivity('nap', lastNap);
               }}
               size="sm"
-              className="gap-1.5"
+              className="w-8 h-8 p-0"
             >
-              <Moon className="w-3.5 h-3.5" />
-              Sleep
+              <Plus className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -848,7 +846,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
           {/* Expandable Timeline */}
           {showTimeline && (
-            <div className="pt-3 border-t border-border/50 space-y-2">
+            <div className="pt-3 border-t border-border/50 space-y-1">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Today's Log Timeline
               </p>
@@ -857,11 +855,21 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 .map((activity, index) => {
                   const getActivityIcon = (type: string) => {
                     switch(type) {
-                      case 'feed': return <Milk className="w-4 h-4 text-primary" />;
-                      case 'nap': return <Moon className="w-4 h-4 text-primary" />;
-                      case 'diaper': return <Baby className="w-4 h-4 text-primary" />;
-                      case 'measure': return <Ruler className="w-4 h-4 text-primary" />;
-                      default: return <TrendingUp className="w-4 h-4 text-primary" />;
+                      case 'feed': return <Baby className="h-4 w-4" />;
+                      case 'nap': return <Moon className="h-4 w-4" />;
+                      case 'diaper': return <Palette className="h-4 w-4" />;
+                      case 'measure': return <Ruler className="h-4 w-4" />;
+                      default: return <Clock className="h-4 w-4" />;
+                    }
+                  };
+
+                  const getActivityGradient = (type: string) => {
+                    switch (type) {
+                      case "feed": return "bg-gradient-feed";
+                      case "diaper": return "bg-gradient-diaper";
+                      case "nap": return "bg-gradient-nap";
+                      case "measure": return "bg-gradient-primary";
+                      default: return "bg-gradient-primary";
                     }
                   };
                   
@@ -893,12 +901,24 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   }
                   
                   return (
-                    <div key={index} className="text-sm text-foreground py-1.5 border-l-2 border-border/50 pl-3 flex items-center gap-2">
-                      {getActivityIcon(activity.type)}
-                      <span className="font-medium">{activity.time}</span>
-                      <span className="text-muted-foreground text-xs capitalize">
-                        {activity.type}{details}
-                      </span>
+                    <div key={index} className="relative flex items-center gap-2 py-0.5">
+                      {/* Timeline line */}
+                      {index < displayActivities.length - 1 && (
+                        <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
+                      )}
+                      
+                      {/* Timeline marker with circle */}
+                      <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
+                        {getActivityIcon(activity.type)}
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="flex-1 flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">{activity.time}</span>
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {activity.type}{details}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
