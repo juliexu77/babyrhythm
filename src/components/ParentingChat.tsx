@@ -631,7 +631,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
           {isLoading && (
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-xl animate-pulse">🌿</span>
+                <Leaf className="w-4 h-4 text-primary animate-pulse" />
               </div>
               <div className="bg-muted rounded-2xl px-4 py-3">
                 <div className="flex gap-1">
