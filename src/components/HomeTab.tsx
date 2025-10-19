@@ -636,16 +636,36 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const developmentalPhase = getDevelopmentalPhase();
 
   return (
-    <div className="px-4 py-6 space-y-5 pb-24">
+    <div className="px-4 py-6 space-y-4 pb-24">
+      {/* Quick Action Buttons */}
+      <div className="flex gap-2">
+        <Button
+          onClick={onAddActivity}
+          variant="outline"
+          size="sm"
+          className="flex-1"
+        >
+          + 🍼
+        </Button>
+        <Button
+          onClick={onAddActivity}
+          variant="outline"
+          size="sm"
+          className="flex-1"
+        >
+          + 💤
+        </Button>
+      </div>
+
       {/* 1. Greeting Section */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <h1 className="text-[22px] font-bold text-foreground dark:text-white">
           {getGreetingLine()}
         </h1>
         
         {babyName && babyAge && (
           <p className="text-base text-muted-foreground">
-            {babyName} · {babyAge.months} months · {developmentalPhase}
+            {babyName} · {babyAge.months} months
           </p>
         )}
         
@@ -656,12 +676,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       </div>
 
       {/* 2. Current State (Right Now) */}
-      <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
+      <Card className="p-3.5 space-y-2 bg-card/50 backdrop-blur">
         <h2 className="text-base font-semibold text-foreground">
           Current State (Right Now)
         </h2>
         
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {/* Last Feed */}
           {lastFeed && (
             <div className="flex items-center gap-3 text-foreground">
@@ -713,7 +733,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
       {/* 3. What's Next (Predictive Insight) */}
       {(nextAction && !showingYesterday) || ongoingNap ? (
-        <Card className="p-4 space-y-3 bg-card/50 backdrop-blur border-primary/20">
+        <Card className="p-3.5 space-y-2 bg-card/50 backdrop-blur border-primary/20">
           <h2 className="text-base font-semibold text-foreground">
             What's Next (Predictive Insight)
           </h2>
@@ -745,36 +765,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </Card>
       ) : null}
 
-      {/* 4. Quick Add (Always Accessible) */}
-      <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
-        <h2 className="text-base font-semibold text-foreground">
-          Quick Add (Always Accessible)
-        </h2>
-        <div className="flex gap-3">
-          <Button
-            onClick={onAddActivity}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-          >
-            <Baby className="w-4 h-4 mr-2" />
-            Add feed
-          </Button>
-          <Button
-            onClick={onAddActivity}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-          >
-            <Moon className="w-4 h-4 mr-2" />
-            Add sleep
-          </Button>
-        </div>
-      </Card>
-
-      {/* 5. Daily Summary */}
+      {/* 4. Daily Summary */}
       {displayActivities.length > 0 && (
-        <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
+        <Card className="p-3.5 space-y-2 bg-card/50 backdrop-blur">
           <button
             onClick={() => setShowTimeline(!showTimeline)}
             className="w-full"
