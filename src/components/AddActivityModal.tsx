@@ -546,16 +546,17 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             </Button>
           </DialogTrigger>
         )}
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto [&>button[data-state]]:hidden">{/* Hide close button */}
-          <DialogHeader className="pb-4">
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col [&>button[data-state]]:hidden">{/* Hide close button */}
+          <DialogHeader className="pb-4 flex-shrink-0">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-lg font-medium">
-                {editingActivity ? t('editActivity') : t('addActivity')}
+                {editingActivity ? t('editActivity') : t('editActivity')}
               </DialogTitle>
             </div>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto px-1 -mx-1">
+            <div className="space-y-4">{/* Content wrapper */}
             {/* Activity Type Selection - Clean Grid */}
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -1110,7 +1111,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
 
 
-            <div className="space-y-3 pt-6 border-t">
+            </div>{/* End content wrapper */}
+          </div>{/* End scrollable area */}
+
+            <div className="space-y-3 pt-4 border-t flex-shrink-0">{/* Buttons section */}
               <div className="flex gap-3">
                 <Button 
                   variant="outline" 
@@ -1155,8 +1159,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   </button>
                 </div>
               )}
-            </div>
-          </div>
+            </div>{/* End buttons section */}
         </DialogContent>
       </Dialog>
       
