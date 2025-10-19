@@ -602,8 +602,23 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         if (period === 'PM' && hours !== 12) hour24 += 12;
         if (period === 'AM' && hours === 12) hour24 = 0;
         
+        // Parse start time to check for day rollover
+        const startTime = lastNap.details.startTime || lastNap.time;
+        const [startTimePart, startPeriod] = startTime.split(' ');
+        const [startHours, startMinutes] = startTimePart.split(':').map(Number);
+        let startHour24 = startHours;
+        if (startPeriod === 'PM' && startHours !== 12) startHour24 += 12;
+        if (startPeriod === 'AM' && startHours === 12) startHour24 = 0;
+        
         const wakeTime = new Date(lastNap.loggedAt!);
         wakeTime.setHours(hour24, minutes, 0, 0);
+        
+        // If end time is before start time, it crossed midnight
+        const endMinutes = hour24 * 60 + minutes;
+        const startMinutesOfDay = startHour24 * 60 + startMinutes;
+        if (endMinutes < startMinutesOfDay) {
+          wakeTime.setDate(wakeTime.getDate() + 1);
+        }
         
         const expectedNapTime = new Date(wakeTime.getTime() + expectedAwakeWindow * 60000);
         const napTimeStr = expectedNapTime.toLocaleTimeString('en-US', { 
