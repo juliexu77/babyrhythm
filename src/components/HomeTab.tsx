@@ -681,12 +681,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       </div>
 
       {/* 2. Current State (Right Now) */}
-      <Card className="p-3.5 space-y-2 bg-card/50 backdrop-blur">
+      <div className="space-y-3 pb-5 border-b border-border">
         <h2 className="text-base font-semibold text-foreground">
           Current State (Right Now)
         </h2>
         
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {/* Last Feed */}
           {lastFeed && (
             <div className="flex items-center gap-3 text-foreground">
@@ -734,11 +734,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
       {/* 3. What's Next (Predictive Insight) */}
       {(nextAction && !showingYesterday) || ongoingNap ? (
-        <Card className="p-3.5 space-y-2 bg-card/50 backdrop-blur border-primary/20">
+        <div className="space-y-3 pb-5 border-b border-border">
           <h2 className="text-base font-semibold text-foreground">
             What's Next (Predictive Insight)
           </h2>
@@ -767,28 +767,26 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               {babyName?.split(' ')[0] || 'Baby'} woke up
             </Button>
           )}
-        </Card>
+        </div>
       ) : null}
 
       {/* 4. Daily Summary */}
       {displayActivities.length > 0 && (
-        <Card className="p-3.5 space-y-2 bg-card/50 backdrop-blur">
+        <div className="space-y-3">
           <button
             onClick={() => setShowTimeline(!showTimeline)}
-            className="w-full"
+            className="w-full flex items-center justify-between"
           >
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-foreground">
-                Daily Summary
-              </h2>
-              <ChevronDown 
-                className={`h-5 w-5 text-muted-foreground transition-transform ${showTimeline ? 'rotate-180' : ''}`}
-              />
-            </div>
+            <h2 className="text-base font-semibold text-foreground">
+              Daily Summary
+            </h2>
+            <ChevronDown 
+              className={`h-5 w-5 text-muted-foreground transition-transform ${showTimeline ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* Summary Stats */}
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <div className="flex items-center gap-2 text-sm text-foreground">
               <span className="font-medium">Feeds:</span>
               <span>{summary.feedCount} total</span>
@@ -918,7 +916,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 })}
             </div>
           )}
-        </Card>
+        </div>
       )}
 
     </div>
