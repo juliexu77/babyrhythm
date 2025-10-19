@@ -32,6 +32,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showPredictionInsight, setShowPredictionInsight] = useState(false);
   const [showFeedStatusInsight, setShowFeedStatusInsight] = useState(false);
   const [showSleepStatusInsight, setShowSleepStatusInsight] = useState(false);
+  const [showDailyInsight, setShowDailyInsight] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Calculate baby's age in months and weeks
@@ -316,6 +317,126 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (months < 12) return t('becomingMobile');
     if (months < 18) return t('learningToCommunicate');
     return t('growingIntoOwnPerson');
+  };
+
+  // Get contextual daily insight - one line per day
+  const getDailyInsight = () => {
+    const summary = getDailySummary();
+    const expected = getExpectedFeeds(babyAgeMonths);
+    const expectedNaps = getExpectedNaps(babyAgeMonths);
+    
+    // Calculate 7-day rolling averages (simplified for now)
+    const recentFeeds = activities.filter(a => a.type === 'feed').length / 7;
+    const recentNaps = activities.filter(a => a.type === 'nap' && a.details?.endTime).length / 7;
+    
+    // Sleep insights
+    if (summary.napCount > 0 && expectedNaps) {
+      const napDurations = displayActivities
+        .filter(a => a.type === 'nap' && a.details?.endTime)
+        .map(nap => {
+          const parseTime = (timeStr: string) => {
+            const [time, period] = timeStr.split(' ');
+            const [hStr, mStr] = time.split(':');
+            let h = parseInt(hStr, 10);
+            const m = parseInt(mStr || '0', 10);
+            if (period === 'PM' && h !== 12) h += 12;
+            if (period === 'AM' && h === 12) h = 0;
+            return h * 60 + m;
+          };
+          const startMinutes = parseTime(nap.details.startTime || nap.time);
+          const endMinutes = parseTime(nap.details.endTime!);
+          return endMinutes >= startMinutes 
+            ? endMinutes - startMinutes 
+            : (24 * 60) - startMinutes + endMinutes;
+        });
+      
+      const avgNapDuration = napDurations.reduce((a, b) => a + b, 0) / napDurations.length;
+      
+      // 1. Nap consolidation
+      if (avgNapDuration > 90 && babyAgeMonths !== null && babyAgeMonths >= 3) {
+        return `Naps have been lengthening lately — a sign ${babyName?.split(' ')[0] || 'he'}'s settling into a two-nap rhythm.`;
+      }
+      
+      // 2. Short nap phase
+      if (avgNapDuration < 45) {
+        return `Shorter naps today — common when babies are practicing new skills or adjusting wake windows.`;
+      }
+      
+      // 3. Earlier wake trend (would need historical data, simplified)
+      const firstNap = displayActivities
+        .filter(a => a.type === 'nap' && a.details?.startTime)
+        .sort((a, b) => new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime())[0];
+      
+      if (firstNap) {
+        const startTime = firstNap.details?.startTime || firstNap.time;
+        const hour = parseInt(startTime.split(':')[0]);
+        if (hour < 7 || (startTime.includes('AM') && hour === 6)) {
+          return `${babyName?.split(' ')[0] || 'He'}'s been waking a little earlier the past few days — often just a temporary shift.`;
+        }
+      }
+      
+      // 4. Overtired day
+      const awakeMinutes = awakeTime ? parseInt(awakeTime.split('h')[0] || '0') * 60 + parseInt(awakeTime.split('m')[0] || '0') : 0;
+      const expectedWindow = babyAgeMonths !== null && babyAgeMonths < 3 ? 90 : 
+                            babyAgeMonths !== null && babyAgeMonths < 6 ? 120 : 
+                            babyAgeMonths !== null && babyAgeMonths < 9 ? 150 : 180;
+      if (awakeMinutes > expectedWindow + 30) {
+        return `Sleep windows stretched a bit long — watch for early sleepy cues tonight.`;
+      }
+    }
+    
+    // Feed insights
+    if (expected) {
+      // 5. Growth week
+      if (summary.feedCount > expected.max + 2) {
+        return `Feed volume is trending higher — typical during a growth transition at this age.`;
+      }
+      
+      // 6. On steady rhythm
+      if (summary.feedCount >= expected.min && summary.feedCount <= expected.max) {
+        return `Feeds are spacing beautifully today — right on rhythm for this stage.`;
+      }
+      
+      // 7. Light intake day
+      if (summary.feedCount < expected.min && summary.feedCount >= expected.min - 2) {
+        return `Fewer feeds so far, but total intake still looks healthy.`;
+      }
+    }
+    
+    // Combined rhythm
+    if (expected && expectedNaps) {
+      // 8. Balanced day
+      if (summary.feedCount >= expected.min && summary.feedCount <= expected.max &&
+          summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max) {
+        return `Today's flow looks balanced — naps and feeds finding their natural rhythm.`;
+      }
+      
+      // 9. Active day
+      if (summary.feedCount + summary.napCount > (expected.max + expectedNaps.max)) {
+        return `A more active rhythm today — expect a sleepier evening ahead.`;
+      }
+      
+      // 10. Reset in progress
+      if ((summary.feedCount < expected.min - 1 || summary.napCount < expectedNaps.min - 1)) {
+        return `The day's been a little off-pattern — often how babies find their next rhythm.`;
+      }
+    }
+    
+    // Developmental transitions
+    if (babyAgeMonths !== null) {
+      // 11. Emerging independence
+      if (babyAgeMonths >= 4 && summary.napCount >= 2 && summary.feedCount >= 4) {
+        return `${babyName?.split(' ')[0] || 'He'}'s showing signs of self-regulation — longer naps and steady feeds are helping ${babyName?.split(' ')[0].toLowerCase() || 'him'} adjust.`;
+      }
+      
+      // 12. Growth transition
+      if ([3, 4, 6, 9, 12].includes(babyAgeMonths)) {
+        return `Patterns are shifting — short-term changes that often mean new milestones are near.`;
+      }
+    }
+    
+    // Default
+    return `Today's rhythm is unfolding naturally — every day helps you understand ${babyName?.split(' ')[0] || 'baby'} better.`;
   };
 
   // Get detailed insight for the current sentiment
@@ -791,28 +912,23 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       <div className="px-4 space-y-6 pt-3">
 
         {/* Tone Card */}
-        <button 
-          onClick={() => setShowToneInsight(true)}
-        >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-            <span className="text-sm">{sentiment.emoji}</span>
-            <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-          </div>
-        </button>
-        
-        <Dialog open={showToneInsight} onOpenChange={setShowToneInsight}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <span>{sentiment.emoji}</span>
-                <span>{sentiment.text}</span>
-              </DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+        <div className="space-y-3">
+          <button 
+            onClick={() => setShowToneInsight(!showToneInsight)}
+            className="w-full text-left"
+          >
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+              <span className="text-sm">{sentiment.emoji}</span>
+              <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+            </div>
+          </button>
+          
+          {showToneInsight && (
+            <p className="text-sm text-muted-foreground leading-relaxed pl-1">
               {getToneInsight(sentiment)}
             </p>
-          </DialogContent>
-        </Dialog>
+          )}
+        </div>
 
         {/* 2. Current State */}
         <div className="space-y-4 pb-6 border-b border-border">
@@ -905,7 +1021,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           <Card className="p-4">
             <div className="space-y-4">
               <button 
-                onClick={() => prediction && setShowPredictionInsight(true)}
+                onClick={() => prediction && setShowPredictionInsight(!showPredictionInsight)}
                 className="w-full text-left group"
               >
                 <h2 className="text-base font-medium text-foreground group-hover:text-primary transition-colors">
@@ -920,6 +1036,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     {nextAction}
                   </p>
                 </div>
+              )}
+              
+              {showPredictionInsight && prediction && (
+                <p className="text-sm text-muted-foreground leading-relaxed pl-1">
+                  {getPredictionReasoning()}
+                </p>
               )}
               
               {/* Wake-up button if sleeping */}
@@ -940,39 +1062,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           </Card>
         ) : null}
-        
-        <Dialog open={showPredictionInsight} onOpenChange={setShowPredictionInsight}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Why This Prediction?</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {getPredictionReasoning()}
-            </p>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={showFeedStatusInsight} onOpenChange={setShowFeedStatusInsight}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Feeding Status</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
-            </p>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={showSleepStatusInsight} onOpenChange={setShowSleepStatusInsight}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Sleep Status</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
-            </p>
-          </DialogContent>
-        </Dialog>
 
         {/* 4. Daily Summary */}
         {displayActivities.length > 0 && (
@@ -992,7 +1081,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             {/* Summary Stats */}
             <div className="space-y-3">
               <button 
-                onClick={() => setShowFeedStatusInsight(true)}
+                onClick={() => setShowFeedStatusInsight(!showFeedStatusInsight)}
                 className="flex items-center gap-2 text-sm w-full text-left"
               >
                 {getFeedStatusIndicator(summary.feedCount, babyAgeMonths) === 'on-track' ? (
@@ -1004,49 +1093,63 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <span className="text-muted-foreground">{summary.feedCount} total</span>
               </button>
               
+              {showFeedStatusInsight && (
+                <p className="text-sm text-muted-foreground leading-relaxed pl-6">
+                  {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
+                </p>
+              )}
+              
               {summary.napCount > 0 && (
-                <button 
-                  onClick={() => setShowSleepStatusInsight(true)}
-                  className="flex items-center gap-2 text-sm w-full text-left"
-                >
-                  {getSleepStatusIndicator(summary.napCount, babyAgeMonths) === 'on-track' ? (
-                    <Circle className="w-3 h-3 fill-green-500 text-green-500 flex-shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                  )}
-                  <span className="font-medium text-foreground">Sleep:</span>
-                  <span className="text-muted-foreground">
-                    {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
-                    {(() => {
-                      const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
-                      if (naps.length === 0) return '';
-                      
-                      let totalMinutes = 0;
-                      naps.forEach(nap => {
-                        const parseTime = (timeStr: string) => {
-                          const [time, period] = timeStr.split(' ');
-                          const [hStr, mStr] = time.split(':');
-                          let h = parseInt(hStr, 10);
-                          const m = parseInt(mStr || '0', 10);
-                          if (period === 'PM' && h !== 12) h += 12;
-                          if (period === 'AM' && h === 12) h = 0;
-                          return h * 60 + m;
-                        };
+                <>
+                  <button 
+                    onClick={() => setShowSleepStatusInsight(!showSleepStatusInsight)}
+                    className="flex items-center gap-2 text-sm w-full text-left"
+                  >
+                    {getSleepStatusIndicator(summary.napCount, babyAgeMonths) === 'on-track' ? (
+                      <Circle className="w-3 h-3 fill-green-500 text-green-500 flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                    )}
+                    <span className="font-medium text-foreground">Sleep:</span>
+                    <span className="text-muted-foreground">
+                      {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
+                      {(() => {
+                        const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
+                        if (naps.length === 0) return '';
                         
-                        const startMinutes = parseTime(nap.details.startTime || nap.time);
-                        const endMinutes = parseTime(nap.details.endTime!);
-                        let duration = endMinutes >= startMinutes 
-                          ? endMinutes - startMinutes 
-                          : (24 * 60) - startMinutes + endMinutes;
-                        totalMinutes += duration;
-                      });
-                      
-                      const hours = Math.floor(totalMinutes / 60);
-                      const mins = totalMinutes % 60;
-                      return ` (${hours}h ${mins}m)`;
-                    })()}
-                  </span>
-                </button>
+                        let totalMinutes = 0;
+                        naps.forEach(nap => {
+                          const parseTime = (timeStr: string) => {
+                            const [time, period] = timeStr.split(' ');
+                            const [hStr, mStr] = time.split(':');
+                            let h = parseInt(hStr, 10);
+                            const m = parseInt(mStr || '0', 10);
+                            if (period === 'PM' && h !== 12) h += 12;
+                            if (period === 'AM' && h === 12) h = 0;
+                            return h * 60 + m;
+                          };
+                          
+                          const startMinutes = parseTime(nap.details.startTime || nap.time);
+                          const endMinutes = parseTime(nap.details.endTime!);
+                          let duration = endMinutes >= startMinutes 
+                            ? endMinutes - startMinutes 
+                            : (24 * 60) - startMinutes + endMinutes;
+                          totalMinutes += duration;
+                        });
+                        
+                        const hours = Math.floor(totalMinutes / 60);
+                        const mins = totalMinutes % 60;
+                        return ` (${hours}h ${mins}m)`;
+                      })()}
+                    </span>
+                  </button>
+                  
+                  {showSleepStatusInsight && (
+                    <p className="text-sm text-muted-foreground leading-relaxed pl-6">
+                      {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
+                    </p>
+                  )}
+                </>
               )}
               
               <div className="flex items-center gap-2 text-sm">
@@ -1054,6 +1157,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <span className="font-medium text-foreground">Overall:</span>
                 <span className="text-muted-foreground">Calm and steady</span>
               </div>
+            </div>
+            
+            {/* Daily Contextual Insight */}
+            <div className="pt-3 border-t border-border/30">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {getDailyInsight()}
+              </p>
             </div>
 
             {/* Expandable Timeline */}
