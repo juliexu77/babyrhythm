@@ -119,7 +119,7 @@ const ongoingNap = activities
 
   // Check user authentication and household status
   useEffect(() => {
-    if (loading || householdLoading) return;
+    if (loading || householdLoading || activitiesLoading) return;
 
     // RouteGuard already handles authentication redirects
     // Only handle household-specific logic here
@@ -132,8 +132,9 @@ const ongoingNap = activities
         localStorage.removeItem('babyProfile');
         localStorage.removeItem('babyProfileCompleted');
       } else if (!householdError) {
-        // Only redirect to baby setup for truly new users with no profile info
-        const profileIncomplete = !userProfile?.baby_name && !userProfile?.baby_birth_date;
+        // Check if user has any activities - if so, they're an existing user
+        const hasActivities = activities.length > 0;
+        
         // Prevent redirect loop by checking if we're not coming from onboarding
         const fromOnboarding = sessionStorage.getItem('from_baby_setup');
         if (fromOnboarding) {
@@ -141,17 +142,19 @@ const ongoingNap = activities
           sessionStorage.removeItem('from_baby_setup');
           return;
         }
-        if (profileIncomplete) {
-          console.log('No household and profile incomplete, redirecting to baby setup');
+        
+        // Only redirect truly new users (no activities) to baby setup
+        if (!hasActivities) {
+          console.log('New user with no activities, redirecting to baby setup');
           navigate('/onboarding/baby-setup');
           return;
         } else {
-          console.log('No household but profile exists - not redirecting');
+          console.log('Existing user with activities - not redirecting');
         }
       }
     }
     // Note: Unauthenticated users are handled by RouteGuard
-  }, [user, loading, householdLoading, household, householdError, navigate, userProfile]);
+  }, [user, loading, householdLoading, household, householdError, navigate, activities, activitiesLoading]);
 
   // Clear stale local profile if no user
   useEffect(() => {
