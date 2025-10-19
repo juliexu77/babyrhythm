@@ -31,10 +31,10 @@ const Onboarding = () => {
           {/* Message */}
           <div className="space-y-4">
             <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground tracking-tight leading-tight">
-              Understand your baby's rhythm — and your own.
+              Stay in sync with your baby.
             </h1>
             <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
-              A calm, intelligent companion that helps you track feeds, naps, and patterns — then gently reflects what they mean.
+              A calm, intelligent companion for your daily rhythm.
             </p>
           </div>
 
