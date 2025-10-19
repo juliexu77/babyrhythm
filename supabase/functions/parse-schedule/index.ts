@@ -8,17 +8,49 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+function validateInput(data: any): ValidationError[] {
+  const errors: ValidationError[] = [];
+  
+  if (typeof data.scheduleText !== 'string') {
+    errors.push({ field: 'scheduleText', message: 'Schedule text must be a string' });
+  } else if (data.scheduleText.length === 0) {
+    errors.push({ field: 'scheduleText', message: 'Schedule text cannot be empty' });
+  } else if (data.scheduleText.length > 10000) {
+    errors.push({ field: 'scheduleText', message: 'Schedule text cannot exceed 10,000 characters' });
+  }
+  
+  return errors;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { scheduleText } = await req.json();
-
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
+
+    const requestData = await req.json();
+    
+    // Validate input
+    const validationErrors = validateInput(requestData);
+    if (validationErrors.length > 0) {
+      console.error('Validation errors:', validationErrors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validationErrors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { scheduleText } = requestData;
 
     const systemPrompt = `You are a baby care assistant. Parse the user's natural language description of their baby's schedule into structured activities.
 

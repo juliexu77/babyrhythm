@@ -55,13 +55,16 @@ export function PhotoUpload({
         throw uploadError;
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
+      // Get signed URL (1 year expiration for photos)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from(bucketName)
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 31536000); // 1 year in seconds
 
-      console.log('Generated public URL:', publicUrl);
-      onPhotoUpdate(publicUrl);
+      console.log('Generated signed URL:', signedUrlData);
+
+      if (signedUrlError) throw signedUrlError;
+
+      onPhotoUpdate(signedUrlData.signedUrl);
       
       toast({
         title: "Photo uploaded!",

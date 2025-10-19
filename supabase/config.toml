@@ -1,7 +1,10 @@
 project_id = "ufpavzvrtdzxwcwasaqj"
 
 [functions.parenting-chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.night-doula]
-verify_jwt = false
+verify_jwt = true
+
+[functions.parse-schedule]
+verify_jwt = true

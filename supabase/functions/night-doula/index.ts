@@ -5,11 +5,49 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Input validation
+interface ValidationError {
+  field: string;
+  message: string;
+}
+
+function validateInput(data: any): ValidationError[] {
+  const errors: ValidationError[] = [];
+  
+  if (!Array.isArray(data.activities)) {
+    errors.push({ field: 'activities', message: 'Activities must be an array' });
+  } else if (data.activities.length > 1000) {
+    errors.push({ field: 'activities', message: 'Activities cannot exceed 1000 items' });
+  }
+  
+  if (typeof data.babyName !== 'string' || data.babyName.length > 100) {
+    errors.push({ field: 'babyName', message: 'Baby name must be a string (max 100 chars)' });
+  }
+  
+  if (data.babyAge && (typeof data.babyAge !== 'string' || data.babyAge.length > 50)) {
+    errors.push({ field: 'babyAge', message: 'Baby age must be a string (max 50 chars)' });
+  }
+  
+  return errors;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { activities, babyName, babyAge } = await req.json();
+    const requestData = await req.json();
+    
+    // Validate input
+    const validationErrors = validateInput(requestData);
+    if (validationErrors.length > 0) {
+      console.error('Validation errors:', validationErrors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validationErrors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const { activities, babyName, babyAge } = requestData;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
