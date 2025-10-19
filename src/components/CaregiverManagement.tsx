@@ -156,7 +156,7 @@ const handleAddCaregiver = async () => {
   };
 
   const handleRoleClick = async (collaboratorId: string, currentRole: string) => {
-    const roles = ['parent', 'partner', 'caregiver'];
+    const roles = ['parent', 'caregiver'];
     const currentIndex = roles.indexOf(currentRole);
     const nextRole = roles[(currentIndex + 1) % roles.length];
     

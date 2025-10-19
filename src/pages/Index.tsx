@@ -118,8 +118,9 @@ const ongoingNap = activities
         // Clear any stale localStorage data
         localStorage.removeItem('babyProfile');
         localStorage.removeItem('babyProfileCompleted');
-      } else {
-        // No household exists - redirect to baby setup
+      } else if (!householdError) {
+        // Only redirect to baby setup if there's no error AND no household
+        // (If there's an error, we want to stay here and let the error boundary handle it)
         navigate('/onboarding/baby-setup');
         return;
       }
@@ -128,7 +129,7 @@ const ongoingNap = activities
       navigate('/auth');
       return;
     }
-  }, [user, loading, householdLoading, household, navigate]);
+  }, [user, loading, householdLoading, household, householdError, navigate]);
 
   // Clear stale local profile if no user
   useEffect(() => {
