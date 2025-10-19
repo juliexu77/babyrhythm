@@ -17,12 +17,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let initialLoadComplete = false;
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        
+        // Only set loading false after initial load is done
+        if (initialLoadComplete) {
+          setLoading(false);
+        }
         
         // Create household for new users
         if (event === 'SIGNED_IN' && session?.user) {
@@ -38,10 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
+    // THEN check for existing session - this is the source of truth for initial load
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      initialLoadComplete = true;
       setLoading(false);
       
       // Ensure existing user has household
