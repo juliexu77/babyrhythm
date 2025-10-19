@@ -637,15 +637,15 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   return (
     <div className="px-4 py-6 space-y-5 pb-24">
-      {/* Greeting Section */}
+      {/* 1. Greeting Section */}
       <div className="space-y-2">
         <h1 className="text-[22px] font-bold text-foreground dark:text-white">
           {getGreetingLine()}
         </h1>
         
-        {developmentalPhase && babyName && (
+        {babyName && babyAge && (
           <p className="text-base text-muted-foreground">
-            {babyName} is {developmentalPhase}
+            {babyName} · {babyAge.months} months · {developmentalPhase}
           </p>
         )}
         
@@ -655,17 +655,76 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </div>
       </div>
 
-      {/* What's Next - Predictive Card (High Priority) */}
+      {/* 2. Current State (Right Now) */}
+      <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
+        <h2 className="text-base font-semibold text-foreground">
+          Current State (Right Now)
+        </h2>
+        
+        <div className="space-y-2.5">
+          {/* Last Feed */}
+          {lastFeed && (
+            <div className="flex items-center gap-3 text-foreground">
+              <span className="text-lg">🍼</span>
+              <p className="text-sm flex-1">
+                Last feed — <span className="font-medium">{lastFeed.time}</span>
+                {lastFeed.details?.quantity && (
+                  <span className="text-muted-foreground ml-1">
+                    ({lastFeed.details.quantity} {lastFeed.details.unit || 'ml'})
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+
+          {/* Sleep Status */}
+          {ongoingNap ? (
+            <div className="flex items-center gap-3 text-foreground">
+              <span className="text-lg">💤</span>
+              <p className="text-sm flex-1">
+                Sleeping since — <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+              </p>
+            </div>
+          ) : awakeTime && (
+            <div className="flex items-center gap-3 text-foreground">
+              <span className="text-lg">👁️</span>
+              <p className="text-sm flex-1">
+                Awake for — <span className="font-medium">{awakeTime}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Last Diaper */}
+          {lastDiaper && (
+            <div className="flex items-center gap-3 text-foreground">
+              <span className="text-lg">💩</span>
+              <p className="text-sm flex-1">
+                Last diaper — <span className="font-medium">{lastDiaper.time}</span>
+                {lastDiaper.details?.diaperType && (
+                  <span className="text-muted-foreground ml-1">
+                    ({lastDiaper.details.diaperType})
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* 3. What's Next (Predictive Insight) */}
       {(nextAction && !showingYesterday) || ongoingNap ? (
         <Card className="p-4 space-y-3 bg-card/50 backdrop-blur border-primary/20">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <h2 className="text-sm font-semibold text-foreground">What's next</h2>
-          </div>
+          <h2 className="text-base font-semibold text-foreground">
+            What's Next (Predictive Insight)
+          </h2>
+          
           {nextAction && (
-            <p className="text-base text-foreground leading-relaxed">
-              {nextAction}
-            </p>
+            <div className="flex items-start gap-2">
+              <span className="text-lg">⏰</span>
+              <p className="text-sm text-foreground leading-relaxed flex-1">
+                {nextAction}
+              </p>
+            </div>
           )}
           
           {/* Wake-up button if sleeping */}
@@ -686,301 +745,157 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </Card>
       ) : null}
 
-      {/* Today's Flow - Rhythm Summary */}
-      <Card className="p-4 space-y-4 bg-card/50 backdrop-blur">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-foreground">
-            🌿 {showingYesterday ? "Yesterday's Flow" : "Today's Flow"}
-          </h2>
-          {showingYesterday && (
-            <span className="text-xs text-muted-foreground italic">
-              showing recent context
-            </span>
-          )}
-        </div>
-        
-        {/* Current Activity Status */}
-        <div className="space-y-2.5 pb-3 border-b border-border/50">
-          {/* Last Feed */}
-          {lastFeed && (
-            <div className="flex items-center gap-3 text-foreground">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Baby className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm">
-                  Last feed: <span className="font-medium">{lastFeed.time}</span>
-                  {lastFeed.details?.quantity && (
-                    <span className="text-muted-foreground ml-1">
-                      • {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Last Diaper */}
-          {lastDiaper && (
-            <div className="flex items-center gap-3 text-foreground">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Droplet className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm">
-                  Last diaper: <span className="font-medium">{lastDiaper.time}</span>
-                  {lastDiaper.details?.diaperType && (
-                    <span className="text-muted-foreground ml-1">
-                      • {lastDiaper.details.diaperType}
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Awake Window */}
-          {!ongoingNap && awakeTime && (
-            <div className="flex items-center gap-3 text-foreground">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm">
-                  Awake window: <span className="font-medium">{awakeTime}</span>
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Currently Sleeping Status */}
-          {ongoingNap && (
-            <div className="flex items-center gap-3 text-foreground">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
-                <Moon className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm">
-                  {t('sleepingSince')} <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* First-Time Welcome or Subtle Add Prompt */}
-        {!showingYesterday && todayActivities.length === 0 && activities.length === 0 ? (
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <p className="text-base text-foreground font-medium">
-                Welcome{userName ? `, ${userName}` : ''}. {babyName ? `${babyName}'s` : "Your baby's"} rhythm begins today.
-              </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Try logging a feeding or nap to start building your flow.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={onAddActivity}
-                variant="default"
-                size="sm"
-                className="flex-1"
-              >
-                <Baby className="w-4 h-4 mr-2" />
-                Add a Feeding
-              </Button>
-              <Button
-                onClick={onAddActivity}
-                variant="default"
-                size="sm"
-                className="flex-1"
-              >
-                <Moon className="w-4 h-4 mr-2" />
-                Add a Nap
-              </Button>
-            </div>
-          </div>
-        ) : !showingYesterday && todayActivities.length === 0 ? (
-          <button
+      {/* 4. Quick Add (Always Accessible) */}
+      <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
+        <h2 className="text-base font-semibold text-foreground">
+          Quick Add (Always Accessible)
+        </h2>
+        <div className="flex gap-3">
+          <Button
             onClick={onAddActivity}
-            className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg"
+            variant="outline"
+            size="sm"
+            className="flex-1"
           >
-            {t('tapGreenToLog')}
-          </button>
-        ) : null}
-
-        {/* Daily Progress & Comparisons */}
-        {displayActivities.length > 0 && (
-        <div className="space-y-2.5 pt-3">
-          <div>
-            <button
-              onClick={() => setShowFeedDetails(!showFeedDetails)}
-              className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
-            >
-              <span className="text-lg">{getFeedStatusIndicator(summary.feedCount, babyAgeMonths)}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground">
-                  <span className="font-medium">{t('feedsLabel')}</span> {summary.feedCount} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
-                </p>
-              </div>
-              <ChevronDown 
-                className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showFeedDetails ? 'rotate-180' : ''}`}
-              />
-            </button>
-            {showFeedDetails && displayActivities.filter(a => a.type === 'feed').length > 0 && (
-              <div className="mt-2 pl-8 space-y-1.5">
-                {displayActivities
-                  .filter(a => a.type === 'feed')
-                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
-                  .map((activity, index) => {
-                    const { feedType, quantity, unit, minutesLeft, minutesRight, solidDescription } = activity.details;
-                    let feedDetail = '';
-                    
-                    if (feedType === 'bottle' && quantity && unit) {
-                      feedDetail = `${quantity} ${unit}`;
-                    } else if (feedType === 'nursing') {
-                      const leftTime = minutesLeft ? parseInt(minutesLeft) : 0;
-                      const rightTime = minutesRight ? parseInt(minutesRight) : 0;
-                      const totalTime = leftTime + rightTime;
-                      feedDetail = totalTime > 0 ? `${totalTime}min nursing` : 'Nursing';
-                    } else if (feedType === 'solid' && solidDescription) {
-                      feedDetail = solidDescription;
-                    }
-                    
-                    return (
-                      <div key={index} className="text-xs text-muted-foreground py-1 border-l-2 border-border/50 pl-3">
-                        <div className="flex justify-between items-start">
-                          <span className="font-medium text-foreground">{activity.time}</span>
-                          {feedDetail && (
-                            <span>{feedDetail}</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <button
-              onClick={() => setShowSleepDetails(!showSleepDetails)}
-              className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
-            >
-              <span className="text-lg">{getSleepStatusIndicator(summary.napCount, babyAgeMonths)}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground">
-                  <span className="font-medium">{t('sleepLabel')}</span> {summary.napCount} {summary.napCount !== 1 ? t('napsCompleted') : t('napCompleted')}
-                </p>
-              </div>
-              <ChevronDown 
-                className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showSleepDetails ? 'rotate-180' : ''}`}
-              />
-            </button>
-            {showSleepDetails && displayActivities.filter(a => a.type === 'nap').length > 0 && (
-              <div className="mt-2 pl-8 space-y-1.5">
-                {displayActivities
-                  .filter(a => a.type === 'nap')
-                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
-                  .map((activity, index) => {
-                    const { startTime, endTime } = activity.details;
-                    const isOngoing = !endTime;
-                    
-                    // Calculate duration for completed naps
-                    let durationText = '';
-                    if (startTime && endTime) {
-                      try {
-                        const parseTime = (timeStr: string) => {
-                          const [time, period] = timeStr.split(' ');
-                          const [hours, minutes] = time.split(':').map(Number);
-                          let hour24 = hours;
-                          if (period === 'PM' && hours !== 12) hour24 += 12;
-                          if (period === 'AM' && hours === 12) hour24 = 0;
-                          return hour24 * 60 + minutes;
-                        };
-                        
-                        const startMinutes = parseTime(startTime);
-                        const endMinutes = parseTime(endTime);
-                        const durationMinutes = endMinutes >= startMinutes 
-                          ? endMinutes - startMinutes 
-                          : (24 * 60) - startMinutes + endMinutes;
-                        
-                        const hours = Math.floor(durationMinutes / 60);
-                        const mins = durationMinutes % 60;
-                        durationText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-                      } catch (error) {
-                        durationText = '';
-                      }
-                    }
-                    
-                    return (
-                      <div key={index} className="text-xs text-muted-foreground py-1 border-l-2 border-border/50 pl-3">
-                        <div className="flex justify-between items-start gap-2">
-                          <span className="font-medium text-foreground">
-                            {startTime} - {endTime || 'ongoing'}
-                          </span>
-                          {durationText && (
-                            <span className="text-xs">{durationText}</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
-          </div>
-          
-          {latestMeasurement && (
-            <button
-              onClick={() => setShowGrowthDetails(!showGrowthDetails)}
-              className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
-            >
-              <span className="text-lg">{getGrowthStatusIndicator(latestMeasurement)}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-foreground">
-                  <span className="font-medium">Growth</span>
-                </p>
-                {showGrowthDetails && (
-                  <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
-                    <div className="text-xs text-muted-foreground">
-                      Measured {format(new Date(latestMeasurement.date), 'MMM d')}
-                    </div>
-                    {latestMeasurement.weight && (
-                      <div className="text-xs text-muted-foreground">
-                        Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)
-                      </div>
-                    )}
-                    {latestMeasurement.length && (
-                      <div className="text-xs text-muted-foreground">
-                        Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)
-                      </div>
-                    )}
-                    {latestMeasurement.headCirc && (
-                      <div className="text-xs text-muted-foreground">
-                        Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <ChevronDown 
-                className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showGrowthDetails ? 'rotate-180' : ''}`}
-              />
-            </button>
-          )}
-
-          <div className="flex items-start gap-2">
-            <span className="text-lg">💫</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground">
-                <span className="font-medium">{t('overallLabel')}</span> {t('calmAndSteady')}
-              </p>
-            </div>
-          </div>
+            <Baby className="w-4 h-4 mr-2" />
+            Add feed
+          </Button>
+          <Button
+            onClick={onAddActivity}
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            <Moon className="w-4 h-4 mr-2" />
+            Add sleep
+          </Button>
         </div>
-        )}
       </Card>
 
+      {/* 5. Daily Summary */}
+      {displayActivities.length > 0 && (
+        <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
+          <button
+            onClick={() => setShowTimeline(!showTimeline)}
+            className="w-full"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-foreground">
+                Daily Summary
+              </h2>
+              <ChevronDown 
+                className={`h-5 w-5 text-muted-foreground transition-transform ${showTimeline ? 'rotate-180' : ''}`}
+              />
+            </div>
+          </button>
+
+          {/* Summary Stats */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <span className="font-medium">Feeds:</span>
+              <span>{summary.feedCount} total</span>
+            </div>
+            
+            {summary.napCount > 0 && (
+              <div className="flex items-center gap-2 text-sm text-foreground">
+                <span className="font-medium">Sleep:</span>
+                <span>
+                  {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
+                  {(() => {
+                    const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
+                    if (naps.length === 0) return '';
+                    
+                    let totalMinutes = 0;
+                    naps.forEach(nap => {
+                      const parseTime = (timeStr: string) => {
+                        const [time, period] = timeStr.split(' ');
+                        const [hStr, mStr] = time.split(':');
+                        let h = parseInt(hStr, 10);
+                        const m = parseInt(mStr || '0', 10);
+                        if (period === 'PM' && h !== 12) h += 12;
+                        if (period === 'AM' && h === 12) h = 0;
+                        return h * 60 + m;
+                      };
+                      
+                      const startMinutes = parseTime(nap.details.startTime || nap.time);
+                      const endMinutes = parseTime(nap.details.endTime!);
+                      let duration = endMinutes >= startMinutes 
+                        ? endMinutes - startMinutes 
+                        : (24 * 60) - startMinutes + endMinutes;
+                      totalMinutes += duration;
+                    });
+                    
+                    const hours = Math.floor(totalMinutes / 60);
+                    const mins = totalMinutes % 60;
+                    return ` (${hours}h ${mins}m)`;
+                  })()}
+                </span>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2 text-sm text-foreground">
+              <span className="font-medium">⚖️ Overall:</span>
+              <span>Calm and steady</span>
+            </div>
+          </div>
+
+          {/* Expandable Timeline */}
+          {showTimeline && (
+            <div className="pt-3 border-t border-border/50 space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Today's Log Timeline
+              </p>
+              {displayActivities
+                .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
+                .map((activity, index) => {
+                  const typeEmojis: { [key: string]: string } = {
+                    feed: '🍼',
+                    nap: '💤',
+                    diaper: '💩',
+                    measure: '📏'
+                  };
+                  
+                  let details = '';
+                  if (activity.type === 'feed' && activity.details?.quantity) {
+                    details = ` • ${activity.details.quantity}${activity.details.unit || 'ml'}`;
+                  } else if (activity.type === 'nap' && activity.details?.endTime) {
+                    const parseTime = (timeStr: string) => {
+                      const [time, period] = timeStr.split(' ');
+                      const [hStr, mStr] = time.split(':');
+                      let h = parseInt(hStr, 10);
+                      const m = parseInt(mStr || '0', 10);
+                      if (period === 'PM' && h !== 12) h += 12;
+                      if (period === 'AM' && h === 12) h = 0;
+                      return h * 60 + m;
+                    };
+                    
+                    const startMinutes = parseTime(activity.details.startTime || activity.time);
+                    const endMinutes = parseTime(activity.details.endTime);
+                    let duration = endMinutes >= startMinutes 
+                      ? endMinutes - startMinutes 
+                      : (24 * 60) - startMinutes + endMinutes;
+                    
+                    const hours = Math.floor(duration / 60);
+                    const mins = duration % 60;
+                    details = ` • ${hours}h ${mins}m`;
+                  } else if (activity.type === 'diaper' && activity.details?.diaperType) {
+                    details = ` • ${activity.details.diaperType}`;
+                  }
+                  
+                  return (
+                    <div key={index} className="text-sm text-foreground py-1.5 border-l-2 border-border/50 pl-3 flex items-center gap-2">
+                      <span className="text-base">{typeEmojis[activity.type] || '📝'}</span>
+                      <span className="font-medium">{activity.time}</span>
+                      <span className="text-muted-foreground text-xs capitalize">
+                        {activity.type}{details}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </Card>
+      )}
 
     </div>
   );
