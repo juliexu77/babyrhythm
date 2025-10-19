@@ -235,93 +235,80 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     };
   };
 
-  // Get daily sentiment based on patterns - varied and context-aware
+  // Get daily sentiment based on patterns - refined 12-chip set
   const getDailySentiment = () => {
     const summary = getDailySummary();
     const expected = getExpectedFeeds(babyAgeMonths);
     const expectedNaps = getExpectedNaps(babyAgeMonths);
     const hour = currentTime.getHours();
     
-    // Growth spurt indicators: more frequent feeds than typical
+    // 1. 🌱 Growth Spurt Week - significantly more feeds than typical
     if (expected && summary.feedCount > expected.max + 2) {
-      return { emoji: "🌱", text: t('growthSpurtWeek') };
+      return { emoji: "🌱", text: "Growth Spurt Week" };
     }
     
-    // Cluster feeding pattern (many feeds, shorter naps)
-    if (expected && summary.feedCount > expected.max && summary.napCount < (expectedNaps?.min || 2)) {
-      return { emoji: "🌸", text: t('comfortDay') };
+    // 2. 🍼 Feed-Heavy Day - above average feeds
+    if (expected && summary.feedCount > expected.max && summary.feedCount <= expected.max + 2) {
+      return { emoji: "🍼", text: "Feed-Heavy Day" };
     }
     
-    // Early morning with no data yet
-    if (hour < 9 && summary.feedCount === 0 && summary.napCount === 0) {
-      return { emoji: "🌅", text: t('freshStart') };
+    // 3. 🌙 Extra Sleepy Day - more/longer naps than expected
+    if (expectedNaps && summary.napCount >= expectedNaps.max + 1) {
+      return { emoji: "🌙", text: "Extra Sleepy Day" };
     }
     
-    // Peaceful day - longer/more naps, fewer feeds
-    if (expectedNaps && summary.napCount >= expectedNaps.max && expected && summary.feedCount <= expected.max) {
-      return { emoji: "🕊️", text: t('peacefulDay') };
-    }
-    
-    // Perfect alignment with expectations
-    if (expected && expectedNaps && 
-        summary.feedCount === expected.max && 
-        summary.napCount === expectedNaps.max) {
-      return { emoji: "🎯", text: t('onTarget') };
-    }
-    
-    // Smooth transition: feeds and naps in range
+    // 4. ☀️ Smooth Flow - feeds and naps both in expected range
     if (expected && expectedNaps && 
         summary.feedCount >= expected.min && summary.feedCount <= expected.max &&
         summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max) {
-      return { emoji: "☀️", text: t('smoothFlow') };
+      return { emoji: "☀️", text: "Smooth Flow" };
     }
     
-    // Mixed patterns - some in range, some not
+    // 5. 🎯 In Sync Today - perfect alignment with expectations
+    if (expected && expectedNaps && 
+        (summary.feedCount === expected.max || summary.feedCount === Math.round((expected.min + expected.max) / 2)) && 
+        (summary.napCount === expectedNaps.max || summary.napCount === Math.round((expectedNaps.min + expectedNaps.max) / 2))) {
+      return { emoji: "🎯", text: "In Sync Today" };
+    }
+    
+    // 6. 🌤️ Mixed Patterns - some metrics in range, others not
     if (expected && expectedNaps &&
         ((summary.feedCount >= expected.min && summary.feedCount <= expected.max && summary.napCount < expectedNaps.min) ||
          (summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max && summary.feedCount < expected.min))) {
-      return { emoji: "🌤️", text: t('mixedPatterns') };
+      return { emoji: "🌤️", text: "Mixed Patterns" };
     }
     
-    // Adjustment phase - off from expected but not extreme
+    // 7. 🔄 Adjusting Rhythm - slightly off from expected range
     if (expected && expectedNaps &&
-        (summary.feedCount < expected.min - 1 || summary.napCount < expectedNaps.min - 1)) {
-      return { emoji: "🔄", text: t('adjustmentPhase') };
+        (summary.feedCount === expected.min - 1 || summary.napCount === expectedNaps.min - 1)) {
+      return { emoji: "🔄", text: "Adjusting Rhythm" };
     }
     
-    // Lots of activity
-    if (summary.feedCount + summary.napCount + summary.diaperCount > 12) {
-      return { emoji: "⚡", text: t('activeRhythm') };
+    // 8. ⚡ High-Energy Day - lots of overall activity
+    if (summary.feedCount + summary.napCount + summary.diaperCount >= 12) {
+      return { emoji: "⚡", text: "High-Energy Day" };
     }
     
-    // Irregular but positive
-    if (hour > 12 && summary.feedCount >= 2 && summary.napCount >= 1) {
-      return { emoji: "🌊", text: t('goingWithFlow') };
-    }
-    
-    // Settled rhythm: consistent patterns
-    if (summary.feedCount >= 3 && summary.napCount >= 2) {
-      return { emoji: "✨", text: t('settledRhythmDay') };
-    }
-    
-    // Milestone development period (varies by age)
+    // 9. 💫 Growth Transition - milestone age periods with pattern changes
     if (babyAgeMonths !== null && [3, 4, 6, 9, 12].includes(babyAgeMonths) && 
         (summary.feedCount !== expected?.max || summary.napCount !== expectedNaps?.max)) {
-      return { emoji: "💫", text: t('findingBalance') };
+      return { emoji: "💫", text: "Growth Transition" };
     }
     
-    // Light day
-    if (hour > 16 && summary.feedCount < 3 && summary.napCount < 2) {
-      return { emoji: "🌙", text: t('gentlePace') };
+    // 10. 🌈 New Discovery - early in day with some activity
+    if (hour < 12 && (summary.feedCount >= 1 || summary.napCount >= 1) && 
+        (summary.feedCount + summary.napCount <= 3)) {
+      return { emoji: "🌈", text: "New Discovery" };
     }
     
-    // First activities of the day
-    if (hour < 12 && (summary.feedCount === 1 || summary.napCount === 1)) {
-      return { emoji: "🌈", text: t('learningTogether') };
+    // 11. 🌧 Off Rhythm Day - significantly below expected
+    if (expected && expectedNaps &&
+        (summary.feedCount < expected.min - 1 || summary.napCount < expectedNaps.min - 1)) {
+      return { emoji: "🌧", text: "Off Rhythm Day" };
     }
     
-    // Default: building routine
-    return { emoji: "🌿", text: t('buildingRhythm') };
+    // 12. 🌿 Building Rhythm - default/early patterns
+    return { emoji: "🌿", text: "Building Rhythm" };
   };
 
   // Get developmental phase description
