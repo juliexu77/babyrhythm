@@ -117,44 +117,23 @@ const ongoingNap = activities
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Check user authentication and household status
+  // Check household status and redirect new users to setup
   useEffect(() => {
     if (loading || householdLoading || activitiesLoading) return;
+    if (!user) return;
 
-    // RouteGuard already handles authentication redirects
-    // Only handle household-specific logic here
-    if (user) {
-      // For authenticated users, always use database as source of truth
-      if (household) {
-        setBabyProfile({ name: household.baby_name || '', birthday: household.baby_birthday || undefined });
-        setHasProfile(true);
-        // Clear any stale localStorage data
-        localStorage.removeItem('babyProfile');
-        localStorage.removeItem('babyProfileCompleted');
-      } else if (!householdError) {
-        // Check if user has any activities - if so, they're an existing user
-        const hasActivities = activities.length > 0;
-        
-        // Prevent redirect loop by checking if we're not coming from onboarding
-        const fromOnboarding = sessionStorage.getItem('from_baby_setup');
-        if (fromOnboarding) {
-          console.log('Skipping redirect - already came from baby setup');
-          sessionStorage.removeItem('from_baby_setup');
-          return;
-        }
-        
-        // Only redirect truly new users (no activities) to baby setup
-        if (!hasActivities) {
-          console.log('New user with no activities, redirecting to baby setup');
-          navigate('/onboarding/baby-setup');
-          return;
-        } else {
-          console.log('Existing user with activities - not redirecting');
-        }
-      }
+    if (household) {
+      // User has a household - load profile
+      setBabyProfile({ 
+        name: household.baby_name || '', 
+        birthday: household.baby_birthday || undefined 
+      });
+      setHasProfile(true);
+    } else if (!householdError && activities.length === 0) {
+      // New user with no household and no activities - needs setup
+      navigate('/onboarding/baby-setup');
     }
-    // Note: Unauthenticated users are handled by RouteGuard
-  }, [user, loading, householdLoading, household, householdError, navigate, activities, activitiesLoading]);
+  }, [user, loading, householdLoading, activitiesLoading, household, householdError, activities.length, navigate]);
 
   // Clear stale local profile if no user
   useEffect(() => {

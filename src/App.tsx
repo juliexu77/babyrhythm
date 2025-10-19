@@ -37,7 +37,6 @@ const App = () => (
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/onboarding/baby-setup" element={<BabySetup />} />
                   <Route path="/onboarding/village" element={<VillageInvite />} />
-                  <Route path="/app" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/login" element={<Auth />} />
                   <Route path="/invite/:code" element={<InviteAccept />} />

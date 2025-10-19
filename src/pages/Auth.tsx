@@ -19,34 +19,16 @@ const Auth = () => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    const redirectTo = searchParams.get('redirect');
-    
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // RouteGuard will handle the redirect, but we can navigate to avoid seeing the form
-        if (redirectTo) {
-          navigate(redirectTo, { replace: true });
-        } else {
-          navigate("/", { replace: true });
-        }
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && event === 'SIGNED_IN') {
-        const redirectTo = searchParams.get('redirect');
-        if (redirectTo) {
-          navigate(redirectTo, { replace: true });
-        } else {
-          navigate("/", { replace: true });
-        }
+    // Auth state changes are handled by RouteGuard
+    // Just listen for sign-in to close the loading state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        setIsLoading(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, searchParams]);
+  }, []);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
