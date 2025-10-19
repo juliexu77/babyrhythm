@@ -924,7 +924,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           </button>
           
           {showToneInsight && (
-            <p className="text-sm text-muted-foreground leading-relaxed pl-1">
+            <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
               {getToneInsight(sentiment)}
             </p>
           )}
@@ -1039,7 +1039,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               )}
               
               {showPredictionInsight && prediction && (
-                <p className="text-sm text-muted-foreground leading-relaxed pl-1">
+                <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
                   {getPredictionReasoning()}
                 </p>
               )}
@@ -1094,7 +1094,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               </button>
               
               {showFeedStatusInsight && (
-                <p className="text-sm text-muted-foreground leading-relaxed pl-6">
+                <p className="text-sm text-muted-foreground leading-relaxed pl-6 italic">
                   {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
                 </p>
               )}
@@ -1145,7 +1145,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   </button>
                   
                   {showSleepStatusInsight && (
-                    <p className="text-sm text-muted-foreground leading-relaxed pl-6">
+                    <p className="text-sm text-muted-foreground leading-relaxed pl-6 italic">
                       {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
                     </p>
                   )}
@@ -1161,7 +1161,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             
             {/* Daily Contextual Insight */}
             <div className="pt-3 border-t border-border/30">
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed italic">
                 {getDailyInsight()}
               </p>
             </div>
