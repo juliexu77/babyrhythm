@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -558,34 +558,32 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get status indicator for feeds
   const getFeedStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedFeeds(months);
-    if (!expected) return '☀️'; // Default to on track if no baseline
+    if (!expected) return 'on-track';
     
     if (count >= expected.min && count <= expected.max) {
-      return '☀️'; // On track
+      return 'on-track';
     } else if (count < expected.min && count === 0) {
-      return '🌤️'; // Just starting the day
-    } else if (count < expected.min) {
-      return '⚠️'; // Below expected
-    } else if (count > expected.max + 2) {
-      return '⚠️'; // Significantly above (growth spurt)
+      return 'on-track'; // Just starting the day
+    } else if (count < expected.min || count > expected.max + 2) {
+      return 'attention';
     } else {
-      return '🌤️'; // Adjusting (slightly above normal)
+      return 'on-track'; // Slightly above but adjusting
     }
   };
 
   // Get status indicator for sleep
   const getSleepStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedNaps(months);
-    if (!expected) return '☀️'; // Default to on track if no baseline
+    if (!expected) return 'on-track';
     
     if (count >= expected.min && count <= expected.max) {
-      return '☀️'; // On track
+      return 'on-track';
     } else if (count < expected.min && count === 0) {
-      return '🌤️'; // Just starting the day
+      return 'on-track'; // Just starting the day
     } else if (count < expected.min) {
-      return '⚠️'; // Below expected
+      return 'attention';
     } else {
-      return '🌤️'; // Extra rest day
+      return 'on-track'; // Extra rest day is okay
     }
   };
 
@@ -913,12 +911,22 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             {/* Summary Stats */}
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
+                {getFeedStatusIndicator(summary.feedCount, babyAgeMonths) === 'on-track' ? (
+                  <Circle className="w-3 h-3 fill-green-500 text-green-500" />
+                ) : (
+                  <AlertCircle className="w-3 h-3 text-amber-500" />
+                )}
                 <span className="font-medium text-foreground">Feeds:</span>
                 <span className="text-muted-foreground">{summary.feedCount} total</span>
             </div>
               
               {summary.napCount > 0 && (
                 <div className="flex items-center gap-2 text-sm">
+                  {getSleepStatusIndicator(summary.napCount, babyAgeMonths) === 'on-track' ? (
+                    <Circle className="w-3 h-3 fill-green-500 text-green-500" />
+                  ) : (
+                    <AlertCircle className="w-3 h-3 text-amber-500" />
+                  )}
                   <span className="font-medium text-foreground">Sleep:</span>
                   <span className="text-muted-foreground">
                     {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
