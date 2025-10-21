@@ -119,9 +119,22 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       // Populate form with editing activity data
       setActivityType(editingActivity.type);
       
-      // Only set time if we're starting to edit (not on subsequent rerenders)
-      const currentTime = editingActivity.time;
-      setTime(currentTime);
+      // Round the time to nearest 5 minutes when editing
+      const originalTime = editingActivity.time;
+      // Parse the time and round it
+      const roundedTime = (() => {
+        try {
+          const [timePart, period] = originalTime.split(' ');
+          const [hours, minutes] = timePart.split(':').map(Number);
+          const date = new Date();
+          date.setHours(period === 'PM' && hours !== 12 ? hours + 12 : hours === 12 && period === 'AM' ? 0 : hours);
+          date.setMinutes(minutes);
+          return getRoundedTime(date);
+        } catch {
+          return getRoundedTime(); // Fallback to current time if parsing fails
+        }
+      })();
+      setTime(roundedTime);
       
       // Set the selected date based on the original logged date
       if (editingActivity.loggedAt) {
@@ -403,14 +416,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       return;
     }
 
-    // Ensure time has a value, use current time if not set
+    // Ensure time has a value, use current rounded time if not set
     let activityTime = time;
     if (!activityTime && activityType !== "nap") {
-      activityTime = new Date().toLocaleTimeString("en-US", { 
-        hour: "numeric", 
-        minute: "2-digit",
-        hour12: true 
-      });
+      activityTime = getRoundedTime();
       setTime(activityTime);
     }
 
