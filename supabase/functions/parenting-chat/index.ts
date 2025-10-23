@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,10 +58,15 @@ serve(async (req) => {
       );
     }
     
-    const { messages, activities, babyName, babyAgeInWeeks, babySex, timezone, isInitial, userName, predictionIntent, predictionConfidence } = requestData;
-    console.log('Edge function received:', { babyName, babyAgeInWeeks, babySex, timezone, isInitial, userName, predictionIntent, activitiesCount: activities?.length });
+    const { messages, activities, householdId, babyName, babyAgeInWeeks, babySex, timezone, isInitial, userName, predictionIntent, predictionConfidence } = requestData;
+    console.log('Edge function received:', { householdId, babyName, babyAgeInWeeks, babySex, timezone, isInitial, userName, predictionIntent, activitiesCount: activities?.length });
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Initialize Supabase client for caching
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log("Timezone received:", timezone);
     console.log("Is initial request:", isInitial);
@@ -297,8 +303,42 @@ serve(async (req) => {
       return 97;
     };
     
-    // Calculate daily summaries for trend analysis
-    const dailySummaries = Object.entries(activitiesByDay).map(([date, dayActivities]) => {
+    // Fetch cached daily summaries from database
+    let cachedSummaries:any[] = [];
+    if (householdId) {
+      const { data, error } = await supabase
+        .from('daily_activity_summaries')
+        .select('*')
+        .eq('household_id', householdId)
+        .gte('summary_date', Object.keys(activitiesByDay)[0] || userToday)
+        .order('summary_date', { ascending: true });
+      
+      if (!error && data) {
+        cachedSummaries = data.map(row => ({
+          date: row.summary_date,
+          isToday: row.summary_date === userToday,
+          feedCount: row.feed_count,
+          totalFeedVolume: row.total_feed_volume,
+          feedUnit: row.feed_unit,
+          napCount: row.nap_count,
+          napDetails: row.nap_details,
+          totalNapMinutes: row.total_nap_minutes,
+          avgNapLength: row.avg_nap_length,
+          wakeWindows: row.wake_windows,
+          avgWakeWindow: row.avg_wake_window,
+          diaperCount: row.diaper_count,
+          measurements: row.measurements
+        }));
+        console.log(`Loaded ${cachedSummaries.length} cached summaries from database`);
+      }
+    }
+    
+    const cachedDates = new Set(cachedSummaries.map(s => s.date));
+    
+    // Calculate daily summaries only for dates not in cache
+    const computedSummaries = Object.entries(activitiesByDay)
+      .filter(([date]) => !cachedDates.has(date))
+      .map(([date, dayActivities]) => {
       const feeds = dayActivities.filter(a => a.type === 'feed');
       // Filter out overnight sleep - only include daytime naps
       const naps = dayActivities.filter(a => 
@@ -391,7 +431,44 @@ serve(async (req) => {
         diaperCount: diapers.length,
         measurements: measurementData.length > 0 ? measurementData : undefined
       };
-    }).sort((a, b) => a.date.localeCompare(b.date));
+    });
+    
+    // Save newly computed summaries to cache (background task)
+    if (householdId && computedSummaries.length > 0) {
+      const summariesToCache = computedSummaries.filter(s => !s.isToday); // Don't cache today
+      if (summariesToCache.length > 0) {
+        EdgeRuntime.waitUntil(
+          (async () => {
+            const { error } = await supabase
+              .from('daily_activity_summaries')
+              .upsert(
+                summariesToCache.map(s => ({
+                  household_id: householdId,
+                  summary_date: s.date,
+                  feed_count: s.feedCount,
+                  total_feed_volume: s.totalFeedVolume,
+                  feed_unit: s.feedUnit,
+                  nap_count: s.napCount,
+                  nap_details: s.napDetails,
+                  total_nap_minutes: s.totalNapMinutes,
+                  avg_nap_length: s.avgNapLength,
+                  wake_windows: s.wakeWindows,
+                  avg_wake_window: s.avgWakeWindow,
+                  diaper_count: s.diaperCount,
+                  measurements: s.measurements
+                })),
+                { onConflict: 'household_id,summary_date' }
+              );
+            if (error) console.error('Error caching summaries:', error);
+            else console.log(`Cached ${summariesToCache.length} new summaries`);
+          })()
+        );
+      }
+    }
+    
+    // Combine cached and computed summaries
+    const dailySummaries = [...cachedSummaries, ...computedSummaries]
+      .sort((a, b) => a.date.localeCompare(b.date));
     
     // Calculate data deltas/trends for deeper reasoning
     const recentDays = dailySummaries.slice(-3); // Last 3 days

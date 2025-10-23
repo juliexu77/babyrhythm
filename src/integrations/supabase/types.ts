@@ -128,6 +128,63 @@ export type Database = {
           },
         ]
       }
+      daily_activity_summaries: {
+        Row: {
+          avg_nap_length: number | null
+          avg_wake_window: number | null
+          created_at: string | null
+          diaper_count: number | null
+          feed_count: number | null
+          feed_unit: string | null
+          household_id: string
+          id: string
+          measurements: Json | null
+          nap_count: number | null
+          nap_details: Json | null
+          summary_date: string
+          total_feed_volume: number | null
+          total_nap_minutes: number | null
+          updated_at: string | null
+          wake_windows: Json | null
+        }
+        Insert: {
+          avg_nap_length?: number | null
+          avg_wake_window?: number | null
+          created_at?: string | null
+          diaper_count?: number | null
+          feed_count?: number | null
+          feed_unit?: string | null
+          household_id: string
+          id?: string
+          measurements?: Json | null
+          nap_count?: number | null
+          nap_details?: Json | null
+          summary_date: string
+          total_feed_volume?: number | null
+          total_nap_minutes?: number | null
+          updated_at?: string | null
+          wake_windows?: Json | null
+        }
+        Update: {
+          avg_nap_length?: number | null
+          avg_wake_window?: number | null
+          created_at?: string | null
+          diaper_count?: number | null
+          feed_count?: number | null
+          feed_unit?: string | null
+          household_id?: string
+          id?: string
+          measurements?: Json | null
+          nap_count?: number | null
+          nap_details?: Json | null
+          summary_date?: string
+          total_feed_volume?: number | null
+          total_nap_minutes?: number | null
+          updated_at?: string | null
+          wake_windows?: Json | null
+        }
+        Relationships: []
+      }
       households: {
         Row: {
           baby_birthday: string | null
@@ -252,14 +309,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_invite: {
-        Args: { invite_code: string }
-        Returns: string
-      }
-      generate_invite_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      accept_invite: { Args: { invite_code: string }; Returns: string }
+      generate_invite_code: { Args: never; Returns: string }
       get_accessible_household_ids: {
         Args: { _user_id: string }
         Returns: {

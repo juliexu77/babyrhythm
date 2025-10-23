@@ -260,6 +260,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         body: JSON.stringify({ 
           messages: isGreeting ? [] : [...messages, { role: "user", content: userMessage }],
           activities: recentActivities,
+          householdId: household?.id,
           babyName,
           babyAgeInWeeks,
           babySex,
