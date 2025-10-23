@@ -21,8 +21,14 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings, Undo2 } from "lucide-react";
+import { Calendar, Settings, Undo2, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuCheckboxItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
@@ -113,6 +119,7 @@ const ongoingNap = activities
   const [quickAddType, setQuickAddType] = useState<'feed' | 'nap' | 'diaper' | null>(null);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
   
 
   // Handle scroll for header fade effect
@@ -395,9 +402,83 @@ const ongoingNap = activities
           <>
             {/* Log Header */}
             <div className="px-4 pt-6 pb-4 space-y-3 border-b border-border">
-              <h2 className="text-[18px] font-medium text-foreground">
-                Today · {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-[18px] font-medium text-foreground">
+                  Today · {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                </h2>
+                
+                {/* Filter Button */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 gap-2">
+                      <Filter className="h-4 w-4" />
+                      Filter
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 bg-background">
+                    <DropdownMenuCheckboxItem
+                      checked={selectedActivityTypes.includes('feed')}
+                      onCheckedChange={(checked) => {
+                        setSelectedActivityTypes(prev => 
+                          checked ? [...prev, 'feed'] : prev.filter(t => t !== 'feed')
+                        );
+                      }}
+                    >
+                      🍼 Feed
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={selectedActivityTypes.includes('diaper')}
+                      onCheckedChange={(checked) => {
+                        setSelectedActivityTypes(prev => 
+                          checked ? [...prev, 'diaper'] : prev.filter(t => t !== 'diaper')
+                        );
+                      }}
+                    >
+                      👶 Diaper
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={selectedActivityTypes.includes('nap')}
+                      onCheckedChange={(checked) => {
+                        setSelectedActivityTypes(prev => 
+                          checked ? [...prev, 'nap'] : prev.filter(t => t !== 'nap')
+                        );
+                      }}
+                    >
+                      😴 Nap
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={selectedActivityTypes.includes('note')}
+                      onCheckedChange={(checked) => {
+                        setSelectedActivityTypes(prev => 
+                          checked ? [...prev, 'note'] : prev.filter(t => t !== 'note')
+                        );
+                      }}
+                    >
+                      📝 Note
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={selectedActivityTypes.includes('measure')}
+                      onCheckedChange={(checked) => {
+                        setSelectedActivityTypes(prev => 
+                          checked ? [...prev, 'measure'] : prev.filter(t => t !== 'measure')
+                        );
+                      }}
+                    >
+                      📏 Measure
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={selectedActivityTypes.includes('photo')}
+                      onCheckedChange={(checked) => {
+                        setSelectedActivityTypes(prev => 
+                          checked ? [...prev, 'photo'] : prev.filter(t => t !== 'photo')
+                        );
+                      }}
+                    >
+                      📷 Photo
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               
               {/* Quick Summary Line with Time-based Emoji */}
               <p className="text-[13px] text-muted-foreground flex items-center gap-2">
@@ -450,10 +531,24 @@ const ongoingNap = activities
                   </div>
                 ) : (
                   (() => {
-                    // Group activities by date
-                    const activityGroups: { [date: string]: typeof activities } = {};
+                    // Filter activities by selected types
+                    const filteredActivities = activities.filter(activity => 
+                      selectedActivityTypes.includes(activity.type)
+                    );
                     
-                     activities.forEach(activity => {
+                    // Show message if filter results in no activities
+                    if (filteredActivities.length === 0) {
+                      return (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>No activities match the selected filters.</p>
+                        </div>
+                      );
+                    }
+                    
+                    // Group activities by date
+                    const activityGroups: { [date: string]: typeof filteredActivities } = {};
+                    
+                     filteredActivities.forEach(activity => {
                        // Use the logged_at date for grouping activities by day
                        const activityDate = new Date(activity.loggedAt!);
                         // Build a YYYY-MM-DD key in local time (avoid UTC shifting)
