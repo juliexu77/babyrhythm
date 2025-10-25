@@ -34,7 +34,7 @@ export function ReportConfigModal({ open, onOpenChange, onGenerate, babyName }: 
   const [includeFeeds, setIncludeFeeds] = useState(true);
   const [includeSleep, setIncludeSleep] = useState(true);
   const [includeDiapers, setIncludeDiapers] = useState(false);
-  const [hideOutliers, setHideOutliers] = useState(false);
+  const [hideOutliers, setHideOutliers] = useState(true);
 
   const handleGenerate = () => {
     onGenerate({
