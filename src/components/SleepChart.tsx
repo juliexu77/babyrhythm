@@ -111,7 +111,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           <p className="text-[13px] text-muted-foreground">
             {getSleepScheduleInterpretation()}
           </p>
-          <div className="flex justify-start pt-2">
+          <div className="flex justify-end pt-2">
             <div className="flex bg-muted/30 rounded-lg p-1">
               <Button
                 variant={currentWeekOffset === 0 ? "default" : "ghost"}
@@ -133,7 +133,12 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           </div>
         </div>
         
-        <div className="mb-4">
+        <SleepChartVisualization 
+          sleepData={sleepData}
+          showFullDay={showFullDay}
+        />
+        
+        <div className="mt-4">
           <Button
             variant="ghost"
             size="sm"
@@ -143,11 +148,6 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
             {showFullDay ? t('showCondensed') : t('showFullDay')}
           </Button>
         </div>
-        
-        <SleepChartVisualization 
-          sleepData={sleepData}
-          showFullDay={showFullDay}
-        />
       </div>
     </div>
   );
