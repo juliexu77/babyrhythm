@@ -546,9 +546,13 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
           @media print {
             @page {
               margin: 1in;
+              margin-bottom: 1.5in;
             }
             .print\\:page-break {
               page-break-inside: avoid;
+            }
+            section {
+              padding-bottom: 2rem;
             }
             thead {
               display: table-header-group;
