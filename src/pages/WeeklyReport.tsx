@@ -13,22 +13,18 @@ interface WeeklyReportProps {
 
 function formatAge(birthday?: string | null) {
   if (!birthday) return "";
-  const dob = new Date(birthday);
-  const now = new Date();
+  const birthDate = new Date(birthday);
+  const today = new Date();
   
-  console.log('WeeklyReport formatAge:', { birthday, dob: dob.toISOString(), now: now.toISOString() });
-  
-  // Calculate total months
-  const totalMonths = (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
+  const totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                      (today.getMonth() - birthDate.getMonth());
   const months = Math.max(0, totalMonths);
   
-  // Calculate remaining weeks from the month anniversary
-  const monthsDate = new Date(dob);
-  monthsDate.setMonth(dob.getMonth() + totalMonths);
-  const daysDiff = Math.floor((now.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
+  // Calculate remaining weeks
+  const monthsDate = new Date(birthDate);
+  monthsDate.setMonth(monthsDate.getMonth() + totalMonths);
+  const daysDiff = Math.floor((today.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
   const weeks = Math.floor(daysDiff / 7);
-  
-  console.log('WeeklyReport age result:', { totalMonths, months, daysDiff, weeks, result: `${months} months ${weeks} weeks` });
   
   return `${months} months ${weeks} weeks`;
 }
