@@ -80,9 +80,10 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
         };
         const fileName = getFileName();
 
-        // Share via Capacitor if native, otherwise download
+        // Download PDF and open it
         try {
           if (Capacitor.isNativePlatform()) {
+            // Native: Save to Downloads and open
             const pdfBlob = pdf.output("blob");
             const base64 = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
@@ -92,38 +93,44 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
             });
 
             const base64data = base64.split(",")[1] || base64;
-            await Filesystem.writeFile({ path: fileName, data: base64data, directory: Directory.Cache });
-            const { uri } = await Filesystem.getUri({ path: fileName, directory: Directory.Cache });
-
-            await Share.share({
-              title: `${babyName || "Baby"} Activity Report`,
-              files: [uri],
-              dialogTitle: "Share Report",
+            
+            // Save to Documents directory (more permanent than Cache)
+            await Filesystem.writeFile({ 
+              path: fileName, 
+              data: base64data, 
+              directory: Directory.Documents 
             });
-          } else {
-            // Web platform - use Web Share API if available
-            const pdfBlob = pdf.output("blob");
-            const file = new File([pdfBlob], fileName, { type: "application/pdf" });
+            
+            const { uri } = await Filesystem.getUri({ 
+              path: fileName, 
+              directory: Directory.Documents 
+            });
 
-            if (navigator.share && (navigator as any).canShare?.({ files: [file] })) {
-              try {
-                await navigator.share({
-                  files: [file],
-                  title: `${babyName || "Baby"} Activity Report`,
-                });
-              } catch (err) {
-                // User cancelled or error - fallback to download
-                if ((err as Error).name !== "AbortError") {
-                  pdf.save(fileName);
-                }
-              }
-            } else {
-              // Web Share API not available - download
-              pdf.save(fileName);
+            // Open the file in native viewer
+            if (Capacitor.isNativePlatform()) {
+              window.open(uri, '_system');
             }
+          } else {
+            // Web: Download and open in new tab
+            const pdfBlob = pdf.output("blob");
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            
+            // Download the file
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Open in new tab after short delay
+            setTimeout(() => {
+              window.open(blobUrl, '_blank');
+            }, 300);
           }
-        } catch (shareErr) {
-          console.error("Share failed, downloading instead:", shareErr);
+        } catch (err) {
+          console.error("Failed to save/open PDF:", err);
+          // Fallback to simple download
           pdf.save(fileName);
         }
       } catch (err) {
