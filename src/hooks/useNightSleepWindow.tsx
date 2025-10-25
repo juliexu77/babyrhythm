@@ -8,8 +8,10 @@ import { useUserProfile } from "./useUserProfile";
 export const useNightSleepWindow = () => {
   const { userProfile } = useUserProfile();
 
-  const nightSleepStartHour = userProfile?.night_sleep_start_hour ?? 19; // Default 7 PM
-  const nightSleepEndHour = userProfile?.night_sleep_end_hour ?? 7; // Default 7 AM
+  // Type assertion until migration completes and types regenerate
+  const profile = userProfile as any;
+  const nightSleepStartHour = profile?.night_sleep_start_hour ?? 19; // Default 7 PM
+  const nightSleepEndHour = profile?.night_sleep_end_hour ?? 7; // Default 7 AM
 
   /**
    * Check if a given hour (0-23) falls within the night sleep window

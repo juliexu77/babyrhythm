@@ -214,10 +214,10 @@ export const Settings = () => {
                   showChevron={false}
                 >
                   <Select
-                    value={userProfile?.night_sleep_start_hour?.toString() ?? "19"}
+                    value={((userProfile as any)?.night_sleep_start_hour ?? 19).toString()}
                     onValueChange={async (value) => {
                       try {
-                        await updateUserProfile({ night_sleep_start_hour: parseInt(value) });
+                        await updateUserProfile({ night_sleep_start_hour: parseInt(value) } as any);
                       } catch (error) {
                         console.error('Error updating night sleep start:', error);
                       }
@@ -242,10 +242,10 @@ export const Settings = () => {
                   showChevron={false}
                 >
                   <Select
-                    value={userProfile?.night_sleep_end_hour?.toString() ?? "7"}
+                    value={((userProfile as any)?.night_sleep_end_hour ?? 7).toString()}
                     onValueChange={async (value) => {
                       try {
-                        await updateUserProfile({ night_sleep_end_hour: parseInt(value) });
+                        await updateUserProfile({ night_sleep_end_hour: parseInt(value) } as any);
                       } catch (error) {
                         console.error('Error updating night sleep end:', error);
                       }
