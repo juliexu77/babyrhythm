@@ -8,7 +8,7 @@ import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { Helper } from "@/components/Helper";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
-import { ExportReportModal } from "@/components/ExportReportModal";
+import { ReportShareCapture } from "@/components/ReportShareCapture";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -122,7 +122,7 @@ const ongoingNap = activities
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
-  const [showExportModal, setShowExportModal] = useState(false);
+  const [showReportShare, setShowReportShare] = useState(false);
   
 
   // Handle scroll for header fade effect
@@ -506,7 +506,7 @@ const ongoingNap = activities
                     variant="outline" 
                     size="sm" 
                     className="h-8 w-8 p-0"
-                    onClick={() => setShowExportModal(true)}
+                    onClick={() => setShowReportShare(true)}
                   >
                     <Share className="h-4 w-4" />
                   </Button>
@@ -1016,10 +1016,9 @@ return (
           }}
         />
 
-        <ExportReportModal
-          open={showExportModal}
-          onOpenChange={setShowExportModal}
-          activities={activities}
+        <ReportShareCapture
+          open={showReportShare}
+          onDone={() => setShowReportShare(false)}
           babyName={babyProfile?.name}
         />
 
