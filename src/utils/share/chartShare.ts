@@ -90,10 +90,10 @@ export async function shareElement(element: HTMLElement, title: string, caption?
   try {
     const nav: any = navigator as any;
     if (nav && typeof nav.share === 'function') {
-      if (typeof nav.canShare === 'function' && nav.canShare({ files: [file] })) {
-        await nav.share({ files: [file], title, text: caption || title });
-        return;
-      }
+        if (file && typeof nav.canShare === 'function' && nav.canShare({ files: [file] })) {
+          await nav.share({ files: [file], title, text: caption || title });
+          return;
+        }
       // Fallback: share data URL via Web Share Level 1
       const dataUrl = await blobToDataURL(blob);
       await nav.share({ title, text: caption || title, url: dataUrl });
@@ -116,7 +116,8 @@ export async function shareElement(element: HTMLElement, title: string, caption?
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = file.name;
+  const safeName = `${title.replace(/\s+/g, '-').toLowerCase()}.png`;
+  link.download = file?.name || safeName;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
