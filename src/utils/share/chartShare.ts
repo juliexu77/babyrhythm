@@ -46,7 +46,13 @@ async function elementToPngBlob(element: HTMLElement): Promise<Blob> {
   }
 
   const html = new XMLSerializer().serializeToString(cloneWithStyles);
-  const svg = `\n    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">\n      <foreignObject width="100%" height="100%">\n        ${html}\n      </foreignObject>\n    </svg>\n  `;
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+      <foreignObject x="0" y="0" width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">${html}</div>
+      </foreignObject>
+    </svg>
+  `;
   const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(svgBlob);
 
@@ -79,11 +85,16 @@ export async function shareElement(element: HTMLElement, title: string, caption?
   const blob = await elementToPngBlob(element);
   const file = new File([blob], `${title.replace(/\s+/g, '-').toLowerCase()}.png`, { type: 'image/png' });
 
-  // Try Web Share API with files
   try {
     const nav: any = navigator as any;
-    if (nav && typeof nav.share === 'function' && typeof nav.canShare === 'function' && nav.canShare({ files: [file] })) {
-      await nav.share({ files: [file], title, text: caption || title });
+    if (nav && typeof nav.share === 'function') {
+      if (typeof nav.canShare === 'function' && nav.canShare({ files: [file] })) {
+        await nav.share({ files: [file], title, text: caption || title });
+        return;
+      }
+      // Fallback: share data URL via Web Share Level 1
+      const dataUrl = await blobToDataURL(blob);
+      await nav.share({ title, text: caption || title, url: dataUrl });
       return;
     }
   } catch {}
