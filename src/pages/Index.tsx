@@ -22,7 +22,7 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings, Undo2, Filter, FileDown } from "lucide-react";
+import { Calendar, Settings, Undo2, Filter, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -411,15 +411,6 @@ const ongoingNap = activities
                 
                 {/* Filter and Export Buttons */}
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="h-8 w-8 p-0"
-                    onClick={() => setShowExportModal(true)}
-                  >
-                    <FileDown className="h-4 w-4" />
-                  </Button>
-                  
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="h-8 w-8 p-0">
@@ -509,6 +500,15 @@ const ongoingNap = activities
                       </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => setShowExportModal(true)}
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               
