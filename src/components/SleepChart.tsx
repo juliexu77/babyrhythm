@@ -104,33 +104,33 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
         <div className="space-y-1 mb-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{t('weeklySleepSchedule')}</h3>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onShare}>
-                <Share className="h-4 w-4" />
-              </Button>
-              <div className="flex bg-muted/30 rounded-lg p-1">
-                <Button
-                  variant={currentWeekOffset === 0 ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setCurrentWeekOffset(0)}
-                  className="h-8 px-3 rounded-md"
-                >
-                  {t('thisWeek')}
-                </Button>
-                <Button
-                  variant={currentWeekOffset === 1 ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setCurrentWeekOffset(1)}
-                  className="h-8 px-3 rounded-md"
-                >
-                  {t('lastWeek')}
-                </Button>
-              </div>
-            </div>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onShare}>
+              <Share className="h-4 w-4" />
+            </Button>
           </div>
           <p className="text-[13px] text-muted-foreground">
             {getSleepScheduleInterpretation()}
           </p>
+          <div className="flex justify-start pt-2">
+            <div className="flex bg-muted/30 rounded-lg p-1">
+              <Button
+                variant={currentWeekOffset === 0 ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setCurrentWeekOffset(0)}
+                className="h-8 px-3 rounded-md"
+              >
+                {t('thisWeek')}
+              </Button>
+              <Button
+                variant={currentWeekOffset === 1 ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setCurrentWeekOffset(1)}
+                className="h-8 px-3 rounded-md"
+              >
+                {t('lastWeek')}
+              </Button>
+            </div>
+          </div>
         </div>
         
         <div className="mb-4">
