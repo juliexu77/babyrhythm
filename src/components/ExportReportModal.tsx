@@ -493,12 +493,21 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isGenerating}>
             Cancel
           </Button>
           <Button onClick={generateReport} disabled={isGenerating} className="gap-2">
-            <Download className="h-4 w-4" />
-            {isGenerating ? "Generating..." : "Create Report"}
+            {isGenerating ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Create Report
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>
