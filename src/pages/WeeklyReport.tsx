@@ -252,24 +252,49 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       avgNapMinutes 
     });
     
-    const overnightDurations = overnightSleeps.map(s => {
-      if (!s.details.startTime || !s.details.endTime) return 0;
+    const overnightDurationsWithDates = overnightSleeps.map(s => {
+      if (!s.details.startTime || !s.details.endTime) return null;
       
       const startMins = parseTimeToMinutes(s.details.startTime);
       const endMins = parseTimeToMinutes(s.details.endTime);
       
-      if (startMins === null || endMins === null) return 0;
+      if (startMins === null || endMins === null) return null;
       
       let duration = endMins - startMins;
       if (duration < 0) duration += 24 * 60;
       
-      return duration;
-    }).filter(d => d > 0);
+      return {
+        duration,
+        date: new Date(s.logged_at),
+        startTime: s.details.startTime
+      };
+    }).filter(d => d !== null) as { duration: number; date: Date; startTime: string }[];
     
-    const longestOvernightMinutes = overnightDurations.length > 0 ? Math.max(...overnightDurations) : 0;
-    const avgOvernightMinutes = overnightDurations.length > 0 
-      ? overnightDurations.reduce((a, b) => a + b, 0) / overnightDurations.length 
+    const longestOvernightMinutes = overnightDurationsWithDates.length > 0 
+      ? Math.max(...overnightDurationsWithDates.map(d => d.duration)) 
       : 0;
+    const longestOvernightDate = overnightDurationsWithDates.length > 0
+      ? overnightDurationsWithDates.reduce((longest, current) => 
+          current.duration > longest.duration ? current : longest
+        ).date
+      : null;
+    const avgOvernightMinutes = overnightDurationsWithDates.length > 0 
+      ? overnightDurationsWithDates.reduce((a, b) => a + b.duration, 0) / overnightDurationsWithDates.length 
+      : 0;
+    
+    // Calculate bedtime consistency (from overnight sleep start times)
+    const bedtimes = overnightDurationsWithDates.map(s => {
+      const startMins = parseTimeToMinutes(s.startTime);
+      return startMins;
+    }).filter(m => m !== null) as number[];
+    
+    const avgBedtimeMinutes = bedtimes.length > 0
+      ? bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length
+      : null;
+    
+    const bedtimeVariance = bedtimes.length > 1 && avgBedtimeMinutes !== null
+      ? Math.sqrt(bedtimes.reduce((sum, bt) => sum + Math.pow(bt - avgBedtimeMinutes, 2), 0) / bedtimes.length)
+      : null;
     
     // Daily breakdown
     const dailyData = eachDayOfInterval({ start: weekStart, end: weekEnd }).map(day => {
@@ -419,7 +444,10 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       minVolume: Math.round(incMinVolume),
       maxVolume: Math.round(incMaxVolume),
       longestOvernightMinutes,
+      longestOvernightDate,
       avgOvernightMinutes,
+      avgBedtimeMinutes,
+      bedtimeVariance,
       totalSleepHours: incTotalSleepHours,
       avgDailySleep: incAvgDailySleep,
       totalNaps: incTotalNaps,
@@ -435,7 +463,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       feedsPerDayAvg,
       includedDays
     };
-  }, [activities, weekStart, weekEnd]);
+  }, [activities, weekStart, weekEnd, config?.hideOutliers, isNightHour]);
 
   useEffect(() => {
     document.title = `${babyName}'s Weekly Summary Report`;
@@ -591,6 +619,35 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <Separator className="my-6 border-gray-300" />
+
+        {/* Milestones & Key Changes */}
+        <section className="mb-8">
+          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Milestones & Key Changes</h3>
+          <div className="border-t-2 border-b-2 border-gray-400 py-3">
+            <ul className="space-y-1.5 text-sm">
+              {firstSolidDate && (
+                <li>• First solids introduced on {format(firstSolidDate, 'MMMM dd, yyyy')}</li>
+              )}
+              {weekStats.napCountMin !== weekStats.napCountMax && weekStats.napCountMax - weekStats.napCountMin > 1 && (
+                <li>• Nap pattern shifted from {weekStats.napCountMax} → {weekStats.napCountMin} naps/day</li>
+              )}
+              {weekStats.avgBedtimeMinutes !== null && weekStats.bedtimeVariance !== null && (
+                <li>
+                  • Average bedtime now {weekStats.bedtimeVariance < 20 ? 'consistent' : 'variable'} at{' '}
+                  {format(new Date(0, 0, 0, Math.floor(weekStats.avgBedtimeMinutes / 60), weekStats.avgBedtimeMinutes % 60), 'h:mm a')}{' '}
+                  (±{Math.round(weekStats.bedtimeVariance)} min)
+                </li>
+              )}
+              {weekStats.longestOvernightMinutes > 0 && weekStats.longestOvernightDate && (
+                <li>
+                  • Longest overnight sleep {formatHoursMinutes(weekStats.longestOvernightMinutes)} ({format(weekStats.longestOvernightDate, 'MMM dd')})
+                </li>
+              )}
+            </ul>
           </div>
         </section>
 
