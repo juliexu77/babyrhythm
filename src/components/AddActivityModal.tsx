@@ -208,18 +208,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     }
   }, [feedType, editingActivity, minutesLeft, minutesRight]);
 
-  // Ensure new entries default to current local time when opening
+  // Ensure new entries default to current local time when opening (but skip for quick add)
   useEffect(() => {
-    if (open && !editingActivity) {
+    if (open && !editingActivity && !quickAddType) {
       const current = getRoundedTime();
       setTime(current);
       if (!startTime) setStartTime(current);
       // Reset unit to household default for new bottle feeds
-      if (!quickAddType || (quickAddType === 'feed' && !prefillActivity)) {
-        setUnit(getLastBottleUnit());
-      }
+      setUnit(getLastBottleUnit());
     }
-  }, [open, editingActivity, quickAddType, prefillActivity]);
+  }, [open, editingActivity, quickAddType]);
 
   // Handle quick add with prefilled data
   useEffect(() => {
