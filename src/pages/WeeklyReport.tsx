@@ -444,8 +444,8 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     })();
 
     // Detect stable bedtime (consistently within ±15 min)
-    const stableBedtime = weekStats.bedtimeVariance !== null && weekStats.bedtimeVariance <= 15 && bedtimes.length >= 5
-      ? weekStats.avgBedtimeMinutes
+    const stableBedtime = bedtimeVariance !== null && bedtimeVariance <= 15 && bedtimes.length >= 5
+      ? avgBedtimeMinutes
       : null;
 
     // Detect solids dominance (>25% of feeds are solids for this period)
@@ -509,7 +509,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       feedsPerDayAvg,
       includedDays
     };
-  }, [activities, weekStart, weekEnd, config?.hideOutliers, isNightHour]);
+  }, [activities, weekStart, weekEnd, config?.hideOutliers]);
 
   useEffect(() => {
     document.title = `${babyName}'s Weekly Summary Report`;
