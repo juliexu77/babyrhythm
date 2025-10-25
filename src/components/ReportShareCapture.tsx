@@ -60,7 +60,17 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
         }
 
         const now = new Date();
-        const fileName = `${(babyName || "baby").toLowerCase()}-weekly-report-${format(now, "yyyy-MM-dd")}.pdf`;
+        const getFileName = () => {
+          const baseName = (babyName || "baby").toLowerCase();
+          if (config?.dateRange === 'custom' && config.customStartDate && config.customEndDate) {
+            return `${baseName}-report-${format(config.customStartDate, "yyyy-MM-dd")}-to-${format(config.customEndDate, "yyyy-MM-dd")}.pdf`;
+          }
+          if (config?.dateRange === 'last-week') {
+            return `${baseName}-report-last-week-${format(now, "yyyy-MM-dd")}.pdf`;
+          }
+          return `${baseName}-report-this-week-${format(now, "yyyy-MM-dd")}.pdf`;
+        };
+        const fileName = getFileName();
 
         // Share via Capacitor if native, otherwise download
         try {
@@ -74,8 +84,8 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
             });
 
             await Share.share({
-              title: `${babyName || "Baby"} Weekly Report`,
-              text: `Weekly report for ${format(now, "MMM dd, yyyy")}`,
+              title: `${babyName || "Baby"} Activity Report`,
+              text: `Activity report generated on ${format(now, "MMM dd, yyyy")}`,
               url: base64,
               dialogTitle: "Share Report",
             });
