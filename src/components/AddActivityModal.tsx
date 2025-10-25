@@ -223,7 +223,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   // Handle quick add with prefilled data
   useEffect(() => {
-    if (open && quickAddType && prefillActivity && !editingActivity) {
+    if (open && quickAddType && !editingActivity) {
       // Set activity type
       setActivityType(quickAddType);
       
@@ -232,24 +232,33 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       setTime(currentTime);
       setStartTime(currentTime); // Also set start time
       
-      // Pre-fill details based on type
-      if (quickAddType === 'feed' && prefillActivity.type === 'feed') {
-        const details = prefillActivity.details;
-        setFeedType(details.feedType || "bottle");
-        setQuantity(details.quantity || "");
-        setUnit(details.unit || "oz");
-        setMinutesLeft(details.minutesLeft || "");
-        setMinutesRight(details.minutesRight || "");
-        setSolidDescription(details.solidDescription || "");
-        setIsDreamFeed(details.isDreamFeed || false);
-        setNote(details.note || "");
-      } else if (quickAddType === 'nap' && prefillActivity.type === 'nap') {
-        const details = prefillActivity.details;
-        // For naps, set start time to current, don't set end time (they're adding a new nap)
-        setStartTime(currentTime);
-        setEndTime("");
-        setHasEndTime(false);
-        setNote(details.note || "");
+      // Pre-fill details based on type only if prefillActivity exists
+      if (prefillActivity) {
+        if (quickAddType === 'feed' && prefillActivity.type === 'feed') {
+          const details = prefillActivity.details;
+          setFeedType(details.feedType || "bottle");
+          setQuantity(details.quantity || "");
+          setUnit(details.unit || "oz");
+          setMinutesLeft(details.minutesLeft || "");
+          setMinutesRight(details.minutesRight || "");
+          setSolidDescription(details.solidDescription || "");
+          setIsDreamFeed(details.isDreamFeed || false);
+          setNote(details.note || "");
+        } else if (quickAddType === 'nap' && prefillActivity.type === 'nap') {
+          const details = prefillActivity.details;
+          // For naps, set start time to current, don't set end time (they're adding a new nap)
+          setStartTime(currentTime);
+          setEndTime("");
+          setHasEndTime(false);
+          setNote(details.note || "");
+        }
+      } else {
+        // No prefillActivity - just set defaults for quick add
+        if (quickAddType === 'nap') {
+          setStartTime(currentTime);
+          setEndTime("");
+          setHasEndTime(false);
+        }
       }
     }
   }, [open, quickAddType, prefillActivity, editingActivity]);
