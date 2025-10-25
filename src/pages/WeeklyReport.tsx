@@ -310,6 +310,42 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     const daysWithSleepData = dailyData.filter(d => d.sleepHours > 0).length;
     const hasIncompleteSleepData = daysWithSleepData < 7;
 
+    // Outlier detection
+    const detectOutliers = (data: typeof dailyData) => {
+      // Calculate average feed volume for days with data
+      const feedVolumes = data.map(d => d.feedVolume).filter(v => v > 0);
+      const avgFeedVolume = feedVolumes.length > 0 
+        ? feedVolumes.reduce((a, b) => a + b, 0) / feedVolumes.length 
+        : 0;
+      
+      // Calculate average sleep for days with data  
+      const sleepHours = data.map(d => d.sleepHours).filter(h => h > 0);
+      const avgSleepHours = sleepHours.length > 0
+        ? sleepHours.reduce((a, b) => a + b, 0) / sleepHours.length
+        : 0;
+
+      // Mark days as outliers if they have significantly less data than average
+      const threshold = 0.5; // 50% of average
+      
+      return data.map(day => {
+        const isFeedOutlier = avgFeedVolume > 0 && day.feedVolume > 0 && day.feedVolume < avgFeedVolume * threshold;
+        const isSleepOutlier = avgSleepHours > 0 && day.sleepHours > 0 && day.sleepHours < avgSleepHours * threshold;
+        const hasNoData = day.feedVolume === 0 && day.sleepHours === 0;
+        
+        return {
+          ...day,
+          isOutlier: isFeedOutlier || isSleepOutlier || hasNoData
+        };
+      });
+    };
+
+    const dailyDataWithOutliers = detectOutliers(dailyData);
+    const filteredDailyData = config?.hideOutliers 
+      ? dailyDataWithOutliers.filter(d => !d.isOutlier)
+      : dailyDataWithOutliers;
+    
+    const outlierDays = dailyDataWithOutliers.filter(d => d.isOutlier).map(d => d.date);
+
     console.log('WeeklyReport: Final stats', {
       totalFeeds,
       totalVolume,
@@ -317,7 +353,8 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       totalSleepHours: totalSleepMinutes / 60,
       avgDailySleep: daysWithSleepData > 0 ? totalSleepMinutes / 60 / daysWithSleepData : 0,
       daysWithSleepData,
-      dailyData
+      outlierDays,
+      dailyData: filteredDailyData
     });
     
     return {
@@ -336,7 +373,8 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       napCountMax,
       napCountMedian,
       hasIncompleteSleepData,
-      dailyData,
+      dailyData: filteredDailyData,
+      outlierDays,
       totalDiapers: diapers.length,
       totalNotes: notes.length
     };
@@ -391,6 +429,15 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
               <Button variant="outline" onClick={() => window.print()}>Print</Button>
             </div>
           </div>
+
+          {/* Outlier notice */}
+          {config?.hideOutliers && weekStats.outlierDays && weekStats.outlierDays.length > 0 && (
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs text-amber-900">
+                <strong>Note:</strong> The following days were excluded from this report due to incomplete data: {weekStats.outlierDays.join(', ')}
+              </p>
+            </div>
+          )}
         </header>
 
         <Separator className="my-6 border-gray-300" />

@@ -33,6 +33,7 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
   const [includeSleepTotals, setIncludeSleepTotals] = useState(true);
   const [includeNapsSummary, setIncludeNapsSummary] = useState(true);
   const [includeNotes, setIncludeNotes] = useState(true);
+  const [hideOutliers, setHideOutliers] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const getDateRange = () => {
@@ -488,6 +489,22 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
                   Notes (if any)
                 </Label>
               </div>
+            </div>
+          </div>
+
+          {/* Data Quality Options */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Data Quality</Label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="hide-outliers" checked={hideOutliers} onCheckedChange={(checked) => setHideOutliers(!!checked)} />
+                <Label htmlFor="hide-outliers" className="font-normal cursor-pointer">
+                  Hide incomplete days
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">
+                Exclude days with significantly less data than average
+              </p>
             </div>
           </div>
         </div>
