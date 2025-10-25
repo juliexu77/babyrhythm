@@ -36,9 +36,9 @@ export const SettingsRow = ({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-body text-foreground">{title}</div>
+          <div className="text-sm text-foreground font-medium">{title}</div>
           {subtitle && (
-            <div className="text-caption text-muted-foreground">{subtitle}</div>
+            <div className="text-xs text-muted-foreground">{subtitle}</div>
           )}
         </div>
       </div>
@@ -46,7 +46,7 @@ export const SettingsRow = ({
       <div className="flex items-center gap-2 flex-shrink-0">
         {children}
         {value && (
-          <div className="text-muted-foreground text-caption">{value}</div>
+          <div className="text-muted-foreground text-xs">{value}</div>
         )}
         {isClickable && showChevron && (
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
