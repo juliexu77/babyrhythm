@@ -105,6 +105,24 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     return null;
   };
 
+  // Detect first solids milestone across all activities
+  const firstSolidDate = useMemo(() => {
+    const solidFeeds = activities.filter(a => 
+      a.type === 'feed' && a.details.feedType === 'solid'
+    );
+    
+    if (solidFeeds.length === 0) return null;
+    
+    // Find the earliest solid feed
+    const earliest = solidFeeds.reduce((earliest, current) => {
+      const currentDate = new Date(current.logged_at);
+      const earliestDate = new Date(earliest.logged_at);
+      return currentDate < earliestDate ? current : earliest;
+    });
+    
+    return new Date(earliest.logged_at);
+  }, [activities]);
+
   // Calculate weekly stats
   const weekStats = useMemo(() => {
     console.log('WeeklyReport: Calculating stats', { 
@@ -491,9 +509,12 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
             <p><strong>Average Per Feed:</strong> {Math.round(weekStats.avgPerFeed)} ml ({(weekStats.avgPerFeed / 29.5735).toFixed(1)} oz)</p>
             <p><strong>Daily Range:</strong> {weekStats.minVolume}–{weekStats.maxVolume} ml</p>
             <p><strong>Feeding Pattern:</strong> {weekStats.feedsPerDayAvg.toFixed(1)} feeds/day average</p>
+            {firstSolidDate && (
+              <p><strong>Solids Introduced:</strong> {format(firstSolidDate, 'MMMM dd, yyyy')}</p>
+            )}
           </div>
           <p className="mt-4 text-sm text-gray-700">
-            <strong>Notes:</strong> Daily intake shows stable feeding frequency with {weekStats.maxVolume - weekStats.minVolume > 300 ? 'moderate' : 'mild'} volume variation. No missed feeds or feeding intolerance reported.
+            <strong>Notes:</strong> Daily intake shows stable feeding frequency with {weekStats.maxVolume - weekStats.minVolume > 300 ? 'moderate' : 'mild'} volume variation. No missed feeds or feeding intolerance reported.{firstSolidDate && ' Solid foods have been introduced.'}
           </p>
         </section>
         )}
