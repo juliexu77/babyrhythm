@@ -352,14 +352,14 @@ const ongoingNap = activities
           babyBirthday={babyProfile?.birthday}
           userName={userProfile?.full_name?.split(' ')[0]}
           onAddActivity={(type, prefill) => {
-            if (prefill) {
-              // If a specific activity is passed, edit it
-              setEditingActivity(prefill);
-            } else {
-              // Otherwise use quick add flow
-              setQuickAddType(type || null);
-              setShowAddActivity(true);
-            }
+            // Quick add with prefill data from last activity
+            setQuickAddType(type || null);
+            setPrefillActivity(prefill || null);
+            setShowAddActivity(true);
+          }}
+          onEditActivity={(activity) => {
+            // Edit existing activity
+            setEditingActivity(activity);
           }}
           onEndNap={markWakeUp}
           ongoingNap={ongoingNap}

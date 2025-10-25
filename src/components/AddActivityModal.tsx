@@ -241,14 +241,20 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           setMinutesRight(details.minutesRight || "");
           setSolidDescription(details.solidDescription || "");
           setIsDreamFeed(details.isDreamFeed || false);
-          setNote(details.note || "");
+          // Don't prefill note for quick add
         } else if (quickAddType === 'nap' && prefillActivity.type === 'nap') {
           const details = prefillActivity.details;
           // For naps, set start time to current, don't set end time (they're adding a new nap)
           setStartTime(currentTime);
           setEndTime("");
           setHasEndTime(false);
-          setNote(details.note || "");
+          // Don't prefill note for quick add
+        } else if (quickAddType === 'diaper' && prefillActivity.type === 'diaper') {
+          const details = prefillActivity.details;
+          setDiaperType(details.diaperType || "wet");
+          setHasLeak(details.hasLeak || false);
+          setHasCream(details.hasCream || false);
+          // Don't prefill note for quick add
         }
       } else {
         // No prefillActivity - just set defaults for quick add

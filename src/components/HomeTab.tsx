@@ -14,6 +14,7 @@ interface HomeTabProps {
   userName?: string;
   babyBirthday?: string;
   onAddActivity: (type?: 'feed' | 'nap' | 'diaper', prefillActivity?: Activity) => void;
+  onEditActivity: (activity: Activity) => void;
   onEndNap?: () => void;
   ongoingNap?: Activity | null;
   userRole?: string;
@@ -21,7 +22,7 @@ interface HomeTabProps {
   percentile?: number | null;
 }
 
-export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile }: HomeTabProps) => {
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
@@ -1225,7 +1226,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     return (
                       <button
                         key={index}
-                        onClick={() => onAddActivity(activity.type as 'feed' | 'nap' | 'diaper', activity)}
+                        onClick={() => onEditActivity(activity)}
                         className="relative flex items-center gap-2 py-0.5 w-full text-left hover:bg-accent/50 rounded-md px-1 -mx-1 transition-colors"
                       >
                         {/* Timeline line */}
