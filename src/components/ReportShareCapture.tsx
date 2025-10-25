@@ -80,10 +80,10 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
         };
         const fileName = getFileName();
 
-        // Download PDF and open it
+        // Download PDF locally
         try {
           if (Capacitor.isNativePlatform()) {
-            // Native: Save to Downloads and open
+            // Native: Save to Documents directory
             const pdfBlob = pdf.output("blob");
             const base64 = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
@@ -94,42 +94,32 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
 
             const base64data = base64.split(",")[1] || base64;
             
-            // Save to Documents directory (more permanent than Cache)
+            // Save to Documents directory
             await Filesystem.writeFile({ 
               path: fileName, 
               data: base64data, 
               directory: Directory.Documents 
             });
             
+            // Get URI and trigger download/save
             const { uri } = await Filesystem.getUri({ 
               path: fileName, 
               directory: Directory.Documents 
             });
 
-            // Open the file in native viewer
-            if (Capacitor.isNativePlatform()) {
-              window.open(uri, '_system');
-            }
+            // Create a temporary link to trigger browser download
+            const a = document.createElement('a');
+            a.href = uri;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
           } else {
-            // Web: Download and open in new tab
-            const pdfBlob = pdf.output("blob");
-            const blobUrl = URL.createObjectURL(pdfBlob);
-            
-            // Download the file
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Open in new tab after short delay
-            setTimeout(() => {
-              window.open(blobUrl, '_blank');
-            }, 300);
+            // Web: Simple download
+            pdf.save(fileName);
           }
         } catch (err) {
-          console.error("Failed to save/open PDF:", err);
+          console.error("Failed to download PDF:", err);
           // Fallback to simple download
           pdf.save(fileName);
         }
