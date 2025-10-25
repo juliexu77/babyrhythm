@@ -661,7 +661,9 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
                 </tr>
               </thead>
               <tbody>
-                {weekStats.dailyData.map((day, idx) => (
+                {weekStats.dailyData
+                  .filter(day => !weekStats.outlierDays.includes(day.date))
+                  .map((day, idx) => (
                   <tr key={idx} className="border-b border-gray-200">
                     <td className="py-2 px-3">{day.date}</td>
                     <td className="py-2 px-3">{day.sleepHours > 0 ? day.sleepHours.toFixed(1) : '—'}</td>
