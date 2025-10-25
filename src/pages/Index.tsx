@@ -876,6 +876,12 @@ return (
           </div>
         </div>
 
+        {showReportShare && (
+          <div className="sticky top-16 z-20 bg-primary/10 text-foreground border-b border-border px-4 py-2 text-sm text-center">
+            Generating report…
+          </div>
+        )}
+
         {renderTabContent()}
 
         <BottomNavigation 

@@ -346,7 +346,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     
     const outlierDays = dailyDataWithOutliers.filter(d => d.isOutlier).map(d => d.date);
 
-    console.log('WeeklyReport: Final stats', {
+    console.log('WeeklyReport: Final stats (pre-filter)', {
       totalFeeds,
       totalVolume,
       avgPerFeed,
@@ -356,27 +356,66 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       outlierDays,
       dailyData: filteredDailyData
     });
+
+    // Use only included (non-outlier) days for summary calculations when requested
+    const includedDailyData = filteredDailyData;
+    const includedDays = includedDailyData.length;
+
+    const incFeedVolumes = includedDailyData.map(d => d.feedVolume).filter(v => v > 0);
+    const incMinVolume = incFeedVolumes.length > 0 ? Math.min(...incFeedVolumes) : 0;
+    const incMaxVolume = incFeedVolumes.length > 0 ? Math.max(...incFeedVolumes) : 0;
+
+    const incTotalFeeds = includedDailyData.reduce((sum, d) => sum + d.feeds, 0);
+    const incTotalVolume = includedDailyData.reduce((sum, d) => sum + d.feedVolume, 0);
+    const incAvgPerFeed = incTotalFeeds > 0 ? incTotalVolume / incTotalFeeds : 0;
+
+    const incTotalSleepHours = includedDailyData.reduce((sum, d) => sum + d.sleepHours, 0);
+    const incDaysWithSleepData = includedDailyData.filter(d => d.sleepHours > 0).length;
+    const incAvgDailySleep = incDaysWithSleepData > 0 ? incTotalSleepHours / incDaysWithSleepData : 0;
+
+    const incTotalNaps = includedDailyData.reduce((sum, d) => sum + d.naps, 0);
+    const incNapCounts = includedDailyData.map(d => d.naps).filter(n => n > 0);
+    const incNapCountMin = incNapCounts.length > 0 ? Math.min(...incNapCounts) : 0;
+    const incNapCountMax = incNapCounts.length > 0 ? Math.max(...incNapCounts) : 0;
+    const incNapCountMedian = incNapCounts.length > 0
+      ? incNapCounts.slice().sort((a, b) => a - b)[Math.floor(incNapCounts.length / 2)]
+      : 0;
+
+    const feedsPerDayAvg = includedDays > 0 ? incTotalFeeds / includedDays : 0;
+
+    console.log('WeeklyReport: Final stats (included days)', {
+      includedDays,
+      incTotalFeeds,
+      incTotalVolume,
+      incAvgPerFeed,
+      incMinVolume,
+      incMaxVolume,
+      incTotalSleepHours,
+      incAvgDailySleep
+    });
     
     return {
-      totalFeeds,
-      totalVolume,
-      avgPerFeed,
-      minVolume: Math.round(minVolume),
-      maxVolume: Math.round(maxVolume),
+      totalFeeds: incTotalFeeds,
+      totalVolume: incTotalVolume,
+      avgPerFeed: incAvgPerFeed,
+      minVolume: Math.round(incMinVolume),
+      maxVolume: Math.round(incMaxVolume),
       longestOvernightMinutes,
       avgOvernightMinutes,
-      totalSleepHours: totalSleepMinutes / 60,
-      avgDailySleep: daysWithSleepData > 0 ? totalSleepMinutes / 60 / daysWithSleepData : 0,
-      totalNaps,
-      avgNapMinutes,
-      napCountMin,
-      napCountMax,
-      napCountMedian,
+      totalSleepHours: incTotalSleepHours,
+      avgDailySleep: incAvgDailySleep,
+      totalNaps: incTotalNaps,
+      avgNapMinutes, // keep detailed duration-based metric
+      napCountMin: incNapCountMin,
+      napCountMax: incNapCountMax,
+      napCountMedian: incNapCountMedian,
       hasIncompleteSleepData,
       dailyData: filteredDailyData,
       outlierDays,
       totalDiapers: diapers.length,
-      totalNotes: notes.length
+      totalNotes: notes.length,
+      feedsPerDayAvg,
+      includedDays
     };
   }, [activities, weekStart, weekEnd]);
 
@@ -451,7 +490,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
             <p><strong>Total Volume:</strong> {weekStats.totalVolume.toFixed(0)} ml ({(weekStats.totalVolume / 29.5735).toFixed(1)} oz)</p>
             <p><strong>Average Per Feed:</strong> {Math.round(weekStats.avgPerFeed)} ml ({(weekStats.avgPerFeed / 29.5735).toFixed(1)} oz)</p>
             <p><strong>Daily Range:</strong> {weekStats.minVolume}–{weekStats.maxVolume} ml</p>
-            <p><strong>Feeding Pattern:</strong> {(weekStats.totalFeeds / 7).toFixed(1)} feeds/day average</p>
+            <p><strong>Feeding Pattern:</strong> {weekStats.feedsPerDayAvg.toFixed(1)} feeds/day average</p>
           </div>
           <p className="mt-4 text-sm text-gray-700">
             <strong>Notes:</strong> Daily intake shows stable feeding frequency with {weekStats.maxVolume - weekStats.minVolume > 300 ? 'moderate' : 'mild'} volume variation. No missed feeds or feeding intolerance reported.
