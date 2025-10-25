@@ -254,7 +254,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       }, 0);
       
       return {
-        date: format(day, 'EEE'),
+        date: format(day, 'MMM dd'),
         sleepHours: sleepMinutes / 60,
         naps: daySleeps.length,
         feedVolume: Math.round(feedVolume),
