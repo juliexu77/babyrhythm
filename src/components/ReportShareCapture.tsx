@@ -94,7 +94,26 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
               dialogTitle: "Share Report",
             });
           } else {
-            pdf.save(fileName);
+            // Web platform - use Web Share API if available
+            const pdfBlob = pdf.output("blob");
+            const file = new File([pdfBlob], fileName, { type: "application/pdf" });
+
+            if (navigator.share && (navigator as any).canShare?.({ files: [file] })) {
+              try {
+                await navigator.share({
+                  files: [file],
+                  title: `${babyName || "Baby"} Activity Report`,
+                });
+              } catch (err) {
+                // User cancelled or error - fallback to download
+                if ((err as Error).name !== "AbortError") {
+                  pdf.save(fileName);
+                }
+              }
+            } else {
+              // Web Share API not available - download
+              pdf.save(fileName);
+            }
           }
         } catch (shareErr) {
           console.error("Share failed, downloading instead:", shareErr);

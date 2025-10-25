@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
@@ -7,12 +7,6 @@ import { Separator } from "@/components/ui/separator";
 import { getWeekCaption } from "@/utils/share/chartShare";
 import { startOfWeek, endOfWeek, eachDayOfInterval, format, differenceInMinutes } from "date-fns";
 import { ReportConfig } from "@/components/ReportConfigModal";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { Share } from "@capacitor/share";
-import { Capacitor } from "@capacitor/core";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { useToast } from "@/hooks/use-toast";
 
 interface WeeklyReportProps {
   config?: ReportConfig;
@@ -40,8 +34,6 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
   const { activities, loading } = useActivities();
   const { household } = useHousehold();
   const { isNightHour } = useNightSleepWindow();
-  const { toast } = useToast();
-  const [isSharing, setIsSharing] = useState(false);
 
   const babyName = household?.baby_name || "Baby";
   const babyBirthday = household?.baby_birthday;
@@ -546,131 +538,6 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     return `${h}h ${m}m`;
   };
 
-  const handleShare = async () => {
-    setIsSharing(true);
-    try {
-      const element = document.querySelector('main') as HTMLElement;
-      if (!element) throw new Error("Report element not found");
-
-      // Capture as canvas
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * pageWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Add additional pages if needed
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      const fileName = `${babyName}-report-${weekCaption.replace(/\s+/g, '-').toLowerCase()}.pdf`;
-
-      // Share via Capacitor if native, otherwise download
-      if (Capacitor.isNativePlatform()) {
-        const pdfBlob = pdf.output("blob");
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          try {
-            const base64data = (reader.result as string).split(",")[1];
-            await Filesystem.writeFile({
-              path: fileName,
-              data: base64data,
-              directory: Directory.Cache,
-            });
-            const { uri } = await Filesystem.getUri({
-              path: fileName,
-              directory: Directory.Cache,
-            });
-
-            await Share.share({
-              title: `${babyName} Activity Report`,
-              files: [uri],
-              dialogTitle: "Share Report",
-            });
-
-            toast({
-              title: "Report Shared",
-              description: "Share dialog opened",
-            });
-          } catch (shareError) {
-            console.error("Error sharing:", shareError);
-            pdf.save(fileName);
-            toast({
-              title: "Report Downloaded",
-              description: "Share failed. Report has been downloaded instead.",
-            });
-          } finally {
-            setIsSharing(false);
-          }
-        };
-        reader.readAsDataURL(pdfBlob);
-      } else {
-        // Web platform - use Web Share API or download
-        const pdfBlob = pdf.output("blob");
-        const file = new File([pdfBlob], fileName, { type: "application/pdf" });
-
-        if (navigator.share && (navigator as any).canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: `${babyName} Activity Report`,
-            });
-            toast({
-              title: "Report Shared",
-              description: "Share dialog opened",
-            });
-          } catch (err) {
-            if ((err as Error).name !== "AbortError") {
-              pdf.save(fileName);
-              toast({
-                title: "Report Downloaded",
-                description: "Your report has been downloaded.",
-              });
-            }
-          }
-        } else {
-          pdf.save(fileName);
-          toast({
-            title: "Report Downloaded",
-            description: "Your report has been downloaded.",
-          });
-        }
-        setIsSharing(false);
-      }
-    } catch (error) {
-      console.error("Error generating report:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate report",
-        variant: "destructive",
-      });
-      setIsSharing(false);
-    }
-  };
-
   return (
     <main className="min-h-screen bg-white text-black print:bg-white print:text-black">
       <div className="max-w-4xl mx-auto px-8 py-12 pb-16 print:p-8 print:pb-32 print:page-break" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -727,12 +594,6 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
               <p className="text-sm text-gray-600 mt-2 italic">
                 Summary of feeding and sleep patterns logged during the week of {weekCaption.replace('Week of ', '')}.
               </p>
-            </div>
-            <div className="print:hidden flex gap-2">
-              <Button variant="outline" onClick={handleShare} disabled={isSharing}>
-                {isSharing ? "Generating..." : "Share"}
-              </Button>
-              <Button variant="outline" onClick={() => window.print()}>Print</Button>
             </div>
           </div>
 
