@@ -172,7 +172,26 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     const minVolume = dailyVolumes.length > 0 ? Math.min(...dailyVolumes) : 0;
     const maxVolume = dailyVolumes.length > 0 ? Math.max(...dailyVolumes) : 0;
     
-    // Sleep stats
+    // Separate overnight sleeps from daytime naps using night sleep window
+    const overnightSleeps = sleeps.filter(s => {
+      if (!s.details.startTime) return false;
+      const startMins = parseTimeToMinutes(s.details.startTime);
+      if (startMins === null) return false;
+      
+      const startHour = Math.floor(startMins / 60);
+      return isNightHour(startHour);
+    });
+    
+    const daytimeNaps = sleeps.filter(s => {
+      if (!s.details.startTime) return false;
+      const startMins = parseTimeToMinutes(s.details.startTime);
+      if (startMins === null) return false;
+      
+      const startHour = Math.floor(startMins / 60);
+      return !isNightHour(startHour);
+    });
+    
+    // Calculate total sleep time (all sleeps)
     const totalSleepMinutes = sleeps.reduce((sum, s) => {
       if (!s.details.startTime || !s.details.endTime) return sum;
       
@@ -187,24 +206,32 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       return sum + duration;
     }, 0);
     
-    const totalNaps = sleeps.length;
-    const avgNapMinutes = totalNaps > 0 ? totalSleepMinutes / totalNaps : 0;
+    // Calculate average nap length (daytime naps only)
+    const totalDaytimeNapMinutes = daytimeNaps.reduce((sum, s) => {
+      if (!s.details.startTime || !s.details.endTime) return sum;
+      
+      const startMins = parseTimeToMinutes(s.details.startTime);
+      const endMins = parseTimeToMinutes(s.details.endTime);
+      
+      if (startMins === null || endMins === null) return sum;
+      
+      let duration = endMins - startMins;
+      if (duration < 0) duration += 24 * 60;
+      
+      return sum + duration;
+    }, 0);
+    
+    const totalNaps = daytimeNaps.length;
+    const avgNapMinutes = totalNaps > 0 ? totalDaytimeNapMinutes / totalNaps : 0;
 
     console.log('WeeklyReport: Sleep stats', { 
-      totalNaps, 
+      totalSleeps: sleeps.length,
+      overnightSleeps: overnightSleeps.length,
+      daytimeNaps: totalNaps,
       totalSleepMinutes, 
       totalSleepHours: totalSleepMinutes / 60,
+      totalDaytimeNapMinutes,
       avgNapMinutes 
-    });
-    
-    // Overnight sleep analysis using configurable night sleep window
-    const overnightSleeps = sleeps.filter(s => {
-      if (!s.details.startTime) return false;
-      const startMins = parseTimeToMinutes(s.details.startTime);
-      if (startMins === null) return false;
-      
-      const startHour = Math.floor(startMins / 60);
-      return isNightHour(startHour);
     });
     
     const overnightDurations = overnightSleeps.map(s => {
