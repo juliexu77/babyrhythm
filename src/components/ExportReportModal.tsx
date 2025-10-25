@@ -107,6 +107,11 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
     }
 
     setIsGenerating(true);
+    
+    toast({
+      title: "Generating Report",
+      description: "Please wait while we create your activity report...",
+    });
 
     try {
       const filteredActivities = filterActivitiesByDate();
@@ -355,31 +360,50 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
       
       try {
         if (Capacitor.isNativePlatform()) {
-          // Convert PDF to blob and share using Capacitor
+          // Save PDF to blob and create file for sharing
           const pdfBlob = pdf.output('blob');
+          const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+          
+          // Convert to base64 for Capacitor Share
           const reader = new FileReader();
           reader.onloadend = async () => {
-            const base64data = reader.result as string;
-            await Share.share({
-              title: `${babyName || 'Baby'} Activity Report`,
-              text: `Activity report for ${format(startDate, 'MMM dd')} - ${format(endDate, 'MMM dd')}`,
-              url: base64data,
-              dialogTitle: 'Share Report'
-            });
+            try {
+              const base64data = (reader.result as string).split(',')[1]; // Remove data:application/pdf;base64, prefix
+              
+              // Write to temporary file and share
+              await Share.share({
+                title: `${babyName || 'Baby'} Activity Report`,
+                text: `Activity report for ${format(startDate, 'MMM dd')} - ${format(endDate, 'MMM dd')}`,
+                files: [`data:application/pdf;base64,${base64data}`],
+                dialogTitle: 'Share Report'
+              });
+              
+              toast({
+                title: "Report Shared",
+                description: "Share dialog opened",
+              });
+            } catch (shareError) {
+              console.error("Error sharing:", shareError);
+              // Fallback to download if share fails
+              pdf.save(fileName);
+              toast({
+                title: "Report Downloaded",
+                description: "Share failed. Report has been downloaded instead.",
+              });
+            }
           };
           reader.readAsDataURL(pdfBlob);
         } else {
           // Fallback to download for web
           pdf.save(fileName);
+          toast({
+            title: "Report Downloaded",
+            description: "Your activity report has been downloaded.",
+          });
         }
-
-        toast({
-          title: "Report Generated",
-          description: Capacitor.isNativePlatform() ? "Share dialog opened" : "Your activity report has been downloaded.",
-        });
       } catch (shareError) {
-        console.error("Error sharing:", shareError);
-        // Fallback to download if share fails
+        console.error("Error in share process:", shareError);
+        // Fallback to download if anything fails
         pdf.save(fileName);
         toast({
           title: "Report Downloaded",
