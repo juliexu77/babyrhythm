@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { Activity } from "@/components/ActivityCard";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 
 interface ExportReportModalProps {
   open: boolean;
@@ -310,14 +312,42 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
         { align: "center" }
       );
 
-      // Save PDF
+      // Generate PDF and share
       const fileName = `${babyName || 'baby'}-report-${format(startDate, 'yyyy-MM-dd')}-to-${format(endDate, 'yyyy-MM-dd')}.pdf`;
-      pdf.save(fileName);
+      
+      try {
+        if (Capacitor.isNativePlatform()) {
+          // Convert PDF to blob and share using Capacitor
+          const pdfBlob = pdf.output('blob');
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64data = reader.result as string;
+            await Share.share({
+              title: `${babyName || 'Baby'} Activity Report`,
+              text: `Activity report for ${format(startDate, 'MMM dd')} - ${format(endDate, 'MMM dd')}`,
+              url: base64data,
+              dialogTitle: 'Share Report'
+            });
+          };
+          reader.readAsDataURL(pdfBlob);
+        } else {
+          // Fallback to download for web
+          pdf.save(fileName);
+        }
 
-      toast({
-        title: "Report Generated",
-        description: "Your activity report has been downloaded.",
-      });
+        toast({
+          title: "Report Generated",
+          description: Capacitor.isNativePlatform() ? "Share dialog opened" : "Your activity report has been downloaded.",
+        });
+      } catch (shareError) {
+        console.error("Error sharing:", shareError);
+        // Fallback to download if share fails
+        pdf.save(fileName);
+        toast({
+          title: "Report Downloaded",
+          description: "Your activity report has been downloaded.",
+        });
+      }
 
       onOpenChange(false);
     } catch (error) {
