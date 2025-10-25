@@ -47,21 +47,24 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
         // Add explicit margins so iOS PDF viewers show space at bottom
         const margin = 15; // mm
         const contentWidth = pageWidth - margin * 2;
+        const contentHeight = pageHeight - margin * 2;
         const imgHeight = (canvas.height * contentWidth) / canvas.width;
 
         let heightLeft = imgHeight;
-        let position = margin;
+        let yOffset = 0; // Track how much of the image we've already shown
 
         // First page
-        pdf.addImage(imgData, "PNG", margin, position, contentWidth, imgHeight);
-        heightLeft -= (pageHeight - margin * 2);
+        pdf.addImage(imgData, "PNG", margin, margin, contentWidth, imgHeight);
+        heightLeft -= contentHeight;
+        yOffset += contentHeight;
 
         // Additional pages with same margins
         while (heightLeft > 0) {
-          position = heightLeft - imgHeight + margin; // negative offset + top margin
           pdf.addPage();
-          pdf.addImage(imgData, "PNG", margin, position, contentWidth, imgHeight);
-          heightLeft -= (pageHeight - margin * 2);
+          // Position is negative to shift image up, plus top margin
+          pdf.addImage(imgData, "PNG", margin, margin - yOffset, contentWidth, imgHeight);
+          heightLeft -= contentHeight;
+          yOffset += contentHeight;
         }
 
         const now = new Date();
