@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity } from "./ActivityCard";
-import { Baby, Moon, Circle, StickyNote, Clock, Droplets, Heart, Milk } from "lucide-react";
+import { Baby, Moon, Droplet, StickyNote, Clock, Droplets, Heart, Milk } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ActivityDetailModalProps {
@@ -16,7 +16,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "feed": return <Baby className="h-5 w-5" />;
-      case "diaper": return <Circle className="h-5 w-5" />;
+      case "diaper": return <Droplet className="h-5 w-5" />;
       case "nap": return <Moon className="h-5 w-5" />;
       case "note": return <StickyNote className="h-5 w-5" />;
       default: return <Clock className="h-5 w-5" />;
@@ -86,7 +86,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
             
             {activity.details?.diaperType && (
               <div className="flex items-center gap-2">
-                <Circle className="h-4 w-4 text-muted-foreground" />
+                <Droplet className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">{t('typeLabel')}: {activity.details.diaperType}</span>
               </div>
             )}

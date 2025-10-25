@@ -8,7 +8,7 @@ import { TimeScrollPicker } from "./TimeScrollPicker";
 import { MinuteScrollPicker } from "./MinuteScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Circle, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler } from "lucide-react";
+import { Plus, Baby, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -592,7 +592,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "feed": return <Baby className="h-4 w-4" />;
-      case "diaper": return <Circle className="h-4 w-4" />;
+      case "diaper": return <Droplet className="h-4 w-4" />;
       case "nap": return <Moon className="h-4 w-4" />;
       case "note": return <StickyNote className="h-4 w-4" />;
       case "measure": return <Ruler className="h-4 w-4" />;
@@ -629,7 +629,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             <div className="grid grid-cols-3 gap-2">
               {[
                 { type: "feed", icon: Baby, label: t('feeding') },
-                { type: "diaper", icon: Circle, label: t('diaper') },
+                { type: "diaper", icon: Droplet, label: t('diaper') },
                 { type: "note", icon: StickyNote, label: t('noteText') },
                 { type: "nap", icon: Moon, label: t('sleep') },
                 { type: "measure", icon: Ruler, label: t('measure') },

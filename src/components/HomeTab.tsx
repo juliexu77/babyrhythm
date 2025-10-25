@@ -1180,7 +1180,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                       switch(type) {
                         case 'feed': return <Milk className="h-4 w-4" />;
                         case 'nap': return <Moon className="h-4 w-4" />;
-                        case 'diaper': return <Circle className="h-4 w-4" />;
+                        case 'diaper': return <Droplet className="h-4 w-4" />;
                         case 'measure': return <Ruler className="h-4 w-4" />;
                         default: return <Clock className="h-4 w-4" />;
                       }
