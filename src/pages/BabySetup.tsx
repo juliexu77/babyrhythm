@@ -38,24 +38,24 @@ const BabySetup = () => {
       console.log('Starting baby setup for user:', user.id);
       
       // Create household with baby info
-      const { data: household, error: householdError } = await supabase
+      const householdId = crypto.randomUUID();
+      const { error: householdError } = await supabase
         .from("households")
         .insert({
+          id: householdId,
           baby_name: babyName,
           baby_birthday: babyBirthday,
           name: `${babyName}'s Family`,
-        })
-        .select()
-        .single();
+        });
 
-      console.log('Household creation result:', { household, householdError });
+      console.log('Household creation result:', { householdError });
       if (householdError) throw householdError;
 
       // Create collaborator entry for the user
       const { error: collaboratorError } = await supabase
         .from("collaborators")
         .insert({
-          household_id: household.id,
+          household_id: householdId,
           user_id: user.id,
           role: "parent",
           invited_by: user.id,
