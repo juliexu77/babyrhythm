@@ -904,59 +904,153 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const sentiment = getDailySentiment();
   const developmentalPhase = getDevelopmentalPhase();
 
-  // Empty state for new users with no activities
+  // Empty state for new users with no activities - Comprehensive guided introduction
   if (activities.length === 0) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="max-w-md mx-auto text-center space-y-8">
-          {/* Welcome Message */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Baby className="w-8 h-8 text-primary" />
+      <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in">
+        <div className="max-w-2xl mx-auto space-y-8">
+          {/* Welcome Headline */}
+          <div className="text-center space-y-3">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center animate-scale-in">
+                <Baby className="w-10 h-10 text-primary" />
               </div>
             </div>
-            <h2 className="text-2xl font-heading font-semibold text-foreground">
-              {getGreetingLine()}
-            </h2>
-            <p className="text-base text-muted-foreground leading-relaxed">
-              Welcome to {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm tracker.<br />
-              Let's start by logging your first moment together.
+            <h1 className="text-3xl font-heading font-bold text-foreground">
+              Welcome{userName ? `, ${userName}` : ''} — let's get to know {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm together.
+            </h1>
+            <p className="text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
+              Sprout helps you understand your baby's unique patterns — feeding, sleep, and daily rhythm — and gently surfaces insights to support smoother days and nights.
             </p>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="space-y-3">
-            <Button
-              onClick={() => onAddActivity('feed')}
-              className="w-full h-14 text-base font-semibold"
-              variant="default"
-            >
-              <Milk className="w-5 h-5 mr-2" />
-              Log a Feed
-            </Button>
-            <Button
-              onClick={() => onAddActivity('nap')}
-              className="w-full h-14 text-base font-semibold"
-              variant="outline"
-            >
-              <Moon className="w-5 h-5 mr-2" />
-              Log a Nap
-            </Button>
-            <Button
-              onClick={() => onAddActivity('diaper')}
-              className="w-full h-14 text-base font-semibold"
-              variant="outline"
-            >
-              <Droplet className="w-5 h-5 mr-2" />
-              Log a Diaper
-            </Button>
+          {/* 3-Step Visual Guide Cards */}
+          <div className="space-y-4 pt-4">
+            <h2 className="text-lg font-semibold text-foreground text-center mb-6">
+              How Sprout works
+            </h2>
+            
+            {/* Step 1: Log */}
+            <Card className="p-6 border-2 hover:border-primary/50 transition-all duration-300 hover-scale">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Milk className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    🍼 Log your first feed or nap
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    This starts your rhythm tracking. Every moment you log helps us understand {babyName ? `${babyName}'s` : 'your baby\'s'} unique patterns.
+                  </p>
+                  <Button 
+                    onClick={() => onAddActivity('feed')} 
+                    className="w-full sm:w-auto"
+                    variant="default"
+                  >
+                    Log Now
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Step 2: Patterns */}
+            <Card className="p-6 border-2 opacity-90">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    📈 See patterns emerge
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    We'll show your baby's unique trends after just a few days. Discover feeding schedules, sleep windows, and daily rhythms.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Step 3: Reports */}
+            <Card className="p-6 border-2 opacity-90">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Eye className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    👩‍⚕️ Share helpful reports
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Easily bring weekly summaries to your pediatrician. Track growth, patterns, and milestones all in one place.
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
 
-          {/* Helpful Hint */}
-          <p className="text-sm text-muted-foreground/80 italic">
-            As you track, we'll reveal patterns, predictions, and insights tailored to {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm.
-          </p>
+          {/* Mini Preview Section */}
+          <Card className="p-6 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <div className="w-16 h-16 rounded-lg bg-background/50 backdrop-blur-sm border border-border flex items-center justify-center">
+                  <TrendingUp className="w-8 h-8 text-primary/60" />
+                </div>
+                <div className="w-16 h-16 rounded-lg bg-background/50 backdrop-blur-sm border border-border flex items-center justify-center">
+                  <Eye className="w-8 h-8 text-primary/60" />
+                </div>
+                <div className="w-16 h-16 rounded-lg bg-background/50 backdrop-blur-sm border border-border flex items-center justify-center">
+                  <Palette className="w-8 h-8 text-primary/60" />
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">
+                Your data stays private and always in your hands.
+              </p>
+            </div>
+          </Card>
+
+          {/* Bottom Message */}
+          <div className="text-center pt-4">
+            <p className="text-sm text-muted-foreground leading-relaxed italic">
+              As you log moments, Sprout will reveal patterns, predictions, and gentle insights tailored to {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm.
+            </p>
+          </div>
+
+          {/* Alternative Quick Actions */}
+          <div className="pt-6 pb-4">
+            <p className="text-xs text-muted-foreground text-center mb-4">
+              Or start with any activity:
+            </p>
+            <div className="flex gap-2 justify-center flex-wrap">
+              <Button
+                onClick={() => onAddActivity('feed')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Milk className="w-4 h-4" />
+                Feed
+              </Button>
+              <Button
+                onClick={() => onAddActivity('nap')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Moon className="w-4 h-4" />
+                Nap
+              </Button>
+              <Button
+                onClick={() => onAddActivity('diaper')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Droplet className="w-4 h-4" />
+                Diaper
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
