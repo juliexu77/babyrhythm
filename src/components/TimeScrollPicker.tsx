@@ -40,11 +40,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   const [selectedMinute, setSelectedMinute] = useState(initial.minute);
   const [selectedPeriod, setSelectedPeriod] = useState<"AM" | "PM">(initial.period);
 
-  // Generate dates array (past 7 days, today, next 3 days)
+  // Generate dates array (past 90 days, today, next 3 days)
   const generateDates = () => {
     const dates = [];
     const today = new Date();
-    for (let i = -7; i <= 3; i++) {
+    for (let i = -90; i <= 3; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       dates.push(date);
