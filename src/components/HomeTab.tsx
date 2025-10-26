@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, BookOpen, FileText } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, BookOpen, FileText, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,6 +8,8 @@ import { format, isToday, differenceInMinutes, differenceInHours } from "date-fn
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
 import { useToast } from "@/hooks/use-toast";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 // Parse "YYYY-MM-DDTHH:mm:ss" as LOCAL time reliably (avoids Safari UTC parsing)
 const parseLocalTimestamp = (ts: string): Date => {
   const m = ts?.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
@@ -35,6 +37,7 @@ interface HomeTabProps {
 export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile, addActivity }: HomeTabProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { nightSleepEndHour } = useNightSleepWindow();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
   const [showFeedDetails, setShowFeedDetails] = useState(false);
@@ -1574,81 +1577,100 @@ const lastDiaper = displayActivities
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                   Today's Timeline
                 </p>
-{sortedActivities
-                  .map((activity, index) => {
-                    const getActivityIcon = (type: string) => {
-                      switch(type) {
-                        case 'feed': return <Milk className="h-4 w-4" />;
-                        case 'nap': return <Moon className="h-4 w-4" />;
-                        case 'diaper': return <Droplet className="h-4 w-4" />;
-                        case 'measure': return <Ruler className="h-4 w-4" />;
-                        default: return <Clock className="h-4 w-4" />;
-                      }
-                    };
+                {(() => {
+                  // Detect night sleep for the day
+                  const nightSleep = detectNightSleep(sortedActivities, nightSleepEndHour);
+                  const wakeTime = nightSleep ? getWakeTime(nightSleep) : null;
+                  
+                  return sortedActivities
+                    .map((activity, index) => {
+                      const isNightSleep = nightSleep?.id === activity.id;
+                      const getActivityIcon = (type: string) => {
+                        switch(type) {
+                          case 'feed': return <Milk className="h-4 w-4" />;
+                          case 'nap': return <Moon className="h-4 w-4" />;
+                          case 'diaper': return <Droplet className="h-4 w-4" />;
+                          case 'measure': return <Ruler className="h-4 w-4" />;
+                          default: return <Clock className="h-4 w-4" />;
+                        }
+                      };
 
-                    const getActivityGradient = (type: string) => {
-                      switch (type) {
-                        case "feed": return "bg-gradient-feed";
-                        case "diaper": return "bg-gradient-diaper";
-                        case "nap": return "bg-gradient-nap";
-                        case "measure": return "bg-gradient-primary";
-                        default: return "bg-gradient-primary";
-                      }
-                    };
-                    
-                    let details = '';
-                    if (activity.type === 'feed' && activity.details?.quantity) {
-                      details = ` • ${activity.details.quantity}${activity.details.unit || 'ml'}`;
-                    } else if (activity.type === 'nap' && activity.details?.endTime) {
-                      const parseTime = (timeStr: string) => {
-                        const [time, period] = timeStr.split(' ');
-                        const [hStr, mStr] = time.split(':');
-                        let h = parseInt(hStr, 10);
-                        const m = parseInt(mStr || '0', 10);
-                        if (period === 'PM' && h !== 12) h += 12;
-                        if (period === 'AM' && h === 12) h = 0;
-                        return h * 60 + m;
+                      const getActivityGradient = (type: string) => {
+                        switch (type) {
+                          case "feed": return "bg-gradient-feed";
+                          case "diaper": return "bg-gradient-diaper";
+                          case "nap": return "bg-gradient-nap";
+                          case "measure": return "bg-gradient-primary";
+                          default: return "bg-gradient-primary";
+                        }
                       };
                       
-                      const startMinutes = parseTime(activity.details.startTime || activity.time);
-                      const endMinutes = parseTime(activity.details.endTime);
-                      let duration = endMinutes >= startMinutes 
-                        ? endMinutes - startMinutes 
-                        : (24 * 60) - startMinutes + endMinutes;
+                      let details = '';
+                      if (activity.type === 'feed' && activity.details?.quantity) {
+                        details = ` • ${activity.details.quantity}${activity.details.unit || 'ml'}`;
+                      } else if (activity.type === 'nap' && activity.details?.endTime) {
+                        const parseTime = (timeStr: string) => {
+                          const [time, period] = timeStr.split(' ');
+                          const [hStr, mStr] = time.split(':');
+                          let h = parseInt(hStr, 10);
+                          const m = parseInt(mStr || '0', 10);
+                          if (period === 'PM' && h !== 12) h += 12;
+                          if (period === 'AM' && h === 12) h = 0;
+                          return h * 60 + m;
+                        };
+                        
+                        const startMinutes = parseTime(activity.details.startTime || activity.time);
+                        const endMinutes = parseTime(activity.details.endTime);
+                        let duration = endMinutes >= startMinutes 
+                          ? endMinutes - startMinutes 
+                          : (24 * 60) - startMinutes + endMinutes;
+                        
+                        const hours = Math.floor(duration / 60);
+                        const mins = duration % 60;
+                        details = ` • ${hours}h ${mins}m`;
+                      } else if (activity.type === 'diaper' && activity.details?.diaperType) {
+                        details = ` • ${activity.details.diaperType}`;
+                      }
                       
-                      const hours = Math.floor(duration / 60);
-                      const mins = duration % 60;
-                      details = ` • ${hours}h ${mins}m`;
-                    } else if (activity.type === 'diaper' && activity.details?.diaperType) {
-                      details = ` • ${activity.details.diaperType}`;
-                    }
-                    
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => onEditActivity(activity)}
-                        className="relative flex items-center gap-2 py-0.5 w-full text-left hover:bg-accent/50 rounded-md px-1 -mx-1 transition-colors"
-                      >
-                        {/* Timeline line */}
-                        {index < displayActivities.length - 1 && (
-                          <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
-                        )}
-                        
-                        {/* Timeline marker with circle */}
-                        <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
-                          {getActivityIcon(activity.type)}
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="flex-1 flex items-center gap-2">
-                          <span className="text-sm font-medium text-foreground">{activity.time}</span>
-                          <span className="text-xs text-muted-foreground capitalize">
-                            {activity.type}{details}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
+                      return (
+                        <>
+                          <button
+                            key={index}
+                            onClick={() => onEditActivity(activity)}
+                            className="relative flex items-center gap-2 py-0.5 w-full text-left hover:bg-accent/50 rounded-md px-1 -mx-1 transition-colors"
+                          >
+                            {/* Timeline line */}
+                            {index < displayActivities.length - 1 && (
+                              <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
+                            )}
+                            
+                            {/* Timeline marker with circle */}
+                            <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
+                              {getActivityIcon(activity.type)}
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="flex-1 flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground">{activity.time}</span>
+                              <span className="text-xs text-muted-foreground capitalize">
+                                {activity.type}{details}
+                              </span>
+                            </div>
+                          </button>
+                          
+                          {/* Wake-up indicator for night sleep */}
+                          {isNightSleep && wakeTime && (
+                            <div className="relative flex items-center gap-2 py-0.5 pl-7 text-left">
+                              <Sun className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                              <span className="text-xs text-muted-foreground italic">
+                                {babyName?.split(' ')[0] || 'Baby'} woke up at {wakeTime}
+                              </span>
+                            </div>
+                           )}
+                        </>
+                      );
+                    });
+                })()}
               </div>
             )}
           </div>

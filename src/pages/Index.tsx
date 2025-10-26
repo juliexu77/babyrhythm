@@ -23,8 +23,10 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings, Undo2, Filter, Share, Sprout, X } from "lucide-react";
+import { Calendar, Settings, Undo2, Filter, Share, Sprout, X, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -42,7 +44,8 @@ const Index = () => {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
   const { userProfile } = useUserProfile();
-  const { 
+  const { nightSleepEndHour } = useNightSleepWindow();
+  const {
     household, 
     collaborators,
     loading: householdLoading,
@@ -776,43 +779,66 @@ const ongoingNap = activities
                                 
                                 {/* Activities for this date */}
                                 <div className="space-y-1">
-                                  {activityGroups[dateKey].map((activity) => (
-                                    <ActivityCard
-                                      key={activity.id}
-                                      activity={activity}
-                                      babyName={babyProfile?.name}
-                                      onEdit={(clickedActivity) => {
-                                        console.log('Clicked activity:', clickedActivity);
-                                        setEditingActivity(clickedActivity);
-                                      }}
-                                      onDelete={async (activityId) => {
-                                        try {
-                                          // Get activity data before deleting for undo tracking
-                                          const { data: activityToDelete } = await supabase
-                                            .from('activities')
-                                            .select('*')
-                                            .eq('id', activityId)
-                                            .single();
+                                  {(() => {
+                                    // Detect night sleep for this day
+                                    const dayActivities = activityGroups[dateKey];
+                                    const nightSleep = detectNightSleep(dayActivities, nightSleepEndHour);
+                                    const wakeTime = nightSleep ? getWakeTime(nightSleep) : null;
+                                    
+                                    return dayActivities.map((activity) => {
+                                      const isNightSleep = nightSleep?.id === activity.id;
+                                      
+                                      return (
+                                        <>
+                                          <ActivityCard
+                                            key={activity.id}
+                                            activity={activity}
+                                            babyName={babyProfile?.name}
+                                            onEdit={(clickedActivity) => {
+                                              console.log('Clicked activity:', clickedActivity);
+                                              setEditingActivity(clickedActivity);
+                                            }}
+                                            onDelete={async (activityId) => {
+                                              try {
+                                                // Get activity data before deleting for undo tracking
+                                                const { data: activityToDelete } = await supabase
+                                                  .from('activities')
+                                                  .select('*')
+                                                  .eq('id', activityId)
+                                                  .single();
 
-                                          await deleteActivity(activityId);
+                                                await deleteActivity(activityId);
 
-                                          // Track for undo
-                                          if (activityToDelete) {
-                                            trackDelete({
-                                              id: activityToDelete.id,
-                                              type: activityToDelete.type,
-                                              logged_at: activityToDelete.logged_at,
-                                              details: activityToDelete.details,
-                                              household_id: activityToDelete.household_id,
-                                              created_by: activityToDelete.created_by
-                                            });
-                                          }
-                                        } catch (error) {
-                                          console.error('Error deleting activity:', error);
-                                        }
-                                      }}
-                                    />
-                                  ))}
+                                                // Track for undo
+                                                if (activityToDelete) {
+                                                  trackDelete({
+                                                    id: activityToDelete.id,
+                                                    type: activityToDelete.type,
+                                                    logged_at: activityToDelete.logged_at,
+                                                    details: activityToDelete.details,
+                                                    household_id: activityToDelete.household_id,
+                                                    created_by: activityToDelete.created_by
+                                                  });
+                                                }
+                                              } catch (error) {
+                                                console.error('Error deleting activity:', error);
+                                              }
+                                            }}
+                                          />
+                                          
+                                          {/* Wake-up indicator for night sleep */}
+                                          {isNightSleep && wakeTime && (
+                                            <div className="flex items-center gap-2 py-2 pl-4 ml-4 border-l-2 border-amber-500/30">
+                                              <Sun className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                                              <span className="text-sm text-muted-foreground italic">
+                                                {babyProfile?.name?.split(' ')[0] || 'Baby'} woke up at {wakeTime}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </>
+                                      );
+                                    });
+                                  })()}
                                 </div>
                               </div>
                               
