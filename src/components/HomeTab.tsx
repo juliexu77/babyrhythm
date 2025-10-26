@@ -904,6 +904,64 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const sentiment = getDailySentiment();
   const developmentalPhase = getDevelopmentalPhase();
 
+  // Empty state for new users with no activities
+  if (activities.length === 0) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4">
+        <div className="max-w-md mx-auto text-center space-y-8">
+          {/* Welcome Message */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Baby className="w-8 h-8 text-primary" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-heading font-semibold text-foreground">
+              {getGreetingLine()}
+            </h2>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Welcome to {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm tracker.<br />
+              Let's start by logging your first moment together.
+            </p>
+          </div>
+
+          {/* Quick Action Buttons */}
+          <div className="space-y-3">
+            <Button
+              onClick={() => onAddActivity('feed')}
+              className="w-full h-14 text-base font-semibold"
+              variant="default"
+            >
+              <Milk className="w-5 h-5 mr-2" />
+              Log a Feed
+            </Button>
+            <Button
+              onClick={() => onAddActivity('nap')}
+              className="w-full h-14 text-base font-semibold"
+              variant="outline"
+            >
+              <Moon className="w-5 h-5 mr-2" />
+              Log a Nap
+            </Button>
+            <Button
+              onClick={() => onAddActivity('diaper')}
+              className="w-full h-14 text-base font-semibold"
+              variant="outline"
+            >
+              <Droplet className="w-5 h-5 mr-2" />
+              Log a Diaper
+            </Button>
+          </div>
+
+          {/* Helpful Hint */}
+          <p className="text-sm text-muted-foreground/80 italic">
+            As you track, we'll reveal patterns, predictions, and insights tailored to {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pb-24">
       {/* 1. Sticky Header - Empty for now */}
