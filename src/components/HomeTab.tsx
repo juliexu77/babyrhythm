@@ -1660,11 +1660,23 @@ const lastDiaper = displayActivities
                           
                           {/* Wake-up indicator for night sleep */}
                           {isNightSleep && wakeTime && (
-                            <div className="relative flex items-center gap-2 py-0.5 pl-7 text-left">
-                              <Sun className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-                              <span className="text-xs text-muted-foreground italic">
-                                {babyName?.split(' ')[0] || 'Baby'} woke up at {wakeTime}
-                              </span>
+                            <div className="bg-card border border-border rounded-lg p-3 hover:bg-accent/5 transition-colors animate-fade-in">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                                    <Sun className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium text-foreground">{wakeTime}</span>
+                                      <span className="text-xs text-muted-foreground">•</span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {babyName?.split(' ')[0] || 'Baby'} woke up
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                            )}
                         </>
