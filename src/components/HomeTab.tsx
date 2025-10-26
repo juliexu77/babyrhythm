@@ -992,12 +992,44 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           </div>
 
           {/* Tone Chip */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-            <span className="text-sm">🌤</span>
-            <span className="text-sm font-medium text-accent-foreground">Early Days</span>
+          <div className="space-y-3">
+            <button 
+              onClick={() => setShowToneInsight(!showToneInsight)}
+              className="w-full text-left"
+            >
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                <span className="text-sm">🌤</span>
+                <span className="text-sm font-medium text-accent-foreground">Early Days</span>
+              </div>
+            </button>
+            
+            {showToneInsight && (
+              <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
+                Welcome! We'll learn {babyName ? `${babyName}'s` : 'your baby\'s'} patterns together as you log activities.
+              </p>
+            )}
           </div>
 
-          {/* Start Journey Card - matches What's Next styling */}
+          {/* Current State - Not Logged Yet */}
+          <div className="space-y-3.5 pb-6 border-b border-border">
+            {/* Last Feed - Not Logged */}
+            <div className="flex items-center gap-3">
+              <Milk className="w-5 h-5 text-primary" />
+              <p className="text-sm flex-1 text-muted-foreground">
+                Last feed — <span className="font-medium text-foreground">not logged yet</span>
+              </p>
+            </div>
+
+            {/* Sleeping Since - Not Logged */}
+            <div className="flex items-center gap-3">
+              <Moon className="w-5 h-5 text-primary" />
+              <p className="text-sm flex-1 text-muted-foreground">
+                Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Start Journey Card */}
           <Card className="p-4">
             <div className="space-y-4">
               <h2 className="text-base font-medium text-foreground">
@@ -1014,7 +1046,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <div className="flex items-center gap-3">
                 <span className="text-sm">☘️</span>
                 <p className="text-sm flex-1 text-muted-foreground">
-                  let's log our first activity
+                  Let's Log our first activity
                 </p>
                 <Button
                   onClick={() => onAddActivity()}
