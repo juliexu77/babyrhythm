@@ -1147,61 +1147,70 @@ return (
             <div className="py-8">
               <VoiceRecorder
                 autoStart={true}
-                onActivityParsed={async (parsedActivity) => {
+                onActivityParsed={async (parsedActivities) => {
                   setShowVoiceRecorder(false);
                   
-                  // Parse the time from the activity
-                  const activityDate = new Date(parsedActivity.time);
-                  const activityTime = activityDate.toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: true
-                  });
-                  
-                  // Handle "wake" type - end ongoing sleep
-                  if (parsedActivity.type === 'wake') {
-                    const ongoingSleep = activities.find(a => 
-                      a.type === 'nap' && !a.details?.endTime
-                    );
+                  // Process each activity
+                  for (const parsedActivity of parsedActivities) {
+                    // Parse the time from the activity
+                    const activityDate = new Date(parsedActivity.time);
+                    const activityTime = activityDate.toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: true
+                    });
                     
-                    if (ongoingSleep) {
-                      try {
-                        const { error } = await supabase
-                          .from('activities')
-                          .update({ details: { ...ongoingSleep.details, endTime: activityTime } })
-                          .eq('id', ongoingSleep.id);
+                    // Handle "wake" type - end ongoing sleep
+                    if (parsedActivity.type === 'wake') {
+                      const ongoingSleep = activities.find(a => 
+                        a.type === 'nap' && !a.details?.endTime
+                      );
+                      
+                      if (ongoingSleep) {
+                        try {
+                          const { error } = await supabase
+                            .from('activities')
+                            .update({ details: { ...ongoingSleep.details, endTime: activityTime } })
+                            .eq('id', ongoingSleep.id);
 
-                        if (error) throw error;
+                          if (error) throw error;
 
+                          toast({
+                            title: 'Sleep Ended',
+                            description: `${babyProfile?.name || 'Baby'} woke up at ${activityTime}`,
+                          });
+                          refetchActivities();
+                        } catch (error) {
+                          console.error('Error ending sleep:', error);
+                          toast({
+                            title: 'Error',
+                            description: 'Could not end sleep',
+                            variant: 'destructive',
+                          });
+                        }
+                      } else {
                         toast({
-                          title: 'Sleep Ended',
-                          description: `${babyProfile?.name || 'Baby'} woke up at ${activityTime}`,
-                        });
-                        refetchActivities();
-                      } catch (error) {
-                        console.error('Error ending sleep:', error);
-                        toast({
-                          title: 'Error',
-                          description: 'Could not end sleep',
+                          title: 'No Ongoing Sleep',
+                          description: 'Could not find an ongoing sleep to end.',
                           variant: 'destructive',
                         });
                       }
                     } else {
-                      toast({
-                        title: 'No Ongoing Sleep',
-                        description: 'Could not find an ongoing sleep to end.',
-                        variant: 'destructive',
-                      });
+                      // Add the activity normally
+                      await addActivity(
+                        parsedActivity.type,
+                        parsedActivity.details,
+                        activityDate,
+                        activityTime
+                      );
                     }
-                  } else {
-                    // Add the activity normally
-                    await addActivity(
-                      parsedActivity.type,
-                      parsedActivity.details,
-                      activityDate,
-                      activityTime
-                    );
                   }
+                  
+                  // Show success toast
+                  toast({
+                    title: 'Activities Logged',
+                    description: `Successfully logged ${parsedActivities.length} ${parsedActivities.length === 1 ? 'activity' : 'activities'}`,
+                  });
                 }}
               />
             </div>

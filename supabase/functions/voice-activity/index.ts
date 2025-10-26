@@ -41,19 +41,26 @@ Current time: ${new Date().toISOString()}
 
 Return ONLY valid JSON in this exact format:
 {
-  "type": "feed" | "diaper" | "nap" | "wake" | "note",
-  "details": {
-    // For bottle feed: { "amount": number, "unit": "ml" | "oz", "feedType": "bottle" }
-    // For nursing/breast: { "duration": number (minutes), "feedType": "breast", "side": "left" | "right" | "both" }
-    // For diaper: { "type": "wet" | "dirty" | "both" }
-    // For nap: { "duration": number (minutes), "quality": "good" | "fair" | "poor" }
-    // For wake: {} (ends ongoing sleep)
-    // For note: { "text": string }
-  },
-  "time": ISO 8601 timestamp (default to current time if not specified)
+  "activities": [
+    {
+      "type": "feed" | "diaper" | "nap" | "wake" | "note",
+      "details": {
+        // For bottle feed: { "amount": number, "unit": "ml" | "oz", "feedType": "bottle" }
+        // For nursing/breast: { "duration": number (minutes), "feedType": "breast", "side": "left" | "right" | "both" }
+        // For diaper: { "type": "wet" | "dirty" | "both" }
+        // For nap: { "duration": number (minutes), "quality": "good" | "fair" | "poor" }
+        // For wake: {} (ends ongoing sleep)
+        // For note: { "text": string }
+      },
+      "time": ISO 8601 timestamp (default to current time if not specified)
+    }
+  ]
 }
 
-CRITICAL: If user mentions "woke up", "wake up", "awake", "up at", this should ALWAYS be type "wake" to end an ongoing sleep.
+CRITICAL: 
+- If user mentions "woke up", "wake up", "awake", "up at", this should ALWAYS be type "wake" to end an ongoing sleep.
+- If user describes MULTIPLE activities, return them ALL in the activities array in chronological order
+- Each activity should have its own time based on when it occurred
 
 FEEDING RULES:
 - User may say "fed", "ate", "nursed", "breastfed" for ANY type of feeding
@@ -65,17 +72,11 @@ FEEDING RULES:
 - Nursing/breastfeeding: Use "duration" (minutes) + "side" (left/right/both), feedType="breast"
 
 Examples:
-- "Fed 120ml bottle" → {"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}
-- "Ate 4 oz bottle" → {"type":"feed","details":{"amount":4,"unit":"oz","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}
-- "Nursed 10 minutes left side" → {"type":"feed","details":{"duration":10,"feedType":"breast","side":"left"},"time":"2025-01-26T10:30:00Z"}
-- "Fed 15 minutes right side" → {"type":"feed","details":{"duration":15,"feedType":"breast","side":"right"},"time":"2025-01-26T10:30:00Z"}
-- "Ate both sides 20 minutes" → {"type":"feed","details":{"duration":20,"feedType":"breast","side":"both"},"time":"2025-01-26T10:30:00Z"}
-- "Breastfed 15 minutes right" → {"type":"feed","details":{"duration":15,"feedType":"breast","side":"right"},"time":"2025-01-26T10:30:00Z"}
-- "Dirty diaper" → {"type":"diaper","details":{"type":"dirty"},"time":"2025-01-26T10:30:00Z"}
-- "Napped for 2 hours" → {"type":"nap","details":{"duration":120,"quality":"good"},"time":"2025-01-26T10:30:00Z"}
-- "Woke up at 7am" → {"type":"wake","details":{},"time":"2025-01-26T07:00:00Z"}
-- "Baby is awake" → {"type":"wake","details":{},"time":"2025-01-26T10:30:00Z"}
-- "Baby seems fussy today" → {"type":"note","details":{"text":"Baby seems fussy today"},"time":"2025-01-26T10:30:00Z"}`
+- "Fed 120ml bottle" → {"activities":[{"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}]}
+- "Woke up at 7am, ate 200ml, and fell asleep at 9am" → {"activities":[{"type":"wake","details":{},"time":"2025-01-26T07:00:00Z"},{"type":"feed","details":{"amount":200,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T07:00:00Z"},{"type":"nap","details":{"quality":"good"},"time":"2025-01-26T09:00:00Z"}]}
+- "Nursed 10 minutes left side and dirty diaper" → {"activities":[{"type":"feed","details":{"duration":10,"feedType":"breast","side":"left"},"time":"2025-01-26T10:30:00Z"},{"type":"diaper","details":{"type":"dirty"},"time":"2025-01-26T10:30:00Z"}]}
+- "Ate 4 oz bottle" → {"activities":[{"type":"feed","details":{"amount":4,"unit":"oz","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}]}
+- "Baby seems fussy today" → {"activities":[{"type":"note","details":{"text":"Baby seems fussy today"},"time":"2025-01-26T10:30:00Z"}]}`
           },
           {
             role: 'user',
@@ -86,23 +87,33 @@ Examples:
           type: "function",
           function: {
             name: "parse_activity",
-            description: "Parse baby activity from transcription",
+            description: "Parse baby activities from transcription (can be multiple)",
             parameters: {
               type: "object",
               properties: {
-                type: {
-                  type: "string",
-                  enum: ["feed", "diaper", "nap", "wake", "note"]
-                },
-                details: {
-                  type: "object"
-                },
-                time: {
-                  type: "string",
-                  format: "date-time"
+                activities: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      type: {
+                        type: "string",
+                        enum: ["feed", "diaper", "nap", "wake", "note"]
+                      },
+                      details: {
+                        type: "object"
+                      },
+                      time: {
+                        type: "string",
+                        format: "date-time"
+                      }
+                    },
+                    required: ["type", "details", "time"],
+                    additionalProperties: false
+                  }
                 }
               },
-              required: ["type", "details", "time"],
+              required: ["activities"],
               additionalProperties: false
             }
           }
@@ -136,12 +147,12 @@ Examples:
       throw new Error('No structured output from AI');
     }
 
-    const activity = JSON.parse(toolCall.function.arguments);
+    const result = JSON.parse(toolCall.function.arguments);
 
     return new Response(
       JSON.stringify({ 
         transcript,
-        activity 
+        activities: result.activities 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

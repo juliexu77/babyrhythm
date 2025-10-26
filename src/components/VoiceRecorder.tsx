@@ -5,14 +5,14 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 interface VoiceRecorderProps {
-  onActivityParsed: (activity: any) => void;
+  onActivityParsed: (activities: any[]) => void;
   autoStart?: boolean;
 }
 
 export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [parsedActivity, setParsedActivity] = useState<any>(null);
+  const [parsedActivities, setParsedActivities] = useState<any[]>([]);
   const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
@@ -97,9 +97,9 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
 
       if (error) throw error;
 
-      if (data?.activity) {
+      if (data?.activities && data.activities.length > 0) {
         // Show parsed result for confirmation instead of immediately logging
-        setParsedActivity(data.activity);
+        setParsedActivities(data.activities);
       } else {
         throw new Error('No activity data returned');
       }
@@ -116,16 +116,16 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
   };
 
   const handleConfirm = () => {
-    if (parsedActivity) {
-      onActivityParsed(parsedActivity);
+    if (parsedActivities.length > 0) {
+      onActivityParsed(parsedActivities);
       // Reset state
-      setParsedActivity(null);
+      setParsedActivities([]);
       setTranscript("");
     }
   };
 
   const handleCancel = () => {
-    setParsedActivity(null);
+    setParsedActivities([]);
     setTranscript("");
   };
 
@@ -150,7 +150,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {!parsedActivity && (
+      {parsedActivities.length === 0 && (
         <div className="flex items-center justify-center">
           {!isRecording && !isProcessing && (
             <Button
@@ -185,24 +185,34 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
         </div>
       )}
 
-      {parsedActivity && (
+      {parsedActivities.length > 0 && (
         <div className="w-full space-y-4">
           <div className="p-4 rounded-lg border bg-card">
             <p className="text-sm text-muted-foreground mb-2">You said:</p>
             <p className="font-medium mb-4">&ldquo;{transcript}&rdquo;</p>
             
-            <p className="text-sm text-muted-foreground mb-2">This will log:</p>
-            <p className="text-lg font-semibold">{formatActivityPreview(parsedActivity)}</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              This will log {parsedActivities.length} {parsedActivities.length === 1 ? 'activity' : 'activities'}:
+            </p>
             
-            {parsedActivity.time && (
-              <p className="text-sm text-muted-foreground mt-2">
-                at {new Date(parsedActivity.time).toLocaleTimeString('en-US', { 
-                  hour: 'numeric', 
-                  minute: '2-digit',
-                  hour12: true 
-                })}
-              </p>
-            )}
+            <div className="space-y-2">
+              {parsedActivities.map((activity, index) => (
+                <div key={index} className="flex items-start gap-2 p-2 rounded bg-muted/50">
+                  <div className="flex-1">
+                    <p className="font-semibold">{formatActivityPreview(activity)}</p>
+                    {activity.time && (
+                      <p className="text-xs text-muted-foreground">
+                        at {new Date(activity.time).toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true 
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -210,7 +220,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
               Cancel
             </Button>
             <Button onClick={handleConfirm} className="flex-1">
-              Confirm & Log
+              Confirm & Log All
             </Button>
           </div>
         </div>
