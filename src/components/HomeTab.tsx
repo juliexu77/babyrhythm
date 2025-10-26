@@ -677,12 +677,25 @@ const lastDiaper = displayActivities
     const summary = getDailySummary();
     const awakeMinutes = awakeTime ? parseInt(awakeTime.split('h')[0]) * 60 + parseInt(awakeTime.split('h')[1]?.split('m')[0] || '0') : 0;
     
-    if (prediction.intent === 'START_WIND_DOWN' || prediction.intent === 'LET_SLEEP_CONTINUE') {
+    if (prediction.intent === 'LET_SLEEP_CONTINUE') {
+      // Baby is currently sleeping
+      const napDuration = ongoingNap?.details?.startTime 
+        ? Math.floor((new Date().getTime() - new Date(ongoingNap.loggedAt!).getTime()) / 60000)
+        : 0;
+      const napHours = Math.floor(napDuration / 60);
+      const napMins = napDuration % 60;
+      
+      return `${babyName} is currently napping and has been asleep for ${napHours > 0 ? `${napHours}h ` : ''}${napMins}m. ${babyName} has had ${summary.napCount} nap${summary.napCount !== 1 ? 's' : ''} today, and babies at ${babyAgeMonths || 0} months typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day. Let them rest and they'll wake when ready.`;
+    } else if (prediction.intent === 'START_WIND_DOWN') {
+      // Nap is coming soon
       const expectedWindow = babyAgeMonths !== null && babyAgeMonths < 3 ? 90 : 
                            babyAgeMonths !== null && babyAgeMonths < 6 ? 120 : 
                            babyAgeMonths !== null && babyAgeMonths < 9 ? 150 : 180;
       
-      return `Based on ${babyName}'s age (${babyAgeMonths || 0} months) and current wake window of ${awakeTime || '0m'}, we predict a nap is coming soon. Typical wake windows for this age are around ${Math.floor(expectedWindow / 60)}h ${expectedWindow % 60}m. ${babyName} has had ${summary.napCount} nap${summary.napCount !== 1 ? 's' : ''} today, and babies at this age typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day.`;
+      // Only show wake window if we have valid data
+      const wakeWindowText = awakeTime ? ` and current wake window of ${awakeTime}` : '';
+      
+      return `Based on ${babyName}'s age (${babyAgeMonths || 0} months)${wakeWindowText}, we predict a nap is coming soon. Typical wake windows for this age are around ${Math.floor(expectedWindow / 60)}h ${expectedWindow % 60}m. ${babyName} has had ${summary.napCount} nap${summary.napCount !== 1 ? 's' : ''} today, and babies at this age typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day.`;
     } else if (prediction.intent === 'FEED_SOON') {
       const lastFeedTime = lastFeed ? lastFeed.time : 'earlier';
       const avgFeedAmount = lastFeed?.details?.quantity ? `around ${lastFeed.details.quantity}${lastFeed.details.unit || 'ml'}` : 'their usual amount';
