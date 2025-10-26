@@ -157,10 +157,63 @@ Examples:
 
     const result = JSON.parse(toolCall.function.arguments);
 
+    // Post-process to fill missing details/times using transcript context
+    const activities = Array.isArray(result.activities) ? result.activities : [];
+
+    const lower = transcript.toLowerCase();
+    const timeRegex = /\b(?:at\s*)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/g;
+    const timeMatches: Array<RegExpExecArray> = [];
+    let tMatch: RegExpExecArray | null;
+    while ((tMatch = timeRegex.exec(lower)) !== null) {
+      timeMatches.push(tMatch);
+    }
+
+    function matchIndexToISO(idx: number) {
+      const tm = timeMatches[idx];
+      if (!tm) return new Date().toISOString();
+      const hourRaw = parseInt(tm[1], 10);
+      const minute = tm[2] ? parseInt(tm[2], 10) : 0;
+      const ampm = tm[3];
+      let hour = hourRaw % 12;
+      if (ampm === 'pm') hour += 12;
+      const d = new Date();
+      d.setHours(hour, minute, 0, 0);
+      return d.toISOString();
+    }
+
+    activities.forEach((act: any, i: number) => {
+      // Ensure time exists
+      if (!act.time) {
+        act.time = matchIndexToISO(i);
+      }
+
+      if (act.type === 'feed') {
+        act.details = act.details || {};
+        // Volume-based bottle fallback
+        const vol = transcript.match(/(\d+(?:\.\d+)?)\s?(ml|oz)\b/i);
+        if (vol && (act.details.amount == null || !act.details.unit)) {
+          act.details.amount = parseFloat(vol[1]);
+          act.details.unit = vol[2].toLowerCase();
+          act.details.feedType = act.details.feedType || 'bottle';
+        }
+        // Nursing fallback if transcript implies nursing
+        const isBreast = /\b(nurse|nursed|nursing|breastfed|breast)\b/i.test(transcript);
+        const dur = transcript.match(/(\d+)\s?(?:min|mins|minutes)\b/i);
+        if (isBreast && dur && act.details.duration == null) {
+          act.details.duration = parseInt(dur[1], 10);
+          act.details.feedType = 'breast';
+          const side = transcript.match(/\b(left|right|both)\b/i);
+          if (side) act.details.side = side[1].toLowerCase();
+        }
+      }
+    });
+
+    console.log('voice-activity parsed:', { transcript, activities });
+
     return new Response(
       JSON.stringify({ 
         transcript,
-        activities: result.activities 
+        activities
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
