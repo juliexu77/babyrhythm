@@ -1497,7 +1497,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   Today's Timeline
                 </p>
                 {displayActivities
-                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
+                  .sort((a, b) => new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime())
                   .map((activity, index) => {
                     const getActivityIcon = (type: string) => {
                       switch(type) {
