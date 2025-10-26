@@ -967,10 +967,17 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 Start {babyName ? `${babyName}'s` : 'your baby\'s'} journey
               </h2>
               
-              <div className="flex items-center gap-3">
-                <Sprout className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground leading-relaxed">
+              <div className="flex items-start gap-3">
+                <Sprout className="w-5 h-5 text-primary mt-0.5" />
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                   Every feed, nap, and diaper helps Babydex understand {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-sm">☘️</span>
+                <p className="text-sm flex-1 text-muted-foreground">
+                  let's log our first activity
                 </p>
                 <Button
                   onClick={() => onAddActivity()}
