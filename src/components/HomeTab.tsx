@@ -8,6 +8,14 @@ import { format, isToday, differenceInMinutes, differenceInHours } from "date-fn
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
 import { useToast } from "@/hooks/use-toast";
+// Parse "YYYY-MM-DDTHH:mm:ss" as LOCAL time reliably (avoids Safari UTC parsing)
+const parseLocalTimestamp = (ts: string): Date => {
+  const m = ts?.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || '0'), 0);
+  }
+  return new Date(ts);
+};
 
 interface HomeTabProps {
   activities: Activity[];
@@ -122,13 +130,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   // Get today's activities only
   const todayActivities = activities.filter(a => 
-    a.loggedAt && isToday(new Date(a.loggedAt))
+    a.loggedAt && isToday(parseLocalTimestamp(a.loggedAt))
   );
 
   // Get yesterday's activities for context when today is empty
   const yesterdayActivities = activities.filter(a => {
     if (!a.loggedAt) return false;
-    const activityDate = new Date(a.loggedAt);
+    const activityDate = parseLocalTimestamp(a.loggedAt);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     return activityDate.toDateString() === yesterday.toDateString();
@@ -171,19 +179,19 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     };
 
     // Find the most recent completed nap (yesterday or today)
-    const recentNaps = activities.filter(a =>
-      a.loggedAt && new Date(a.loggedAt) >= yesterdayStart &&
-      a.type === 'nap' && a.details?.endTime
-    );
+  const recentNaps = activities.filter(a =>
+    a.loggedAt && parseLocalTimestamp(a.loggedAt) >= yesterdayStart &&
+    a.type === 'nap' && a.details?.endTime
+  );
 
     if (recentNaps.length === 0) return null;
 
-    const napsWithEndDate = recentNaps.map(nap => {
-      const baseDate = new Date(nap.loggedAt!);
-      const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
-      const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
+  const napsWithEndDate = recentNaps.map(nap => {
+    const baseDate = parseLocalTimestamp(nap.loggedAt!);
+    const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
+    const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
 
-      const endDate = new Date(baseDate);
+    const endDate = new Date(baseDate);
       const endHours = Math.floor(endMinutes / 60);
       const endMins = endMinutes % 60;
       endDate.setHours(endHours, endMins, 0, 0);
@@ -206,15 +214,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return awakeHours > 0 ? `${awakeHours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
   };
 
-  // Get last feed
-  const lastFeed = displayActivities
-    .filter(a => a.type === 'feed')
-    .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+const lastFeed = displayActivities
+  .filter(a => a.type === 'feed')
+  .sort((a, b) => parseLocalTimestamp(b.loggedAt!).getTime() - parseLocalTimestamp(a.loggedAt!).getTime())[0];
 
-  // Get last diaper
-  const lastDiaper = displayActivities
-    .filter(a => a.type === 'diaper')
-    .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+// Get last diaper
+const lastDiaper = displayActivities
+  .filter(a => a.type === 'diaper')
+  .sort((a, b) => parseLocalTimestamp(b.loggedAt!).getTime() - parseLocalTimestamp(a.loggedAt!).getTime())[0];
 
   // Get sleep status message with duration
   const getSleepStatus = () => {
@@ -228,8 +235,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      const napStart = new Date(ongoingNap.loggedAt!);
-      napStart.setHours(hour24, minutes, 0, 0);
+  const napStart = parseLocalTimestamp(ongoingNap.loggedAt!);
+  napStart.setHours(hour24, minutes, 0, 0);
       
       const sleepMinutes = differenceInMinutes(currentTime, napStart);
       const sleepHours = Math.floor(sleepMinutes / 60);
@@ -1496,8 +1503,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                   Today's Timeline
                 </p>
-                {displayActivities
-                  .sort((a, b) => new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime())
+{displayActivities
+  .sort((a, b) => parseLocalTimestamp(a.loggedAt!).getTime() - parseLocalTimestamp(b.loggedAt!).getTime())
                   .map((activity, index) => {
                     const getActivityIcon = (type: string) => {
                       switch(type) {
