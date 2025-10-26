@@ -167,6 +167,9 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   };
 
   const prediction = predictNextActivity();
+  const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
+  const fullPrediction = engine.getNextAction();
+  const hasConfidentPrediction = fullPrediction.intent !== "INDEPENDENT_TIME" && fullPrediction.intent !== "HOLD" && fullPrediction.confidence !== "low";
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -237,7 +240,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
           </div>
         )}
         
-        {onLogPredictedActivity && !ongoingNap && (
+        {onLogPredictedActivity && !ongoingNap && hasConfidentPrediction && (
           <Button
             variant="outline"
             size="sm"
