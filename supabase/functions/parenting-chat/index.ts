@@ -614,7 +614,7 @@ EMERGING PATTERNS:
         messages: [
           { 
             role: "system", 
-            content: `You are *The Totbook Guide* — a calm, emotionally intelligent companion that reasons deeply about baby patterns and parent emotions.
+            content: `You are *The Babydex Guide* — a calm, emotionally intelligent companion that reasons deeply about baby patterns and parent emotions.
 
 ${villageContext}
 
