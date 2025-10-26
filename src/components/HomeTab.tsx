@@ -1264,7 +1264,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           <Card className="p-4">
             <div className="space-y-4">
               <button 
-                onClick={() => prediction && setShowPredictionInsight(!showPredictionInsight)}
+                onClick={() => setShowPredictionInsight(!showPredictionInsight)}
                 className="w-full text-left group"
               >
                 <h2 className="text-base font-medium text-foreground group-hover:text-primary transition-colors">
@@ -1288,9 +1288,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 </div>
               )}
               
-              {showPredictionInsight && prediction && (
+              {showPredictionInsight && (
                 <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                  {getPredictionReasoning()}
+                  {prediction 
+                    ? getPredictionReasoning()
+                    : "As you log more activities, we'll learn your baby's unique patterns and start making predictions about when they might need to feed or sleep next. For now, focus on logging feeds, naps, and other activities—each one helps us understand their rhythm better."
+                  }
                 </p>
               )}
               
