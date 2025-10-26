@@ -211,7 +211,7 @@ Deno.serve(async (req) => {
     addBodyText(`Total Feeds: ${data.feedingSummary.total}`, true);
     addBodyText(`Total Volume: ${data.feedingSummary.totalVolume.toFixed(0)} ml (${feedOzTotal} oz)`, true);
     addBodyText(`Average Per Feed: ${Math.round(data.feedingSummary.avgPerFeed)} ml (${feedOzAvg} oz)`, true);
-    addBodyText(`Daily Range: ${data.feedingSummary.minVolume}–${data.feedingSummary.maxVolume} ml`, true);
+    addBodyText(`Daily Range: ${data.feedingSummary.minVolume}-${data.feedingSummary.maxVolume} ml`, true);
     addBodyText(`Feeding Pattern: ${data.feedingSummary.avgPerDay.toFixed(1)} feeds/day average`, true);
     if (data.feedingSummary.firstSolidDate) {
       addBodyText(`Solids Introduced: ${data.feedingSummary.firstSolidDate}`, true);
@@ -247,7 +247,7 @@ Deno.serve(async (req) => {
     pdf.setFont('helvetica', 'bold');
     addBodyText('Notes: ', true);
     pdf.setFont('helvetica', 'normal');
-    const sleepNotesText = `${data.sleepSummary.avgPerDay >= 10 ? 'Consistent overnight sleep (~10–11h) with' : 'Overnight sleep with'} daytime nap count ${data.sleepSummary.napCountRange.includes('–') ? 'showing variation' : 'relatively stable'}.`;
+    const sleepNotesText = `${data.sleepSummary.avgPerDay >= 10 ? 'Consistent overnight sleep (~10-11h) with' : 'Overnight sleep with'} daytime nap count ${data.sleepSummary.napCountRange.includes('-') ? 'showing variation' : 'relatively stable'}.`;
     const sleepNotesLines = pdf.splitTextToSize(sleepNotesText, contentWidth);
     sleepNotesLines.forEach((line: string) => {
       checkPageBreak(5);
@@ -267,7 +267,47 @@ Deno.serve(async (req) => {
       addSeparator();
     }
     
-    // ==== DAILY LOG TABLE ====
+    // ==== MILESTONES ====
+    if (data.milestones && data.milestones.length > 0) {
+      addSectionHeader('Milestones & Key Changes');
+      checkPageBreak(10);
+      
+      pdf.setDrawColor(156, 163, 175);
+      pdf.setLineWidth(0.5);
+      pdf.line(margins.left, currentY - 2, pageWidth - margins.right, currentY - 2);
+      pdf.line(margins.left, currentY + (data.milestones.length * 5) + 2, pageWidth - margins.right, currentY + (data.milestones.length * 5) + 2);
+      currentY += 2;
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(...grayText);
+      pdf.setFont('helvetica', 'normal');
+      
+      data.milestones.forEach(milestone => {
+        checkPageBreak(5);
+        pdf.text(`- ${milestone}`, margins.left + 3, currentY);
+        currentY += 5;
+      });
+      
+      currentY += 5;
+      addSeparator();
+    }
+    
+    // ==== OBSERVATIONS ====
+    addSectionHeader('Observations');
+    pdf.setFontSize(9);
+    pdf.setTextColor(...grayText);
+    pdf.setFont('helvetica', 'normal');
+    
+    data.observations.forEach(obs => {
+      checkPageBreak(5);
+      pdf.text(`- ${obs}`, margins.left + 3, currentY);
+      currentY += 5;
+    });
+    
+    currentY += 5;
+    addSeparator();
+    
+    // ==== DAILY LOG TABLE (moved to bottom) ====
     addSectionHeader('Daily Log Summary');
     
     const tableHeaders = ['Date', 'Total Sleep (h)', 'Naps', 'Feed Volume (ml)', 'Feeds'];

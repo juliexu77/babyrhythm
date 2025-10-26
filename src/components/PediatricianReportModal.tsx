@@ -297,7 +297,7 @@ export function PediatricianReportModal({
             avgPerDay: daysWithSleepData > 0 ? totalSleepMinutes / 60 / daysWithSleepData : 0,
             totalNaps,
             avgNapLength: formatHoursMinutes(avgNapMinutes),
-            napCountRange: `${napCountMin}–${napCountMax}`,
+            napCountRange: `${napCountMin}-${napCountMax}`,
             napCountMedian,
             hasIncompleteData: daysWithSleepData < totalDays
           },
