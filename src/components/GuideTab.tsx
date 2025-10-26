@@ -91,6 +91,20 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const feeds = activities.filter(a => a.type === 'feed');
   const hasMinimumData = naps.length >= 4 && feeds.length >= 4;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 GuideTab Debug:', {
+      totalActivities: activities.length,
+      naps: naps.length,
+      feeds: feeds.length,
+      hasMinimumData,
+      babyName,
+      babyAgeInWeeks,
+      hasInitialized,
+      insightCardsCount: insightCards.length
+    });
+  }, [activities.length, naps.length, feeds.length, hasMinimumData, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
+
   // Load initial insight
   useEffect(() => {
     if (!hasInitialized && hasMinimumData && babyName && babyAgeInWeeks > 0) {
