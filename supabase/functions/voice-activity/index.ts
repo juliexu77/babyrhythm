@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript } = await req.json();
+    const { transcript, timezoneOffsetMinutes } = await req.json();
     
     if (!transcript) {
       throw new Error('No transcript provided');
@@ -22,6 +22,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
+    const tzOffset = (typeof timezoneOffsetMinutes === 'number' && isFinite(timezoneOffsetMinutes)) ? timezoneOffsetMinutes : 0;
 
     // Parse the transcription using Lovable AI
     const parseResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -212,6 +213,22 @@ Examples:
         }
       }
     });
+
+    // Normalize activity times to the user's local timezone by shifting to UTC
+    try {
+      if (typeof tzOffset === 'number' && isFinite(tzOffset) && tzOffset !== 0) {
+        activities.forEach((act: any) => {
+          if (act.time) {
+            const t = new Date(act.time).getTime();
+            const adjusted = new Date(t + tzOffset * 60000).toISOString();
+            act.time = adjusted;
+          }
+        });
+        console.log(`Applied timezoneOffsetMinutes=${tzOffset} to activity times`);
+      }
+    } catch (e) {
+      console.error('Time zone adjustment error:', e);
+    }
 
     console.log('voice-activity parsed:', { transcript, activities });
 

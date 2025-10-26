@@ -134,7 +134,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
     try {
       // Send transcript to edge function for parsing
       const { data, error } = await supabase.functions.invoke('voice-activity', {
-        body: { transcript }
+        body: { transcript, timezoneOffsetMinutes: new Date().getTimezoneOffset() }
       });
 
       console.log('Voice activity response:', { data, error, transcript });
