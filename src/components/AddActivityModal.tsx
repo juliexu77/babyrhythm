@@ -853,18 +853,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Sleep Details */}
             {activityType === "nap" && (
               <div className="space-y-4">
-                <Button
-                  variant={isTimerActive ? "destructive" : "default"}
-                  className={`w-full h-10 ${
-                    !isTimerActive 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : ''
-                  }`}
-                  onClick={isTimerActive ? stopNapTimer : startNapTimer}
-                >
-                  <Clock className="h-4 w-4 mr-2" />
-                  {isTimerActive ? "Stop Sleep" : "Start Sleep Timer"}
-                </Button>
                 <div className="space-y-3">
                   <TimeScrollPicker 
                     value={startTime} 
