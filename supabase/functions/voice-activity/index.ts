@@ -52,31 +52,39 @@ Return ONLY valid JSON in this exact format:
         // For wake: {} (ends ongoing sleep)
         // For note: { "text": string }
       },
-      "time": ISO 8601 timestamp (default to current time if not specified)
+      "time": ISO 8601 timestamp (MUST parse time from text, default to current time if not specified)
     }
   ]
 }
 
-CRITICAL: 
-- If user mentions "woke up", "wake up", "awake", "up at", this should ALWAYS be type "wake" to end an ongoing sleep.
-- If user describes MULTIPLE activities, return them ALL in the activities array in chronological order
-- Each activity should have its own time based on when it occurred
+CRITICAL TIME PARSING:
+- Always extract times mentioned in the transcript (e.g., "at 7am", "7 AM", "at 9am")
+- Convert times to ISO 8601 with today's date
+- If no time specified, use current time
+- "7am" or "7 AM" → set hour to 7, minute to 0
+- "9:30am" → set hour to 9, minute to 30
+
+CRITICAL DETAIL EXTRACTION:
+- ALWAYS extract numbers for amounts (ml, oz) and durations (minutes, hours)
+- "200ml" or "200 ml" → amount: 200, unit: "ml"
+- "4oz" or "4 oz" → amount: 4, unit: "oz"
+- "10 minutes" → duration: 10
+- "2 hours" → duration: 120 (convert to minutes)
+
+MULTIPLE ACTIVITIES:
+- If user describes MULTIPLE activities, return them ALL in chronological order
+- Each activity gets its appropriate time based on when it was mentioned
 
 FEEDING RULES:
 - User may say "fed", "ate", "nursed", "breastfed" for ANY type of feeding
-- Determine type by CONTEXT not keywords:
-  * If volume mentioned (ml, oz, bottle) → feedType="bottle", use "amount" + "unit"
-  * If duration + side mentioned (minutes, left, right, both sides) → feedType="breast", use "duration" + "side"
-  * Keywords "nursed", "nursing", "breast" → feedType="breast"
-- Bottle feeding: Use "amount" + "unit" (ml/oz), feedType="bottle"
-- Nursing/breastfeeding: Use "duration" (minutes) + "side" (left/right/both), feedType="breast"
+- Determine type by CONTEXT:
+  * If volume mentioned (ml, oz, bottle) → feedType="bottle", extract "amount" + "unit"
+  * If duration + side mentioned → feedType="breast", extract "duration" + "side"
 
 Examples:
-- "Fed 120ml bottle" → {"activities":[{"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}]}
-- "Woke up at 7am, ate 200ml, and fell asleep at 9am" → {"activities":[{"type":"wake","details":{},"time":"2025-01-26T07:00:00Z"},{"type":"feed","details":{"amount":200,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T07:00:00Z"},{"type":"nap","details":{"quality":"good"},"time":"2025-01-26T09:00:00Z"}]}
-- "Nursed 10 minutes left side and dirty diaper" → {"activities":[{"type":"feed","details":{"duration":10,"feedType":"breast","side":"left"},"time":"2025-01-26T10:30:00Z"},{"type":"diaper","details":{"type":"dirty"},"time":"2025-01-26T10:30:00Z"}]}
-- "Ate 4 oz bottle" → {"activities":[{"type":"feed","details":{"amount":4,"unit":"oz","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}]}
-- "Baby seems fussy today" → {"activities":[{"type":"note","details":{"text":"Baby seems fussy today"},"time":"2025-01-26T10:30:00Z"}]}`
+- "Fed 120ml bottle" → {"activities":[{"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"<current_time>"}]}
+- "Woke up at 7am, ate 200ml, fell asleep at 9am" → {"activities":[{"type":"wake","details":{},"time":"<today_at_7am>"},{"type":"feed","details":{"amount":200,"unit":"ml","feedType":"bottle"},"time":"<today_at_7am>"},{"type":"nap","details":{"quality":"good"},"time":"<today_at_9am>"}]}
+- "Nursed 10 minutes left side" → {"activities":[{"type":"feed","details":{"duration":10,"feedType":"breast","side":"left"},"time":"<current_time>"}]}`
           },
           {
             role: 'user',

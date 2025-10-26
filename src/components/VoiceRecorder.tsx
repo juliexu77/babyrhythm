@@ -134,11 +134,14 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
     
     switch (activity.type) {
       case 'feed':
-        return `Fed ${activity.details.amount || '?'}${activity.details.unit || ''} ${activity.details.feedType || ''}`;
+        if (activity.details.feedType === 'breast') {
+          return `Nursed ${activity.details.duration || '?'} min ${activity.details.side || ''}`;
+        }
+        return `Fed ${activity.details.amount || '?'} ${activity.details.unit || ''} ${activity.details.feedType || ''}`.trim();
       case 'diaper':
         return `${activity.details.type || 'Diaper'} diaper change`;
       case 'nap':
-        return `Nap for ${activity.details.duration || '?'} minutes`;
+        return `Nap ${activity.details.duration ? `for ${activity.details.duration} minutes` : ''}`;
       case 'wake':
         return `Woke up`;
       case 'note':
