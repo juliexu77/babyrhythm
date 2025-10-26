@@ -15,6 +15,20 @@ export function usePredictionEngine(activities: Activity[]) {
       return null;
     }
 
+    // Check minimum data requirements for reliable predictions
+    const naps = activities.filter(a => a.type === 'nap');
+    const feeds = activities.filter(a => a.type === 'feed');
+    
+    // Need at least 4 naps and 4 feeds for reliable predictions
+    if (naps.length < 4 || feeds.length < 4) {
+      console.log('🚫 Insufficient data for predictions:', { 
+        naps: naps.length, 
+        feeds: feeds.length,
+        required: { naps: 4, feeds: 4 }
+      });
+      return null;
+    }
+
     const engine = new BabyCarePredictionEngine(
       activities,
       household?.baby_birthday || undefined
