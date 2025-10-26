@@ -96,9 +96,12 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
         body: { transcript }
       });
 
+      console.log('Voice activity response:', { data, error, transcript });
+
       if (error) throw error;
 
       if (data?.activities && data.activities.length > 0) {
+        console.log('Parsed activities:', data.activities);
         // Show parsed result for confirmation instead of immediately logging
         setParsedActivities(data.activities);
       } else {

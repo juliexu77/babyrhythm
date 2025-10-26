@@ -1147,11 +1147,13 @@ return (
             <div className="py-8">
               <VoiceRecorder
                 autoStart={true}
-                onActivityParsed={async (parsedActivities) => {
+                 onActivityParsed={async (parsedActivities) => {
+                  console.log('Activities to log:', parsedActivities);
                   setShowVoiceRecorder(false);
                   
                   // Process each activity
                   for (const parsedActivity of parsedActivities) {
+                    console.log('Processing activity:', parsedActivity);
                     // Parse the time from the activity
                     const activityDate = new Date(parsedActivity.time);
                     const activityTime = activityDate.toLocaleTimeString('en-US', {
