@@ -41,20 +41,25 @@ Current time: ${new Date().toISOString()}
 
 Return ONLY valid JSON in this exact format:
 {
-  "type": "feed" | "diaper" | "nap" | "note",
+  "type": "feed" | "diaper" | "nap" | "wake" | "note",
   "details": {
     // For feed: { "amount": number, "unit": "ml" | "oz", "feedType": "bottle" | "breast", "side": "left" | "right" | "both" }
     // For diaper: { "type": "wet" | "dirty" | "both" }
     // For nap: { "duration": number (minutes), "quality": "good" | "fair" | "poor" }
+    // For wake: {} (ends ongoing sleep)
     // For note: { "text": string }
   },
   "time": ISO 8601 timestamp (default to current time if not specified)
 }
 
+CRITICAL: If user mentions "woke up", "wake up", "awake", "up at", this should ALWAYS be type "wake" to end an ongoing sleep.
+
 Examples:
 - "Fed 120ml bottle" → {"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}
 - "Dirty diaper" → {"type":"diaper","details":{"type":"dirty"},"time":"2025-01-26T10:30:00Z"}
 - "Napped for 2 hours" → {"type":"nap","details":{"duration":120,"quality":"good"},"time":"2025-01-26T10:30:00Z"}
+- "Woke up at 7am" → {"type":"wake","details":{},"time":"2025-01-26T07:00:00Z"}
+- "Baby is awake" → {"type":"wake","details":{},"time":"2025-01-26T10:30:00Z"}
 - "Baby seems fussy today" → {"type":"note","details":{"text":"Baby seems fussy today"},"time":"2025-01-26T10:30:00Z"}`
           },
           {
@@ -72,7 +77,7 @@ Examples:
               properties: {
                 type: {
                   type: "string",
-                  enum: ["feed", "diaper", "nap", "note"]
+                  enum: ["feed", "diaper", "nap", "wake", "note"]
                 },
                 details: {
                   type: "object"

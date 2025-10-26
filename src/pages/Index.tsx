@@ -1167,19 +1167,56 @@ return (
                     hour12: true
                   });
                   
-                  // Add the activity
-                  await addActivity(
-                    parsedActivity.type,
-                    parsedActivity.details,
-                    activityDate,
-                    activityTime
-                  );
+                  // Handle "wake" type - end ongoing sleep
+                  if (parsedActivity.type === 'wake') {
+                    const ongoingSleep = activities.find(a => 
+                      a.type === 'nap' && !a.details?.endTime
+                    );
+                    
+                    if (ongoingSleep) {
+                      try {
+                        const { error } = await supabase
+                          .from('activities')
+                          .update({ details: { ...ongoingSleep.details, endTime: activityTime } })
+                          .eq('id', ongoingSleep.id);
+
+                        if (error) throw error;
+
+                        toast({
+                          title: 'Sleep Ended',
+                          description: `${babyProfile?.name || 'Baby'} woke up at ${activityTime}`,
+                        });
+                        refetchActivities();
+                      } catch (error) {
+                        console.error('Error ending sleep:', error);
+                        toast({
+                          title: 'Error',
+                          description: 'Could not end sleep',
+                          variant: 'destructive',
+                        });
+                      }
+                    } else {
+                      toast({
+                        title: 'No Ongoing Sleep',
+                        description: 'Could not find an ongoing sleep to end.',
+                        variant: 'destructive',
+                      });
+                    }
+                  } else {
+                    // Add the activity normally
+                    await addActivity(
+                      parsedActivity.type,
+                      parsedActivity.details,
+                      activityDate,
+                      activityTime
+                    );
+                  }
                 }}
               />
             </div>
             <div className="text-center text-sm text-muted-foreground space-y-1">
               <p>Tap the microphone to start recording</p>
-              <p className="text-xs">Say something like "Fed 120ml bottle" or "Dirty diaper"</p>
+              <p className="text-xs">Say "Fed 120ml bottle", "Dirty diaper", or "Woke up at 7am"</p>
             </div>
           </DialogContent>
         </Dialog>
