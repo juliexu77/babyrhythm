@@ -34,10 +34,11 @@ Deno.serve(async (req) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     
-    // Margins: top/bottom 20mm, left/right 15mm
+    // Margins: top/bottom 20mm, left/right 15mm, plus 7mm bottom padding before page break
     const margins = { top: 20, bottom: 20, left: 15, right: 15 };
     const contentWidth = pageWidth - margins.left - margins.right;
-    const maxY = pageHeight - margins.bottom;
+    const bottomPadding = 7; // ~25px additional padding before page break
+    const maxY = pageHeight - margins.bottom - bottomPadding;
     
     let currentY = margins.top;
     let currentPage = 1;
@@ -75,7 +76,7 @@ Deno.serve(async (req) => {
     
     // Helper: Add section header
     const addSectionHeader = (title: string) => {
-      checkPageBreak(15);
+      checkPageBreak(20); // Ensure section header + first line fit
       pdf.setFontSize(14);
       pdf.setTextColor(110, 70, 120); // Plum accent
       pdf.setFont('helvetica', 'bold');
@@ -84,7 +85,7 @@ Deno.serve(async (req) => {
       pdf.setDrawColor(110, 70, 120);
       pdf.setLineWidth(0.5);
       pdf.line(margins.left, currentY, pageWidth - margins.right, currentY);
-      currentY += 8;
+      currentY += 10; // Increased spacing after section header
     };
     
     // Helper: Add body text
