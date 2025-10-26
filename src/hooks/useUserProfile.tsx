@@ -10,9 +10,6 @@ interface UserProfile {
   photo_url?: string;
   baby_name?: string;
   baby_birth_date?: string;
-  daily_recap_enabled?: boolean;
-  daily_recap_notifications?: boolean;
-  daily_recap_include_notes?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -48,7 +45,7 @@ export const useUserProfile = () => {
   };
 
   // Update user profile
-  const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'full_name' | 'photo_url' | 'baby_name' | 'baby_birth_date' | 'daily_recap_enabled' | 'daily_recap_notifications' | 'daily_recap_include_notes'>>) => {
+  const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'full_name' | 'photo_url' | 'baby_name' | 'baby_birth_date'>>) => {
     if (!user) throw new Error('User not authenticated');
 
     try {

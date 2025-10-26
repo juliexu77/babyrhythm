@@ -267,28 +267,6 @@ export const Settings = () => {
             )}
           </SettingsSection>
 
-          {/* Home Section */}
-          {user && (
-            <SettingsSection title="Home">
-              <SettingsRow
-                icon={<Calendar className="w-5 h-5" />}
-                title="Daily Recap"
-                subtitle="Show at 5 PM"
-                showChevron={false}
-              >
-                <Switch
-                  checked={userProfile?.daily_recap_enabled ?? true}
-                  onCheckedChange={async (checked) => {
-                    try {
-                      await updateUserProfile({ daily_recap_enabled: checked });
-                    } catch (error) {
-                      console.error('Error updating daily recap setting:', error);
-                    }
-                  }}
-                />
-              </SettingsRow>
-            </SettingsSection>
-          )}
 
           {/* Account Section */}
           {user && (
