@@ -11,6 +11,7 @@ interface NextActivityPredictionProps {
   ongoingNap?: Activity | null;
   onMarkWakeUp?: () => void;
   babyName?: string;
+  onLogPredictedActivity?: (type: 'feed' | 'nap') => void;
 }
 
 // Keep the original time utility functions for UI compatibility
@@ -49,7 +50,7 @@ const addMinutesToTime = (timeString: string, minutes: number): string => {
   return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
 };
 
-export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, babyName }: NextActivityPredictionProps) => {
+export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, babyName, onLogPredictedActivity }: NextActivityPredictionProps) => {
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true);
   const { household } = useHousehold();
@@ -242,6 +243,16 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
           </div>
           <p className="text-sm text-muted-foreground mb-3">{prediction.reason}</p>
           
+          {onLogPredictedActivity && !ongoingNap && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onLogPredictedActivity(prediction.type)}
+              className="w-full"
+            >
+              {prediction.type === 'feed' ? t('logFeedNow') : t('logNapNow')}
+            </Button>
+          )}
         </div>
       )}
     </div>
