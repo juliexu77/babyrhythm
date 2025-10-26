@@ -30,13 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false);
         }
         
-        // Create household for new users
-        if (event === 'SIGNED_IN' && session?.user) {
-          setTimeout(() => {
-            ensureUserHasHousehold(session.user.id);
-          }, 0);
-        }
-        
         // Clear user data when signed out or user deleted
         if (event === 'SIGNED_OUT' || !session) {
           clearAllUserData();
@@ -50,13 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       initialLoadComplete = true;
       setLoading(false);
-      
-      // Ensure existing user has household
-      if (session?.user) {
-        setTimeout(() => {
-          ensureUserHasHousehold(session.user.id);
-        }, 0);
-      }
     });
 
     return () => subscription.unsubscribe();
