@@ -689,38 +689,46 @@ const ongoingNap = activities
                       activityGroups[localDateString].push(activity);
                     });
 
-                    // Sort activities within each date group by actual activity time
+                    // Sort activities within each date group by actual activity time (ascending - oldest first)
                     Object.keys(activityGroups).forEach(dateKey => {
                       activityGroups[dateKey].sort((a, b) => {
                         const getActivityTime = (activity: any) => {
                           try {
-                            // For naps, use startTime if available, otherwise logged_at
-                            if (activity.type === 'nap' && activity.details?.startTime) {
-                              const base = new Date(activity.loggedAt!);
-                              const [t, period] = activity.details.startTime.split(' ');
-                              const [hStr, mStr] = t.split(':');
-                              let h = parseInt(hStr, 10);
-                              let m = parseInt(mStr ?? '0', 10);
-                              
-                              // Validate hours and minutes
-                              if (isNaN(h) || isNaN(m) || h < 0 || h > 12 || m < 0 || m >= 60) {
-                                // Invalid time, fallback to logged_at
-                                return new Date(activity.loggedAt!).getTime();
-                              }
-                              
+                            // Parse UI time strings (handles "7:05 AM" or "7:05 AM - 8:15 AM")
+                            const parseUI12hToMinutes = (timeStr?: string | null): number | null => {
+                              if (!timeStr) return null;
+                              const first = timeStr.includes(' - ') ? timeStr.split(' - ')[0] : timeStr;
+                              const m = first.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                              if (!m) return null;
+                              let h = parseInt(m[1], 10);
+                              const mins = parseInt(m[2], 10);
+                              const period = m[3].toUpperCase();
                               if (period === 'PM' && h !== 12) h += 12;
                               if (period === 'AM' && h === 12) h = 0;
-                              base.setHours(h, m, 0, 0);
-                              return base.getTime();
+                              return h * 60 + mins;
+                            };
+                            
+                            const base = new Date(activity.loggedAt!);
+                            let minutes: number | null = null;
+                            
+                            // Priority: startTime (naps) > displayTime > fallback to logged_at
+                            if (activity.type === 'nap' && activity.details?.startTime) {
+                              minutes = parseUI12hToMinutes(activity.details.startTime);
+                            } else if (activity.details?.displayTime) {
+                              minutes = parseUI12hToMinutes(activity.details.displayTime);
                             }
-                            return new Date(activity.loggedAt!).getTime();
+                            
+                            if (minutes !== null) {
+                              base.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+                            }
+                            return base.getTime();
                           } catch (error) {
                             console.error('Error parsing activity time:', error, activity);
                             return new Date(activity.loggedAt!).getTime();
                           }
                         };
 
-                        return getActivityTime(b) - getActivityTime(a);
+                        return getActivityTime(a) - getActivityTime(b); // Changed: ascending order (oldest first)
                       });
                     });
 

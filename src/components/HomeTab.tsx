@@ -129,9 +129,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   };
 
   // Get today's activities only
-  const todayActivities = activities.filter(a => 
-    a.loggedAt && isToday(parseLocalTimestamp(a.loggedAt))
-  );
+  const todayActivities = activities.filter(a => {
+    if (!a.loggedAt) return false;
+    const parsed = parseLocalTimestamp(a.loggedAt);
+    const result = isToday(parsed);
+    return result;
+  });
 
   // Get yesterday's activities for context when today is empty
   const yesterdayActivities = activities.filter(a => {
@@ -145,15 +148,29 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Use yesterday's data as context if nothing logged today
   const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
   const showingYesterday = todayActivities.length === 0 && yesterdayActivities.length > 0;
-  // Debug: surface counts to verify measurement visibility
+  
+  // Debug: detailed activity breakdown
   if (typeof window !== 'undefined') {
-    console.info('HomeTab - summary debug', {
-      todayCount: todayActivities.length,
-      yesterdayCount: yesterdayActivities.length,
-      showingYesterday,
-      typesToday: todayActivities.map(a => a.type),
-      typesYesterday: yesterdayActivities.map(a => a.type),
-    });
+    console.groupCollapsed('HomeTab - Today vs Yesterday filter');
+    console.log('All activities count:', activities.length);
+    console.log('Today count:', todayActivities.length);
+    console.log('Yesterday count:', yesterdayActivities.length);
+    console.log('Showing yesterday fallback?', showingYesterday);
+    console.log('Today\'s dates:', todayActivities.map(a => ({ 
+      id: a.id?.slice(0,8), 
+      type: a.type, 
+      loggedAt: a.loggedAt,
+      parsed: parseLocalTimestamp(a.loggedAt!).toLocaleString()
+    })));
+    if (showingYesterday) {
+      console.log('Yesterday\'s dates:', yesterdayActivities.map(a => ({ 
+        id: a.id?.slice(0,8), 
+        type: a.type, 
+        loggedAt: a.loggedAt,
+        parsed: parseLocalTimestamp(a.loggedAt!).toLocaleString()
+      })));
+    }
+    console.groupEnd();
   }
   
   // Helper: parse a UI time string like "7:05 AM" (handles "7:05 AM - 8:15 AM")
