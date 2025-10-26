@@ -678,10 +678,22 @@ const lastDiaper = displayActivities
     const awakeMinutes = awakeTime ? parseInt(awakeTime.split('h')[0]) * 60 + parseInt(awakeTime.split('h')[1]?.split('m')[0] || '0') : 0;
     
     if (prediction.intent === 'LET_SLEEP_CONTINUE') {
-      // Baby is currently sleeping
-      const napDuration = ongoingNap?.details?.startTime 
-        ? Math.floor((new Date().getTime() - new Date(ongoingNap.loggedAt!).getTime()) / 60000)
-        : 0;
+      // Baby is currently sleeping - calculate duration using proper local time handling
+      let napDuration = 0;
+      if (ongoingNap?.details?.startTime) {
+        const startTime = ongoingNap.details.startTime;
+        const [time, period] = startTime.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+        let hour24 = hours;
+        if (period === 'PM' && hours !== 12) hour24 += 12;
+        if (period === 'AM' && hours === 12) hour24 = 0;
+        
+        const napStart = parseLocalTimestamp(ongoingNap.loggedAt!);
+        napStart.setHours(hour24, minutes, 0, 0);
+        
+        napDuration = differenceInMinutes(currentTime, napStart);
+      }
+      
       const napHours = Math.floor(napDuration / 60);
       const napMins = napDuration % 60;
       
