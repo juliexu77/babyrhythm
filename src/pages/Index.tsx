@@ -813,9 +813,14 @@ return (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Sprout className="w-5 h-5 text-primary" />
-                <span className="text-sm font-heading font-semibold text-primary tracking-tight">
-                  SPROUT
-                </span>
+                <div className="flex flex-col leading-none">
+                  <span className="text-sm font-heading font-bold text-primary tracking-tight">
+                    SPROUT
+                  </span>
+                  <span className="text-[10px] font-heading font-medium text-primary/70 tracking-wide">
+                    BABY TRACKER
+                  </span>
+                </div>
               </div>
               {babyProfile?.name && (
                 <>

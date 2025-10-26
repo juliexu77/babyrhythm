@@ -48,9 +48,14 @@ const Onboarding = () => {
           {/* Logo */}
           <div className="flex items-center justify-center gap-3">
             <Sprout className="w-8 h-8 text-primary" />
-            <span className="text-2xl font-heading font-bold text-primary tracking-tight">
-              SPROUT
-            </span>
+            <div className="flex flex-col leading-none">
+              <span className="text-2xl font-heading font-bold text-primary tracking-tight">
+                SPROUT
+              </span>
+              <span className="text-xs font-heading font-medium text-primary/70 tracking-wide">
+                BABY TRACKER
+              </span>
+            </div>
           </div>
 
           {/* Message */}
