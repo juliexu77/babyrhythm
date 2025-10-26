@@ -815,7 +815,7 @@ return (
                 <Sprout className="w-5 h-5 text-primary" />
                 <div className="flex flex-col leading-none">
                   <span className="text-sm font-heading font-bold text-primary tracking-tight">
-                    SPROUT
+                    TOTBOOK
                   </span>
                   <span className="text-[10px] font-heading font-medium text-primary/70 tracking-wide">
                     BABY TRACKER

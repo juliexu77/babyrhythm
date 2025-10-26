@@ -50,7 +50,7 @@ const Onboarding = () => {
             <Sprout className="w-8 h-8 text-primary" />
             <div className="flex flex-col leading-none">
               <span className="text-2xl font-heading font-bold text-primary tracking-tight">
-                SPROUT
+                TOTBOOK
               </span>
               <span className="text-xs font-heading font-medium text-primary/70 tracking-wide">
                 BABY TRACKER
