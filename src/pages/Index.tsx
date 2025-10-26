@@ -9,7 +9,7 @@ import { Settings as SettingsPage } from "@/pages/Settings";
 import { Helper } from "@/components/Helper";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { ReportConfigModal, ReportConfig } from "@/components/ReportConfigModal";
-import { ReportShareCapture } from "@/components/ReportShareCapture";
+import { PediatricianReportModal } from "@/components/PediatricianReportModal";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -1042,14 +1042,22 @@ return (
           }}
         />
 
-        <ReportShareCapture
+        <PediatricianReportModal
           open={showReportShare}
-          onDone={() => {
-            setShowReportShare(false);
-            setReportConfig(undefined);
+          onOpenChange={(open) => {
+            setShowReportShare(open);
+            if (!open) setReportConfig(undefined);
           }}
+          activities={activities.map(a => ({
+            id: a.id,
+            type: a.type,
+            created_at: a.loggedAt || new Date().toISOString(),
+            time_input: a.time,
+            duration: undefined,
+            quantity: a.details?.quantity ? parseFloat(a.details.quantity) : undefined,
+            notes: a.details?.note
+          }))}
           babyName={babyProfile?.name}
-          config={reportConfig}
         />
 
       </div>
