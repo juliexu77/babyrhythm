@@ -888,20 +888,14 @@ const ongoingNap = activities
                                         {/* Wake-up indicator - show in the date section where the wake-up happened */}
                                         {showWakeUpHere && nightSleep && wakeTime && (
                                           <div className="bg-card border border-border rounded-lg p-3 hover:bg-accent/5 transition-colors animate-fade-in">
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                                                  <Sun className="w-5 h-5 text-white" />
-                                                </div>
-                                                <div>
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-medium text-foreground">{wakeTime}</span>
-                                                    <span className="text-xs text-muted-foreground">•</span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                      {babyProfile?.name?.split(' ')[0] || 'Baby'} woke up
-                                                    </span>
-                                                  </div>
-                                                </div>
+                                            <div className="flex items-center gap-3">
+                                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                                                <Sun className="w-5 h-5 text-white" />
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium">{wakeTime}</span>
+                                                <span className="text-xs text-muted-foreground">•</span>
+                                                <span className="text-xs text-muted-foreground">{babyProfile?.name?.split(' ')[0] || 'Baby'} woke up</span>
                                               </div>
                                             </div>
                                           </div>
