@@ -146,8 +146,9 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
 
       if (data?.activities && data.activities.length > 0) {
         console.log('Parsed activities:', data.activities);
-        // Show parsed result for confirmation instead of immediately logging
-        setParsedActivities(data.activities);
+        // Show parsed result for confirmation, strip timezone field from user display
+        const activitiesForDisplay = data.activities.map(({ timezone, ...activity }: any) => activity);
+        setParsedActivities(activitiesForDisplay);
       } else {
         throw new Error('No activity data returned');
       }
