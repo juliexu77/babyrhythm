@@ -23,9 +23,10 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
     
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
+      recognitionRef.current.continuous = false; // Stops automatically after silence
       recognitionRef.current.interimResults = false;
       recognitionRef.current.lang = 'en-US';
+      // Most browsers will automatically stop after ~3-5 seconds of silence
     }
 
     // Auto-start recording if requested

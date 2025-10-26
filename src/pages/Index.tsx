@@ -1142,17 +1142,7 @@ return (
         <Dialog open={showVoiceRecorder} onOpenChange={setShowVoiceRecorder}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center justify-between">
-                Voice Log Activity
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowVoiceRecorder(false)}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </DialogTitle>
+              <DialogTitle>Voice Log Activity</DialogTitle>
             </DialogHeader>
             <div className="py-8">
               <VoiceRecorder
