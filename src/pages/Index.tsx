@@ -24,7 +24,7 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings, Undo2, Filter, Share, Sprout } from "lucide-react";
+import { Calendar, Settings, Undo2, Filter, Share, Sprout, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -35,6 +35,8 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
  
 const Index = () => {
   const { user, loading } = useAuth();
@@ -126,6 +128,7 @@ const ongoingNap = activities
   const [showReportConfig, setShowReportConfig] = useState(false);
   const [reportConfig, setReportConfig] = useState<ReportConfig | undefined>();
   const [showReportShare, setShowReportShare] = useState(false);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   
 
   // Handle scroll for header fade effect
@@ -896,7 +899,7 @@ return (
             }
             setActiveTab(newTab);
           }}
-          onAddActivity={() => setShowAddActivity(true)}
+          onAddActivity={() => setShowVoiceRecorder(true)}
         />
 
         {/* Add Activity Modal */}
@@ -1054,6 +1057,52 @@ return (
           activities={activities}
           babyName={babyProfile?.name}
         />
+
+        {/* Voice Recorder Modal */}
+        <Dialog open={showVoiceRecorder} onOpenChange={setShowVoiceRecorder}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                Voice Log Activity
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowVoiceRecorder(false)}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-8">
+              <VoiceRecorder
+                onActivityParsed={async (parsedActivity) => {
+                  setShowVoiceRecorder(false);
+                  
+                  // Parse the time from the activity
+                  const activityDate = new Date(parsedActivity.time);
+                  const activityTime = activityDate.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  });
+                  
+                  // Add the activity
+                  await addActivity(
+                    parsedActivity.type,
+                    parsedActivity.details,
+                    activityDate,
+                    activityTime
+                  );
+                }}
+              />
+            </div>
+            <div className="text-center text-sm text-muted-foreground space-y-1">
+              <p>Tap the microphone to start recording</p>
+              <p className="text-xs">Say something like "Fed 120ml bottle" or "Dirty diaper"</p>
+            </div>
+          </DialogContent>
+        </Dialog>
 
       </div>
     </ErrorBoundary>

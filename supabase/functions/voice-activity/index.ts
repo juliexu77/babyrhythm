@@ -12,42 +12,16 @@ serve(async (req) => {
   }
 
   try {
-    const { audio } = await req.json();
+    const { transcript } = await req.json();
     
-    if (!audio) {
-      throw new Error('No audio data provided');
+    if (!transcript) {
+      throw new Error('No transcript provided');
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
-
-    // Convert base64 to binary
-    const binaryAudio = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
-    
-    // Transcribe using Lovable AI
-    const formData = new FormData();
-    const blob = new Blob([binaryAudio], { type: 'audio/webm' });
-    formData.append('file', blob, 'audio.webm');
-    formData.append('model', 'whisper-1');
-
-    const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!transcriptionResponse.ok) {
-      const error = await transcriptionResponse.text();
-      console.error('Transcription error:', error);
-      throw new Error(`Transcription failed: ${error}`);
-    }
-
-    const transcription = await transcriptionResponse.json();
-    const transcribedText = transcription.text;
 
     // Parse the transcription using Lovable AI
     const parseResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -85,7 +59,7 @@ Examples:
           },
           {
             role: 'user',
-            content: transcribedText
+            content: transcript
           }
         ],
         tools: [{
@@ -118,6 +92,18 @@ Examples:
     });
 
     if (!parseResponse.ok) {
+      if (parseResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (parseResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Payment required. Please add credits to your Lovable workspace.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const error = await parseResponse.text();
       console.error('Parse error:', error);
       throw new Error(`Parsing failed: ${error}`);
@@ -134,7 +120,7 @@ Examples:
 
     return new Response(
       JSON.stringify({ 
-        transcription: transcribedText,
+        transcript,
         activity 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

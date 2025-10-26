@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.generate-pediatrician-report]
 verify_jwt = false
+
+[functions.voice-activity]
+verify_jwt = true
