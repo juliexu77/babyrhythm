@@ -785,41 +785,48 @@ const ongoingNap = activities
                                     const nightSleep = detectNightSleep(allActivities, nightSleepEndHour);
                                     const wakeTime = nightSleep ? getWakeTime(nightSleep) : null;
                                     
-                                    // Parse wake time to determine which date it belongs to
+                                    // Determine which date section should show the wake-up indicator
                                     let wakeUpDateKey: string | null = null;
                                     if (nightSleep && wakeTime) {
-                                      // Parse endTime to get the actual wake-up date
-                                      const endTimeMatch = wakeTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-                                      if (endTimeMatch) {
-                                        let hours = parseInt(endTimeMatch[1], 10);
-                                        const period = endTimeMatch[3].toUpperCase();
-                                        if (period === 'PM' && hours !== 12) hours += 12;
-                                        if (period === 'AM' && hours === 12) hours = 0;
-                                        
-                                        // Get the sleep's logged_at date
-                                        const sleepDate = new Date(nightSleep.loggedAt!);
-                                        const sleepStartTime = nightSleep.details?.startTime;
-                                        
-                                        // Check if wake time crossed midnight
-                                        if (sleepStartTime) {
-                                          const startMatch = sleepStartTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-                                          if (startMatch) {
-                                            let startHours = parseInt(startMatch[1], 10);
-                                            const startPeriod = startMatch[3].toUpperCase();
-                                            if (startPeriod === 'PM' && startHours !== 12) startHours += 12;
-                                            if (startPeriod === 'AM' && startHours === 12) startHours = 0;
-                                            
-                                            // If end time is earlier than start time, it's the next day
-                                            if (hours < startHours) {
-                                              const nextDay = new Date(sleepDate);
-                                              nextDay.setDate(nextDay.getDate() + 1);
-                                              wakeUpDateKey = `${nextDay.getFullYear()}-${String(nextDay.getMonth() + 1).padStart(2, '0')}-${String(nextDay.getDate()).padStart(2, '0')}`;
-                                            } else {
-                                              wakeUpDateKey = `${sleepDate.getFullYear()}-${String(sleepDate.getMonth() + 1).padStart(2, '0')}-${String(sleepDate.getDate()).padStart(2, '0')}`;
-                                            }
-                                          }
-                                        }
+                                      const sleepDate = new Date(nightSleep.loggedAt!);
+                                      const sleepStartTime = nightSleep.details?.startTime;
+                                      
+                                      // Parse times to check if it crossed midnight
+                                      const parseTime = (timeStr: string): number => {
+                                        const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                                        if (!match) return 0;
+                                        let h = parseInt(match[1], 10);
+                                        const period = match[3].toUpperCase();
+                                        if (period === 'PM' && h !== 12) h += 12;
+                                        if (period === 'AM' && h === 12) h = 0;
+                                        return h;
+                                      };
+                                      
+                                      const endHour = parseTime(wakeTime);
+                                      const startHour = sleepStartTime ? parseTime(sleepStartTime) : null;
+                                      
+                                      // Determine if sleep crossed midnight:
+                                      // - If start is evening (>= 18) and end is morning (< 12), it crossed midnight
+                                      // - OR if end hour is less than start hour, it crossed midnight
+                                      let crossedMidnight = false;
+                                      if (startHour !== null) {
+                                        crossedMidnight = (startHour >= 18 && endHour < 12) || (endHour < startHour);
                                       }
+                                      
+                                      const wakeUpDate = crossedMidnight 
+                                        ? new Date(sleepDate.getTime() + 24 * 60 * 60 * 1000) // Next day
+                                        : sleepDate;
+                                      
+                                      wakeUpDateKey = `${wakeUpDate.getFullYear()}-${String(wakeUpDate.getMonth() + 1).padStart(2, '0')}-${String(wakeUpDate.getDate()).padStart(2, '0')}`;
+                                      
+                                      console.log('Wake-up detection:', {
+                                        sleepDate: sleepDate.toLocaleDateString(),
+                                        startHour,
+                                        endHour,
+                                        crossedMidnight,
+                                        wakeUpDateKey,
+                                        currentDateKey: dateKey
+                                      });
                                     }
                                     
                                     const dayActivities = activityGroups[dateKey];
