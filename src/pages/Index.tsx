@@ -24,7 +24,7 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings, Undo2, Filter, Share } from "lucide-react";
+import { Calendar, Settings, Undo2, Filter, Share, Sprout } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -810,23 +810,32 @@ return (
       <div className="min-h-screen bg-background pb-16 overflow-x-hidden w-full">
         <div className={`sticky top-0 z-30 bg-background border-b border-[#E5E7EB] dark:border-[#1F2937] h-16 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
-            <div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Sprout className="w-5 h-5 text-primary" />
+                <span className="text-sm font-heading font-semibold text-primary tracking-tight">
+                  SPROUT
+                </span>
+              </div>
               {babyProfile?.name && (
-                <p className="text-sm font-medium text-[#374151] dark:text-[#9BA3AA]">
-                  {babyProfile.name} · {babyProfile.birthday ? (() => {
-                    const birthDate = new Date(babyProfile.birthday);
-                    const today = new Date();
-                    const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
-                    
-                    // Calculate weeks from the last full month boundary
-                    const lastMonthDate = new Date(birthDate);
-                    lastMonthDate.setMonth(birthDate.getMonth() + ageInMonths);
-                    const daysSinceLastMonth = Math.floor((today.getTime() - lastMonthDate.getTime()) / (1000 * 60 * 60 * 24));
-                    const weeks = Math.floor(daysSinceLastMonth / 7);
-                    
-                    return ageInMonths === 0 ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
-                  })() : 'age unknown'}
-                </p>
+                <>
+                  <span className="text-muted-foreground">·</span>
+                  <p className="text-sm font-medium text-[#374151] dark:text-[#9BA3AA]">
+                    {babyProfile.name} · {babyProfile.birthday ? (() => {
+                      const birthDate = new Date(babyProfile.birthday);
+                      const today = new Date();
+                      const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+                      
+                      // Calculate weeks from the last full month boundary
+                      const lastMonthDate = new Date(birthDate);
+                      lastMonthDate.setMonth(birthDate.getMonth() + ageInMonths);
+                      const daysSinceLastMonth = Math.floor((today.getTime() - lastMonthDate.getTime()) / (1000 * 60 * 60 * 24));
+                      const weeks = Math.floor(daysSinceLastMonth / 7);
+                      
+                      return ageInMonths === 0 ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
+                    })() : 'age unknown'}
+                  </p>
+                </>
               )}
             </div>
               <div className="flex items-center gap-2">
