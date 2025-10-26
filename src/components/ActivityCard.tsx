@@ -7,7 +7,8 @@ export interface Activity {
   id: string;
   type: "feed" | "diaper" | "nap" | "note" | "measure" | "photo";
   time: string;
-  loggedAt?: string; // Add the original logged timestamp
+  loggedAt?: string; // The original logged timestamp
+  timezone?: string; // IANA timezone name where activity was logged
   details: {
     // Feed details
     feedType?: "bottle" | "nursing" | "solid";

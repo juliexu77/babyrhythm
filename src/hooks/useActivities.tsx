@@ -9,6 +9,7 @@ export interface DatabaseActivity {
   household_id: string;
   type: 'feed' | 'diaper' | 'nap' | 'note';
   logged_at: string;
+  timezone?: string; // IANA timezone name (e.g., "America/Los_Angeles")
   details: {
     // Feed details
     feedType?: "bottle" | "nursing" | "solid";
@@ -39,23 +40,37 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
     // For naps, use the startTime directly as it's already in display format
     displayTime = dbActivity.details.startTime;
   } else {
-    // Parse the logged_at time which is stored as local time without 'Z'
-    // Format: "2025-10-26T07:00:00"
-    const timeMatch = dbActivity.logged_at.match(/T(\d{2}):(\d{2})/);
-    if (timeMatch) {
-      const hours = parseInt(timeMatch[1]);
-      const minutes = timeMatch[2];
-      const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-      const period = hours >= 12 ? 'PM' : 'AM';
-      displayTime = `${hour12}:${minutes} ${period}`;
-    } else {
-      // Fallback for old format or unexpected format
+    // Handle both old (UTC with 'Z') and new (local without 'Z') formats
+    const hasZSuffix = dbActivity.logged_at.endsWith('Z') || dbActivity.logged_at.includes('+');
+    
+    if (hasZSuffix) {
+      // OLD FORMAT: "2025-10-26T14:00:00.000Z" (UTC timestamp)
+      // Convert from UTC to local display time
       const activityDate = new Date(dbActivity.logged_at);
       displayTime = activityDate.toLocaleTimeString("en-US", { 
         hour: "numeric", 
         minute: "2-digit",
         hour12: true 
       });
+    } else {
+      // NEW FORMAT: "2025-10-26T07:00:00" (local time without 'Z')
+      // Parse directly as local time
+      const timeMatch = dbActivity.logged_at.match(/T(\d{2}):(\d{2})/);
+      if (timeMatch) {
+        const hours = parseInt(timeMatch[1]);
+        const minutes = timeMatch[2];
+        const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        const period = hours >= 12 ? 'PM' : 'AM';
+        displayTime = `${hour12}:${minutes} ${period}`;
+      } else {
+        // Fallback
+        const activityDate = new Date(dbActivity.logged_at);
+        displayTime = activityDate.toLocaleTimeString("en-US", { 
+          hour: "numeric", 
+          minute: "2-digit",
+          hour12: true 
+        });
+      }
     }
   }
 
@@ -64,6 +79,7 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
     type: dbActivity.type,
     time: displayTime,
     loggedAt: dbActivity.logged_at, // Keep the original timestamp
+    timezone: dbActivity.timezone, // Include timezone if available
     details: dbActivity.details
   };
 };

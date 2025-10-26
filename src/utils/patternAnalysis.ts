@@ -33,7 +33,7 @@ export const analyzePatterns = (activities: Activity[]): PatternInsight[] => {
     const avgFeedInterval = feedIntervals.reduce((a, b) => a + b, 0) / feedIntervals.length;
     
     const lastFeed = feedActivities[0];
-    const timeSinceLastFeed = getMinutesSince(lastFeed.time);
+    const timeSinceLastFeed = getMinutesSince(lastFeed);
     
     if (timeSinceLastFeed < avgFeedInterval - 30) {
       insights.push({
@@ -55,7 +55,7 @@ export const analyzePatterns = (activities: Activity[]): PatternInsight[] => {
     const avgNapInterval = napIntervals.reduce((a, b) => a + b, 0) / napIntervals.length;
     
     const lastNap = napActivities[0];
-    const timeSinceLastNap = getMinutesSince(lastNap.time);
+    const timeSinceLastNap = getMinutesSince(lastNap);
     
     if (timeSinceLastNap < avgNapInterval - 30) {
       insights.push({
@@ -164,14 +164,22 @@ export const answerQuestion = (question: string, activities: Activity[]): string
   return "I can help you with questions about feeding totals, sleep patterns, diaper changes, and predictions for next activities. Try asking 'How much did baby drink today?' or 'When is the next nap?'";
 };
 
-// Helper functions
+// Helper functions - now date-aware using loggedAt timestamps
 const calculateIntervals = (activities: Activity[]): number[] => {
   const intervals: number[] = [];
   
   for (let i = 0; i < activities.length - 1; i++) {
-    const current = parseTimeToMinutes(activities[i].time);
-    const next = parseTimeToMinutes(activities[i + 1].time);
-    intervals.push(Math.abs(current - next));
+    const current = activities[i].loggedAt;
+    const next = activities[i + 1].loggedAt;
+    
+    // Skip if either activity doesn't have loggedAt timestamp
+    if (!current || !next) continue;
+    
+    const currentDate = new Date(current);
+    const nextDate = new Date(next);
+    const diffMinutes = Math.abs(Math.floor((currentDate.getTime() - nextDate.getTime()) / 60000));
+    
+    intervals.push(diffMinutes);
   }
   
   return intervals;
@@ -188,12 +196,19 @@ const parseTimeToMinutes = (timeStr: string): number => {
   return hour24 * 60 + minutes;
 };
 
-const getMinutesSince = (timeStr: string): number => {
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const activityMinutes = parseTimeToMinutes(timeStr);
+const getMinutesSince = (activity: Activity): number => {
+  // Use loggedAt timestamp for accurate date-aware calculation
+  if (!activity.loggedAt) {
+    // Fallback to time-only calculation if loggedAt not available
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const activityMinutes = parseTimeToMinutes(activity.time);
+    return currentMinutes - activityMinutes;
+  }
   
-  return currentMinutes - activityMinutes;
+  const now = new Date();
+  const activityDate = new Date(activity.loggedAt);
+  return Math.floor((now.getTime() - activityDate.getTime()) / 60000);
 };
 
 const getTimeFromMinutes = (minutes: number): string => {
