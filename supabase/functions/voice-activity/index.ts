@@ -197,13 +197,10 @@ Examples:
     }
 
     activities.forEach((act: any, i: number) => {
-      // Ensure time exists
-      if (!act.time) {
-        console.log(`Activity ${i} missing time, using fallback`);
-        act.time = matchIndexToISO(i);
-      } else {
-        console.log(`Activity ${i} already has time: ${act.time}`);
-      }
+      const prevTime = act.time;
+      const matchedTime = matchIndexToISO(i);
+      act.time = matchedTime;
+      console.log(`Activity ${i} time set from transcript: was ${prevTime ?? 'none'} -> ${matchedTime}`);
 
       if (act.type === 'feed') {
         act.details = act.details || {};
