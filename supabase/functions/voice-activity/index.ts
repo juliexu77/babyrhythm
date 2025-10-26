@@ -178,19 +178,30 @@ Examples:
       const hourRaw = parseInt(tm[1], 10);
       const minute = tm[2] ? parseInt(tm[2], 10) : 0;
       const ampm = tm[3];
-      let hour = hourRaw === 12 ? 0 : hourRaw; // 12am = 0, 12pm needs special handling
-      if (ampm === 'pm' && hourRaw !== 12) hour += 12; // Add 12 for PM (except 12pm)
-      if (ampm === 'pm' && hourRaw === 12) hour = 12; // 12pm = 12
+      
+      // Convert 12-hour to 24-hour format
+      let hour = hourRaw;
+      if (ampm === 'am') {
+        // 12am = 0 (midnight), 1am-11am stay the same
+        hour = hourRaw === 12 ? 0 : hourRaw;
+      } else { // pm
+        // 12pm = 12 (noon), 1pm-11pm add 12
+        hour = hourRaw === 12 ? 12 : hourRaw + 12;
+      }
+      
       const d = new Date();
       d.setHours(hour, minute, 0, 0);
-      console.log(`Parsed time: ${tm[0]} -> hour=${hour}, minute=${minute} -> ${d.toISOString()}`);
+      console.log(`Parsed time: ${tm[0]} -> hourRaw=${hourRaw}, ampm=${ampm}, hour24=${hour}, minute=${minute} -> ${d.toISOString()}`);
       return d.toISOString();
     }
 
     activities.forEach((act: any, i: number) => {
       // Ensure time exists
       if (!act.time) {
+        console.log(`Activity ${i} missing time, using fallback`);
         act.time = matchIndexToISO(i);
+      } else {
+        console.log(`Activity ${i} already has time: ${act.time}`);
       }
 
       if (act.type === 'feed') {
@@ -217,14 +228,17 @@ Examples:
     // Normalize activity times to the user's local timezone by shifting to UTC
     try {
       if (typeof tzOffset === 'number' && isFinite(tzOffset) && tzOffset !== 0) {
+        console.log(`Before timezone adjustment:`, activities.map(a => ({ type: a.type, time: a.time })));
         activities.forEach((act: any) => {
           if (act.time) {
+            const original = act.time;
             const t = new Date(act.time).getTime();
             const adjusted = new Date(t + tzOffset * 60000).toISOString();
             act.time = adjusted;
+            console.log(`Adjusted time: ${original} -> ${adjusted} (offset: ${tzOffset} minutes)`);
           }
         });
-        console.log(`Applied timezoneOffsetMinutes=${tzOffset} to activity times`);
+        console.log(`After timezone adjustment:`, activities.map(a => ({ type: a.type, time: a.time })));
       }
     } catch (e) {
       console.error('Time zone adjustment error:', e);
