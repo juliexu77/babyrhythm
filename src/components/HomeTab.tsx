@@ -398,6 +398,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     const expected = getExpectedFeeds(babyAgeMonths);
     const expectedNaps = getExpectedNaps(babyAgeMonths);
     
+    // Early state message - insufficient data
+    if (summary.feedCount < 4 || summary.napCount < 4) {
+      return `Keep logging feeds and sleeps—patterns will emerge soon! Every entry helps us understand ${babyName?.split(' ')[0] || 'your baby'}'s unique rhythm.`;
+    }
+    
     // Calculate 7-day rolling averages (simplified for now)
     const recentFeeds = activities.filter(a => a.type === 'feed').length / 7;
     const recentNaps = activities.filter(a => a.type === 'nap' && a.details?.endTime).length / 7;
@@ -1408,7 +1413,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <div className="flex items-center gap-2 text-sm">
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <span className="font-medium text-foreground">Overall:</span>
-                <span className="text-muted-foreground">Calm and steady</span>
+                <span className="text-muted-foreground">
+                  {summary.feedCount < 4 || summary.napCount < 4 
+                    ? "Building foundation" 
+                    : "Calm and steady"}
+                </span>
               </div>
             </div>
             
