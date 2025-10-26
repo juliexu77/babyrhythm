@@ -9,7 +9,7 @@ import { Settings as SettingsPage } from "@/pages/Settings";
 import { Helper } from "@/components/Helper";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { ReportConfigModal, ReportConfig } from "@/components/ReportConfigModal";
-import { PediatricianReportGenerator } from "@/components/PediatricianReportGenerator";
+import { ReportShareCapture } from "@/components/ReportShareCapture";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -1042,7 +1042,7 @@ return (
           }}
         />
 
-        <PediatricianReportGenerator
+        <ReportShareCapture
           open={showReportShare}
           onDone={() => {
             setShowReportShare(false);
