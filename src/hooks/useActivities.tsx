@@ -156,7 +156,7 @@ export function useActivities() {
           return new Date(activity.logged_at).getTime();
         };
 
-        return getActivityTime(b) - getActivityTime(a);
+        return getActivityTime(a) - getActivityTime(b); // Changed: ascending order (oldest first)
       });
 
       setActivities(sortedData as DatabaseActivity[]);
