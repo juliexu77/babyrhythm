@@ -780,16 +780,54 @@ const ongoingNap = activities
                                 {/* Activities for this date */}
                                 <div className="space-y-1">
                                   {(() => {
-                                    // Detect night sleep for this day
-                                    const dayActivities = activityGroups[dateKey];
-                                    const nightSleep = detectNightSleep(dayActivities, nightSleepEndHour);
+                                    // Detect night sleep across ALL activities (to find overnight sleep)
+                                    const allActivities = filteredActivities;
+                                    const nightSleep = detectNightSleep(allActivities, nightSleepEndHour);
                                     const wakeTime = nightSleep ? getWakeTime(nightSleep) : null;
                                     
-                                    return dayActivities.map((activity) => {
-                                      const isNightSleep = nightSleep?.id === activity.id;
-                                      
-                                      return (
-                                        <>
+                                    // Parse wake time to determine which date it belongs to
+                                    let wakeUpDateKey: string | null = null;
+                                    if (nightSleep && wakeTime) {
+                                      // Parse endTime to get the actual wake-up date
+                                      const endTimeMatch = wakeTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                                      if (endTimeMatch) {
+                                        let hours = parseInt(endTimeMatch[1], 10);
+                                        const period = endTimeMatch[3].toUpperCase();
+                                        if (period === 'PM' && hours !== 12) hours += 12;
+                                        if (period === 'AM' && hours === 12) hours = 0;
+                                        
+                                        // Get the sleep's logged_at date
+                                        const sleepDate = new Date(nightSleep.loggedAt!);
+                                        const sleepStartTime = nightSleep.details?.startTime;
+                                        
+                                        // Check if wake time crossed midnight
+                                        if (sleepStartTime) {
+                                          const startMatch = sleepStartTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                                          if (startMatch) {
+                                            let startHours = parseInt(startMatch[1], 10);
+                                            const startPeriod = startMatch[3].toUpperCase();
+                                            if (startPeriod === 'PM' && startHours !== 12) startHours += 12;
+                                            if (startPeriod === 'AM' && startHours === 12) startHours = 0;
+                                            
+                                            // If end time is earlier than start time, it's the next day
+                                            if (hours < startHours) {
+                                              const nextDay = new Date(sleepDate);
+                                              nextDay.setDate(nextDay.getDate() + 1);
+                                              wakeUpDateKey = `${nextDay.getFullYear()}-${String(nextDay.getMonth() + 1).padStart(2, '0')}-${String(nextDay.getDate()).padStart(2, '0')}`;
+                                            } else {
+                                              wakeUpDateKey = `${sleepDate.getFullYear()}-${String(sleepDate.getMonth() + 1).padStart(2, '0')}-${String(sleepDate.getDate()).padStart(2, '0')}`;
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                    
+                                    const dayActivities = activityGroups[dateKey];
+                                    const showWakeUpHere = wakeUpDateKey === dateKey;
+                                    
+                                    return (
+                                      <>
+                                        {dayActivities.map((activity) => (
                                           <ActivityCard
                                             key={activity.id}
                                             activity={activity}
@@ -825,19 +863,19 @@ const ongoingNap = activities
                                               }
                                             }}
                                           />
-                                          
-                                          {/* Wake-up indicator for night sleep */}
-                                          {isNightSleep && wakeTime && (
-                                            <div className="flex items-center gap-2 py-2 pl-4 ml-4 border-l-2 border-amber-500/30">
-                                              <Sun className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                                              <span className="text-sm text-muted-foreground italic">
-                                                {babyProfile?.name?.split(' ')[0] || 'Baby'} woke up at {wakeTime}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </>
-                                      );
-                                    });
+                                        ))}
+                                        
+                                        {/* Wake-up indicator - show in the date section where the wake-up happened */}
+                                        {showWakeUpHere && nightSleep && wakeTime && (
+                                          <div className="flex items-center gap-2 py-2 pl-4 ml-4 border-l-2 border-amber-500/30">
+                                            <Sun className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                                            <span className="text-sm text-muted-foreground italic">
+                                              {babyProfile?.name?.split(' ')[0] || 'Baby'} woke up at {wakeTime}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </>
+                                    );
                                   })()}
                                 </div>
                               </div>
