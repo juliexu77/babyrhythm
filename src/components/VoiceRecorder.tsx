@@ -50,6 +50,29 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
     };
   }, [autoStart]);
 
+  const releaseRecognition = () => {
+    const rec = recognitionRef.current;
+    if (!rec) return;
+    try {
+      // Detach handlers and aggressively stop to release the mic across browsers
+      rec.onresult = null;
+      rec.onerror = null;
+      rec.onend = null;
+      try {
+        rec.stop();
+      } catch (e) {
+        console.log('Stop recognition error:', e);
+      }
+      try {
+        if (typeof rec.abort === 'function') rec.abort();
+      } catch (e) {
+        console.log('Abort recognition error:', e);
+      }
+    } finally {
+      recognitionRef.current = null;
+    }
+  };
+
   const startRecording = async () => {
     if (!recognitionRef.current) {
       toast({
@@ -65,6 +88,8 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
         const transcriptText = event.results[0][0].transcript;
         setTranscript(transcriptText);
         setIsRecording(false);
+        // Ensure microphone is fully released immediately after we have results
+        releaseRecognition();
         setIsProcessing(true);
         await processTranscript(transcriptText);
       };
@@ -72,6 +97,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
+        releaseRecognition();
         toast({
           title: 'Recording Error',
           description: 'Could not recognize speech. Please try again.',
@@ -81,6 +107,8 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
 
       recognitionRef.current.onend = () => {
         setIsRecording(false);
+        // Some browsers keep the mic active after onend unless we abort
+        releaseRecognition();
       };
 
       recognitionRef.current.start();
@@ -96,13 +124,10 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
   };
 
   const stopRecording = () => {
-    if (recognitionRef.current && isRecording) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {
-        console.log('Stop recording error:', e);
-      }
+    if (recognitionRef.current) {
+      releaseRecognition();
     }
+    setIsRecording(false);
   };
 
   const processTranscript = async (transcript: string) => {
@@ -189,7 +214,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4" data-voice-recorder>
       {parsedActivities.length === 0 && (
         <div className="flex items-center justify-center">
           {!isRecording && !isProcessing && (
