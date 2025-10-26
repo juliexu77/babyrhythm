@@ -31,11 +31,13 @@ const leftTabs = [
             {leftTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
+              const dataTab = tab.id === 'helper' ? 'guide' : tab.id;
               
               return (
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
+                  data-tab={dataTab}
                   className={`flex flex-col items-center space-y-1 transition-colors ${
                     isActive 
                       ? "text-primary" 
@@ -66,11 +68,13 @@ const leftTabs = [
             {rightTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
+              const dataTab = tab.id === 'insights' ? 'log' : tab.id;
               
               return (
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
+                  data-tab={dataTab}
                   className={`flex flex-col items-center space-y-1 transition-colors ${
                     isActive 
                       ? "text-primary" 

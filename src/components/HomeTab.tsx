@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, BookOpen, FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -35,6 +35,41 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showSleepStatusInsight, setShowSleepStatusInsight] = useState(false);
   const [showDailyInsight, setShowDailyInsight] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
+
+  // Track visited tabs for progressive disclosure
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('babydex_visited_tabs');
+      return stored ? new Set(JSON.parse(stored)) : new Set(['home']);
+    } catch {
+      return new Set(['home']);
+    }
+  });
+
+  // Track tab visits from parent via click events
+  useEffect(() => {
+    const handleTabClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const button = target.closest('[data-tab]');
+      if (button) {
+        const tab = button.getAttribute('data-tab');
+        if (tab) {
+          setVisitedTabs(prev => {
+            const newSet = new Set(prev).add(tab);
+            localStorage.setItem('babydex_visited_tabs', JSON.stringify([...newSet]));
+            return newSet;
+          });
+        }
+      }
+    };
+
+    document.addEventListener('click', handleTabClick);
+    return () => document.removeEventListener('click', handleTabClick);
+  }, []);
+
+  const hasVisitedAllTabs = visitedTabs.has('home') && visitedTabs.has('trends') && 
+                             visitedTabs.has('guide') && visitedTabs.has('log');
+  const showEducationalContent = activities.length < 5 || !hasVisitedAllTabs;
 
   // Calculate baby's age in months and weeks
   const getBabyAge = () => {
@@ -909,14 +944,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return (
       <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in">
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Placeholder Tone Chip */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-            <span className="text-sm">⏳</span>
-            <span className="text-sm font-medium text-accent-foreground">Still Learning</span>
-          </div>
-
           {/* Welcome Message */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">
               Hi {userName || 'there'} 👋
             </h2>
@@ -925,126 +954,35 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </p>
           </div>
 
-          {/* Getting Started Cards */}
-          <div className="space-y-6">
-            {/* Step 1: Make the first log magical */}
+          {/* Tone Chip */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
+            <span className="text-sm">🌤</span>
+            <span className="text-sm font-medium text-accent-foreground">Still Learning</span>
+          </div>
+
+          {/* Start Journey Card - matches What's Next styling */}
+          <Card className="p-4">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="text-base font-semibold text-foreground">
-                  Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Every feed, nap, and change helps Babydex learn your baby's rhythm.
+              <h2 className="text-base font-medium text-foreground">
+                Start {babyName ? `${babyName}'s` : 'your baby\'s'} journey
+              </h2>
+              
+              <div className="flex items-start gap-3">
+                <Sprout className="w-5 h-5 text-primary mt-0.5" />
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  Every feed, nap, and diaper helps Babydex understand {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm.
                 </p>
               </div>
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-sm text-muted-foreground">
-                  Let's log our first activity
-                </p>
-                <Button 
-                  onClick={() => onAddActivity()} 
-                  size="icon"
-                  className="flex-shrink-0"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
 
-            {/* Step 2: Discovery / Insights */}
-            <Card className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground mb-1.5">
-                      See patterns unfold
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Babydex turns your logs into insights about sleep, feeding, and mood — personalized to your baby.
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground/80 italic">
-                    Your data, beautifully understood.
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Step 3: Pediatrician / Share Value */}
-            <Card className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Eye className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground mb-1.5">
-                      Feel confident at every checkup
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Babydex builds {babyName ? `${babyName}'s` : 'your baby\'s'} growth story so you can share what matters most.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Step 4: Hidden Delight / Discovery */}
-            <Card className="p-5 border-dashed">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Palette className="w-6 h-6 text-accent" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-base font-semibold text-foreground mb-1.5">
-                    Coming soon: Learn through patterns
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Explore insights powered by real parents — tailored to your baby's unique rhythm.
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="pt-4">
-            <p className="text-xs text-muted-foreground mb-3">
-              Quick add:
-            </p>
-            <div className="flex gap-2 flex-wrap">
               <Button
-                onClick={() => onAddActivity('feed')}
-                variant="outline"
+                onClick={() => onAddActivity()}
+                className="w-full"
                 size="sm"
-                className="gap-2"
               >
-                <Milk className="w-4 h-4" />
-                Feed
-              </Button>
-              <Button
-                onClick={() => onAddActivity('nap')}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                <Moon className="w-4 h-4" />
-                Nap
-              </Button>
-              <Button
-                onClick={() => onAddActivity('diaper')}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                <Droplet className="w-4 h-4" />
-                Diaper
+                Log an activity
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     );
@@ -1395,6 +1333,86 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                       </button>
                     );
                   })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Educational Content for New Users */}
+        {showEducationalContent && displayActivities.length > 0 && (
+          <div className="space-y-6 pt-4 border-t border-border/40">
+            {/* Trends Tab Info */}
+            {!visitedTabs.has('trends') && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      As you add more activities, Babydex will start showing sleep, feeding, and mood trends on the <span className="font-medium text-foreground">Trends</span> tab.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const trendsTab = document.querySelector('[data-tab="trends"]') as HTMLElement;
+                    trendsTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Trends
+                </Button>
+              </div>
+            )}
+
+            {/* Guide Tab Info */}
+            {!visitedTabs.has('guide') && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      The <span className="font-medium text-foreground">Guide</span> tab connects insights from other parents and experts — contextual to {babyName ? `${babyName}'s` : 'your baby\'s'} current phase.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+                    guideTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Explore Guide
+                </Button>
+              </div>
+            )}
+
+            {/* Log Tab Info */}
+            {!visitedTabs.has('log') && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      You can export your logs and insights to share with your partner or pediatrician anytime from the <span className="font-medium text-foreground">Log</span> tab.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const logTab = document.querySelector('[data-tab="log"]') as HTMLElement;
+                    logTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Go to Log Tab
+                </Button>
               </div>
             )}
           </div>
