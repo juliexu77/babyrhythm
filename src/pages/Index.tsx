@@ -1048,15 +1048,7 @@ return (
             setShowReportShare(open);
             if (!open) setReportConfig(undefined);
           }}
-          activities={activities.map(a => ({
-            id: a.id,
-            type: a.type,
-            created_at: a.loggedAt || new Date().toISOString(),
-            time_input: a.time,
-            duration: undefined,
-            quantity: a.details?.quantity ? parseFloat(a.details.quantity) : undefined,
-            notes: a.details?.note
-          }))}
+          activities={activities}
           babyName={babyProfile?.name}
         />
 

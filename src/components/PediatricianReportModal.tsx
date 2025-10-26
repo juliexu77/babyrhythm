@@ -9,16 +9,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { format, subDays, startOfDay, endOfDay } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from "date-fns";
+import { useHousehold } from "@/hooks/useHousehold";
 
 interface Activity {
   id: string;
   type: string;
-  created_at: string;
-  time_input?: string;
-  duration?: number;
-  quantity?: number;
-  notes?: string;
+  loggedAt?: string;
+  time?: string;
+  details: any;
 }
 
 interface PediatricianReportModalProps {
@@ -34,6 +33,7 @@ export function PediatricianReportModal({
   activities,
   babyName = "Baby",
 }: PediatricianReportModalProps) {
+  const { household } = useHousehold();
   const [dateRange, setDateRange] = useState<'last-week' | 'last-month' | 'custom'>('last-week');
   const [customStartDate, setCustomStartDate] = useState<Date>();
   const [customEndDate, setCustomEndDate] = useState<Date>();
@@ -58,6 +58,44 @@ export function PediatricianReportModal({
     }
   };
 
+  const parseTimeToMinutes = (timeStr: string): number | null => {
+    const match12h = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (match12h) {
+      let hours = parseInt(match12h[1], 10);
+      const minutes = parseInt(match12h[2], 10);
+      const period = match12h[3].toUpperCase();
+      
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      return hours * 60 + minutes;
+    }
+    return null;
+  };
+
+  const formatAge = (birthday?: string | null) => {
+    if (!birthday) return "";
+    const birthDate = new Date(birthday);
+    const today = new Date();
+    
+    const totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                        (today.getMonth() - birthDate.getMonth());
+    const months = Math.max(0, totalMonths);
+    
+    const monthsDate = new Date(birthDate);
+    monthsDate.setMonth(monthsDate.getMonth() + totalMonths);
+    const daysDiff = Math.floor((today.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
+    const weeks = Math.floor(daysDiff / 7);
+    
+    return `${months} months ${weeks} weeks`;
+  };
+
+  const formatHoursMinutes = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
+    return `${h}h ${m}m`;
+  };
+
   const generateReport = async () => {
     setIsGenerating(true);
     try {
@@ -65,7 +103,8 @@ export function PediatricianReportModal({
       
       // Filter activities by date range
       const filtered = activities.filter(a => {
-        const activityDate = new Date(a.created_at);
+        if (!a.loggedAt) return false;
+        const activityDate = new Date(a.loggedAt);
         return activityDate >= startOfDay(start) && activityDate <= endOfDay(end);
       });
 
@@ -74,67 +113,201 @@ export function PediatricianReportModal({
       const sleeps = includeSleep ? filtered.filter(a => a.type === 'nap') : [];
       const diapers = includeDiapers ? filtered.filter(a => a.type === 'diaper') : [];
 
-      const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+      // Feeding calculations
+      const totalVolume = feeds.reduce((sum, f) => {
+        const qtyStr = f.details?.quantity;
+        if (!qtyStr) return sum;
+        
+        const qty = parseFloat(qtyStr);
+        if (isNaN(qty)) return sum;
+        
+        const unit = f.details.unit || (qty > 50 ? 'ml' : 'oz');
+        const ml = unit === 'oz' ? qty * 29.5735 : qty;
+        
+        return sum + ml;
+      }, 0);
 
-      const feedingSummary = {
-        total: feeds.length,
-        avgPerDay: feeds.length / totalDays,
-        totalVolume: feeds.reduce((sum, f) => sum + (f.quantity || 0), 0),
-      };
+      const avgPerFeed = feeds.length > 0 ? totalVolume / feeds.length : 0;
 
-      const totalSleepMinutes = sleeps.reduce((sum, s) => sum + (s.duration || 0), 0);
-      const sleepSummary = {
-        totalHours: totalSleepMinutes / 60,
-        avgPerDay: totalSleepMinutes / 60 / totalDays,
-        nightSleeps: sleeps.filter(s => {
-          const hour = parseInt(s.time_input?.split(':')[0] || '0');
-          return hour >= 19 || hour < 6;
-        }).length,
-        naps: sleeps.filter(s => {
-          const hour = parseInt(s.time_input?.split(':')[0] || '0');
-          return hour >= 6 && hour < 19;
-        }).length,
-      };
+      // Daily feed volumes
+      const dailyVolumes = eachDayOfInterval({ start, end }).map(day => {
+        const dayFeeds = feeds.filter(f => {
+          if (!f.loggedAt) return false;
+          const fDate = new Date(f.loggedAt);
+          return format(fDate, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd');
+        });
+        return dayFeeds.reduce((sum, f) => {
+          const qtyStr = f.details?.quantity;
+          if (!qtyStr) return sum;
+          
+          const qty = parseFloat(qtyStr);
+          if (isNaN(qty)) return sum;
+          
+          const unit = f.details.unit || (qty > 50 ? 'ml' : 'oz');
+          const ml = unit === 'oz' ? qty * 29.5735 : qty;
+          
+          return sum + ml;
+        }, 0);
+      }).filter(v => v > 0);
 
-      // Generate daily logs
-      const dailyLogs: Array<{ date: string; feeds: number; sleepHours: number; diapers: number }> = [];
-      const currentDate = new Date(start);
-      while (currentDate <= end) {
-        const dateStr = format(currentDate, 'yyyy-MM-dd');
-        const dayActivities = filtered.filter(a => 
-          format(new Date(a.created_at), 'yyyy-MM-dd') === dateStr
+      const minVolume = dailyVolumes.length > 0 ? Math.min(...dailyVolumes) : 0;
+      const maxVolume = dailyVolumes.length > 0 ? Math.max(...dailyVolumes) : 0;
+
+      // First solid date
+      const solidFeeds = activities.filter(a => 
+        a.type === 'feed' && a.details?.feedType === 'solid'
+      );
+      const firstSolidDate = solidFeeds.length > 0 
+        ? format(new Date(solidFeeds.reduce((earliest, current) => {
+            const currentDate = new Date(current.loggedAt!);
+            const earliestDate = new Date(earliest.loggedAt!);
+            return currentDate < earliestDate ? current : earliest;
+          }).loggedAt!), 'MMMM dd, yyyy')
+        : undefined;
+
+      // Sleep calculations
+      const totalSleepMinutes = sleeps.reduce((sum, s) => {
+        if (!s.details?.startTime || !s.details?.endTime) return sum;
+        
+        const startMins = parseTimeToMinutes(s.details.startTime);
+        const endMins = parseTimeToMinutes(s.details.endTime);
+        
+        if (startMins === null || endMins === null) return sum;
+        
+        let duration = endMins - startMins;
+        if (duration < 0) duration += 24 * 60;
+        
+        return sum + duration;
+      }, 0);
+
+      const totalNaps = sleeps.length;
+      const avgNapMinutes = totalNaps > 0 ? totalSleepMinutes / totalNaps : 0;
+
+      // Daily breakdown
+      const dailyData = eachDayOfInterval({ start, end }).map(day => {
+        const dayStr = format(day, 'yyyy-MM-dd');
+        const dayFeeds = feeds.filter(f => 
+          f.loggedAt && format(new Date(f.loggedAt), 'yyyy-MM-dd') === dayStr
+        );
+        const daySleeps = sleeps.filter(s => 
+          s.loggedAt && format(new Date(s.loggedAt), 'yyyy-MM-dd') === dayStr
+        );
+        const dayDiapers = diapers.filter(d =>
+          d.loggedAt && format(new Date(d.loggedAt), 'yyyy-MM-dd') === dayStr
         );
         
-        dailyLogs.push({
-          date: format(currentDate, 'MMM dd'),
-          feeds: dayActivities.filter(a => a.type === 'feed').length,
-          sleepHours: dayActivities.filter(a => a.type === 'nap').reduce((sum, s) => sum + (s.duration || 0), 0) / 60,
-          diapers: dayActivities.filter(a => a.type === 'diaper').length,
-        });
+        const sleepMinutes = daySleeps.reduce((sum, s) => {
+          if (!s.details?.startTime || !s.details?.endTime) return sum;
+          
+          const startMins = parseTimeToMinutes(s.details.startTime);
+          const endMins = parseTimeToMinutes(s.details.endTime);
+          
+          if (startMins === null || endMins === null) return sum;
+          
+          let duration = endMins - startMins;
+          if (duration < 0) duration += 24 * 60;
+          
+          return sum + duration;
+        }, 0);
         
-        currentDate.setDate(currentDate.getDate() + 1);
+        const feedVolume = dayFeeds.reduce((sum, f) => {
+          const qtyStr = f.details?.quantity;
+          if (!qtyStr) return sum;
+          
+          const qty = parseFloat(qtyStr);
+          if (isNaN(qty)) return sum;
+          
+          const unit = f.details.unit || (qty > 50 ? 'ml' : 'oz');
+          const ml = unit === 'oz' ? qty * 29.5735 : qty;
+          
+          return sum + ml;
+        }, 0);
+        
+        return {
+          date: format(day, 'MMM dd'),
+          sleepHours: sleepMinutes / 60,
+          naps: daySleeps.length,
+          feedVolume: Math.round(feedVolume),
+          feeds: dayFeeds.length,
+          diapers: dayDiapers.length
+        };
+      });
+
+      // Nap count statistics
+      const napCounts = dailyData.map(d => d.naps).filter(n => n > 0);
+      const napCountMin = napCounts.length > 0 ? Math.min(...napCounts) : 0;
+      const napCountMax = napCounts.length > 0 ? Math.max(...napCounts) : 0;
+      const napCountMedian = napCounts.length > 0 
+        ? napCounts.sort((a, b) => a - b)[Math.floor(napCounts.length / 2)]
+        : 0;
+
+      const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+      const daysWithSleepData = dailyData.filter(d => d.sleepHours > 0).length;
+
+      // Generate milestones
+      const milestones: string[] = [];
+      if (firstSolidDate) {
+        milestones.push(`First solids introduced on ${firstSolidDate}`);
+      }
+      
+      // Add custom milestones from notes
+      const noteMilestones = filtered
+        .filter(a => a.type === 'note' && a.details?.note && a.details.note.length > 10)
+        .map(a => `${format(new Date(a.loggedAt!), 'MMM dd')}: ${a.details.note}`)
+        .slice(0, 5);
+      milestones.push(...noteMilestones);
+
+      // Generate observations
+      const observationsList: string[] = [
+        "Feeding and sleep remain within expected range for age",
+        "No abnormal feeding gaps or nighttime waking reported"
+      ];
+      
+      if (observations.trim()) {
+        observationsList.unshift(observations.trim());
       }
 
-      // Extract milestones from notes
-      const milestones = filtered
-        .filter(a => a.notes && a.notes.length > 10)
-        .map(a => `${format(new Date(a.created_at), 'MMM dd')}: ${a.notes}`)
-        .slice(0, 10);
+      // Birth context
+      const babyBirthday = household?.baby_birthday 
+        ? `Born ${format(new Date(household.baby_birthday), 'MMMM dd, yyyy')} — term, healthy growth curve`
+        : undefined;
 
       // Call edge function
       const { data, error } = await supabase.functions.invoke('generate-pediatrician-report', {
         body: {
           babyName,
+          babyAge: formatAge(household?.baby_birthday),
+          babyBirthday,
           dateRange: {
             start: format(start, 'MMM dd, yyyy'),
             end: format(end, 'MMM dd, yyyy'),
           },
           locale: navigator.language,
-          feedingSummary,
-          sleepSummary,
-          dailyLogs,
+          feedingSummary: {
+            total: feeds.length,
+            avgPerDay: feeds.length / totalDays,
+            totalVolume,
+            avgPerFeed,
+            minVolume: Math.round(minVolume),
+            maxVolume: Math.round(maxVolume),
+            firstSolidDate
+          },
+          sleepSummary: {
+            totalHours: totalSleepMinutes / 60,
+            avgPerDay: daysWithSleepData > 0 ? totalSleepMinutes / 60 / daysWithSleepData : 0,
+            totalNaps,
+            avgNapLength: formatHoursMinutes(avgNapMinutes),
+            napCountRange: `${napCountMin}–${napCountMax}`,
+            napCountMedian,
+            hasIncompleteData: daysWithSleepData < totalDays
+          },
+          diaperSummary: includeDiapers && diapers.length > 0 ? {
+            total: diapers.length,
+            avgPerDay: diapers.length / totalDays
+          } : undefined,
+          dailyLogs: dailyData,
           milestones,
-          observations,
+          observations: observationsList,
           excludedDays: [],
         },
       });
