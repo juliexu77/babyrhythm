@@ -912,68 +912,98 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Welcome Message */}
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">
-              Welcome{userName ? `, ${userName}` : ''}
+              Hi {userName || 'there'} 👋
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Start tracking {babyName ? `${babyName}'s` : 'your baby\'s'} daily rhythm to see patterns and insights emerge.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Let's learn {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm together.
             </p>
           </div>
 
           {/* Getting Started Cards */}
           <div className="space-y-3">
-            {/* Step 1: Log */}
-            <Card className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Milk className="w-5 h-5 text-primary" />
+            {/* Step 1: Make the first log magical */}
+            <Card className="p-5">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Baby className="w-6 h-6 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-base font-semibold text-foreground mb-1">
-                    Log your first activity
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Start by tracking a feed, nap, or diaper change.
-                  </p>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground mb-1.5">
+                      Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Every feed, nap, and change helps Babydex learn your baby's rhythm.
+                    </p>
+                  </div>
                   <Button 
-                    onClick={() => onAddActivity('feed')} 
+                    onClick={() => onAddActivity()} 
                     size="sm"
                     variant="default"
+                    className="w-full sm:w-auto"
                   >
-                    Log Now
+                    Log an Activity
                   </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Step 2: Patterns */}
-            <Card className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-base font-semibold text-foreground mb-1">
-                    Discover patterns
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    After a few days, we'll show your baby's unique trends and rhythms.
+                  <p className="text-xs text-muted-foreground/80 italic">
+                    It all starts here 🌱
                   </p>
                 </div>
               </div>
             </Card>
 
-            {/* Step 3: Reports */}
-            <Card className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Eye className="w-5 h-5 text-primary" />
+            {/* Step 2: Discovery / Insights */}
+            <Card className="p-5">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground mb-1.5">
+                      See patterns unfold
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Babydex turns your logs into insights about sleep, feeding, and mood — personalized to your baby.
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground/80 italic">
+                    Your data, beautifully understood.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Step 3: Pediatrician / Share Value */}
+            <Card className="p-5">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Eye className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground mb-1.5">
+                      Feel confident at every checkup
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Babydex builds {babyName ? `${babyName}'s` : 'your baby\'s'} growth story so you can share what matters most.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Step 4: Hidden Delight / Discovery */}
+            <Card className="p-5 border-dashed">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Palette className="w-6 h-6 text-accent" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-base font-semibold text-foreground mb-1">
-                    Share with your pediatrician
+                  <h3 className="text-base font-semibold text-foreground mb-1.5">
+                    Coming soon: Learn through patterns
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Generate weekly reports with growth data and activity summaries.
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Explore insights powered by real parents — tailored to your baby's unique rhythm.
                   </p>
                 </div>
               </div>
