@@ -811,9 +811,22 @@ return (
         <div className={`sticky top-0 z-30 bg-background border-b border-[#E5E7EB] dark:border-[#1F2937] h-16 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Sprout className="w-5 h-5 text-primary" />
+                <div className="flex flex-col leading-none">
+                  <span className="text-sm font-heading font-bold text-primary tracking-tight">
+                    SPROUT
+                  </span>
+                  <span className="text-[10px] font-heading font-medium text-primary/70 tracking-wide">
+                    BABY TRACKER
+                  </span>
+                </div>
+              </div>
               {babyProfile?.name && (
-                <p className="text-base font-medium text-foreground">
-                  {babyProfile.name} · {babyProfile.birthday ? (() => {
+                <>
+                  <span className="text-muted-foreground">·</span>
+                  <p className="text-sm font-medium text-[#374151] dark:text-[#9BA3AA]">
+                    {babyProfile.name} · {babyProfile.birthday ? (() => {
                       const birthDate = new Date(babyProfile.birthday);
                       const today = new Date();
                       const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
@@ -827,6 +840,7 @@ return (
                       return ageInMonths === 0 ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
                     })() : 'age unknown'}
                   </p>
+                </>
               )}
             </div>
               <div className="flex items-center gap-2">
