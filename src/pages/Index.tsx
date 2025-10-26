@@ -811,17 +811,6 @@ return (
         <div className={`sticky top-0 z-30 bg-background border-b border-[#E5E7EB] dark:border-[#1F2937] h-16 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Sprout className="w-5 h-5 text-primary" />
-                <div className="flex flex-col leading-none">
-                  <span className="text-sm font-heading font-bold text-primary tracking-tight">
-                    BABYDEX
-                  </span>
-                  <span className="text-[10px] font-heading font-medium text-primary/70 tracking-wide">
-                    BABY TRACKER
-                  </span>
-                </div>
-              </div>
               {babyProfile?.name && (
                 <>
                   <span className="text-muted-foreground">·</span>
