@@ -1216,6 +1216,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <p className="text-sm flex-1 text-muted-foreground">
                   Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
                 </p>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="ml-auto"
+                  onClick={() => onAddActivity('nap')}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
               </div>
             )}
 
