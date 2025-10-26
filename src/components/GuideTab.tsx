@@ -86,13 +86,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   const sentimentOptions = ["Curious", "Surprised", "Worried"];
 
+  // Check minimum data requirements (same as prediction engine)
+  const naps = activities.filter(a => a.type === 'nap');
+  const feeds = activities.filter(a => a.type === 'feed');
+  const hasMinimumData = naps.length >= 4 && feeds.length >= 4;
+
   // Load initial insight
   useEffect(() => {
-    if (!hasInitialized && activities.length > 0 && babyName && babyAgeInWeeks > 0) {
+    if (!hasInitialized && hasMinimumData && babyName && babyAgeInWeeks > 0) {
       setHasInitialized(true);
       loadInitialInsight();
     }
-  }, [hasInitialized, activities.length, babyName, babyAgeInWeeks]);
+  }, [hasInitialized, hasMinimumData, babyName, babyAgeInWeeks]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -373,7 +378,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           </div>
 
           {/* Connected Insights Section */}
-          {insightCards.length > 0 && (
+          {hasMinimumData && insightCards.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-base font-semibold">📊 Connected Insights</h2>
               <div className="space-y-3">
