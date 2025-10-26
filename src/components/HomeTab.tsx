@@ -1254,7 +1254,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </div>
 
         {/* 3. What's Next */}
-        {(nextAction && !showingYesterday) || ongoingNap ? (
+        {!showingYesterday && (
           <Card className="p-4">
             <div className="space-y-4">
               <button 
@@ -1266,11 +1266,18 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 </h2>
               </button>
               
-              {nextAction && (
+              {nextAction ? (
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-primary mt-0.5" />
                   <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                     {nextAction}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-primary mt-0.5" />
+                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                    Predictive next actions will become available once enough activities have been logged (at least 4 naps and 4 feeds).
                   </p>
                 </div>
               )}
@@ -1298,7 +1305,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               )}
             </div>
           </Card>
-        ) : null}
+        )}
 
         {/* 4. Daily Summary */}
         {displayActivities.length > 0 && (
