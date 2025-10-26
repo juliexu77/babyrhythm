@@ -1261,10 +1261,16 @@ return (
                         });
                       }
                     } else {
+                      // For nap activities, ensure details.startTime is set
+                      const processedDetails = { ...parsedActivity.details };
+                      if (parsedActivity.type === 'nap') {
+                        processedDetails.startTime = activityTime;
+                      }
+                      
                       // Add the activity normally with timezone from parsed data
                       await addActivity(
                         parsedActivity.type,
-                        parsedActivity.details,
+                        processedDetails,
                         activityDate,
                         activityTime
                       );
