@@ -1,0 +1,153 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const { audio } = await req.json();
+    
+    if (!audio) {
+      throw new Error('No audio data provided');
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Convert base64 to binary
+    const binaryAudio = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
+    
+    // Transcribe using Lovable AI
+    const formData = new FormData();
+    const blob = new Blob([binaryAudio], { type: 'audio/webm' });
+    formData.append('file', blob, 'audio.webm');
+    formData.append('model', 'whisper-1');
+
+    const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      },
+      body: formData,
+    });
+
+    if (!transcriptionResponse.ok) {
+      const error = await transcriptionResponse.text();
+      console.error('Transcription error:', error);
+      throw new Error(`Transcription failed: ${error}`);
+    }
+
+    const transcription = await transcriptionResponse.json();
+    const transcribedText = transcription.text;
+
+    // Parse the transcription using Lovable AI
+    const parseResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a baby activity parser. Extract structured activity data from voice transcriptions.
+            
+Current time: ${new Date().toISOString()}
+
+Return ONLY valid JSON in this exact format:
+{
+  "type": "feed" | "diaper" | "nap" | "note",
+  "details": {
+    // For feed: { "amount": number, "unit": "ml" | "oz", "feedType": "bottle" | "breast", "side": "left" | "right" | "both" }
+    // For diaper: { "type": "wet" | "dirty" | "both" }
+    // For nap: { "duration": number (minutes), "quality": "good" | "fair" | "poor" }
+    // For note: { "text": string }
+  },
+  "time": ISO 8601 timestamp (default to current time if not specified)
+}
+
+Examples:
+- "Fed 120ml bottle" → {"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}
+- "Dirty diaper" → {"type":"diaper","details":{"type":"dirty"},"time":"2025-01-26T10:30:00Z"}
+- "Napped for 2 hours" → {"type":"nap","details":{"duration":120,"quality":"good"},"time":"2025-01-26T10:30:00Z"}
+- "Baby seems fussy today" → {"type":"note","details":{"text":"Baby seems fussy today"},"time":"2025-01-26T10:30:00Z"}`
+          },
+          {
+            role: 'user',
+            content: transcribedText
+          }
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "parse_activity",
+            description: "Parse baby activity from transcription",
+            parameters: {
+              type: "object",
+              properties: {
+                type: {
+                  type: "string",
+                  enum: ["feed", "diaper", "nap", "note"]
+                },
+                details: {
+                  type: "object"
+                },
+                time: {
+                  type: "string",
+                  format: "date-time"
+                }
+              },
+              required: ["type", "details", "time"],
+              additionalProperties: false
+            }
+          }
+        }],
+        tool_choice: { type: "function", function: { name: "parse_activity" } }
+      }),
+    });
+
+    if (!parseResponse.ok) {
+      const error = await parseResponse.text();
+      console.error('Parse error:', error);
+      throw new Error(`Parsing failed: ${error}`);
+    }
+
+    const parseResult = await parseResponse.json();
+    const toolCall = parseResult.choices?.[0]?.message?.tool_calls?.[0];
+    
+    if (!toolCall) {
+      throw new Error('No structured output from AI');
+    }
+
+    const activity = JSON.parse(toolCall.function.arguments);
+
+    return new Response(
+      JSON.stringify({ 
+        transcription: transcribedText,
+        activity 
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Voice activity error:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+});
