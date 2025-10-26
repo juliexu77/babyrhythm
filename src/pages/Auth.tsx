@@ -39,7 +39,7 @@ const Auth = () => {
     const password = formData.get("signup-password") as string;
     const fullName = formData.get("full-name") as string;
 
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/app`;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -71,7 +71,7 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/app`;
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
