@@ -556,14 +556,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 onClick={() => setShowStreakInsight(!showStreakInsight)}
                 className="text-left"
               >
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                  <span className="text-sm">{getPatternEmoji(toneFrequencies.streakTone)}</span>
-                  <span className="text-sm font-medium text-accent-foreground">{toneFrequencies.streakTone} ×{toneFrequencies.currentStreak}</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                  <span className="text-base">{getPatternEmoji(toneFrequencies.streakTone)}</span>
+                  <span className="text-base font-medium text-accent-foreground">{toneFrequencies.streakTone} ×{toneFrequencies.currentStreak}</span>
                 </div>
               </button>
               
               {showStreakInsight && (
-                <p className="text-xs text-muted-foreground leading-relaxed pl-1 italic">
+                <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
                   {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
                 </p>
               )}
@@ -796,53 +796,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
-          {/* Smart Add-On */}
-          {hasMinimumData && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm">🔹</span>
-                <h3 className="text-sm font-semibold text-foreground">Smart Add-On</h3>
-              </div>
-              <p className="text-xs text-muted-foreground pl-1 mb-3">
-                Based on streak + baby's age:
-              </p>
-              <div className="space-y-2 pl-1">
-                <button className="w-full text-left p-3 bg-accent/10 hover:bg-accent/20 rounded-lg border border-border/30 transition-colors">
-                  <div className="flex items-start gap-2">
-                    <span className="text-sm flex-shrink-0 mt-0.5">📚</span>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Deep Dive</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        "What Happens When Sleep Cycles Mature"
-                      </p>
-                    </div>
-                  </div>
-                </button>
-                <button className="w-full text-left p-3 bg-accent/10 hover:bg-accent/20 rounded-lg border border-border/30 transition-colors">
-                  <div className="flex items-start gap-2">
-                    <span className="text-sm flex-shrink-0 mt-0.5">💡</span>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Quick Tip</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        "Resetting Nap Timing Without Overtiredness"
-                      </p>
-                    </div>
-                  </div>
-                </button>
-                <button className="w-full text-left p-3 bg-accent/10 hover:bg-accent/20 rounded-lg border border-border/30 transition-colors">
-                  <div className="flex items-start gap-2">
-                    <span className="text-sm flex-shrink-0 mt-0.5">🧠</span>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Age Insight</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        "6-Month Brain Burst and Its Sleep Effects"
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Chat Messages */}
           {messages.length > 0 && (
