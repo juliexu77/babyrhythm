@@ -3,12 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Sprout, Send, Calendar, TrendingUp, Activity } from "lucide-react";
+import { Sprout, Send, Calendar, Activity, TrendingUp } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Activity {
@@ -141,9 +140,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const [showToneEvolution, setShowToneEvolution] = useState(false);
-  const [showPatternInsightModal, setShowPatternInsightModal] = useState(false);
-  const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const babyName = household?.baby_name || 'Baby';
@@ -522,19 +518,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         </div>
       )}
 
-      {/* Progress Ribbon */}
-      {!needsBirthdaySetup && hasMinimumData && (
-        <div className="px-4 pt-3 pb-2 bg-accent/10 border-b border-border/40">
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">This month:</span> {thisMonthSmoothFlow} Smooth Flow days 
-            {smoothFlowDiff !== 0 && (
-              <span className={smoothFlowDiff > 0 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
-                {" "}({smoothFlowDiff > 0 ? "+" : ""}{smoothFlowDiff} vs last month)
-              </span>
-            )}
-          </p>
-        </div>
-      )}
 
       {/* Loading State */}
       {isLoading && insightCards.length === 0 && (
@@ -593,51 +576,28 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                       {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
                     </p>
                   )}
-                  
-                  {/* Tone Evolution Toggle */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowToneEvolution(!showToneEvolution)}
-                    className="text-xs -ml-2 mt-1"
-                  >
-                    {showToneEvolution ? "Hide" : "View"} pattern evolution
-                    <TrendingUp className="w-3 h-3 ml-1" />
-                  </Button>
-                  
-                  {/* Tone Evolution Visualization */}
-                  {showToneEvolution && (
-                    <div className="mt-2 p-3 bg-accent/10 rounded-lg border border-border/40">
-                      <div className="flex items-center gap-2 mb-2">
-                        {toneFrequencies.tones.map((tone, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setSelectedPattern(tone.text);
-                              setShowPatternInsightModal(true);
-                            }}
-                            className="flex flex-col items-center flex-1 cursor-pointer hover:bg-accent/20 rounded p-2 transition-colors"
-                          >
-                            <div className="text-lg mb-1">{tone.emoji}</div>
-                            <div className="text-[10px] text-muted-foreground text-center leading-tight">
-                              {tone.text.split(' ')[0]}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Tap any day to learn what each pattern means
-                      </p>
-                    </div>
-                  )}
                 </div>
               </TooltipProvider>
             </div>
           )}
 
+          {/* Monthly Progress Ribbon */}
+          {hasMinimumData && (
+            <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">This month:</span> {thisMonthSmoothFlow} Smooth Flow days 
+                {smoothFlowDiff !== 0 && (
+                  <span className={smoothFlowDiff > 0 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
+                    {" "}({smoothFlowDiff > 0 ? "+" : ""}{smoothFlowDiff} vs last month)
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+
           {/* Pattern Summary */}
           {hasMinimumData && (
-            <div className="space-y-6 border-t border-border/40 pt-6">
+            <div className="space-y-6">
               <div>
                 <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
                   Pattern Summary
@@ -785,18 +745,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           </Button>
         </div>
       </div>
-
-      {/* Pattern Insight Modal */}
-      <Dialog open={showPatternInsightModal} onOpenChange={setShowPatternInsightModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedPattern && getPatternInsight(selectedPattern).title}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-foreground leading-relaxed">
-            {selectedPattern && getPatternInsight(selectedPattern).description}
-          </p>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
