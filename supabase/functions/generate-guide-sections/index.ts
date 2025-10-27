@@ -188,8 +188,8 @@ serve(async (req) => {
           change: d.change
         })),
         note: dataQuality < 0.6 
-          ? "Data incomplete — trends may be approximate. Comparing last 2 days vs 5-day baseline."
-          : "Comparing last 2 days vs 5-day baseline (outliers excluded)"
+          ? "Data incomplete — trends may be approximate."
+          : ""
       },
       ...guideSections
     };
