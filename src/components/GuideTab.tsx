@@ -429,27 +429,25 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <div className="p-6 border-b border-border bg-gradient-to-br from-background to-muted/20">
           <h1 className="text-2xl font-bold mb-4">{babyName}'s Current Rhythm</h1>
           
-          {/* Tone Chips */}
-          <div className="space-y-3">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              This Week's Pattern
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {sortedTones.map(([toneName, count]) => (
-                <Badge 
-                  key={toneName}
-                  variant="secondary"
-                  className="px-3 py-1.5 text-sm font-medium"
-                >
-                  {toneName} ×{count}
-                </Badge>
-              ))}
-            </div>
+          {/* Pattern Display */}
+          <div className="space-y-2">
+            {sortedTones[0] && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Primary Pattern:</span>
+                <span className="text-base font-semibold">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
+              </div>
+            )}
+            {sortedTones[1] && (
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Secondary Pattern:</span>
+                <span className="text-base font-semibold">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
+              </div>
+            )}
             
-            {/* Streak detection */}
+            {/* Streak description */}
             {toneFrequencies.currentStreak >= 2 && (
-              <p className="text-xs text-muted-foreground mt-2">
-                You're on a {toneFrequencies.currentStreak}-day "{toneFrequencies.streakTone}" streak — this often happens during a growth or learning burst.
+              <p className="text-xs text-muted-foreground mt-3">
+                {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
               </p>
             )}
             
@@ -458,7 +456,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               variant="ghost"
               size="sm"
               onClick={() => setShowToneEvolution(!showToneEvolution)}
-              className="text-xs -ml-2 mt-1"
+              className="text-xs -ml-2 mt-2"
             >
               {showToneEvolution ? "Hide" : "View"} pattern evolution
               <TrendingUp className="w-3 h-3 ml-1" />
@@ -478,7 +476,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  "{currentTone?.text}" streaks often appear during developmental leaps when babies practice new skills.
+                  "{currentTone?.text}" patterns often appear during developmental leaps when babies practice new skills.
                 </p>
               </div>
             )}
