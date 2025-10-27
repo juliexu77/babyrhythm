@@ -103,25 +103,25 @@ serve(async (req) => {
       });
     }
 
-    // Calculate metrics and deltas using yesterday vs the day before (complete days)
+    // Calculate metrics and deltas: compare yesterday (1 complete day) vs 3 days prior baseline
     // Determine timezone from activities or default to project default
     const tz = (activities.find((a: any) => a.timezone)?.timezone as string) || 'America/Los_Angeles';
 
-    // Compute UTC boundaries for today start in tz, then derive the two previous full days
+    // Compute UTC boundaries in the user's timezone
     const todayStartUTC = getTZStartOfTodayUTC(now, tz);
     const yesterdayStartUTC = new Date(todayStartUTC.getTime() - 24 * 60 * 60 * 1000);
-    const dayBeforeStartUTC = new Date(todayStartUTC.getTime() - 48 * 60 * 60 * 1000);
+    const baselineStartUTC = new Date(todayStartUTC.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days back (days -4, -3, -2)
 
-    // Only consider activities from the last two complete days in the user's timezone
-    const windowActivities = activities.filter(a => {
+    // Recent: Yesterday only (last complete day)
+    const recentActivities = activities.filter(a => {
       const t = new Date(a.logged_at);
-      return t >= dayBeforeStartUTC && t < todayStartUTC;
+      return t >= yesterdayStartUTC && t < todayStartUTC;
     });
-
-    const recentActivities = windowActivities.filter(a => new Date(a.logged_at) >= yesterdayStartUTC);
-    const previousActivities = windowActivities.filter(a => {
-      const d = new Date(a.logged_at);
-      return d >= dayBeforeStartUTC && d < yesterdayStartUTC;
+    
+    // Previous: 3 days before yesterday (baseline trend)
+    const previousActivities = activities.filter(a => {
+      const t = new Date(a.logged_at);
+      return t >= baselineStartUTC && t < yesterdayStartUTC;
     });
 
     const recentMetrics = calculateMetrics(recentActivities);
@@ -131,7 +131,7 @@ serve(async (req) => {
       tz,
       todayStartUTC: todayStartUTC.toISOString(),
       yesterdayStartUTC: yesterdayStartUTC.toISOString(),
-      dayBeforeStartUTC: dayBeforeStartUTC.toISOString(),
+      baselineStartUTC: baselineStartUTC.toISOString(),
       recentMetrics,
       previousMetrics,
       recentCount: recentActivities.length,
@@ -141,7 +141,11 @@ serve(async (req) => {
     const deltas = computeDeltas(recentMetrics, previousMetrics);
     const insights = extractInsights(deltas, ageMonths);
 
-    const dataQuality = calculateDataQuality(windowActivities);
+    const allWindowActivities = activities.filter(a => {
+      const t = new Date(a.logged_at);
+      return t >= baselineStartUTC && t < todayStartUTC;
+    });
+    const dataQuality = calculateDataQuality(allWindowActivities);
 
     // Get tone chip (simplified - would come from your tone detection logic)
     const toneChip = "Smooth Flow";
@@ -176,8 +180,8 @@ serve(async (req) => {
           change: d.change
         })),
         note: dataQuality < 0.6 
-          ? "Data incomplete — trends may be approximate. Comparing yesterday vs the day before."
-          : "Comparing yesterday vs the day before"
+          ? "Data incomplete — trends may be approximate. Comparing yesterday vs 3-day baseline."
+          : "Comparing yesterday vs 3-day baseline"
       },
       ...guideSections
     };
@@ -354,8 +358,8 @@ function extractInsights(deltas: MetricDelta[], ageMonths: number): Insight[] {
 }
 
 function calculateDataQuality(activities: Activity[]): number {
-  // Simple heuristic: based on number of logs per day (two complete days)
-  const daysSpan = 2;
+  // Simple heuristic: based on number of logs per day (4 days total: yesterday + 3-day baseline)
+  const daysSpan = 4;
   const expectedLogsPerDay = 8; // feeds + naps + diapers
   const actualLogs = activities.length;
   const quality = Math.min(actualLogs / (daysSpan * expectedLogsPerDay), 1.0);
