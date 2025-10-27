@@ -610,29 +610,153 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
-          {/* Monthly Progress Ribbon */}
+          {/* Data Pulse (Micro-Metrics) */}
           {hasMinimumData && (
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">This month:</span> {thisMonthSmoothFlow} Smooth Flow days 
-                {smoothFlowDiff !== 0 && (
-                  <span className={smoothFlowDiff > 0 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
-                    {" "}({smoothFlowDiff > 0 ? "+" : ""}{smoothFlowDiff} vs last month)
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 bg-primary rounded-sm" />
+                <h3 className="text-sm font-semibold text-foreground">Data Pulse (micro-metrics)</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-3 border-b border-border/30">
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Indicator</span>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 3 Days</span>
+                </div>
+                
+                {/* Total Sleep */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">💤</span>
+                    <span className="text-sm text-foreground">Total sleep</span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">
+                    {(() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const threeDaysAgo = new Date(today);
+                      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+                      
+                      const todayNaps = activities.filter(a => {
+                        const actDate = new Date(a.logged_at);
+                        return a.type === 'nap' && actDate >= today && a.details?.duration;
+                      });
+                      
+                      const lastThreeDaysNaps = activities.filter(a => {
+                        const actDate = new Date(a.logged_at);
+                        return a.type === 'nap' && actDate >= threeDaysAgo && actDate < today && a.details?.duration;
+                      });
+                      
+                      const todayTotal = todayNaps.reduce((sum, n) => sum + (n.details?.duration || 0), 0);
+                      const avgLast3 = lastThreeDaysNaps.length > 0 
+                        ? lastThreeDaysNaps.reduce((sum, n) => sum + (n.details?.duration || 0), 0) / 3
+                        : 0;
+                      
+                      const hours = Math.floor(todayTotal / 60);
+                      const mins = todayTotal % 60;
+                      const change = avgLast3 > 0 ? ((todayTotal - avgLast3) / avgLast3 * 100) : 0;
+                      
+                      return `${hours}h ${mins}m (${change > 0 ? '+' : ''}${change.toFixed(0)}%)`;
+                    })()}
                   </span>
-                )}
-              </p>
+                </div>
+                
+                {/* Feed Volume */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🍼</span>
+                    <span className="text-sm text-foreground">Feed volume</span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">
+                    {(() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const threeDaysAgo = new Date(today);
+                      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+                      
+                      const todayFeeds = activities.filter(a => {
+                        const actDate = new Date(a.logged_at);
+                        return a.type === 'feed' && actDate >= today && a.details?.quantity;
+                      });
+                      
+                      const lastThreeDaysFeeds = activities.filter(a => {
+                        const actDate = new Date(a.logged_at);
+                        return a.type === 'feed' && actDate >= threeDaysAgo && actDate < today && a.details?.quantity;
+                      });
+                      
+                      const todayTotal = todayFeeds.reduce((sum, f) => sum + (parseFloat(f.details?.quantity) || 0), 0);
+                      const avgLast3 = lastThreeDaysFeeds.length > 0
+                        ? lastThreeDaysFeeds.reduce((sum, f) => sum + (parseFloat(f.details?.quantity) || 0), 0) / 3
+                        : 0;
+                      
+                      const change = avgLast3 > 0 ? ((todayTotal - avgLast3) / avgLast3 * 100) : 0;
+                      
+                      return `${change > 0 ? '+' : ''}${change.toFixed(0)}%`;
+                    })()}
+                  </span>
+                </div>
+                
+                {/* Wake Average */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🌡️</span>
+                    <span className="text-sm text-foreground">Wake average</span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">
+                    {(() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const threeDaysAgo = new Date(today);
+                      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+                      
+                      const todayNaps = activities.filter(a => {
+                        const actDate = new Date(a.logged_at);
+                        return a.type === 'nap' && actDate >= today;
+                      }).sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime());
+                      
+                      const lastThreeDaysNaps = activities.filter(a => {
+                        const actDate = new Date(a.logged_at);
+                        return a.type === 'nap' && actDate >= threeDaysAgo && actDate < today;
+                      }).sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime());
+                      
+                      // Calculate wake windows (time between naps)
+                      const calcAvgWake = (naps: any[]) => {
+                        if (naps.length < 2) return 0;
+                        let totalWake = 0;
+                        for (let i = 1; i < naps.length; i++) {
+                          const prevEnd = new Date(naps[i-1].logged_at).getTime() + ((naps[i-1].details?.duration || 0) * 60000);
+                          const nextStart = new Date(naps[i].logged_at).getTime();
+                          totalWake += (nextStart - prevEnd) / 60000; // convert to minutes
+                        }
+                        return totalWake / (naps.length - 1);
+                      };
+                      
+                      const todayAvg = calcAvgWake(todayNaps);
+                      const last3Avg = calcAvgWake(lastThreeDaysNaps);
+                      
+                      const hours = Math.floor(todayAvg / 60);
+                      const mins = Math.round(todayAvg % 60);
+                      const diffMins = Math.round(todayAvg - last3Avg);
+                      
+                      return todayAvg > 0 
+                        ? `${hours}h ${mins}m (${diffMins > 0 ? '+' : ''}${diffMins} min)`
+                        : 'N/A';
+                    })()}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Pattern Summary */}
           {hasMinimumData && (
             <div className="space-y-6">
-              <div>
-                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                  Pattern Summary
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {babyName}'s been waking a bit earlier and staying engaged longer between naps — classic signs their rhythm is consolidating. These transitions can cause shorter naps for a few days while their body rebalances.
+              <div className="p-4 bg-accent/5 rounded-lg border-l-2 border-primary">
+                <p className="text-sm text-foreground leading-relaxed">
+                  {babyName}'s rhythm remains steady — naps, feeds, and wake windows are holding within 10% of their weekly average.
+                </p>
+                <p className="text-sm text-foreground leading-relaxed mt-2">
+                  Babies often use these "Smooth Flow" runs to consolidate new skills like sitting or babbling bursts.
                 </p>
               </div>
 
