@@ -669,7 +669,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between pb-3 border-b border-border/30">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Indicator</span>
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change</span>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
                 </div>
                 
                 {guideSections.data_pulse.metrics.length > 0 ? (
