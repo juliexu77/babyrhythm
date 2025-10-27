@@ -612,17 +612,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       )}
 
 
-      {/* Loading State */}
-      {isLoading && insightCards.length === 0 && (
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto animate-pulse">
-              <Sprout className="w-6 h-6 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground">Analyzing patterns...</p>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <ScrollArea className="flex-1">
