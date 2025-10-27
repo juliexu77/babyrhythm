@@ -632,31 +632,37 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   </div>
                   <span className="text-sm font-medium text-foreground">
                     {(() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const threeDaysAgo = new Date(today);
+                      const now = new Date();
+                      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                      const threeDaysAgo = new Date(todayStart);
                       threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
                       
                       const todayNaps = activities.filter(a => {
+                        if (a.type !== 'nap') return false;
                         const actDate = new Date(a.logged_at);
-                        return a.type === 'nap' && actDate >= today && a.details?.duration;
+                        const actDateStart = new Date(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
+                        return actDateStart.getTime() === todayStart.getTime() && a.details?.duration;
                       });
                       
                       const lastThreeDaysNaps = activities.filter(a => {
+                        if (a.type !== 'nap') return false;
                         const actDate = new Date(a.logged_at);
-                        return a.type === 'nap' && actDate >= threeDaysAgo && actDate < today && a.details?.duration;
+                        const actDateStart = new Date(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
+                        return actDateStart >= threeDaysAgo && actDateStart < todayStart && a.details?.duration;
                       });
                       
-                      const todayTotal = todayNaps.reduce((sum, n) => sum + (n.details?.duration || 0), 0);
+                      const todayTotal = todayNaps.reduce((sum, n) => sum + (parseInt(n.details?.duration) || 0), 0);
                       const avgLast3 = lastThreeDaysNaps.length > 0 
-                        ? lastThreeDaysNaps.reduce((sum, n) => sum + (n.details?.duration || 0), 0) / 3
+                        ? lastThreeDaysNaps.reduce((sum, n) => sum + (parseInt(n.details?.duration) || 0), 0) / 3
                         : 0;
                       
                       const hours = Math.floor(todayTotal / 60);
                       const mins = todayTotal % 60;
                       const change = avgLast3 > 0 ? ((todayTotal - avgLast3) / avgLast3 * 100) : 0;
                       
-                      return `${hours}h ${mins}m (${change > 0 ? '+' : ''}${change.toFixed(0)}%)`;
+                      return todayTotal > 0 
+                        ? `${hours}h ${mins}m (${change > 0 ? '+' : ''}${change.toFixed(0)}%)`
+                        : '0h 0m (—)';
                     })()}
                   </span>
                 </div>
