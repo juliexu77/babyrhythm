@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
+import DOMPurify from 'dompurify';
 
 interface Message {
   role: "user" | "assistant";
@@ -38,7 +39,7 @@ interface ParsedMessage {
   chips: string[];
 }
 
-// Simple markdown formatter for better readability
+// Simple markdown formatter with XSS protection
 const formatMarkdown = (text: string) => {
   const paragraphs = text.split('\n\n').filter(p => p.trim());
   
@@ -50,9 +51,15 @@ const formatMarkdown = (text: string) => {
       formatted = '<ul class="list-disc pl-5 space-y-1">' + formatted + '</ul>';
     }
     
+    // Sanitize HTML to prevent XSS attacks
+    const sanitized = DOMPurify.sanitize(formatted, {
+      ALLOWED_TAGS: ['strong', 'ul', 'li'],
+      ALLOWED_ATTR: []
+    });
+    
     return (
       <div key={idx} className={idx < paragraphs.length - 1 ? "mb-4" : ""}>
-        <div dangerouslySetInnerHTML={{ __html: formatted }} />
+        <div dangerouslySetInnerHTML={{ __html: sanitized }} />
       </div>
     );
   });

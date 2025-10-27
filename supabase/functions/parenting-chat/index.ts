@@ -17,26 +17,52 @@ function validateInput(data: any): ValidationError[] {
   
   if (!Array.isArray(data.messages)) {
     errors.push({ field: 'messages', message: 'Messages must be an array' });
-  } else if (data.messages.length > 100) {
-    errors.push({ field: 'messages', message: 'Messages cannot exceed 100 items' });
+  } else {
+    if (data.messages.length > 50) {
+      errors.push({ field: 'messages', message: 'Messages cannot exceed 50 items' });
+    }
+    // Validate each message
+    for (let i = 0; i < Math.min(data.messages.length, 50); i++) {
+      const msg = data.messages[i];
+      if (!msg.role || !['user', 'assistant'].includes(msg.role)) {
+        errors.push({ field: `messages[${i}].role`, message: 'Message role must be "user" or "assistant"' });
+      }
+      if (typeof msg.content !== 'string') {
+        errors.push({ field: `messages[${i}].content`, message: 'Message content must be a string' });
+      } else if (msg.content.length > 2000) {
+        errors.push({ field: `messages[${i}].content`, message: 'Message content cannot exceed 2000 characters' });
+      }
+    }
   }
   
   if (!Array.isArray(data.activities)) {
     errors.push({ field: 'activities', message: 'Activities must be an array' });
-  } else if (data.activities.length > 1000) {
-    errors.push({ field: 'activities', message: 'Activities cannot exceed 1000 items' });
+  } else if (data.activities.length > 500) {
+    errors.push({ field: 'activities', message: 'Activities cannot exceed 500 items' });
   }
   
-  if (typeof data.babyName !== 'string' || data.babyName.length > 100) {
-    errors.push({ field: 'babyName', message: 'Baby name must be a string (max 100 chars)' });
+  if (typeof data.babyName !== 'string') {
+    errors.push({ field: 'babyName', message: 'Baby name must be a string' });
+  } else if (data.babyName.length === 0 || data.babyName.length > 100) {
+    errors.push({ field: 'babyName', message: 'Baby name must be 1-100 characters' });
   }
   
-  if (data.userName && (typeof data.userName !== 'string' || data.userName.length > 100)) {
-    errors.push({ field: 'userName', message: 'User name must be a string (max 100 chars)' });
+  if (data.userName !== undefined && data.userName !== null) {
+    if (typeof data.userName !== 'string' || data.userName.length > 100) {
+      errors.push({ field: 'userName', message: 'User name must be a string (max 100 chars)' });
+    }
   }
   
-  if (data.timezone && (typeof data.timezone !== 'string' || data.timezone.length > 50)) {
-    errors.push({ field: 'timezone', message: 'Timezone must be a string (max 50 chars)' });
+  if (data.timezone !== undefined && data.timezone !== null) {
+    if (typeof data.timezone !== 'string' || data.timezone.length > 50) {
+      errors.push({ field: 'timezone', message: 'Timezone must be a string (max 50 chars)' });
+    }
+  }
+
+  if (data.householdId !== undefined && data.householdId !== null) {
+    if (typeof data.householdId !== 'string' || data.householdId.length === 0) {
+      errors.push({ field: 'householdId', message: 'Household ID must be a non-empty string' });
+    }
   }
   
   return errors;

@@ -16,16 +16,20 @@ function validateInput(data: any): ValidationError[] {
   
   if (!Array.isArray(data.activities)) {
     errors.push({ field: 'activities', message: 'Activities must be an array' });
-  } else if (data.activities.length > 1000) {
-    errors.push({ field: 'activities', message: 'Activities cannot exceed 1000 items' });
+  } else if (data.activities.length > 500) {
+    errors.push({ field: 'activities', message: 'Activities cannot exceed 500 items' });
   }
   
-  if (typeof data.babyName !== 'string' || data.babyName.length > 100) {
-    errors.push({ field: 'babyName', message: 'Baby name must be a string (max 100 chars)' });
+  if (typeof data.babyName !== 'string') {
+    errors.push({ field: 'babyName', message: 'Baby name must be a string' });
+  } else if (data.babyName.length === 0 || data.babyName.length > 100) {
+    errors.push({ field: 'babyName', message: 'Baby name must be 1-100 characters' });
   }
   
-  if (data.babyAge && (typeof data.babyAge !== 'string' || data.babyAge.length > 50)) {
-    errors.push({ field: 'babyAge', message: 'Baby age must be a string (max 50 chars)' });
+  if (data.babyAge !== undefined && data.babyAge !== null) {
+    if (typeof data.babyAge !== 'string' || data.babyAge.length > 50) {
+      errors.push({ field: 'babyAge', message: 'Baby age must be a string (max 50 chars)' });
+    }
   }
   
   return errors;
