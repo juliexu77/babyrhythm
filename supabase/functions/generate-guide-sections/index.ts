@@ -22,12 +22,16 @@ interface MetricDelta {
   name: string;
   change: string;
   rawDelta?: number;
+  priority?: number;
+  context?: string;
 }
 
 interface Insight {
   type: string;
   delta: string;
   rawValue?: number;
+  priority?: number;
+  context?: string;
 }
 
 serve(async (req) => {
@@ -103,49 +107,53 @@ serve(async (req) => {
       });
     }
 
-    // Calculate metrics and deltas: compare yesterday (1 complete day) vs 3 days prior baseline
+    // Calculate metrics and deltas: compare last 2 days vs 5-day baseline (with outlier detection)
     // Determine timezone from activities or default to project default
     const tz = (activities.find((a: any) => a.timezone)?.timezone as string) || 'America/Los_Angeles';
 
     // Compute UTC boundaries in the user's timezone
     const todayStartUTC = getTZStartOfTodayUTC(now, tz);
-    const yesterdayStartUTC = new Date(todayStartUTC.getTime() - 24 * 60 * 60 * 1000);
-    const baselineStartUTC = new Date(todayStartUTC.getTime() - 4 * 24 * 60 * 60 * 1000); // 4 days back (days -4, -3, -2)
+    const twoDaysAgoUTC = new Date(todayStartUTC.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const baselineStartUTC = new Date(todayStartUTC.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days back
 
-    // Recent: Yesterday only (last complete day)
+    // Recent: Last 2 complete days
     const recentActivities = activities.filter(a => {
       const t = new Date(a.logged_at);
-      return t >= yesterdayStartUTC && t < todayStartUTC;
+      return t >= twoDaysAgoUTC && t < todayStartUTC;
     });
     
-    // Previous: 3 days before yesterday (baseline trend)
+    // Previous: 5 days before the recent 2 days (baseline trend)
     const previousActivities = activities.filter(a => {
       const t = new Date(a.logged_at);
-      return t >= baselineStartUTC && t < yesterdayStartUTC;
+      return t >= baselineStartUTC && t < twoDaysAgoUTC;
     });
 
     const recentMetrics = calculateMetrics(recentActivities);
     const previousMetrics = calculateMetrics(previousActivities);
+    
+    // Calculate trend analysis (nap & feed durations over time)
+    const trendAnalysis = analyzeTrends(activities, baselineStartUTC, todayStartUTC);
 
     console.log('DataPulse window', {
       tz,
       todayStartUTC: todayStartUTC.toISOString(),
-      yesterdayStartUTC: yesterdayStartUTC.toISOString(),
+      twoDaysAgoUTC: twoDaysAgoUTC.toISOString(),
       baselineStartUTC: baselineStartUTC.toISOString(),
       recentMetrics,
       previousMetrics,
+      trendAnalysis,
       recentCount: recentActivities.length,
       previousCount: previousActivities.length,
     });
 
-    const deltas = computeDeltas(recentMetrics, previousMetrics, 3);
-    const insights = extractInsights(deltas, ageMonths);
+    const deltas = computeDeltas(recentMetrics, previousMetrics, 5, trendAnalysis);
+    const insights = extractInsights(deltas, ageMonths, trendAnalysis);
 
     const allWindowActivities = activities.filter(a => {
       const t = new Date(a.logged_at);
       return t >= baselineStartUTC && t < todayStartUTC;
     });
-    const dataQuality = calculateDataQuality(allWindowActivities);
+    const dataQuality = calculateDataQuality(allWindowActivities, 7); // 7 days total
 
     // Get tone chip (simplified - would come from your tone detection logic)
     const toneChip = "Smooth Flow";
@@ -175,13 +183,13 @@ serve(async (req) => {
     // Build complete response with Data Pulse
     const response = {
       data_pulse: {
-        metrics: deltas.map(d => ({
+        metrics: deltas.slice(0, 3).map(d => ({ // Top 3 only
           name: d.name,
           change: d.change
         })),
         note: dataQuality < 0.6 
-          ? "Data incomplete — trends may be approximate. Comparing yesterday vs 3-day baseline."
-          : "Comparing yesterday vs 3-day baseline"
+          ? "Data incomplete — trends may be approximate. Comparing last 2 days vs 5-day baseline."
+          : "Comparing last 2 days vs 5-day baseline (outliers excluded)"
       },
       ...guideSections
     };
@@ -286,89 +294,263 @@ function calculateMetrics(activities: Activity[]) {
   };
 }
 
-function computeDeltas(recent: any, previous: any, baselineDays: number = 3): MetricDelta[] {
+function computeDeltas(recent: any, previous: any, baselineDays: number = 5, trendAnalysis?: any): MetricDelta[] {
   const deltas: MetricDelta[] = [];
 
-  // Compute average per day for baseline metrics
+  // Compute average per day for baseline metrics (excluding outliers)
+  const recentDays = 2;
+  const avgRecentSleep = recent.totalSleepMinutes / recentDays;
   const avgPreviousSleep = previous.totalSleepMinutes / baselineDays;
+  const avgRecentFeed = recent.totalFeedVolume / recentDays;
   const avgPreviousFeed = previous.totalFeedVolume / baselineDays;
   const avgPreviousWake = previous.avgWakeWindow; // already an average
 
-  // Total sleep delta (yesterday vs 3-day average)
-  const sleepDelta = recent.totalSleepMinutes - avgPreviousSleep;
+  // Total sleep delta (last 2 days avg vs 5-day baseline avg)
+  const sleepDelta = avgRecentSleep - avgPreviousSleep;
   if (Math.abs(sleepDelta) >= 15) {
     const hours = Math.floor(Math.abs(sleepDelta) / 60);
     const mins = Math.round(Math.abs(sleepDelta) % 60 / 5) * 5;
     deltas.push({
       name: 'Total sleep',
       change: `${sleepDelta > 0 ? '+' : '-'}${hours}h ${mins}m`,
-      rawDelta: sleepDelta
-    });
+      rawDelta: sleepDelta,
+      priority: Math.abs(sleepDelta) / 60 // hours difference
+    } as any);
   }
 
-  // Feed volume delta (yesterday vs 3-day average)
+  // Feed volume delta (last 2 days avg vs 5-day baseline avg)
   if (avgPreviousFeed > 0) {
-    const feedPercent = ((recent.totalFeedVolume - avgPreviousFeed) / avgPreviousFeed) * 100;
+    const feedPercent = ((avgRecentFeed - avgPreviousFeed) / avgPreviousFeed) * 100;
     if (Math.abs(feedPercent) >= 5) {
       deltas.push({
         name: 'Feed volume',
         change: `${feedPercent > 0 ? '+' : ''}${Math.round(feedPercent / 5) * 5}%`,
-        rawDelta: feedPercent
-      });
+        rawDelta: feedPercent,
+        priority: Math.abs(feedPercent) / 10 // scale to 0-10
+      } as any);
     }
   }
 
-  // Wake window delta (yesterday vs 3-day average)
+  // Wake window delta (last 2 days avg vs 5-day baseline avg)
   const wakeDelta = recent.avgWakeWindow - avgPreviousWake;
   if (Math.abs(wakeDelta) >= 15) {
     const mins = Math.round(Math.abs(wakeDelta) / 5) * 5;
     deltas.push({
       name: 'Wake average',
       change: `${wakeDelta > 0 ? '+' : '-'}${mins}m`,
-      rawDelta: wakeDelta
-    });
+      rawDelta: wakeDelta,
+      priority: Math.abs(wakeDelta) / 30 // 30min = 1.0 priority
+    } as any);
   }
 
-  return deltas;
+  // Nap duration trend
+  if (trendAnalysis?.napDurationTrend) {
+    const trend = trendAnalysis.napDurationTrend;
+    if (Math.abs(trend.changeMins) >= 10) {
+      deltas.push({
+        name: 'Nap duration',
+        change: `${trend.changeMins > 0 ? '+' : ''}${Math.round(trend.changeMins)}m avg`,
+        rawDelta: trend.changeMins,
+        priority: Math.abs(trend.changeMins) / 20, // 20min = 1.0 priority
+        context: trend.interpretation
+      } as any);
+    }
+  }
+
+  // Feed duration trend
+  if (trendAnalysis?.feedDurationTrend) {
+    const trend = trendAnalysis.feedDurationTrend;
+    if (Math.abs(trend.changeMins) >= 3) {
+      deltas.push({
+        name: 'Feed duration',
+        change: `${trend.changeMins > 0 ? '+' : ''}${Math.round(trend.changeMins)}m avg`,
+        rawDelta: trend.changeMins,
+        priority: Math.abs(trend.changeMins) / 5, // 5min = 1.0 priority
+        context: trend.interpretation
+      } as any);
+    }
+  }
+
+  // Sort by priority (highest first) and return
+  return deltas.sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0));
 }
 
-function extractInsights(deltas: MetricDelta[], ageMonths: number): Insight[] {
+function extractInsights(deltas: MetricDelta[], ageMonths: number, trendAnalysis?: any): Insight[] {
   const insights: Insight[] = [];
 
   for (const delta of deltas) {
+    const d = delta as any;
+    
     if (delta.name === 'Feed volume' && delta.rawDelta && delta.rawDelta < -5) {
       insights.push({
         type: 'feed_volume_down',
         delta: delta.change,
-        rawValue: delta.rawDelta
-      });
+        rawValue: delta.rawDelta,
+        priority: d.priority || 1
+      } as any);
     }
     if (delta.name === 'Wake average' && delta.rawDelta && Math.abs(delta.rawDelta) >= 30) {
       insights.push({
         type: delta.rawDelta > 0 ? 'wake_window_increase' : 'wake_window_decrease',
         delta: delta.change,
-        rawValue: delta.rawDelta
-      });
+        rawValue: delta.rawDelta,
+        priority: d.priority || 1
+      } as any);
     }
     if (delta.name === 'Total sleep' && delta.rawDelta && Math.abs(delta.rawDelta) >= 60) {
       insights.push({
         type: delta.rawDelta > 0 ? 'sleep_increase' : 'sleep_decrease',
         delta: delta.change,
-        rawValue: delta.rawDelta
-      });
+        rawValue: delta.rawDelta,
+        priority: d.priority || 1
+      } as any);
+    }
+    if (delta.name === 'Nap duration' && delta.rawDelta && Math.abs(delta.rawDelta) >= 10) {
+      insights.push({
+        type: delta.rawDelta > 0 ? 'nap_lengthening' : 'nap_shortening',
+        delta: delta.change,
+        rawValue: delta.rawDelta,
+        priority: d.priority || 1,
+        context: d.context
+      } as any);
+    }
+    if (delta.name === 'Feed duration' && delta.rawDelta && Math.abs(delta.rawDelta) >= 3) {
+      insights.push({
+        type: delta.rawDelta > 0 ? 'feed_lengthening' : 'feed_shortening',
+        delta: delta.change,
+        rawValue: delta.rawDelta,
+        priority: d.priority || 1,
+        context: d.context
+      } as any);
     }
   }
 
-  return insights.slice(0, 3); // Top 3 insights
+  // Sort by priority and return top 3
+  return insights.sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0)).slice(0, 3);
 }
 
-function calculateDataQuality(activities: Activity[]): number {
-  // Simple heuristic: based on number of logs per day (4 days total: yesterday + 3-day baseline)
-  const daysSpan = 4;
+function calculateDataQuality(activities: Activity[], daysSpan: number): number {
+  // Simple heuristic: based on number of logs per day
   const expectedLogsPerDay = 8; // feeds + naps + diapers
   const actualLogs = activities.length;
   const quality = Math.min(actualLogs / (daysSpan * expectedLogsPerDay), 1.0);
   return Math.round(quality * 100) / 100;
+}
+
+function analyzeTrends(activities: Activity[], startUTC: Date, endUTC: Date) {
+  const windowActivities = activities.filter(a => {
+    const t = new Date(a.logged_at);
+    return t >= startUTC && t < endUTC;
+  });
+
+  // Analyze nap duration trends
+  const naps = windowActivities.filter(a => a.type === 'nap');
+  const napDurations: Array<{ date: Date; duration: number }> = [];
+  
+  naps.forEach(nap => {
+    let duration = 0;
+    if (nap.details?.duration) {
+      duration = parseInt(nap.details.duration);
+    } else if (nap.details?.startTime && nap.details?.endTime) {
+      const start = new Date(`1970-01-01 ${nap.details.startTime}`);
+      const end = new Date(`1970-01-01 ${nap.details.endTime}`);
+      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
+      if (diff < 0) diff += 24 * 60;
+      duration = diff;
+    }
+    
+    if (duration > 0 && duration < 300) { // reasonable nap (< 5 hours)
+      napDurations.push({ date: new Date(nap.logged_at), duration });
+    }
+  });
+
+  // Remove outliers using IQR method
+  const napDurationsFiltered = removeOutliers(napDurations.map(n => n.duration));
+  const validNaps = napDurations.filter(n => napDurationsFiltered.includes(n.duration));
+
+  // Split into early and late periods
+  const midPoint = new Date((startUTC.getTime() + endUTC.getTime()) / 2);
+  const earlyNaps = validNaps.filter(n => n.date < midPoint);
+  const lateNaps = validNaps.filter(n => n.date >= midPoint);
+
+  const napDurationTrend = earlyNaps.length >= 2 && lateNaps.length >= 2 ? {
+    earlyAvg: average(earlyNaps.map(n => n.duration)),
+    lateAvg: average(lateNaps.map(n => n.duration)),
+    changeMins: average(lateNaps.map(n => n.duration)) - average(earlyNaps.map(n => n.duration)),
+    interpretation: interpretNapTrend(
+      average(lateNaps.map(n => n.duration)) - average(earlyNaps.map(n => n.duration)),
+      lateNaps.length
+    )
+  } : null;
+
+  // Analyze feed duration trends (only for feeds with time logged)
+  const feeds = windowActivities.filter(a => a.type === 'feed');
+  const feedDurations: Array<{ date: Date; duration: number }> = [];
+  
+  feeds.forEach(feed => {
+    if (feed.details?.startTime && feed.details?.endTime) {
+      const start = new Date(`1970-01-01 ${feed.details.startTime}`);
+      const end = new Date(`1970-01-01 ${feed.details.endTime}`);
+      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
+      if (diff > 0 && diff < 120) { // reasonable feed (< 2 hours)
+        feedDurations.push({ date: new Date(feed.logged_at), duration: diff });
+      }
+    }
+  });
+
+  // Remove outliers
+  const feedDurationsFiltered = removeOutliers(feedDurations.map(f => f.duration));
+  const validFeeds = feedDurations.filter(f => feedDurationsFiltered.includes(f.duration));
+
+  const earlyFeeds = validFeeds.filter(f => f.date < midPoint);
+  const lateFeeds = validFeeds.filter(f => f.date >= midPoint);
+
+  const feedDurationTrend = earlyFeeds.length >= 2 && lateFeeds.length >= 2 ? {
+    earlyAvg: average(earlyFeeds.map(f => f.duration)),
+    lateAvg: average(lateFeeds.map(f => f.duration)),
+    changeMins: average(lateFeeds.map(f => f.duration)) - average(earlyFeeds.map(f => f.duration)),
+    interpretation: interpretFeedTrend(
+      average(lateFeeds.map(f => f.duration)) - average(earlyFeeds.map(f => f.duration))
+    )
+  } : null;
+
+  return {
+    napDurationTrend,
+    feedDurationTrend
+  };
+}
+
+function removeOutliers(values: number[]): number[] {
+  if (values.length < 4) return values;
+  
+  const sorted = [...values].sort((a, b) => a - b);
+  const q1 = sorted[Math.floor(sorted.length * 0.25)];
+  const q3 = sorted[Math.floor(sorted.length * 0.75)];
+  const iqr = q3 - q1;
+  const lowerBound = q1 - 1.5 * iqr;
+  const upperBound = q3 + 1.5 * iqr;
+  
+  return values.filter(v => v >= lowerBound && v <= upperBound);
+}
+
+function average(values: number[]): number {
+  return values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+}
+
+function interpretNapTrend(changeMins: number, napCount: number): string {
+  if (changeMins > 15) {
+    if (napCount <= 2) return "settling into 2-nap rhythm";
+    return "sleep consolidation";
+  } else if (changeMins < -15) {
+    return "nap transition underway";
+  }
+  return "stable duration";
+}
+
+function interpretFeedTrend(changeMins: number): string {
+  if (changeMins > 5) return "increased engagement";
+  if (changeMins < -5) return "more efficient feeding";
+  return "consistent timing";
 }
 
 // Timezone helpers to compute start-of-day (midnight) in a given IANA timezone, returned as a UTC Date
@@ -394,34 +576,54 @@ function getTZStartOfTodayUTC(now: Date, timeZone: string): Date {
 }
 
 async function generateGuideSections(apiKey: string, payload: any, dataQuality: number) {
-  const systemPrompt = `You are a baby care guidance system. Generate concise, factual, parent-friendly insights based on activity data.
+  const systemPrompt = `You are an intelligent baby care data analyst. Your role is to surface the most developmentally significant insights from activity patterns.
 
-Voice: warm professional, concise, anticipatory. Avoid therapy or medical framing.
+Voice: warm professional, precise, evidence-based
+Priority framework:
+1. Developmental milestones (sleep consolidation, nap transitions)
+2. Health-related patterns (feeding efficiency, duration changes)
+3. Schedule optimization signals
+
 Rules:
 - Each bullet under 18 words
 - Use "try", "keep", "offer" instead of imperatives
 - If data quality < 0.6, soften verbs to "consider"
-- No more than 3 bullets per section`;
+- Focus on WHY patterns matter developmentally, not just what changed`;
 
-  const userPrompt = `Based on this baby activity data, generate guidance sections:
+  const insightsText = payload.insights.map((i: any) => {
+    let text = `- ${i.type}: ${i.delta}`;
+    if (i.context) text += ` (${i.context})`;
+    return text;
+  }).join('\n');
+
+  const userPrompt = `Analyze this baby activity data and generate intelligent guidance:
 
 Age: ${payload.age}
-Current tone: ${payload.tone_chip} (streak: ${payload.streak_length} days)
+Current pattern: ${payload.tone_chip} (${payload.streak_length}-day streak)
 Data quality: ${(payload.data_quality * 100).toFixed(0)}%
 
-Recent changes:
-${payload.metrics.map((m: MetricDelta) => `- ${m.name}: ${m.change}`).join('\n')}
+Top priority changes (ranked by developmental significance):
+${payload.metrics.slice(0, 3).map((m: any, i: number) => `${i + 1}. ${m.name}: ${m.change}`).join('\n')}
 
-Key insights:
-${payload.insights.map((i: Insight) => `- ${i.type}: ${i.delta}`).join('\n')}
+Key insights with context:
+${insightsText}
 
 Generate:
-1. "what_to_know": 2-3 factual bullets explaining what's happening
-2. "what_to_do": 2-3 actionable steps (use softened language if data quality < 60%)
-3. "whats_next": One forecast sentence (≤22 words) about likely progression
-4. "prep_tip": One concrete tip (≤16 words)
+1. "what_to_know": 2-3 bullets explaining WHAT'S HAPPENING and WHY IT MATTERS developmentally
+   - Focus on interpreting the changes in context of baby's age and development
+   - Mention trends like "naps lengthening" or "feeding becoming more efficient" when relevant
+   
+2. "what_to_do": 2-3 actionable, age-appropriate steps
+   - Prioritize actions that support the detected developmental transitions
+   - Use softened language if data quality < 60%
+   
+3. "whats_next": One forward-looking sentence (≤25 words) about expected progression
+   - Connect current patterns to next developmental phase
+   
+4. "prep_tip": One concrete, anticipatory tip (≤18 words)
+   - Help parents prepare for what's coming based on current trends
 
-Return ONLY valid JSON with these four keys.`;
+Return ONLY valid JSON with these four keys. Be intelligent about which changes matter most.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
