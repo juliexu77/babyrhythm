@@ -84,7 +84,7 @@ serve(async (req) => {
     const { data: activities } = await supabase
       .from('activities')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('household_id', collaborator.household_id)
       .gte('logged_at', sevenDaysAgo.toISOString())
       .order('logged_at', { ascending: false });
 
