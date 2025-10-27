@@ -26,6 +26,13 @@ interface Message {
   content: string;
 }
 
+interface GuideSections {
+  what_to_know: string[];
+  what_to_do: string[];
+  whats_next: string;
+  prep_tip: string;
+}
+
 interface InsightCard {
   id: string;
   icon: React.ReactNode;
@@ -142,6 +149,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
   const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
   const [showStreakInsight, setShowStreakInsight] = useState(false);
+  const [guideSections, setGuideSections] = useState<GuideSections | null>(null);
+  const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const babyName = household?.baby_name || 'Baby';
@@ -269,6 +278,57 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       insightCardsCount: insightCards.length
     });
   }, [activities.length, naps.length, feeds.length, hasMinimumData, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
+
+  // Fetch guide sections once daily at 5am
+  useEffect(() => {
+    const fetchGuideSections = async () => {
+      if (!hasMinimumData || !user) return;
+      
+      setGuideSectionsLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-guide-sections');
+        
+        if (error) {
+          console.error('Error fetching guide sections:', error);
+          return;
+        }
+        
+        if (data) {
+          setGuideSections(data);
+          localStorage.setItem('guideSections', JSON.stringify(data));
+          localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
+        }
+      } catch (err) {
+        console.error('Failed to fetch guide sections:', err);
+      } finally {
+        setGuideSectionsLoading(false);
+      }
+    };
+
+    // Check if we need to fetch
+    const lastFetch = localStorage.getItem('guideSectionsLastFetch');
+    const cached = localStorage.getItem('guideSections');
+    const now = new Date();
+    const fiveAM = new Date();
+    fiveAM.setHours(5, 0, 0, 0);
+    
+    // Load cached data first
+    if (cached && !guideSections) {
+      try {
+        setGuideSections(JSON.parse(cached));
+      } catch (e) {
+        console.error('Failed to parse cached guide sections:', e);
+      }
+    }
+    
+    // Determine if we should fetch new data
+    const shouldFetch = !lastFetch || 
+      (now >= fiveAM && new Date(lastFetch) < fiveAM);
+    
+    if (shouldFetch && hasMinimumData) {
+      fetchGuideSections();
+    }
+  }, [hasMinimumData, user, guideSections]);
 
   // Load initial insight
   useEffect(() => {
@@ -719,67 +779,47 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* What to Know */}
-          {hasMinimumData && (
+          {hasMinimumData && guideSections && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm">🔹</span>
                 <h3 className="text-sm font-semibold text-foreground">What to Know</h3>
               </div>
               <div className="space-y-2 pl-1">
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    This rhythm stability suggests he's adapting well to his current schedule.
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Totally normal: Small appetite bumps often happen after smooth days — they often precede a developmental leap.
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    You might see brief restlessness midweek as the streak tapers.
-                  </p>
-                </div>
+                {guideSections.what_to_know.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {item}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {/* What To Do */}
-          {hasMinimumData && (
+          {hasMinimumData && guideSections && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm">🔹</span>
                 <h3 className="text-sm font-semibold text-foreground">What To Do</h3>
               </div>
               <div className="space-y-2 pl-1">
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Keep current nap structure — no changes yet.
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Try one longer awake stretch before afternoon nap (~3h).
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Keep bedtime consistent — it's anchoring this streak.
-                  </p>
-                </div>
+                {guideSections.what_to_do.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {item}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {/* What's Next */}
-          {hasMinimumData && (
+          {hasMinimumData && guideSections && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm">🔹</span>
@@ -787,13 +827,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               </div>
               <div className="space-y-3 pl-1">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Smooth Flow streaks usually shift after 5–7 days.
-                  If a "Building Rhythm" tone appears next, you'll likely see nap experimentation or earlier wakings — totally normal.
+                  {guideSections.whats_next}
                 </p>
                 <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
                   <span className="text-sm flex-shrink-0">🧭</span>
                   <p className="text-sm text-foreground">
-                    <span className="font-medium">Prep tip:</span> have extra wind-down time ready for the transition day.
+                    <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
                   </p>
                 </div>
               </div>
