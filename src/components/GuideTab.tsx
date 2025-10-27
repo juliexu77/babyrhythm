@@ -548,65 +548,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       {/* Main Content */}
       <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 space-y-6">
-          {/* Pattern Header */}
-          {!needsBirthdaySetup && hasMinimumData && (
-            <div className="pt-4 space-y-3">
-              <h1 className="text-xl font-semibold text-foreground">
-                {babyName}'s Current Rhythm
-              </h1>
-              
-              <div className="space-y-3">
-                {sortedTones[0] && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Primary Pattern:</span>
-                      <button 
-                        onClick={() => setShowPrimaryInsight(!showPrimaryInsight)}
-                        className="text-left"
-                      >
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                          <span className="text-sm">{getPatternEmoji(sortedTones[0][0])}</span>
-                          <span className="text-sm font-medium text-accent-foreground">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
-                        </div>
-                      </button>
-                    </div>
-                    {showPrimaryInsight && (
-                      <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                        {getPatternTooltip(sortedTones[0][0])}
-                      </p>
-                    )}
-                  </div>
-                )}
-                
-                {sortedTones[1] && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Secondary Pattern:</span>
-                      <button 
-                        onClick={() => setShowSecondaryInsight(!showSecondaryInsight)}
-                        className="text-left"
-                      >
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                          <span className="text-sm">{getPatternEmoji(sortedTones[1][0])}</span>
-                          <span className="text-sm font-medium text-accent-foreground">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
-                        </div>
-                      </button>
-                    </div>
-                    {showSecondaryInsight && (
-                      <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                        {getPatternTooltip(sortedTones[1][0])}
-                      </p>
-                    )}
-                  </div>
-                )}
-                
-                {/* Streak description */}
-                {toneFrequencies.currentStreak >= 2 && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
-                  </p>
-                )}
-              </div>
+          {/* Streak description */}
+          {!needsBirthdaySetup && hasMinimumData && toneFrequencies.currentStreak >= 2 && (
+            <div className="pt-4">
+              <p className="text-xs text-muted-foreground">
+                {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+              </p>
             </div>
           )}
 
