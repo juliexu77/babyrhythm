@@ -4,11 +4,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { Sprout, Send, MoreVertical, Calendar, BookOpen, Heart, Droplet, Baby, TrendingUp, Activity } from "lucide-react";
+import { Sprout, Send, MoreVertical, Calendar, BookOpen, Heart, Droplet, Baby, TrendingUp, Activity, X } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Activity {
   id: string;
@@ -55,6 +56,47 @@ const formatMarkdown = (text: string) => {
   });
 };
 
+// Helper to get pattern insight descriptions
+const getPatternInsight = (pattern: string): { title: string; description: string } => {
+  switch (pattern) {
+    case "Smooth Flow":
+      return {
+        title: "Smooth Flow",
+        description: "Stable sleep patterns and consistent appetite throughout the day. This indicates a well-regulated rhythm."
+      };
+    case "Building Rhythm":
+      return {
+        title: "Building Rhythm", 
+        description: "Experimenting with new wake windows as developmental changes emerge. Patterns are forming but still adjusting."
+      };
+    case "In Sync":
+      return {
+        title: "In Sync",
+        description: "Perfect alignment with developmental expectations. This harmonious pattern suggests established routines."
+      };
+    case "Extra Sleepy":
+      return {
+        title: "Extra Sleepy",
+        description: "More sleep than usual, often indicating growth spurts, recovery, or developmental leaps."
+      };
+    case "Active Feeding":
+      return {
+        title: "Active Feeding",
+        description: "Increased appetite and feeding frequency, common during growth periods or increased activity."
+      };
+    case "Off Rhythm":
+      return {
+        title: "Off Rhythm",
+        description: "Recovery after schedule changes or environmental shifts. Tomorrow often brings familiar patterns back."
+      };
+    default:
+      return {
+        title: pattern,
+        description: "Unique daily pattern reflecting your baby's current needs and adjustments."
+      };
+  }
+};
+
 // Helper to get daily tone for rhythm tracking
 const getDailyTone = (dayActivities: Activity[], babyBirthday?: string) => {
   const feeds = dayActivities.filter(a => a.type === 'feed').length;
@@ -80,6 +122,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [showToneEvolution, setShowToneEvolution] = useState(false);
+  const [showPatternInsightModal, setShowPatternInsightModal] = useState(false);
+  const [selectedPattern, setSelectedPattern] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const babyName = household?.baby_name || 'Baby';
@@ -467,22 +511,41 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               <div className="mt-3 p-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   {toneFrequencies.tones.map((tone, idx) => (
-                    <div key={idx} className="flex flex-col items-center flex-1">
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSelectedPattern(tone.text);
+                        setShowPatternInsightModal(true);
+                      }}
+                      className="flex flex-col items-center flex-1 cursor-pointer hover:bg-muted/50 rounded p-2 transition-colors"
+                    >
                       <div className="text-lg mb-1">{tone.emoji}</div>
                       <div className="text-[10px] text-muted-foreground text-center leading-tight">
                         {tone.text.split(' ')[0]}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  "{currentTone?.text}" patterns often appear during developmental leaps when babies practice new skills.
+                  Tap any day to learn what each pattern means
                 </p>
               </div>
             )}
           </div>
         </div>
       )}
+
+      {/* Pattern Insight Modal */}
+      <Dialog open={showPatternInsightModal} onOpenChange={setShowPatternInsightModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{selectedPattern && getPatternInsight(selectedPattern).title}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-foreground leading-relaxed">
+            {selectedPattern && getPatternInsight(selectedPattern).description}
+          </p>
+        </DialogContent>
+      </Dialog>
 
       {/* Loading State */}
       {isLoading && insightCards.length === 0 && (
@@ -507,7 +570,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   Pattern Summary
                 </h2>
                 <p className="text-base leading-relaxed text-foreground">
-                  {babyName}'s been waking a bit earlier and staying engaged longer during playtime — classic signs of a baby testing new wake windows. Their overall rhythm is maturing, but it can make naps shorter and evenings a touch fussier.
+                  {babyName}'s been waking a bit earlier and staying engaged longer between naps — classic signs their rhythm is consolidating. These transitions can cause shorter naps for a few days while their body rebalances.
                 </p>
               </div>
 
