@@ -242,7 +242,7 @@ return (
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-3 w-3 text-primary/70" />
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {household?.baby_name}'s Patterns
+                      {household.baby_name}'s Patterns
                     </span>
                   </div>
                   {sleepMetrics.napsPerDay > 0 && (
@@ -330,7 +330,7 @@ return (
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-3 w-3 text-primary/70" />
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {household?.baby_name}'s Patterns
+                      {household.baby_name}'s Patterns
                     </span>
                   </div>
                   {feedingMetrics.avgAmount && (

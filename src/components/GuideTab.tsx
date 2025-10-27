@@ -146,7 +146,7 @@ const getDailyTone = (dayActivities: Activity[], babyBirthday?: string) => {
 };
 
 export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
-  const { household } = useHousehold();
+  const { household, loading: householdLoading } = useHousehold();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -162,8 +162,22 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
-  const babyName = household?.baby_name || 'Baby';
-  const babyAgeInWeeks = household?.baby_birthday ? 
+  // Wait for household data to load before rendering
+  if (householdLoading || !household) {
+    return (
+      <div className="flex flex-col h-full bg-background pb-24">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading guidance...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  const babyName = household.baby_name || 'Baby';
+  const babyAgeInWeeks = household.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
   
   // Calculate tone frequencies for the last 7 days
@@ -180,7 +194,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const activityDate = new Date(a.logged_at);
         return activityDate.toDateString() === date.toDateString();
       });
-      return getDailyTone(dayActivities, household?.baby_birthday);
+      return getDailyTone(dayActivities, household.baby_birthday);
     });
     
     const frequency = tones.reduce((acc, tone) => {
@@ -248,7 +262,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const activityDate = new Date(a.logged_at);
         return activityDate.toDateString() === date.toDateString();
       });
-      return getDailyTone(dayActivities, household?.baby_birthday);
+      return getDailyTone(dayActivities, household.baby_birthday);
     });
     
     const frequency = lastMonthTones.reduce((acc, tone) => {
@@ -392,10 +406,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         body: JSON.stringify({ 
           messages: [],
           activities: recentActivities,
-          householdId: household?.id,
+          householdId: household.id,
           babyName,
           babyAgeInWeeks,
-          babySex: household?.baby_sex,
+          babySex: household.baby_sex,
           timezone,
           isInitial: true
         }),
@@ -494,10 +508,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         body: JSON.stringify({ 
           messages: [...messages, userMsg],
           activities: recentActivities,
-          householdId: household?.id,
+          householdId: household.id,
           babyName,
           babyAgeInWeeks,
-          babySex: household?.baby_sex,
+          babySex: household.baby_sex,
           timezone,
           isInitial: false
         }),
