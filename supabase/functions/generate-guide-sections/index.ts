@@ -50,11 +50,22 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    // Get household and baby info
+    // Get household through collaborators
+    const { data: collaborator } = await supabase
+      .from('collaborators')
+      .select('household_id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .single();
+
+    if (!collaborator) {
+      throw new Error('No household found for user');
+    }
+
     const { data: household } = await supabase
       .from('households')
       .select('baby_name, baby_birthday')
-      .eq('user_id', user.id)
+      .eq('id', collaborator.household_id)
       .single();
 
     if (!household?.baby_birthday) {
