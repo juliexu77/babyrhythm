@@ -12,7 +12,7 @@ interface TrendChartProps {
   activities: Activity[];
 }
 
-export const TrendChart = ({ activities }: TrendChartProps) => {
+export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const { t, language } = useLanguage();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
   const feedChartRef = useRef<HTMLDivElement>(null);
@@ -20,6 +20,8 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
 
   // Determine preferred unit from last feed entry
   const getPreferredUnit = () => {
+    if (!activities || activities.length === 0) return "oz";
+    
     const feedActivities = activities.filter(a => a.type === "feed" && a.details?.quantity);
     if (feedActivities.length === 0) return "oz";
     
