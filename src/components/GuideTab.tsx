@@ -9,8 +9,6 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ForYouSection } from "@/components/guide/ForYouSection";
-import { ExploreTopicsSection } from "@/components/guide/ExploreTopicsSection";
 
 interface Activity {
   id: string;
@@ -552,32 +550,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
-          {/* Supporting Articles & Tools */}
-          {!needsBirthdaySetup && hasMinimumData && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  Supporting Articles & Tools
-                </h2>
-                <BookOpen className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <p className="text-xs text-muted-foreground mb-3">
-                Selected for {babyName}'s current rhythm
-              </p>
-              <ForYouSection
-                babyName={babyName}
-                babyAgeInWeeks={babyAgeInWeeks}
-                hasInsights={insightCards.length > 0}
-                recentActivities={activities.filter(a => {
-                  const twoWeeksAgo = new Date();
-                  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-                  return new Date(a.logged_at) >= twoWeeksAgo;
-                })}
-                onArticleClick={(title) => handleSendMessage(`Tell me about: ${title}`)}
-              />
-            </div>
-          )}
-
           {/* Trend Connection */}
           {hasMinimumData && (
             <div className="p-4 bg-muted/30 rounded-lg border border-border">
@@ -596,12 +568,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               </div>
             </div>
           )}
-
-          {/* Explore Topics Section */}
-          <ExploreTopicsSection
-            onTopicClick={(topic) => handleSendMessage(`Tell me about ${topic.toLowerCase()} for ${babyName}`)}
-            onArticleClick={(article) => handleSendMessage(`Tell me about: ${article}`)}
-          />
 
           {/* Chat Messages */}
           {messages.length > 0 && (
