@@ -2,9 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { Sprout, Send, MoreVertical, Calendar, BookOpen, Heart, Droplet, Baby, TrendingUp, Activity, X } from "lucide-react";
+import { Sprout, Send, Calendar, TrendingUp, Activity } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -150,7 +149,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const babyName = household?.baby_name || 'Baby';
   const babyAgeInWeeks = household?.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
-  const babyAgeInMonths = babyAgeInWeeks ? Math.floor(babyAgeInWeeks / 4) : 0;
   
   // Calculate tone frequencies for the last 7 days
   const toneFrequencies = (() => {
@@ -490,10 +488,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   };
 
-  const handleQuestionClick = (question: string) => {
-    handleSendMessage(question);
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -502,10 +496,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background pb-24">
       {/* Birthday Setup Prompt */}
       {needsBirthdaySetup && (
-        <div className="p-4 bg-accent/30 border-b border-border">
+        <div className="p-4 bg-accent/20 border-b border-border/40">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Calendar className="w-5 h-5 text-primary" />
@@ -528,114 +522,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         </div>
       )}
 
-      {/* Header: Your Baby's Current Rhythm */}
+      {/* Progress Ribbon */}
       {!needsBirthdaySetup && hasMinimumData && (
-        <div className="border-b border-border">
-          {/* Progress Ribbon */}
-          <div className="px-6 pt-4 pb-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/10">
-            <p className="text-xs text-foreground">
-              <span className="font-medium">This month:</span> {thisMonthSmoothFlow} Smooth Flow days 
-              {smoothFlowDiff !== 0 && (
-                <span className={smoothFlowDiff > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
-                  {" "}({smoothFlowDiff > 0 ? "+" : ""}{smoothFlowDiff} vs last month)
-                </span>
-              )}
-            </p>
-          </div>
-          
-          <div className="p-6 bg-gradient-to-br from-background to-muted/20">
-            <h1 className="text-2xl font-bold mb-4">{babyName}'s Current Rhythm</h1>
-            
-            {/* Pattern Display */}
-            <TooltipProvider>
-              <div className="space-y-2">
-                {sortedTones[0] && (
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Primary Pattern:</span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-base font-semibold cursor-help">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">{getPatternTooltip(sortedTones[0][0])}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                )}
-                {sortedTones[1] && (
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Secondary Pattern:</span>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-base font-semibold cursor-help">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-xs">{getPatternTooltip(sortedTones[1][0])}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                )}
-                
-                {/* Streak description */}
-                {toneFrequencies.currentStreak >= 2 && (
-                  <p className="text-xs text-muted-foreground mt-3">
-                    {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
-                  </p>
-                )}
-                
-                {/* Tone Evolution Toggle */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowToneEvolution(!showToneEvolution)}
-                  className="text-xs -ml-2 mt-2"
-                >
-                  {showToneEvolution ? "Hide" : "View"} pattern evolution
-                  <TrendingUp className="w-3 h-3 ml-1" />
-                </Button>
-                
-                {/* Tone Evolution Visualization */}
-                {showToneEvolution && (
-                  <div className="mt-3 p-3 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      {toneFrequencies.tones.map((tone, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setSelectedPattern(tone.text);
-                            setShowPatternInsightModal(true);
-                          }}
-                          className="flex flex-col items-center flex-1 cursor-pointer hover:bg-muted/50 rounded p-2 transition-colors"
-                        >
-                          <div className="text-lg mb-1">{tone.emoji}</div>
-                          <div className="text-[10px] text-muted-foreground text-center leading-tight">
-                            {tone.text.split(' ')[0]}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Tap any day to learn what each pattern means
-                    </p>
-                  </div>
-                )}
-              </div>
-            </TooltipProvider>
-          </div>
+        <div className="px-4 pt-3 pb-2 bg-accent/10 border-b border-border/40">
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">This month:</span> {thisMonthSmoothFlow} Smooth Flow days 
+            {smoothFlowDiff !== 0 && (
+              <span className={smoothFlowDiff > 0 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
+                {" "}({smoothFlowDiff > 0 ? "+" : ""}{smoothFlowDiff} vs last month)
+              </span>
+            )}
+          </p>
         </div>
       )}
-
-      {/* Pattern Insight Modal */}
-      <Dialog open={showPatternInsightModal} onOpenChange={setShowPatternInsightModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedPattern && getPatternInsight(selectedPattern).title}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-foreground leading-relaxed">
-            {selectedPattern && getPatternInsight(selectedPattern).description}
-          </p>
-        </DialogContent>
-      </Dialog>
 
       {/* Loading State */}
       {isLoading && insightCards.length === 0 && (
@@ -651,34 +550,118 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       {/* Main Content */}
       <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="px-4 py-6 space-y-6">
+        <div ref={scrollRef} className="px-4 space-y-6">
+          {/* Pattern Header */}
+          {!needsBirthdaySetup && hasMinimumData && (
+            <div className="pt-4 space-y-4">
+              <h1 className="text-xl font-semibold text-foreground">
+                {babyName}'s Current Rhythm
+              </h1>
+              
+              <TooltipProvider>
+                <div className="space-y-2">
+                  {sortedTones[0] && (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm text-muted-foreground">Primary Pattern:</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm font-medium cursor-help text-foreground">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">{getPatternTooltip(sortedTones[0][0])}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  )}
+                  {sortedTones[1] && (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm text-muted-foreground">Secondary Pattern:</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm font-medium cursor-help text-foreground">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">{getPatternTooltip(sortedTones[1][0])}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  )}
+                  
+                  {/* Streak description */}
+                  {toneFrequencies.currentStreak >= 2 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+                    </p>
+                  )}
+                  
+                  {/* Tone Evolution Toggle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowToneEvolution(!showToneEvolution)}
+                    className="text-xs -ml-2 mt-1"
+                  >
+                    {showToneEvolution ? "Hide" : "View"} pattern evolution
+                    <TrendingUp className="w-3 h-3 ml-1" />
+                  </Button>
+                  
+                  {/* Tone Evolution Visualization */}
+                  {showToneEvolution && (
+                    <div className="mt-2 p-3 bg-accent/10 rounded-lg border border-border/40">
+                      <div className="flex items-center gap-2 mb-2">
+                        {toneFrequencies.tones.map((tone, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setSelectedPattern(tone.text);
+                              setShowPatternInsightModal(true);
+                            }}
+                            className="flex flex-col items-center flex-1 cursor-pointer hover:bg-accent/20 rounded p-2 transition-colors"
+                          >
+                            <div className="text-lg mb-1">{tone.emoji}</div>
+                            <div className="text-[10px] text-muted-foreground text-center leading-tight">
+                              {tone.text.split(' ')[0]}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Tap any day to learn what each pattern means
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </TooltipProvider>
+            </div>
+          )}
+
           {/* Pattern Summary */}
           {hasMinimumData && (
-            <div className="space-y-6">
+            <div className="space-y-6 border-t border-border/40 pt-6">
               <div>
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
                   Pattern Summary
                 </h2>
-                <p className="text-base leading-relaxed text-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {babyName}'s been waking a bit earlier and staying engaged longer between naps — classic signs their rhythm is consolidating. These transitions can cause shorter naps for a few days while their body rebalances.
                 </p>
               </div>
 
               {/* What This Tells Us */}
               <div>
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
                   What This Tells Us
                 </h2>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <p className="text-sm text-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       Daytime alertness is increasing as sleep cycles consolidate.
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <p className="text-sm text-foreground">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       Appetite may fluctuate while energy use rises.
                     </p>
                   </div>
@@ -687,19 +670,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
               {/* What To Watch For */}
               <div>
-                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
                   What To Watch For
                 </h2>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <Activity className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-foreground">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       If shorter naps persist beyond a week, they may be ready to adjust their routine.
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
                     <Activity className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-foreground">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       Look for signs of overtiredness around bedtime — an earlier start can help.
                     </p>
                   </div>
@@ -707,8 +690,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               </div>
 
               {/* Encouragement Line */}
-              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
-                <p className="text-sm text-foreground font-medium">
+              <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
+                <p className="text-sm text-foreground leading-relaxed">
                   Each streak builds the foundation for the next — this one shows {babyName} is ready for more active days ahead.
                 </p>
               </div>
@@ -717,7 +700,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
           {/* Trend Connection */}
           {hasMinimumData && (
-            <div className="p-4 bg-muted/30 rounded-lg border border-border">
+            <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium mb-1">
@@ -736,7 +719,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
           {/* Chat Messages */}
           {messages.length > 0 && (
-            <div className="space-y-4 pt-4 border-t border-border/30">
+            <div className="space-y-4 pt-4 border-t border-border/40">
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
@@ -751,7 +734,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                       msg.role === "user"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                        : "bg-accent/30"
                     }`}
                   >
                     <div className="text-sm leading-relaxed">
@@ -767,7 +750,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                     <Sprout className="w-4 h-4 text-primary animate-pulse" />
                   </div>
-                  <div className="bg-muted rounded-2xl px-4 py-3">
+                  <div className="bg-accent/30 rounded-2xl px-4 py-3">
                     <div className="flex gap-1">
                       <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                       <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -778,45 +761,42 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               )}
             </div>
           )}
-
-          {/* Footer */}
-          <div className="pt-4 text-center">
-            <p className="text-xs text-muted-foreground">
-              ✨ The more you track, the smarter your Guide becomes.
-            </p>
-          </div>
         </div>
       </ScrollArea>
 
-      {/* Ask Anything Section */}
-      <div className="border-t border-border/30 bg-background">
-        <div className="px-4 pt-3 pb-1">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">
-            💬 Ask me anything about {babyName}
-          </h3>
-        </div>
-        <div className="px-4 pb-[calc(max(env(safe-area-inset-bottom),16px))]">
-          <div className="relative flex gap-3 items-end">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Why is he waking earlier? or When do babies drop to two naps?"
-              disabled={isLoading}
-              rows={1}
-              className="flex-1 min-h-[48px] max-h-36 resize-none rounded-2xl border-border/40 bg-muted/50 px-4 py-3 text-[16px] leading-6"
-            />
-            <Button
-              onClick={() => handleSendMessage(input)}
-              disabled={isLoading || !input.trim()}
-              size="icon"
-              className="flex-shrink-0 h-12 w-12 rounded-2xl"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </div>
+      {/* Chat Input */}
+      <div className="border-t border-border/40 bg-background p-4">
+        <div className="flex gap-2">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder="Ask about patterns, routines, or development..."
+            className="min-h-[44px] max-h-32 resize-none"
+            disabled={isLoading}
+          />
+          <Button
+            onClick={() => handleSendMessage(input)}
+            disabled={!input.trim() || isLoading}
+            size="icon"
+            className="h-[44px] w-[44px] flex-shrink-0"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
         </div>
       </div>
+
+      {/* Pattern Insight Modal */}
+      <Dialog open={showPatternInsightModal} onOpenChange={setShowPatternInsightModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{selectedPattern && getPatternInsight(selectedPattern).title}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-foreground leading-relaxed">
+            {selectedPattern && getPatternInsight(selectedPattern).description}
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
