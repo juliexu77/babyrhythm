@@ -474,19 +474,23 @@ const ongoingNap = activities
             <SleepChart activities={activities} />
           </div>
         );
-    case "helper":
-      return <GuideTab 
-        activities={activities.map(a => ({
-          id: a.id,
-          type: a.type,
-          logged_at: a.loggedAt || "",
-          details: a.details
-        }))} 
-        onGoToSettings={() => {
-          setPreviousTab(activeTab);
-          setActiveTab("settings");
-        }}
-      />;
+      case "helper":
+        return (
+          <ErrorBoundary onRetry={() => setActiveTab("home")}>
+            <GuideTab 
+              activities={activities.map(a => ({
+                id: a.id,
+                type: a.type,
+                logged_at: a.loggedAt || "",
+                details: a.details
+              }))} 
+              onGoToSettings={() => {
+                setPreviousTab(activeTab);
+                setActiveTab("settings");
+              }}
+            />
+          </ErrorBoundary>
+        );
     case "settings":
       return <SettingsPage />;
       case "insights":

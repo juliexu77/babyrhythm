@@ -39,8 +39,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <h2 className="text-xl font-semibold">Something went wrong</h2>
             <p className="text-muted-foreground">The page crashed while rendering. You can try again.</p>
             {this.state.error?.message && (
-              <pre className="text-xs text-muted-foreground/80 bg-muted/40 p-3 rounded border border-border overflow-auto">
+              <pre className="text-xs text-muted-foreground/80 bg-muted/40 p-3 rounded border border-border overflow-auto text-left whitespace-pre-wrap">
                 {this.state.error.message}
+              </pre>
+            )}
+            {this.state.error?.stack && (
+              <pre className="text-[10px] text-muted-foreground/70 bg-muted/30 p-2 rounded border border-border/60 overflow-auto text-left whitespace-pre-wrap max-h-40">
+                {this.state.error.stack.split('\n').slice(0, 5).join('\n')}
               </pre>
             )}
             <button
