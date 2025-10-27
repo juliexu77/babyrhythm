@@ -103,23 +103,45 @@ serve(async (req) => {
       });
     }
 
-    // Calculate metrics and deltas
-    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-    const sixDaysAgo = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+    // Calculate metrics and deltas using yesterday vs the day before (complete days)
+    // Determine timezone from activities or default to project default
+    const tz = (activities.find((a: any) => a.timezone)?.timezone as string) || 'America/Los_Angeles';
 
-    const recentActivities = activities.filter(a => new Date(a.logged_at) >= threeDaysAgo);
-    const previousActivities = activities.filter(a => {
+    // Compute UTC boundaries for today start in tz, then derive the two previous full days
+    const todayStartUTC = getTZStartOfTodayUTC(now, tz);
+    const yesterdayStartUTC = new Date(todayStartUTC.getTime() - 24 * 60 * 60 * 1000);
+    const dayBeforeStartUTC = new Date(todayStartUTC.getTime() - 48 * 60 * 60 * 1000);
+
+    // Only consider activities from the last two complete days in the user's timezone
+    const windowActivities = activities.filter(a => {
+      const t = new Date(a.logged_at);
+      return t >= dayBeforeStartUTC && t < todayStartUTC;
+    });
+
+    const recentActivities = windowActivities.filter(a => new Date(a.logged_at) >= yesterdayStartUTC);
+    const previousActivities = windowActivities.filter(a => {
       const d = new Date(a.logged_at);
-      return d >= sixDaysAgo && d < threeDaysAgo;
+      return d >= dayBeforeStartUTC && d < yesterdayStartUTC;
     });
 
     const recentMetrics = calculateMetrics(recentActivities);
     const previousMetrics = calculateMetrics(previousActivities);
 
+    console.log('DataPulse window', {
+      tz,
+      todayStartUTC: todayStartUTC.toISOString(),
+      yesterdayStartUTC: yesterdayStartUTC.toISOString(),
+      dayBeforeStartUTC: dayBeforeStartUTC.toISOString(),
+      recentMetrics,
+      previousMetrics,
+      recentCount: recentActivities.length,
+      previousCount: previousActivities.length,
+    });
+
     const deltas = computeDeltas(recentMetrics, previousMetrics);
     const insights = extractInsights(deltas, ageMonths);
 
-    const dataQuality = calculateDataQuality(recentActivities);
+    const dataQuality = calculateDataQuality(windowActivities);
 
     // Get tone chip (simplified - would come from your tone detection logic)
     const toneChip = "Smooth Flow";
@@ -154,8 +176,8 @@ serve(async (req) => {
           change: d.change
         })),
         note: dataQuality < 0.6 
-          ? "Data incomplete — trends may be approximate. Comparing to the last 3 days."
-          : "Comparing to the last 3 days"
+          ? "Data incomplete — trends may be approximate. Comparing yesterday vs the day before."
+          : "Comparing yesterday vs the day before"
       },
       ...guideSections
     };
@@ -332,12 +354,34 @@ function extractInsights(deltas: MetricDelta[], ageMonths: number): Insight[] {
 }
 
 function calculateDataQuality(activities: Activity[]): number {
-  // Simple heuristic: based on number of logs per day
-  const daysSpan = 3;
+  // Simple heuristic: based on number of logs per day (two complete days)
+  const daysSpan = 2;
   const expectedLogsPerDay = 8; // feeds + naps + diapers
   const actualLogs = activities.length;
   const quality = Math.min(actualLogs / (daysSpan * expectedLogsPerDay), 1.0);
   return Math.round(quality * 100) / 100;
+}
+
+// Timezone helpers to compute start-of-day (midnight) in a given IANA timezone, returned as a UTC Date
+function getTZOffset(date: Date, timeZone: string): number {
+  const utc = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+  const tz = new Date(date.toLocaleString('en-US', { timeZone }));
+  return (tz.getTime() - utc.getTime()) / 60000; // minutes
+}
+
+function getTZStartOfTodayUTC(now: Date, timeZone: string): Date {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now);
+  const y = Number(parts.find(p => p.type === 'year')?.value);
+  const m = Number(parts.find(p => p.type === 'month')?.value);
+  const d = Number(parts.find(p => p.type === 'day')?.value);
+  const utcGuess = Date.UTC(y, m - 1, d, 0, 0, 0);
+  const offsetAtGuess = getTZOffset(new Date(utcGuess), timeZone);
+  return new Date(utcGuess - offsetAtGuess * 60000);
 }
 
 async function generateGuideSections(apiKey: string, payload: any, dataQuality: number) {
