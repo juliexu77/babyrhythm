@@ -66,8 +66,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
-  const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
-  const [sentimentResponse, setSentimentResponse] = useState<string>("");
   const [hasInitialized, setHasInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -388,69 +386,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   Hey there — I noticed {babyName}'s been stretching their awake windows lately. 
                   This often means their body's ready for a small rhythm change — exciting, but it can make naps unpredictable.
                 </p>
-              </div>
-
-              {/* Emotional Mirror */}
-              <div className="p-4 bg-muted/20 rounded-lg space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  💬 This phase can bring mixed feelings — how's it felt for you lately?
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={selectedSentiment === "off-balance" ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-full text-xs"
-                    onClick={() => {
-                      setSelectedSentiment("off-balance");
-                      setSentimentResponse("That's really normal. Shifts like this can feel disorienting before they settle.");
-                      setTimeout(() => {
-                        handleSendMessage(`I'm feeling a bit off-balance with ${babyName}'s changes lately`);
-                      }, 800);
-                    }}
-                  >
-                    A bit off-balance
-                  </Button>
-                  <Button
-                    variant={selectedSentiment === "tired" ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-full text-xs"
-                    onClick={() => {
-                      setSelectedSentiment("tired");
-                      setSentimentResponse("You're doing great. Tired but aware is still really tuned in.");
-                      setTimeout(() => {
-                        handleSendMessage(`I'm tired but okay with ${babyName}'s changes`);
-                      }, 800);
-                    }}
-                  >
-                    Tired but okay
-                  </Button>
-                  <Button
-                    variant={selectedSentiment === "groove" ? "default" : "outline"}
-                    size="sm"
-                    className="rounded-full text-xs"
-                    onClick={() => {
-                      setSelectedSentiment("groove");
-                      setSentimentResponse("Love that. You're riding the wave together — that's the sweet spot.");
-                      setTimeout(() => {
-                        handleSendMessage(`We're finding our groove with ${babyName}'s changes`);
-                      }, 800);
-                    }}
-                  >
-                    We're finding our groove
-                  </Button>
-                </div>
-                
-                {/* Reactive Feedback */}
-                {sentimentResponse && (
-                  <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <p className="text-sm text-foreground/80">{sentimentResponse}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Today Section Divider */}
-              <div className="border-b border-border/30 pb-2">
-                <h2 className="text-xs font-medium text-muted-foreground tracking-wider">━━━ TODAY ━━━</h2>
               </div>
 
               {/* Connected Insights Cards */}
