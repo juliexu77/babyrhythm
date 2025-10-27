@@ -754,6 +754,66 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
+          {/* What to Know */}
+          {hasMinimumData && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🔹</span>
+                <h3 className="text-sm font-semibold text-foreground">What to Know</h3>
+              </div>
+              <div className="space-y-2 pl-1">
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Rhythm stability suggests he's adapting well to his current schedule.
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Small appetite bump is typical after a few smooth days — it often precedes a developmental leap.
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Expect brief restlessness midweek as the streak tapers.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* What To Do */}
+          {hasMinimumData && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🔹</span>
+                <h3 className="text-sm font-semibold text-foreground">What To Do</h3>
+              </div>
+              <div className="space-y-2 pl-1">
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Keep current nap structure — no changes yet.
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Try one longer awake stretch before afternoon nap (~3h).
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Keep bedtime consistent — it's anchoring this streak.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Pattern Summary */}
           {hasMinimumData && (
             <div className="space-y-6">
