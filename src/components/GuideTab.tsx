@@ -27,6 +27,10 @@ interface Message {
 }
 
 interface GuideSections {
+  data_pulse: {
+    metrics: Array<{ name: string; change: string }>;
+    note: string;
+  };
   what_to_know: string[];
   what_to_do: string[];
   whats_next: string;
@@ -294,6 +298,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         }
         
         if (data) {
+          console.log('Guide sections fetched:', data);
           setGuideSections(data);
           localStorage.setItem('guideSections', JSON.stringify(data));
           localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
@@ -315,9 +320,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     // Load cached data first
     if (cached && !guideSections) {
       try {
-        setGuideSections(JSON.parse(cached));
+        const parsed = JSON.parse(cached);
+        console.log('Loaded cached guide sections:', parsed);
+        setGuideSections(parsed);
       } catch (e) {
         console.error('Failed to parse cached guide sections:', e);
+        localStorage.removeItem('guideSections');
       }
     }
     
@@ -326,6 +334,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       (now >= fiveAM && new Date(lastFetch) < fiveAM);
     
     if (shouldFetch && hasMinimumData) {
+      console.log('Fetching fresh guide sections...');
       fetchGuideSections();
     }
   }, [hasMinimumData, user, guideSections]);
@@ -635,7 +644,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* Data Pulse */}
-          {hasMinimumData && (
+          {hasMinimumData && guideSections?.data_pulse && (
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-2 bg-primary rounded-sm" />
@@ -645,135 +654,34 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between pb-3 border-b border-border/30">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Indicator</span>
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 3 Days</span>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change</span>
                 </div>
                 
-                {/* Total Sleep */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">💤</span>
-                    <span className="text-sm text-foreground">Total sleep</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {(() => {
-                      const now = new Date();
-                      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                      const threeDaysAgo = new Date(todayStart);
-                      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-                      
-                      const todayNaps = activities.filter(a => {
-                        if (a.type !== 'nap') return false;
-                        const actDate = new Date(a.logged_at);
-                        const actDateStart = new Date(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
-                        return actDateStart.getTime() === todayStart.getTime() && a.details?.duration;
-                      });
-                      
-                      const lastThreeDaysNaps = activities.filter(a => {
-                        if (a.type !== 'nap') return false;
-                        const actDate = new Date(a.logged_at);
-                        const actDateStart = new Date(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
-                        return actDateStart >= threeDaysAgo && actDateStart < todayStart && a.details?.duration;
-                      });
-                      
-                      const todayTotal = todayNaps.reduce((sum, n) => sum + (parseInt(n.details?.duration) || 0), 0);
-                      const avgLast3 = lastThreeDaysNaps.length > 0 
-                        ? lastThreeDaysNaps.reduce((sum, n) => sum + (parseInt(n.details?.duration) || 0), 0) / 3
-                        : 0;
-                      
-                      const hours = Math.floor(todayTotal / 60);
-                      const mins = todayTotal % 60;
-                      const change = avgLast3 > 0 ? ((todayTotal - avgLast3) / avgLast3 * 100) : 0;
-                      
-                      return todayTotal > 0 
-                        ? `${hours}h ${mins}m (${change > 0 ? '+' : ''}${change.toFixed(0)}%)`
-                        : '0h 0m (—)';
-                    })()}
-                  </span>
-                </div>
+                {guideSections.data_pulse.metrics.length > 0 ? (
+                  guideSections.data_pulse.metrics.map((metric, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">
+                          {metric.name === 'Total sleep' ? '💤' : 
+                           metric.name === 'Feed volume' ? '🍼' : 
+                           metric.name === 'Wake average' ? '🌡️' : '📊'}
+                        </span>
+                        <span className="text-sm text-foreground">{metric.name}</span>
+                      </div>
+                      <span className="text-sm font-medium text-foreground">
+                        {metric.change}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    No significant changes detected
+                  </p>
+                )}
                 
-                {/* Feed Volume */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🍼</span>
-                    <span className="text-sm text-foreground">Feed volume</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {(() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const threeDaysAgo = new Date(today);
-                      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-                      
-                      const todayFeeds = activities.filter(a => {
-                        const actDate = new Date(a.logged_at);
-                        return a.type === 'feed' && actDate >= today && a.details?.quantity;
-                      });
-                      
-                      const lastThreeDaysFeeds = activities.filter(a => {
-                        const actDate = new Date(a.logged_at);
-                        return a.type === 'feed' && actDate >= threeDaysAgo && actDate < today && a.details?.quantity;
-                      });
-                      
-                      const todayTotal = todayFeeds.reduce((sum, f) => sum + (parseFloat(f.details?.quantity) || 0), 0);
-                      const avgLast3 = lastThreeDaysFeeds.length > 0
-                        ? lastThreeDaysFeeds.reduce((sum, f) => sum + (parseFloat(f.details?.quantity) || 0), 0) / 3
-                        : 0;
-                      
-                      const change = avgLast3 > 0 ? ((todayTotal - avgLast3) / avgLast3 * 100) : 0;
-                      
-                      return `${change > 0 ? '+' : ''}${change.toFixed(0)}%`;
-                    })()}
-                  </span>
-                </div>
-                
-                {/* Wake Average */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🌡️</span>
-                    <span className="text-sm text-foreground">Wake average</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {(() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const threeDaysAgo = new Date(today);
-                      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-                      
-                      const todayNaps = activities.filter(a => {
-                        const actDate = new Date(a.logged_at);
-                        return a.type === 'nap' && actDate >= today;
-                      }).sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime());
-                      
-                      const lastThreeDaysNaps = activities.filter(a => {
-                        const actDate = new Date(a.logged_at);
-                        return a.type === 'nap' && actDate >= threeDaysAgo && actDate < today;
-                      }).sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime());
-                      
-                      // Calculate wake windows (time between naps)
-                      const calcAvgWake = (naps: any[]) => {
-                        if (naps.length < 2) return 0;
-                        let totalWake = 0;
-                        for (let i = 1; i < naps.length; i++) {
-                          const prevEnd = new Date(naps[i-1].logged_at).getTime() + ((naps[i-1].details?.duration || 0) * 60000);
-                          const nextStart = new Date(naps[i].logged_at).getTime();
-                          totalWake += (nextStart - prevEnd) / 60000; // convert to minutes
-                        }
-                        return totalWake / (naps.length - 1);
-                      };
-                      
-                      const todayAvg = calcAvgWake(todayNaps);
-                      const last3Avg = calcAvgWake(lastThreeDaysNaps);
-                      
-                      const hours = Math.floor(todayAvg / 60);
-                      const mins = Math.round(todayAvg % 60);
-                      const diffMins = Math.round(todayAvg - last3Avg);
-                      
-                      return todayAvg > 0 
-                        ? `${hours}h ${mins}m (${diffMins > 0 ? '+' : ''}${diffMins} min)`
-                        : 'N/A';
-                    })()}
-                  </span>
-                </div>
+                <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
+                  {guideSections.data_pulse.note}
+                </p>
               </div>
             </div>
           )}

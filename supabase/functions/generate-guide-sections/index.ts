@@ -90,6 +90,10 @@ serve(async (req) => {
 
     if (!activities || activities.length === 0) {
       return new Response(JSON.stringify({
+        data_pulse: {
+          metrics: [],
+          note: "Not enough data yet to show trends."
+        },
         what_to_know: ["Not enough data yet — log activities to see personalized insights."],
         what_to_do: ["Start tracking sleep, feeds, and diapers to build your rhythm profile."],
         whats_next: "Patterns will emerge after a few days of consistent logging.",
@@ -142,7 +146,21 @@ serve(async (req) => {
 
     const guideSections = await generateGuideSections(lovableApiKey, geminiPayload, dataQuality);
 
-    return new Response(JSON.stringify(guideSections), {
+    // Build complete response with Data Pulse
+    const response = {
+      data_pulse: {
+        metrics: deltas.map(d => ({
+          name: d.name,
+          change: d.change
+        })),
+        note: dataQuality < 0.6 
+          ? "Data incomplete — trends may be approximate. Comparing to the last 3 days."
+          : "Comparing to the last 3 days"
+      },
+      ...guideSections
+    };
+
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
@@ -150,6 +168,10 @@ serve(async (req) => {
     console.error('Error in generate-guide-sections:', error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : 'Unknown error',
+      data_pulse: {
+        metrics: [],
+        note: "Unable to calculate metrics right now."
+      },
       what_to_know: ["Unable to generate insights right now."],
       what_to_do: ["Continue logging activities as usual."],
       whats_next: "Insights will be available once data processing resumes.",
@@ -165,24 +187,64 @@ function calculateMetrics(activities: Activity[]) {
   const sleepActivities = activities.filter(a => a.type === 'nap');
   const feedActivities = activities.filter(a => a.type === 'feed');
   
-  const totalSleepMinutes = sleepActivities.reduce((sum, a) => sum + (a.duration || 0), 0);
+  // Calculate nap durations from start/end times
+  const totalSleepMinutes = sleepActivities.reduce((sum, a) => {
+    if (a.details?.duration) {
+      return sum + parseInt(a.details.duration);
+    }
+    // Calculate from startTime and endTime if available
+    if (a.details?.startTime && a.details?.endTime) {
+      const start = new Date(`1970-01-01 ${a.details.startTime}`);
+      const end = new Date(`1970-01-01 ${a.details.endTime}`);
+      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
+      // Handle overnight naps (end < start)
+      if (diff < 0) diff += 24 * 60;
+      return sum + diff;
+    }
+    return sum;
+  }, 0);
+  
   const napCount = sleepActivities.length;
   
   const totalFeedVolume = feedActivities.reduce((sum, a) => {
-    if (a.unit === 'oz') return sum + (a.amount || 0);
-    if (a.unit === 'ml') return sum + ((a.amount || 0) / 29.5735);
+    if (!a.details?.quantity) return sum;
+    const quantity = parseFloat(a.details.quantity);
+    if (a.details.unit === 'oz') return sum + quantity;
+    if (a.details.unit === 'ml') return sum + (quantity / 29.5735);
     return sum;
   }, 0);
   const feedCount = feedActivities.length;
 
-  // Calculate average wake window (simplified)
+  // Calculate average wake window (time between naps)
   let totalWakeMinutes = 0;
   let wakeWindowCount = 0;
-  for (let i = 0; i < sleepActivities.length - 1; i++) {
-    const current = new Date(sleepActivities[i].logged_at);
-    const next = new Date(sleepActivities[i + 1].logged_at);
-    const wakeMinutes = (current.getTime() - next.getTime()) / (1000 * 60) - (sleepActivities[i].duration || 0);
-    if (wakeMinutes > 0 && wakeMinutes < 600) { // sanity check
+  
+  // Sort by logged_at
+  const sortedNaps = [...sleepActivities].sort((a, b) => 
+    new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime()
+  );
+  
+  for (let i = 0; i < sortedNaps.length - 1; i++) {
+    const current = sortedNaps[i];
+    const next = sortedNaps[i + 1];
+    
+    // Calculate current nap duration
+    let currentDuration = 0;
+    if (current.details?.duration) {
+      currentDuration = parseInt(current.details.duration);
+    } else if (current.details?.startTime && current.details?.endTime) {
+      const start = new Date(`1970-01-01 ${current.details.startTime}`);
+      const end = new Date(`1970-01-01 ${current.details.endTime}`);
+      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
+      if (diff < 0) diff += 24 * 60;
+      currentDuration = diff;
+    }
+    
+    const currentEnd = new Date(current.logged_at).getTime() + (currentDuration * 60000);
+    const nextStart = new Date(next.logged_at).getTime();
+    const wakeMinutes = (nextStart - currentEnd) / (1000 * 60);
+    
+    if (wakeMinutes > 0 && wakeMinutes < 600) { // sanity check (less than 10 hours)
       totalWakeMinutes += wakeMinutes;
       wakeWindowCount++;
     }
