@@ -37,7 +37,7 @@ const translations = {
     
     // Navigation
     home: "Home",
-    guide: "Guide",
+    guide: "Rhythm",
     insights: "Insights",
     trends: "Trends",
     log: "Log",
@@ -519,7 +519,7 @@ const translations = {
     
     // Navigation
     home: "主页",
-    guide: "指南",
+    guide: "节奏",
     insights: "洞察",
     trends: "趋势",
     log: "日志",

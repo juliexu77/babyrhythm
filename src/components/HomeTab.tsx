@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, BookOpen, FileText, Sun } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -1197,13 +1197,13 @@ const lastDiaper = displayActivities
                 </Button>
               </div>
 
-              {/* Guide Tab Info */}
+              {/* Rhythm Tab Info */}
               <div className="space-y-2">
                 <div className="flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <ActivityIcon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      The Guide shares wisdom from parents and experts, personalized to where {babyName ? `${babyName}` : 'your baby'} is right now.
+                      Rhythm shows your baby's daily patterns and helps you understand their unique schedule.
                     </p>
                   </div>
                 </div>
@@ -1216,7 +1216,7 @@ const lastDiaper = displayActivities
                   size="sm"
                   className="w-full"
                 >
-                  Explore Guide
+                  View Rhythm
                 </Button>
               </div>
 
@@ -1765,14 +1765,14 @@ const lastDiaper = displayActivities
               </div>
             )}
 
-            {/* Guide Tab Info */}
+            {/* Rhythm Tab Info */}
             {!visitedTabs.has('guide') && (
               <div className="space-y-2">
                 <div className="flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <ActivityIcon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      The Guide shares wisdom from parents and experts, personalized to where {babyName ? `${babyName}` : 'your baby'} is right now.
+                      Rhythm shows your baby's daily patterns and helps you understand their unique schedule.
                     </p>
                   </div>
                 </div>
@@ -1785,7 +1785,7 @@ const lastDiaper = displayActivities
                   size="sm"
                   className="w-full"
                 >
-                  Explore Guide
+                  View Rhythm
                 </Button>
               </div>
             )}
