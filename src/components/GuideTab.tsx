@@ -715,7 +715,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-2 bg-primary rounded-sm" />
-                <h3 className="text-sm font-semibold text-foreground">Data Pulse</h3>
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
               </div>
               
               <div className="space-y-3">
@@ -765,7 +765,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-semibold text-foreground">What to Know</h3>
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
               </div>
               <div className="space-y-2 pl-1">
                 {guideSections.what_to_know.map((item, idx) => (
@@ -785,7 +785,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <CheckSquare className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-semibold text-foreground">What To Do</h3>
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
               </div>
               <div className="space-y-2 pl-1">
                 {guideSections.what_to_do.map((item, idx) => (
@@ -805,7 +805,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowRight className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-semibold text-foreground">What's Next</h3>
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What's Next</h3>
               </div>
               <div className="space-y-3 pl-1">
                 <p className="text-sm text-muted-foreground leading-relaxed">

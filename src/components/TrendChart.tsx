@@ -402,7 +402,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Section Header */}
         <div className="flex items-center gap-2.5">
           <div className="w-1 h-6 bg-gradient-feed rounded-full"></div>
-          <h2 className="text-base font-medium text-foreground">Feeding Trends</h2>
+          <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">Feeding Trends</h2>
         </div>
 
         {/* Level 1: Summary Cards */}
@@ -413,7 +413,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               <div className="w-9 h-9 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
                 <span className="text-xl">🍼</span>
               </div>
-              <h3 className="text-sm font-medium text-muted-foreground">Average Volume</h3>
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Average Volume</h3>
             </div>
             <div className="space-y-1">
               <div className="text-3xl font-semibold text-foreground tracking-tight">
@@ -433,7 +433,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               <div className="w-9 h-9 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
                 <span className="text-xl">🌙</span>
               </div>
-              <h3 className="text-sm font-medium text-muted-foreground">Feed Count</h3>
+              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Feed Count</h3>
             </div>
             <div className="space-y-1">
               <div className="text-3xl font-semibold text-foreground tracking-tight">
@@ -525,7 +525,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Section Header */}
         <div className="flex items-center gap-2.5">
           <div className="w-1 h-6 bg-gradient-nap rounded-full"></div>
-          <h2 className="text-base font-medium text-foreground">Sleep Trends</h2>
+          <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">Sleep Trends</h2>
         </div>
 
         {/* Level 1: Summary Card */}
@@ -536,7 +536,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                 <div className="w-9 h-9 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
                   <span className="text-xl">🌙</span>
                 </div>
-                <h3 className="text-sm font-medium text-muted-foreground">Average Duration</h3>
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Average Duration</h3>
               </div>
               <div className="space-y-1">
                 <div className="text-3xl font-semibold text-foreground tracking-tight">

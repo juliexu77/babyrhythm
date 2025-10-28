@@ -1175,7 +1175,7 @@ const lastDiaper = displayActivities
           {/* Start Journey Card */}
           <Card className="p-4">
             <div className="space-y-4">
-              <h2 className="text-base font-medium text-foreground">
+              <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
                 Start {babyName ? `${babyName}'s` : 'your baby\'s'} journey
               </h2>
               
@@ -1423,7 +1423,7 @@ const lastDiaper = displayActivities
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-medium text-foreground">
+                <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
                   What's Next
                 </h2>
                 <ChevronDown 
@@ -1544,7 +1544,7 @@ const lastDiaper = displayActivities
               onClick={() => setShowTimeline(!showTimeline)}
               className="w-full flex items-center justify-between"
             >
-              <h2 className="text-base font-medium text-foreground">
+              <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
                 Daily Summary
               </h2>
               <ChevronDown 

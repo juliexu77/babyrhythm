@@ -205,7 +205,7 @@ return (
     <div className="bg-card rounded-xl p-6 shadow-card border border-border">
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-sans font-semibold text-foreground dark:font-bold">
+        <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
           {t('whatToExpectAt')} {Math.floor(ageInWeeks)} {t('weeks')}
         </h2>
       </div>
@@ -220,7 +220,7 @@ return (
           <div className="p-4 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <Moon className="h-4 w-4 text-primary" />
-              <h3 className="font-medium text-foreground">{t('sleepPatterns')}</h3>
+              <h3 className="text-xs font-medium text-foreground uppercase tracking-wide">{t('sleepPatterns')}</h3>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -298,7 +298,7 @@ return (
           <div className="p-4 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <Milk className="h-4 w-4 text-primary" />
-              <h3 className="font-medium text-foreground">{t('feedingPatterns')}</h3>
+              <h3 className="text-xs font-medium text-foreground uppercase tracking-wide">{t('feedingPatterns')}</h3>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -374,7 +374,7 @@ return (
         <div className="p-4 bg-muted/30 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <Baby className="h-4 w-4 text-primary" />
-            <h3 className="font-medium text-foreground">{t('developmentFocus')}</h3>
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wide">{t('developmentFocus')}</h3>
           </div>
           <div className="text-sm text-muted-foreground">
             {getDevelopmentFocus(ageInWeeks)}
