@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Sprout, Send, Calendar, Activity, TrendingUp, 
   Sun, Moon, Target, Milk, CloudRain, 
   Clock, Timer, Bed, Lightbulb, CheckSquare, 
-  ArrowRight, Compass
+  ArrowRight, Compass, ChevronDown
 } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -768,14 +769,32 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
               </div>
               <div className="space-y-2 pl-1">
-                {guideSections.what_to_know.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {item}
-                    </p>
-                  </div>
-                ))}
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {guideSections.what_to_know[0]}
+                  </p>
+                </div>
+                {guideSections.what_to_know.length > 1 && (
+                  <Collapsible>
+                    <CollapsibleContent>
+                      {guideSections.what_to_know.slice(1).map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2 mt-2">
+                          <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {item}
+                          </p>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground h-7">
+                        <ChevronDown className="w-3 h-3 mr-1" />
+                        Show {guideSections.what_to_know.length - 1} more
+                      </Button>
+                    </CollapsibleTrigger>
+                  </Collapsible>
+                )}
               </div>
             </div>
           )}
@@ -788,14 +807,32 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
               </div>
               <div className="space-y-2 pl-1">
-                {guideSections.what_to_do.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {item}
-                    </p>
-                  </div>
-                ))}
+                <div className="flex items-start gap-2">
+                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {guideSections.what_to_do[0]}
+                  </p>
+                </div>
+                {guideSections.what_to_do.length > 1 && (
+                  <Collapsible>
+                    <CollapsibleContent>
+                      {guideSections.what_to_do.slice(1).map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2 mt-2">
+                          <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {item}
+                          </p>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground h-7">
+                        <ChevronDown className="w-3 h-3 mr-1" />
+                        Show {guideSections.what_to_do.length - 1} more
+                      </Button>
+                    </CollapsibleTrigger>
+                  </Collapsible>
+                )}
               </div>
             </div>
           )}
