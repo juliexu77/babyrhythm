@@ -149,6 +149,24 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                activityDate.getDate() === date.getDate();
       });
       
+      // Helper to check if nap is daytime (starts between 7 AM - 7 PM)
+      const isDaytimeNap = (nap: Activity) => {
+        if (!nap.details.startTime) return false;
+        const timeMatch = nap.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!timeMatch) return false;
+        
+        let hours = parseInt(timeMatch[1]);
+        const period = timeMatch[3].toUpperCase();
+        
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        return hours >= 7 && hours < 19; // 7 AM to 7 PM
+      };
+      
+      // Filter for daytime naps only
+      const daytimeNaps = dayNaps.filter(isDaytimeNap);
+      
       let totalHours = 0;
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
@@ -167,11 +185,13 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       
       const value = Math.round(totalHours * 10) / 10;
       const napCount = dayNaps.length;
+      const daytimeNapCount = daytimeNaps.length;
       
       data.push({
         date: date.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { weekday: "short" }),
         value,
         napCount,
+        daytimeNapCount,
         detail: value > 0 ? `${value}h, ${napCount} ${t('naps')}` : t('noNaps')
       });
     }
@@ -289,6 +309,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     avgDuration: napData.reduce((sum, d) => sum + d.value, 0) / napData.filter(d => d.value > 0).length || 0,
     totalNaps: napData.reduce((sum, d) => sum + d.napCount, 0),
     avgNapsPerDay: napData.reduce((sum, d) => sum + d.napCount, 0) / napData.filter(d => d.napCount > 0).length || 0,
+    avgDaytimeNapsPerDay: napData.reduce((sum, d) => sum + d.daytimeNapCount, 0) / napData.filter(d => d.daytimeNapCount > 0).length || 0,
   };
   
   const prevNapSummary = {
@@ -528,33 +549,44 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Sleep Trends</h2>
         </div>
 
-        {/* Level 1: Summary Card */}
-        <div className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
-                  <Moon className="w-4 h-4 text-primary" />
-                </div>
-                <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Average Duration</h3>
+        {/* Level 1: Summary Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Average Duration Card */}
+          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
+                <Moon className="w-4 h-4 text-primary" />
               </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-semibold text-foreground tracking-tight">
-                  {napSummary.avgDuration.toFixed(1)} <span className="text-base text-muted-foreground font-normal">h/day</span>
-                </div>
-                {prevNapSummary.avgDuration > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {napDurationChange >= 0 ? '+' : ''}{napDurationChange.toFixed(1)} h vs last week
-                  </p>
-                )}
-              </div>
+              <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total Sleep</h3>
             </div>
-            {napData.length > 0 && napData.some(d => d.value > 0) && (
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground/60 mb-1">Typical window</p>
-                <p className="text-sm font-medium text-foreground">8:00 pm–7:00 am</p>
+            <div className="space-y-1">
+              <div className="text-2xl font-semibold text-foreground tracking-tight">
+                {napSummary.avgDuration.toFixed(1)} <span className="text-base text-muted-foreground font-normal">h/day</span>
               </div>
-            )}
+              {prevNapSummary.avgDuration > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {napDurationChange >= 0 ? '+' : ''}{napDurationChange.toFixed(1)}% vs last week
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Naps Per Day Card */}
+          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
+                <Moon className="w-4 h-4 text-primary" />
+              </div>
+              <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Naps Per Day</h3>
+            </div>
+            <div className="space-y-1">
+              <div className="text-2xl font-semibold text-foreground tracking-tight">
+                {napSummary.avgDaytimeNapsPerDay.toFixed(1)} <span className="text-base text-muted-foreground font-normal">naps/day</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Daytime only
+              </p>
+            </div>
           </div>
         </div>
 
