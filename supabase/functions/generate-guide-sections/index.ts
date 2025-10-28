@@ -221,8 +221,24 @@ function calculateMetrics(activities: Activity[]) {
   const sleepActivities = activities.filter(a => a.type === 'nap');
   const feedActivities = activities.filter(a => a.type === 'feed');
   
+  // Filter for daytime naps only (7 AM - 7 PM starts)
+  const daytimeNaps = sleepActivities.filter(a => {
+    if (!a.details?.startTime) return true; // include if no time info
+    const timeMatch = a.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!timeMatch) return true;
+    
+    let hours = parseInt(timeMatch[1]);
+    const period = timeMatch[3].toUpperCase();
+    
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    // Only include naps that start between 7 AM and 7 PM
+    return hours >= 7 && hours < 19;
+  });
+  
   // Calculate nap durations from start/end times
-  const totalSleepMinutes = sleepActivities.reduce((sum, a) => {
+  const totalSleepMinutes = daytimeNaps.reduce((sum, a) => {
     if (a.details?.duration) {
       return sum + parseInt(a.details.duration);
     }
@@ -231,14 +247,16 @@ function calculateMetrics(activities: Activity[]) {
       const start = new Date(`1970-01-01 ${a.details.startTime}`);
       const end = new Date(`1970-01-01 ${a.details.endTime}`);
       let diff = (end.getTime() - start.getTime()) / (1000 * 60);
-      // Handle overnight naps (end < start)
+      // Handle naps that cross midnight (rare but possible)
       if (diff < 0) diff += 24 * 60;
+      // Cap at reasonable nap duration (5 hours)
+      if (diff > 300) diff = 300;
       return sum + diff;
     }
     return sum;
   }, 0);
   
-  const napCount = sleepActivities.length;
+  const napCount = daytimeNaps.length;
   
   const totalFeedVolume = feedActivities.reduce((sum, a) => {
     if (!a.details?.quantity) return sum;
