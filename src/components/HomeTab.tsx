@@ -1352,6 +1352,30 @@ const lastDiaper = displayActivities
                 </Button>
               </div>
             )}
+
+            {/* Last Diaper */}
+            <div className="flex items-center gap-3">
+              <Droplet className="w-5 h-5 text-primary" />
+              <p className="text-sm flex-1 text-muted-foreground">
+                Last diaper — <span className="font-medium text-foreground">
+                  {lastDiaper ? lastDiaper.time : 'not logged yet'}
+                </span>
+                {lastDiaper?.details?.diaperType && (
+                  <span className="ml-1">
+                    {lastDiaper.details.diaperType}
+                  </span>
+                )}
+              </p>
+              <Button
+                onClick={() => {
+                  onAddActivity('diaper', lastDiaper);
+                }}
+                size="sm"
+                className="h-8 px-3"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
 
