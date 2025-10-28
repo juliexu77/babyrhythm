@@ -11,13 +11,28 @@ export function usePredictionEngine(activities: Activity[]) {
   const { household } = useHousehold();
 
   const prediction = useMemo(() => {
+    console.log('🔮 usePredictionEngine - checking data:', { 
+      activitiesCount: activities?.length || 0,
+      hasActivities: !!activities,
+      babyBirthday: household?.baby_birthday 
+    });
+
     if (!activities || activities.length === 0) {
+      console.log('🚫 No activities available for predictions');
       return null;
     }
 
     // Check minimum data requirements for reliable predictions
     const naps = activities.filter(a => a.type === 'nap');
     const feeds = activities.filter(a => a.type === 'feed');
+    
+    console.log('🔮 Filtered activity counts:', { 
+      totalActivities: activities.length,
+      naps: naps.length, 
+      feeds: feeds.length,
+      activityTypes: [...new Set(activities.map(a => a.type))],
+      sampleActivity: activities[0]
+    });
     
     // Need at least 4 naps and 4 feeds for reliable predictions
     if (naps.length < 4 || feeds.length < 4) {
@@ -29,12 +44,15 @@ export function usePredictionEngine(activities: Activity[]) {
       return null;
     }
 
+    console.log('✅ Sufficient data - creating prediction engine');
     const engine = new BabyCarePredictionEngine(
       activities,
       household?.baby_birthday || undefined
     );
 
-    return engine.getNextAction();
+    const result = engine.getNextAction();
+    console.log('🔮 Prediction result:', result);
+    return result;
   }, [activities, household?.baby_birthday]);
 
   // Helper to translate intent to user-friendly copy
