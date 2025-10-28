@@ -1321,10 +1321,10 @@ const lastDiaper = displayActivities
   return (
     <div className="pb-24">
       {/* 1. Sticky Header - Empty for now */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-3 border-b border-border/40">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-2 border-b border-border/40">
       </div>
 
-      <div className="px-4 pt-4 space-y-6">
+      <div className="px-4 pt-3 space-y-4">
 
         {/* Greeting */}
         <h2 className="text-xl font-semibold text-foreground">
@@ -1351,7 +1351,7 @@ const lastDiaper = displayActivities
         </div>
 
         {/* 2. Current State */}
-        <div className="space-y-4 pb-6 border-b border-border">
+        <div className="space-y-4 pb-4 border-b border-border">
           
           <div className="space-y-3.5">
             {/* Last Feed */}
