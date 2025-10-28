@@ -15,6 +15,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getDailySentiment } from "@/utils/sentimentAnalysis";
 
 interface Activity {
   id: string;
@@ -160,18 +161,15 @@ const getPatternInsight = (pattern: string): { title: string; description: strin
   }
 };
 
-// Helper to get daily tone for rhythm tracking
-const getDailyTone = (dayActivities: Activity[], babyBirthday?: string) => {
-  const feeds = dayActivities.filter(a => a.type === 'feed').length;
-  const naps = dayActivities.filter(a => a.type === 'nap').length;
+// Helper to get daily tone for rhythm tracking - now uses shared sentiment logic
+const getDailyTone = (dayActivities: Activity[], allActivities: Activity[], babyBirthday?: string) => {
+  // Calculate baby's age in months from birthday
+  const babyAgeMonths = babyBirthday 
+    ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+    : null;
   
-  // Simplified tone detection (based on HomeTab logic)
-  if (feeds >= 8 && naps >= 4) return { emoji: "🎯", text: "In Sync" };
-  if (feeds >= 6 && feeds <= 8 && naps >= 3 && naps <= 4) return { emoji: "☀️", text: "Smooth Flow" };
-  if (naps >= 5) return { emoji: "🌙", text: "Extra Sleepy" };
-  if (feeds >= 10) return { emoji: "🍼", text: "Active Feeding" };
-  if (feeds <= 4 || naps <= 1) return { emoji: "🌧", text: "Off Rhythm" };
-  return { emoji: "🌿", text: "Building Rhythm" };
+  // Use the shared sentiment analysis function
+  return getDailySentiment(dayActivities, allActivities, babyAgeMonths, 12); // Use noon as default hour
 };
 
 export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
@@ -213,7 +211,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const activityDate = new Date(a.logged_at);
         return activityDate.toDateString() === date.toDateString();
       });
-      return getDailyTone(dayActivities, household.baby_birthday);
+      return getDailyTone(dayActivities, activities, household.baby_birthday);
     });
     
     const frequency = tones.reduce((acc, tone) => {
@@ -283,7 +281,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const activityDate = new Date(a.logged_at);
         return activityDate.toDateString() === date.toDateString();
       });
-      return getDailyTone(dayActivities, household.baby_birthday);
+      return getDailyTone(dayActivities, activities, household.baby_birthday);
     });
     
     const frequency = lastMonthTones.reduce((acc, tone) => {

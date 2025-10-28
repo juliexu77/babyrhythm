@@ -10,6 +10,7 @@ import { Activity } from "@/components/ActivityCard";
 import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
+import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -351,112 +352,14 @@ const lastDiaper = displayActivities
     };
   };
 
-  // Get daily sentiment based on patterns - refined 12-chip set
+  // Get daily sentiment using shared logic
   const getDailySentiment = () => {
-    // Check if user is in first 24 hours from first activity
-    if (activities.length > 0) {
-      const firstActivity = [...activities].sort((a, b) => 
-        new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime()
-      )[0];
-      
-      if (firstActivity?.loggedAt) {
-        const firstActivityTime = new Date(firstActivity.loggedAt);
-        const hoursSinceFirst = differenceInHours(currentTime, firstActivityTime);
-        
-        // Show "Early Days" for first 24 hours
-        if (hoursSinceFirst < 24) {
-          return { emoji: "🌤", text: "Early Days" };
-        }
-        
-        // Days 2-4: Use simplified chip set while establishing baseline
-        if (hoursSinceFirst >= 24 && hoursSinceFirst < 96) {
-          const summary = getDailySummary();
-          const hour = currentTime.getHours();
-          
-          // Show "New Discovery" early in day with some activity
-          if (hour < 12 && (summary.feedCount >= 1 || summary.napCount >= 1) && 
-              (summary.feedCount + summary.napCount <= 3)) {
-            return { emoji: "🌈", text: "New Discovery" };
-          }
-          
-          // Default to "Building Rhythm" for days 2-4
-          return { emoji: "🌿", text: "Building Rhythm" };
-        }
-      }
-    }
-    
-    const summary = getDailySummary();
-    const expected = getExpectedFeeds(babyAgeMonths);
-    const expectedNaps = getExpectedNaps(babyAgeMonths);
-    const hour = currentTime.getHours();
-    
-    // 1. 🌱 Growth Spurt Week - significantly more feeds than typical
-    if (expected && summary.feedCount > expected.max + 2) {
-      return { emoji: "🌱", text: "Growth Spurt Week" };
-    }
-    
-    // 2. 🍼 Feed-Heavy Day - above average feeds
-    if (expected && summary.feedCount > expected.max && summary.feedCount <= expected.max + 2) {
-      return { emoji: "🍼", text: "Feed-Heavy Day" };
-    }
-    
-    // 3. 🌙 Extra Sleepy Day - more/longer naps than expected
-    if (expectedNaps && summary.napCount >= expectedNaps.max + 1) {
-      return { emoji: "🌙", text: "Extra Sleepy Day" };
-    }
-    
-    // 4. ☀️ Smooth Flow - feeds and naps both in expected range
-    if (expected && expectedNaps && 
-        summary.feedCount >= expected.min && summary.feedCount <= expected.max &&
-        summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max) {
-      return { emoji: "☀️", text: "Smooth Flow" };
-    }
-    
-    // 5. 🎯 In Sync - perfect alignment with expectations
-    if (expected && expectedNaps && 
-        (summary.feedCount === expected.max || summary.feedCount === Math.round((expected.min + expected.max) / 2)) && 
-        (summary.napCount === expectedNaps.max || summary.napCount === Math.round((expectedNaps.min + expectedNaps.max) / 2))) {
-      return { emoji: "🎯", text: "In Sync" };
-    }
-    
-    // 6. 🌤️ Mixed Patterns - some metrics in range, others not
-    if (expected && expectedNaps &&
-        ((summary.feedCount >= expected.min && summary.feedCount <= expected.max && summary.napCount < expectedNaps.min) ||
-         (summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max && summary.feedCount < expected.min))) {
-      return { emoji: "🌤️", text: "Mixed Patterns" };
-    }
-    
-    // 7. 🔄 Adjusting Rhythm - slightly off from expected range
-    if (expected && expectedNaps &&
-        (summary.feedCount === expected.min - 1 || summary.napCount === expectedNaps.min - 1)) {
-      return { emoji: "🔄", text: "Adjusting Rhythm" };
-    }
-    
-    // 8. ⚡ High-Energy Day - lots of overall activity
-    if (summary.feedCount + summary.napCount + summary.diaperCount >= 12) {
-      return { emoji: "⚡", text: "High-Energy Day" };
-    }
-    
-    // 9. 💫 Growth Transition - milestone age periods with pattern changes
-    if (babyAgeMonths !== null && [3, 4, 6, 9, 12].includes(babyAgeMonths) && 
-        (summary.feedCount !== expected?.max || summary.napCount !== expectedNaps?.max)) {
-      return { emoji: "💫", text: "Growth Transition" };
-    }
-    
-    // 10. 🌈 New Discovery - early in day with some activity
-    if (hour < 12 && (summary.feedCount >= 1 || summary.napCount >= 1) && 
-        (summary.feedCount + summary.napCount <= 3)) {
-      return { emoji: "🌈", text: "New Discovery" };
-    }
-    
-    // 11. 🌧 Off Rhythm Day - significantly below expected
-    if (expected && expectedNaps &&
-        (summary.feedCount < expected.min - 1 || summary.napCount < expectedNaps.min - 1)) {
-      return { emoji: "🌧", text: "Off Rhythm Day" };
-    }
-    
-    // 12. 🌿 Building Rhythm - default/early patterns
-    return { emoji: "🌿", text: "Building Rhythm" };
+    return calculateDailySentiment(
+      todayActivities,
+      activities,
+      babyAgeMonths,
+      currentTime.getHours()
+    );
   };
 
   // Get developmental phase description
