@@ -1408,7 +1408,7 @@ const lastDiaper = displayActivities
 
             {/* Last Diaper */}
             <div className="flex items-center gap-3">
-              <Baby className="w-5 h-5 text-primary" />
+              <Droplet className="w-5 h-5 text-primary" />
               <p className="text-sm flex-1 text-muted-foreground">
                 Last diaper — <span className="font-medium text-foreground">
                   {lastDiaper ? lastDiaper.time : 'not logged yet'}
