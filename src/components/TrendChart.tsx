@@ -56,12 +56,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     const startDate = new Date(endDate);
     startDate.setDate(startDate.getDate() - 6);
     
+    const formatOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const startStr = startDate.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", formatOptions);
+    const endStr = endDate.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", formatOptions);
+    
     return {
       start: startDate,
       end: endDate,
-      label: daysOffset === 0 
-        ? "Last 7 Days"
-        : `${startDate.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { month: 'short', day: 'numeric' })}`
+      label: `${startStr}–${endStr}`
     };
   };
 
@@ -375,11 +377,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           </Button>
           
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-foreground">
-              {daysOffset === 0 ? 'This week' : 'Week of'}
+            <span className="text-sm font-medium text-foreground">
+              {daysOffset === 0 ? 'This Week' : 'Week of'}
             </span>
             <span className="text-sm text-muted-foreground">
-              {dateRange.label}
+              · {dateRange.label}
             </span>
           </div>
           
@@ -516,13 +518,6 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Narrative Transition */}
-      <div className="py-6">
-        <p className="text-sm text-muted-foreground/80 italic text-center leading-relaxed">
-          {getFeedInterpretation()}
-        </p>
       </div>
 
       {/* Sleep Trends Section */}
