@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
 import { 
   Sprout, Send, Calendar, Activity, TrendingUp, 
   Sun, Moon, Target, Milk, CloudRain, 
@@ -911,7 +912,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       </ScrollArea>
 
       {/* Chat Input */}
-      <div className="border-t border-border/40 bg-background p-4">
+      <Separator className="mt-4" />
+      <div className="bg-background p-4">
         <div className="flex gap-2">
           <Textarea
             value={input}
