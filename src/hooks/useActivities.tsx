@@ -158,13 +158,15 @@ export function useActivities() {
     if (!user || !household) throw new Error('User not authenticated or no household');
 
     try {
-      // CANONICAL STORAGE: Store as UTC timestamp + IANA timezone
-      // User selected time string (e.g., "6:45 PM") represents local wall time IN THEIR TIMEZONE
+      // TIMEZONE ARCHITECTURE:
+      // 1. User selects a local wall time (e.g., "6:45 PM")
+      // 2. Interpret it in the BROWSER's timezone (baby's active timezone)
+      // 3. Store as UTC + IANA timezone (no manual offset math - Date handles it)
       
-      // 1. Get user's IANA timezone
+      // Get user's IANA timezone
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      // 2. Parse the selected time string
+      // Parse the selected time string
       const [time, period] = activity.time.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
       
@@ -172,8 +174,9 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // 3. Create Date object - this uses the BROWSER's timezone (user's local time)
-      // CRITICAL: This only works correctly if code runs in the USER's browser, not on server
+      // CRITICAL: new Date(year, month, day, hour, minute) interprets in BROWSER's timezone
+      // It creates a Date object that internally represents the correct UTC instant
+      // for that local time. NO manual offset adjustment needed!
       const now = new Date();
       const localDate = new Date(
         now.getFullYear(),
@@ -185,24 +188,19 @@ export function useActivities() {
         0
       );
       
-      // 4. Get the timezone offset in milliseconds for this specific date
-      // (handles DST correctly - offset can change throughout the year)
-      const offsetMinutes = localDate.getTimezoneOffset(); // Minutes BEHIND UTC (negative for ahead)
+      // Get offset for logging/validation only (NOT for conversion)
+      const offsetMinutes = localDate.getTimezoneOffset();
       
-      // 5. Adjust to get true UTC timestamp
-      // getTimezoneOffset returns negative for timezones ahead of UTC (like PST = +480 minutes behind)
-      // We need to ADD this offset to convert local to UTC
-      const utcTimestamp = new Date(localDate.getTime() - (offsetMinutes * 60 * 1000));
+      // toISOString() returns the correct UTC representation - NO additional conversion needed
+      const logged_at = localDate.toISOString();
       
-      // 6. Convert to UTC ISO string (this is the canonical timestamp)
-      const logged_at = utcTimestamp.toISOString();
-      
-      console.log('🕐 Activity timestamp conversion:', {
+      console.log('🕐 Activity timestamp (NO DOUBLE SHIFT):', {
         userSelectedTime: activity.time,
         timezone,
-        localDate: localDate.toISOString(),
-        offsetMinutes,
-        utcTimestamp: logged_at
+        browserOffset: offsetMinutes,
+        localDateDebug: localDate.toString(),
+        storedUTC: logged_at,
+        verification: `${activity.time} ${timezone} → ${logged_at}`
       });
 
       const { data, error } = await supabase
@@ -210,8 +208,8 @@ export function useActivities() {
         .insert({
           household_id: household.id,
           type: activity.type,
-          logged_at,      // UTC timestamp
-          timezone,       // IANA timezone at time of entry
+          logged_at,      // UTC timestamp (already correct from Date.toISOString())
+          timezone,       // IANA timezone for display/circadian features
           details: activity.details,
           created_by: user.id
         })
