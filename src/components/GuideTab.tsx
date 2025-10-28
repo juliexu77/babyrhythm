@@ -713,13 +713,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Data Pulse */}
           {hasMinimumData && guideSections && guideSections.data_pulse && (
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3">
                 <Activity className="w-4 h-4 text-primary" />
                 <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
               </div>
               
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-3 border-b border-border/30">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between pb-2 border-b border-border/30">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider"></span>
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
                 </div>
