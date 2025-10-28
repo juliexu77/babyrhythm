@@ -293,14 +293,14 @@ const ongoingNap = activities
       // Get user's current timezone
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-      // Combine selected date with selected time
-      let loggedAt: string;
-      let displayTime = activityTime; // Store the original selected time for display
+      // Parse the time to get hour24 and minute
+      let hour24: number;
+      let minute: number;
+      let dateToUse: Date;
       
       if (activityDate && activityTime) {
         // Parse the time string (e.g., "7:00 AM")
         const timeMatch = activityTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-        let combinedDateTime: Date;
         if (timeMatch) {
           let hours = parseInt(timeMatch[1], 10);
           const minutes = parseInt(timeMatch[2], 10);
@@ -310,90 +310,63 @@ const ongoingNap = activities
           if (period === 'PM' && hours !== 12) hours += 12;
           if (period === 'AM' && hours === 12) hours = 0;
           
-          // Create a local date-time
-          combinedDateTime = new Date(
-            activityDate.getFullYear(),
-            activityDate.getMonth(),
-            activityDate.getDate(),
-            hours,
-            minutes,
-            0,
-            0
-          );
+          hour24 = hours;
+          minute = minutes;
+          dateToUse = activityDate;
         } else {
-          // Fallback: use current local time (rounded to 5 mins) on selected date
+          // Fallback: use current local time (rounded to 5 mins)
           const now = new Date();
           const rounded = Math.round(now.getMinutes() / 5) * 5;
-          const safeMins = Math.min(55, Math.max(0, rounded));
-          combinedDateTime = new Date(
-            activityDate.getFullYear(),
-            activityDate.getMonth(),
-            activityDate.getDate(),
-            now.getHours(),
-            safeMins,
-            0,
-            0
-          );
-          // Ensure display time is consistent
-          displayTime = combinedDateTime.toLocaleTimeString("en-US", { 
-            hour: "numeric", 
-            minute: "2-digit", 
-            hour12: true 
-          });
+          hour24 = now.getHours();
+          minute = Math.min(55, Math.max(0, rounded));
+          dateToUse = activityDate;
         }
-        
-        // Store as local time without 'Z' suffix
-        const year = combinedDateTime.getFullYear();
-        const month = String(combinedDateTime.getMonth() + 1).padStart(2, '0');
-        const day = String(combinedDateTime.getDate()).padStart(2, '0');
-        const hour = String(combinedDateTime.getHours()).padStart(2, '0');
-        const minute = String(combinedDateTime.getMinutes()).padStart(2, '0');
-        loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00`;
       } else {
         // Default to now in local time
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hour = String(now.getHours()).padStart(2, '0');
-        const minute = String(now.getMinutes()).padStart(2, '0');
-        loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00`;
-        
-        displayTime = now.toLocaleTimeString("en-US", { 
-          hour: "numeric", 
-          minute: "2-digit",
-          hour12: true 
-        });
+        hour24 = now.getHours();
+        minute = now.getMinutes();
+        dateToUse = now;
       }
 
-      // Store the display time in details for consistent display
-      const detailsWithTime = {
-        ...details,
-        displayTime: displayTime
-      };
+      // Format for server
+      const dateLocal = `${dateToUse.getFullYear()}-${String(dateToUse.getMonth() + 1).padStart(2, '0')}-${String(dateToUse.getDate()).padStart(2, '0')}`;
+      const timeLocal = `${String(hour24).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      const offsetMinutes = new Date().getTimezoneOffset();
 
-      const { data, error } = await supabase.from('activities').insert({
-        household_id: householdId,
-        type,
-        logged_at: loggedAt,
+      console.log('📤 Index.tsx calling create-activity:', {
+        dateLocal,
+        timeLocal,
         timezone,
-        details: detailsWithTime,
-        created_by: user.id
-      }).select().single();
+        offsetMinutes,
+        type
+      });
+
+      // Call server function to create activity with proper UTC conversion
+      const { data, error } = await supabase.functions.invoke('create-activity', {
+        body: {
+          household_id: householdId,
+          type,
+          date_local: dateLocal,
+          time_local: timeLocal,
+          tz: timezone,
+          offset_minutes: offsetMinutes,
+          details
+        }
+      });
 
       if (error) throw error;
+      if (!data?.data) throw new Error('No data returned from server');
 
       // Track for undo
-      if (data) {
-        trackCreate({
-          id: data.id,
-          type: data.type,
-          logged_at: data.logged_at,
-          details: data.details,
-          household_id: data.household_id,
-          created_by: data.created_by
-        });
-      }
+      trackCreate({
+        id: data.data.id,
+        type: data.data.type,
+        logged_at: data.data.logged_at,
+        details: data.data.details,
+        household_id: data.data.household_id,
+        created_by: data.data.created_by
+      });
 
       // Refetch activities to update the list
       refetchActivities();

@@ -188,6 +188,56 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_data_pulse: {
+        Row: {
+          created_at: string | null
+          date: string
+          feed_volume_change_percent: number | null
+          household_id: string
+          id: string
+          sleep_change_percent: number | null
+          total_sleep_hours: number | null
+          total_sleep_minutes: number | null
+          wake_average_diff_minutes: number | null
+          wake_average_hours: number | null
+          wake_average_minutes: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          feed_volume_change_percent?: number | null
+          household_id: string
+          id?: string
+          sleep_change_percent?: number | null
+          total_sleep_hours?: number | null
+          total_sleep_minutes?: number | null
+          wake_average_diff_minutes?: number | null
+          wake_average_hours?: number | null
+          wake_average_minutes?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          feed_volume_change_percent?: number | null
+          household_id?: string
+          id?: string
+          sleep_change_percent?: number | null
+          total_sleep_hours?: number | null
+          total_sleep_minutes?: number | null
+          wake_average_diff_minutes?: number | null
+          wake_average_hours?: number | null
+          wake_average_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_data_pulse_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       households: {
         Row: {
           baby_birthday: string | null
