@@ -441,7 +441,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               </div>
               {prevFeedSummary.avgFeedsPerDay > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  {feedCountChange >= 0 ? '+' : ''}{feedCountChange.toFixed(0)} vs last week
+                  {feedCountChange >= 0 ? '+' : ''}{feedCountChange.toFixed(0)}% vs last week
                 </p>
               )}
             </div>
