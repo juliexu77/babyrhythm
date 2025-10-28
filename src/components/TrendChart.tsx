@@ -235,92 +235,95 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Date Navigation */}
-      <div className="flex items-center justify-between px-2 animate-fade-in">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => setDaysOffset(prev => Math.min(prev + 7, maxDaysBack - 7))}
-          disabled={!canGoBack}
-          className="h-8 gap-1 transition-all hover-scale"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="text-sm">Earlier</span>
-        </Button>
-        
-        <div className="text-sm font-medium text-foreground px-4 py-1.5 rounded-full bg-muted/30">
-          {dateRange.label}
+      {/* Context Bar - Sticky Header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 -mx-4 px-4 py-3 mb-6">
+        <div className="flex items-center justify-between max-w-3xl mx-auto">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setDaysOffset(prev => Math.min(prev + 7, maxDaysBack - 7))}
+            disabled={!canGoBack}
+            className="h-9 gap-1.5 transition-all hover-scale"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">
+              {daysOffset === 0 ? 'This week' : 'Week of'}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {dateRange.label}
+            </span>
+          </div>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setDaysOffset(prev => Math.max(prev - 7, 0))}
+            disabled={!canGoForward}
+            className="h-9 gap-1.5 transition-all hover-scale"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-        
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => setDaysOffset(prev => Math.max(prev - 7, 0))}
-          disabled={!canGoForward}
-          className="h-8 gap-1 transition-all hover-scale"
-        >
-          <span className="text-sm">Recent</span>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </div>
 
-      {/* Daily Feed Totals */}
-      <div ref={feedChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border transition-all hover:shadow-lg">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-base font-sans font-medium text-foreground dark:font-semibold">
-                {t('dailyFeedTotals')}
-              </h3>
+      {/* Feeding Trends Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 px-2">
+          <div className="w-1 h-5 bg-gradient-feed rounded-full"></div>
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Feeding Trends</h2>
+        </div>
+
+        <div ref={feedChartRef} className="bg-card/50 backdrop-blur rounded-xl p-5 shadow-card border border-border transition-all hover:shadow-lg">
+          <div className="h-11 mb-4 flex items-center justify-between">{/* Fixed header height */}
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-3">
+                <h3 className="text-base font-semibold text-foreground">
+                  Volume
+                </h3>
+                <div className="flex items-center gap-2 bg-muted/30 px-2.5 py-1 rounded-full">
+                  <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">ml</Label>
+                  <Switch 
+                    id="unit-toggle"
+                    checked={feedUnit === "oz"}
+                    onCheckedChange={(checked) => setFeedUnit(checked ? "oz" : "ml")}
+                    className="scale-75"
+                  />
+                  <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">oz</Label>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Past 7 days</p>
             </div>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(feedChartRef, 'Daily Feed Totals')}>
-              <Share className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(feedChartRef, 'Feeding Trends')}>
+              <Share className="h-3.5 w-3.5" />
             </Button>
           </div>
-        </div>
         
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-feed animate-scale-in"></div>
-              <span className="text-sm text-muted-foreground">{t('feedVolume')} ({feedUnit})</span>
-            </div>
-            <div className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-full">
-              <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">ml</Label>
-              <Switch 
-                id="unit-toggle"
-                checked={feedUnit === "oz"}
-                onCheckedChange={(checked) => setFeedUnit(checked ? "oz" : "ml")}
-                className="transition-all"
-              />
-              <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">oz</Label>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2 h-32">
+          <div className="grid grid-cols-7 gap-3 h-40 mt-3">{/* Increased height and gap */}
             {feedData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center gap-1">
-                <div className="flex-1 flex flex-col justify-end w-full">
+              <div key={index} className="flex flex-col items-center gap-2">
+                <div className="flex-1 flex flex-col justify-end w-full relative">
                   {day.value === 0 ? (
-                    <div className="w-3/4 mx-auto h-1 bg-muted rounded opacity-30" />
+                    <div className="w-full h-1 bg-muted/30 rounded" />
                   ) : (
                     <button
-                      className="bg-gradient-feed rounded-t opacity-80 w-3/4 mx-auto relative hover:opacity-100 transition-all cursor-pointer border-none p-0 animate-scale-in"
-                      style={{ height: `${(day.value / maxFeedValue) * 100}%` }}
+                      className="bg-gradient-feed rounded-lg w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
+                      style={{ height: `${(day.value / maxFeedValue) * 100}%`, minHeight: '32px' }}
                       onClick={() => setSelectedDetail(selectedDetail === `feed-${index}` ? null : `feed-${index}`)}
                     >
-                      <span className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium">
+                      <span className="absolute inset-x-0 top-1 text-[11px] text-white/90 font-medium">
                         {day.value}
                       </span>
                     </button>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground font-medium">
+                <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
                   {day.date}
                 </div>
                  {selectedDetail === `feed-${index}` && (
-                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2 shadow-lg pointer-events-none"
+                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2.5 shadow-lg pointer-events-none"
                         style={{
                           left: '50%',
                           top: '50%',
@@ -335,58 +338,56 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           
           {/* Missing data note */}
           {feedData.filter(d => d.value === 0).length > 0 && (
-            <p className="text-xs text-muted-foreground italic mt-2">
+            <p className="text-[11px] text-muted-foreground/60 italic mt-1">
               Missing data — skip day or travel?
             </p>
           )}
         </div>
       </div>
 
-      {/* Daily Sleep Totals */}
-      <div ref={napChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border transition-all hover:shadow-lg">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-base font-sans font-medium text-foreground dark:font-semibold">
-                {t('dailySleepTotalsChart')}
+      {/* Sleep Trends Section */}
+      <div className="space-y-4 mt-8">
+        <div className="flex items-center gap-2 px-2">
+          <div className="w-1 h-5 bg-gradient-nap rounded-full"></div>
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Sleep Trends</h2>
+        </div>
+
+        <div ref={napChartRef} className="bg-card/50 backdrop-blur rounded-xl p-5 shadow-card border border-border transition-all hover:shadow-lg">
+          <div className="h-11 mb-4 flex items-center justify-between">{/* Fixed header height */}
+            <div className="space-y-0.5">
+              <h3 className="text-base font-semibold text-foreground">
+                Duration
               </h3>
+              <p className="text-xs text-muted-foreground">Past 7 days</p>
             </div>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(napChartRef, 'Daily Sleep Totals')}>
-              <Share className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(napChartRef, 'Sleep Trends')}>
+              <Share className="h-3.5 w-3.5" />
             </Button>
           </div>
-        </div>
         
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-nap animate-scale-in"></div>
-            <span className="text-sm text-muted-foreground">{t('sleepHours')}</span>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2 h-32">
+          <div className="grid grid-cols-7 gap-3 h-40 mt-3">{/* Increased height and gap */}
             {napData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center gap-1 relative">
+              <div key={index} className="flex flex-col items-center gap-2 relative">
                 <div className="flex-1 flex flex-col justify-end w-full">
                   {day.value === 0 ? (
-                    <div className="w-3/4 mx-auto h-1 bg-muted rounded opacity-30" />
+                    <div className="w-full h-1 bg-muted/30 rounded" />
                   ) : (
                     <button
-                      className="bg-gradient-nap rounded-t opacity-80 w-3/4 mx-auto relative hover:opacity-100 transition-all cursor-pointer border-none p-0 animate-scale-in"
-                      style={{ height: `${(day.value / maxNapValue) * 100}%` }}
+                      className="bg-gradient-nap rounded-lg w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
+                      style={{ height: `${(day.value / maxNapValue) * 100}%`, minHeight: '32px' }}
                       onClick={() => setSelectedDetail(selectedDetail === `nap-${index}` ? null : `nap-${index}`)}
                     >
-                      <span className="absolute -top-5 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium">
+                      <span className="absolute inset-x-0 top-1 text-[11px] text-white/90 font-medium">
                         {day.value}h
                       </span>
                     </button>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground font-medium">
+                <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
                   {day.date}
                 </div>
                  {selectedDetail === `nap-${index}` && (
-                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2 shadow-lg pointer-events-none"
+                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2.5 shadow-lg pointer-events-none"
                         style={{
                           left: '50%',
                           top: '50%',
@@ -401,7 +402,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           
           {/* Missing data note */}
           {napData.filter(d => d.value === 0).length > 0 && (
-            <p className="text-xs text-muted-foreground italic mt-2">
+            <p className="text-[11px] text-muted-foreground/60 italic mt-1">
               Missing data — skip day or travel?
             </p>
           )}
