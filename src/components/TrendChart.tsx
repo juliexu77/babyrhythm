@@ -1,5 +1,5 @@
 import { Activity } from "./ActivityCard";
-import { TrendingUp, Share } from "lucide-react";
+import { TrendingUp, Share, ChevronLeft, ChevronRight } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -15,8 +15,13 @@ interface TrendChartProps {
 export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const { t, language } = useLanguage();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
+  const [daysOffset, setDaysOffset] = useState(0); // 0 = today, 7 = 1 week back, etc.
   const feedChartRef = useRef<HTMLDivElement>(null);
   const napChartRef = useRef<HTMLDivElement>(null);
+  
+  const maxDaysBack = 30;
+  const canGoBack = daysOffset < maxDaysBack - 7;
+  const canGoForward = daysOffset > 0;
 
   // Determine preferred unit from last feed entry
   const getPreferredUnit = () => {
@@ -43,6 +48,23 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     }
   };
 
+  // Get the date range being viewed
+  const getDateRange = () => {
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() - daysOffset);
+    const startDate = new Date(endDate);
+    startDate.setDate(startDate.getDate() - 6);
+    
+    return {
+      start: startDate,
+      end: endDate,
+      label: daysOffset === 0 
+        ? "Last 7 Days"
+        : `${startDate.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { month: 'short', day: 'numeric' })}`
+    };
+  };
+
   // Calculate real feed volume data for the past 7 days
   const generateFeedData = () => {
     const days = 7;
@@ -51,7 +73,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
-      date.setDate(date.getDate() - i);
+      date.setDate(date.getDate() - i - daysOffset);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
       // Filter activities for this specific date using loggedAt timestamp
@@ -112,7 +134,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
-      date.setDate(date.getDate() - i);
+      date.setDate(date.getDate() - i - daysOffset);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
       // Filter activities for this specific date using loggedAt timestamp
@@ -157,6 +179,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
   const feedData = generateFeedData();
   const napData = generateNapData();
+  const dateRange = getDateRange();
   
   // Generate interpretive text based on patterns
   const getFeedInterpretation = () => {
@@ -212,6 +235,35 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Date Navigation */}
+      <div className="flex items-center justify-between px-2">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setDaysOffset(prev => Math.min(prev + 7, maxDaysBack - 7))}
+          disabled={!canGoBack}
+          className="h-8 gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span className="text-sm">Earlier</span>
+        </Button>
+        
+        <div className="text-sm font-medium text-muted-foreground">
+          {dateRange.label}
+        </div>
+        
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setDaysOffset(prev => Math.max(prev - 7, 0))}
+          disabled={!canGoForward}
+          className="h-8 gap-1"
+        >
+          <span className="text-sm">Recent</span>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+
       {/* Daily Feed Totals */}
       <div ref={feedChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-6">
