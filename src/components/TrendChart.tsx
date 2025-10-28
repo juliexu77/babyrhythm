@@ -1,5 +1,5 @@
 import { Activity } from "./ActivityCard";
-import { TrendingUp, Share, ChevronLeft, ChevronRight } from "lucide-react";
+import { TrendingUp, Share, ChevronLeft, ChevronRight, Milk, Moon, Activity as ActivityIcon } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -402,7 +402,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Section Header */}
         <div className="flex items-center gap-2.5">
           <div className="w-1 h-6 bg-gradient-feed rounded-full"></div>
-          <h2 className="text-xs font-medium text-foreground uppercase tracking-widest">Feeding Trends</h2>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Feeding Trends</h2>
         </div>
 
         {/* Level 1: Summary Cards */}
@@ -410,14 +410,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           {/* Average Volume Card */}
           <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
-                <span className="text-xl">🍼</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
+                <Milk className="w-4 h-4 text-primary" />
               </div>
               <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Average Volume</h3>
             </div>
             <div className="space-y-1">
-              <div className="text-3xl font-semibold text-foreground tracking-tight">
-                {Math.round(feedSummary.avgVolume)} <span className="text-lg text-muted-foreground font-normal">{feedUnit}/day</span>
+              <div className="text-2xl font-semibold text-foreground tracking-tight">
+                {Math.round(feedSummary.avgVolume)} <span className="text-base text-muted-foreground font-normal">{feedUnit}/day</span>
               </div>
               {prevFeedSummary.avgVolume > 0 && (
                 <p className="text-xs text-muted-foreground">
@@ -430,14 +430,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           {/* Feed Count Card */}
           <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
-                <span className="text-xl">🌙</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
+                <ActivityIcon className="w-4 h-4 text-primary" />
               </div>
               <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Feed Count</h3>
             </div>
             <div className="space-y-1">
-              <div className="text-3xl font-semibold text-foreground tracking-tight">
-                {Math.round(feedSummary.avgFeedsPerDay)} <span className="text-lg text-muted-foreground font-normal">/day</span>
+              <div className="text-2xl font-semibold text-foreground tracking-tight">
+                {Math.round(feedSummary.avgFeedsPerDay)} <span className="text-base text-muted-foreground font-normal">/day</span>
               </div>
               {prevFeedSummary.avgFeedsPerDay > 0 && (
                 <p className="text-xs text-muted-foreground">
@@ -525,7 +525,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Section Header */}
         <div className="flex items-center gap-2.5">
           <div className="w-1 h-6 bg-gradient-nap rounded-full"></div>
-          <h2 className="text-xs font-medium text-foreground uppercase tracking-widest">Sleep Trends</h2>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Sleep Trends</h2>
         </div>
 
         {/* Level 1: Summary Card */}
@@ -533,14 +533,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
-                  <span className="text-xl">🌙</span>
+                <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
+                  <Moon className="w-4 h-4 text-primary" />
                 </div>
                 <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Average Duration</h3>
               </div>
               <div className="space-y-1">
-                <div className="text-3xl font-semibold text-foreground tracking-tight">
-                  {napSummary.avgDuration.toFixed(1)} <span className="text-lg text-muted-foreground font-normal">h/day</span>
+                <div className="text-2xl font-semibold text-foreground tracking-tight">
+                  {napSummary.avgDuration.toFixed(1)} <span className="text-base text-muted-foreground font-normal">h/day</span>
                 </div>
                 {prevNapSummary.avgDuration > 0 && (
                   <p className="text-xs text-muted-foreground">
