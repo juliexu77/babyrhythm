@@ -145,11 +145,15 @@ function getAgeParams(ageInMonths: number): PersonalizedParams {
   return AGE_BRACKETS["7-12mo"];
 }
 
+// CIRCADIAN FEATURE: Determine if a UTC timestamp falls in night hours
 // NOTE: This function uses hardcoded night window (19-7) as a fallback
 // since the prediction engine is stateless and doesn't have access to user profile.
 // For UI components, use useNightSleepWindow() hook instead.
+// 
+// FUTURE IMPROVEMENT: Accept timezone parameter and convert UTC to local hour
+// to properly handle circadian features across timezones
 function isNightTime(timestamp: Date): boolean {
-  const hour = timestamp.getHours();
+  const hour = timestamp.getHours(); // Gets local hour from Date object
   return hour >= 19 || hour < 7; // 7PM to 7AM (default fallback)
 }
 
@@ -174,32 +178,24 @@ function median(values: number[]): number {
 // DATA PROCESSING
 // ---------------------------
 
+// TIMEZONE ARCHITECTURE:
+// - Storage: All timestamps stored as UTC ISO strings in database
+// - Compute: All interval/duration calculations done in UTC
+// - Display: Convert UTC to local only at display boundaries
+// - Circadian features: Derive local hour from UTC + stored IANA timezone
+
 function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
   const parsed = activities
-    .filter(activity => activity.type !== 'note') // Ignore notes and other non-essential logs
+    .filter(activity => activity.type !== 'note')
     .map(activity => {
-      // Parse loggedAt robustly: respect explicit timezone, otherwise treat as local wall time
-      let baseDate: Date;
-      if (activity.loggedAt) {
-        const raw = activity.loggedAt;
-        if (/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) {
-          baseDate = new Date(raw);
-        } else {
-          const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
-          if (m) {
-            baseDate = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || '0'), 0);
-          } else {
-            baseDate = new Date(raw);
-          }
-        }
-      } else {
-        baseDate = new Date();
-      }
+      // Parse logged_at as UTC timestamp (canonical storage)
+      // PostgreSQL timestamp with time zone is stored as UTC
+      const utcTimestamp = activity.loggedAt ? new Date(activity.loggedAt) : new Date();
       
-      // Get the date string in the same local day as the viewer (used only for time-only nap fields)
-      const dateStr = baseDate.toDateString();
+      // For nap start/end times (stored as local wall time strings like "6:45 PM"),
+      // we need to convert them to Date objects on the same calendar day as the activity
+      const dateStr = utcTimestamp.toDateString();
 
-      // Build start/end using the same local day as loggedAt
       let startTime: Date | undefined = undefined;
       let endTime: Date | undefined = undefined;
       if (activity.details?.startTime) {
@@ -207,7 +203,7 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
       }
       if (activity.details?.endTime) {
         endTime = new Date(`${dateStr} ${activity.details.endTime}`);
-        // Handle naps that cross midnight (end earlier than start => add 1 day)
+        // Handle naps that cross midnight
         if (startTime && endTime < startTime) {
           endTime = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
         }
@@ -216,7 +212,7 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
       return {
         id: activity.id,
         type: activity.type,
-        timestamp: baseDate,
+        timestamp: utcTimestamp,  // UTC for all interval calculations
         startTime,
         endTime,
         details: activity.details
@@ -230,21 +226,22 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
     input: activities.length,
     parsed: parsed.length,
     filtered: filtered.length,
-    now: now.toISOString(),
+    nowUTC: now.toISOString(),
     filteredOut: parsed.filter(e => e.timestamp > now).map(e => ({
       id: e.id,
       type: e.type,
-      timestamp: e.timestamp.toISOString(),
+      timestampUTC: e.timestamp.toISOString(),
       minutesInFuture: Math.round((e.timestamp.getTime() - now.getTime()) / 60000)
     })),
-    feedEvents: filtered.filter(e => e.type === 'feed').map(e => ({
+    feedEvents: filtered.filter(e => e.type === 'feed').slice(0, 3).map(e => ({
       id: e.id,
-      timestamp: e.timestamp.toISOString(),
+      timestampUTC: e.timestamp.toISOString(),
       minutesAgo: Math.round((now.getTime() - e.timestamp.getTime()) / 60000)
     }))
   });
   
-  return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Most recent first
+  // Sort by UTC timestamp (most recent first)
+  return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 }
 
 function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {

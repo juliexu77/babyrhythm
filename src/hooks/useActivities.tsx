@@ -32,54 +32,32 @@ export interface DatabaseActivity {
   updated_at: string;
 }
 
-// Convert database activity to UI activity format
+// DISPLAY CONVERSION: Convert UTC timestamp to local display time
+// This happens at the edges - storage is UTC, display is local
 export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
-  // Use the same time logic as sorting - startTime for naps when available
-  let displayTime;
+  // Convert UTC timestamp to local display time
+  const utcDate = new Date(dbActivity.logged_at); // PostgreSQL stores as UTC
+  
+  let displayTime: string;
+  
   if (dbActivity.type === 'nap' && dbActivity.details.startTime) {
     // For naps, use the startTime directly as it's already in display format
     displayTime = dbActivity.details.startTime;
   } else {
-    // Handle both old (UTC with 'Z') and new (local without 'Z') formats
-    const hasZSuffix = dbActivity.logged_at.endsWith('Z') || dbActivity.logged_at.includes('+');
-    
-    if (hasZSuffix) {
-      // OLD FORMAT: "2025-10-26T14:00:00.000Z" (UTC timestamp)
-      // Convert from UTC to local display time
-      const activityDate = new Date(dbActivity.logged_at);
-      displayTime = activityDate.toLocaleTimeString("en-US", { 
-        hour: "numeric", 
-        minute: "2-digit",
-        hour12: true 
-      });
-    } else {
-      // NEW FORMAT: "2025-10-26T07:00:00" (local time without 'Z')
-      // Parse directly as local time
-      const timeMatch = dbActivity.logged_at.match(/T(\d{2}):(\d{2})/);
-      if (timeMatch) {
-        const hours = parseInt(timeMatch[1]);
-        const minutes = timeMatch[2];
-        const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-        const period = hours >= 12 ? 'PM' : 'AM';
-        displayTime = `${hour12}:${minutes} ${period}`;
-      } else {
-        // Fallback
-        const activityDate = new Date(dbActivity.logged_at);
-        displayTime = activityDate.toLocaleTimeString("en-US", { 
-          hour: "numeric", 
-          minute: "2-digit",
-          hour12: true 
-        });
-      }
-    }
+    // Convert UTC to local display time
+    displayTime = utcDate.toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    });
   }
 
   return {
     id: dbActivity.id,
     type: dbActivity.type,
     time: displayTime,
-    loggedAt: dbActivity.logged_at, // Keep the original timestamp
-    timezone: dbActivity.timezone, // Include timezone if available
+    loggedAt: dbActivity.logged_at, // Keep UTC timestamp for calculations
+    timezone: dbActivity.timezone,   // Keep IANA timezone
     details: dbActivity.details
   };
 };
@@ -180,10 +158,13 @@ export function useActivities() {
     if (!user || !household) throw new Error('User not authenticated or no household');
 
     try {
-      // Get user's current timezone
+      // CANONICAL STORAGE: Store as UTC timestamp + IANA timezone
+      // User selected time string (e.g., "6:45 PM") represents local wall time
+      
+      // 1. Get user's IANA timezone
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      // Convert selected time string to local timestamp with timezone offset
+      // 2. Parse the selected time string
       const [time, period] = activity.time.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
       
@@ -191,7 +172,7 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // Create a Date object in local time
+      // 3. Create Date object in LOCAL time (represents the moment the user selected)
       const now = new Date();
       const localDate = new Date(
         now.getFullYear(),
@@ -203,30 +184,16 @@ export function useActivities() {
         0
       );
       
-      // Format with timezone offset (e.g., "2025-01-28T18:45:00-08:00")
-      const year = localDate.getFullYear();
-      const month = String(localDate.getMonth() + 1).padStart(2, '0');
-      const day = String(localDate.getDate()).padStart(2, '0');
-      const hourStr = String(localDate.getHours()).padStart(2, '0');
-      const minStr = String(localDate.getMinutes()).padStart(2, '0');
-      const secStr = String(localDate.getSeconds()).padStart(2, '0');
-      
-      // Get timezone offset in format +HH:MM or -HH:MM
-      const timezoneOffset = -localDate.getTimezoneOffset(); // Minutes
-      const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
-      const offsetMinutes = Math.abs(timezoneOffset) % 60;
-      const offsetSign = timezoneOffset >= 0 ? '+' : '-';
-      const offsetStr = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
-      
-      const logged_at = `${year}-${month}-${day}T${hourStr}:${minStr}:${secStr}${offsetStr}`;
+      // 4. Convert to UTC ISO string (this is the canonical timestamp)
+      const logged_at = localDate.toISOString(); // Always UTC, e.g., "2025-01-28T02:45:00.000Z" for 6:45 PM PST
 
       const { data, error } = await supabase
         .from('activities')
         .insert({
           household_id: household.id,
           type: activity.type,
-          logged_at,
-          timezone,
+          logged_at,      // UTC timestamp
+          timezone,       // IANA timezone at time of entry
           details: activity.details,
           created_by: user.id
         })
@@ -234,8 +201,6 @@ export function useActivities() {
         .single();
 
       if (error) throw error;
-
-      // Removed noisy popup notification
 
       return data;
     } catch (error) {
