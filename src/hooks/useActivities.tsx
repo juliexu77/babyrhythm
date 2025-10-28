@@ -158,12 +158,9 @@ export function useActivities() {
     if (!user || !household) throw new Error('User not authenticated or no household');
 
     try {
-      // TIMEZONE ARCHITECTURE:
-      // 1. User selects a local wall time (e.g., "6:45 PM")
-      // 2. Interpret it in the BROWSER's timezone (baby's active timezone)
-      // 3. Store as UTC + IANA timezone (no manual offset math - Date handles it)
+      // CLIENT SENDS LOCAL TIME + TIMEZONE TO SERVER
+      // Server is the single source of truth for UTC computation
       
-      // Get user's IANA timezone
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
       // Parse the selected time string
@@ -174,51 +171,40 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // CRITICAL: new Date(year, month, day, hour, minute) interprets in BROWSER's timezone
-      // It creates a Date object that internally represents the correct UTC instant
-      // for that local time. NO manual offset adjustment needed!
+      // Get current date and timezone offset
       const now = new Date();
-      const localDate = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        hour24,
-        minutes,
-        0,
-        0
-      );
+      const dateLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const timeLocal = `${String(hour24).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
       
-      // Get offset for logging/validation only (NOT for conversion)
-      const offsetMinutes = localDate.getTimezoneOffset();
+      // Get timezone offset in minutes (how many minutes BEHIND UTC)
+      // For PST (UTC-8), this returns +480
+      const offsetMinutes = now.getTimezoneOffset();
       
-      // toISOString() returns the correct UTC representation - NO additional conversion needed
-      const logged_at = localDate.toISOString();
-      
-      console.log('🕐 Activity timestamp (NO DOUBLE SHIFT):', {
-        userSelectedTime: activity.time,
+      console.log('📤 Client sending to server:', {
+        dateLocal,
+        timeLocal,
         timezone,
-        browserOffset: offsetMinutes,
-        localDateDebug: localDate.toString(),
-        storedUTC: logged_at,
-        verification: `${activity.time} ${timezone} → ${logged_at}`
+        offsetMinutes,
+        userSelectedTime: activity.time
       });
 
-      const { data, error } = await supabase
-        .from('activities')
-        .insert({
+      // Call server function to create activity
+      const { data, error } = await supabase.functions.invoke('create-activity', {
+        body: {
           household_id: household.id,
           type: activity.type,
-          logged_at,      // UTC timestamp (already correct from Date.toISOString())
-          timezone,       // IANA timezone for display/circadian features
-          details: activity.details,
-          created_by: user.id
-        })
-        .select()
-        .single();
+          date_local: dateLocal,
+          time_local: timeLocal,
+          tz: timezone,
+          offset_minutes: offsetMinutes,  // Send offset for server to use
+          details: activity.details
+        }
+      });
 
       if (error) throw error;
+      if (!data?.data) throw new Error('No data returned from server');
 
-      return data;
+      return data.data;
     } catch (error) {
       console.error('Error adding activity:', error);
       toast({

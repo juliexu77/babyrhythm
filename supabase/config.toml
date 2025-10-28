@@ -1,5 +1,8 @@
 project_id = "ufpavzvrtdzxwcwasaqj"
 
+[functions.create-activity]
+verify_jwt = true
+
 [functions.parenting-chat]
 verify_jwt = true
 
