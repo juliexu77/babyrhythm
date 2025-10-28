@@ -10,12 +10,9 @@ import { Activity } from "@/components/ActivityCard";
 import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
-// Parse "YYYY-MM-DDTHH:mm:ss" as LOCAL time reliably (avoids Safari UTC parsing)
-const parseLocalTimestamp = (ts: string): Date => {
-  const m = ts?.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
-  if (m) {
-    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || '0'), 0);
-  }
+// Convert UTC timestamp string to local Date object
+const parseUTCToLocal = (ts: string): Date => {
+  // The database returns UTC timestamps - convert to local time
   return new Date(ts);
 };
 
@@ -134,7 +131,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get today's activities only
   const todayActivities = activities.filter(a => {
     if (!a.loggedAt) return false;
-    const parsed = parseLocalTimestamp(a.loggedAt);
+    const parsed = parseUTCToLocal(a.loggedAt);
     const result = isToday(parsed);
     return result;
   });
@@ -142,7 +139,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get yesterday's activities for context when today is empty
   const yesterdayActivities = activities.filter(a => {
     if (!a.loggedAt) return false;
-    const activityDate = parseLocalTimestamp(a.loggedAt);
+    const activityDate = parseUTCToLocal(a.loggedAt);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     return activityDate.toDateString() === yesterday.toDateString();
@@ -163,14 +160,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       id: a.id?.slice(0,8), 
       type: a.type, 
       loggedAt: a.loggedAt,
-      parsed: parseLocalTimestamp(a.loggedAt!).toLocaleString()
+      parsed: parseUTCToLocal(a.loggedAt!).toLocaleString()
     })));
     if (showingYesterday) {
       console.log('Yesterday\'s dates:', yesterdayActivities.map(a => ({ 
         id: a.id?.slice(0,8), 
         type: a.type, 
         loggedAt: a.loggedAt,
-        parsed: parseLocalTimestamp(a.loggedAt!).toLocaleString()
+        parsed: parseUTCToLocal(a.loggedAt!).toLocaleString()
       })));
     }
     console.groupEnd();
@@ -192,7 +189,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   // Compute a comparable timestamp for sorting: use nap startTime when provided; otherwise use loggedAt's time
   const getComparableTime = (a: Activity): number => {
-    const base = parseLocalTimestamp(a.loggedAt!);
+    const base = parseUTCToLocal(a.loggedAt!);
     let minutes: number | null = null;
     if (a.type === 'nap' && a.details?.startTime) {
       minutes = parseUI12hToMinutes(a.details.startTime);
@@ -254,14 +251,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
     // Find the most recent completed nap (yesterday or today)
   const recentNaps = activities.filter(a =>
-    a.loggedAt && parseLocalTimestamp(a.loggedAt) >= yesterdayStart &&
+    a.loggedAt && parseUTCToLocal(a.loggedAt) >= yesterdayStart &&
     a.type === 'nap' && a.details?.endTime
   );
 
     if (recentNaps.length === 0) return null;
 
   const napsWithEndDate = recentNaps.map(nap => {
-    const baseDate = parseLocalTimestamp(nap.loggedAt!);
+    const baseDate = parseUTCToLocal(nap.loggedAt!);
     const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
     const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
 
@@ -290,12 +287,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
 const lastFeed = displayActivities
   .filter(a => a.type === 'feed')
-  .sort((a, b) => parseLocalTimestamp(b.loggedAt!).getTime() - parseLocalTimestamp(a.loggedAt!).getTime())[0];
+  .sort((a, b) => parseUTCToLocal(b.loggedAt!).getTime() - parseUTCToLocal(a.loggedAt!).getTime())[0];
 
 // Get last diaper
 const lastDiaper = displayActivities
   .filter(a => a.type === 'diaper')
-  .sort((a, b) => parseLocalTimestamp(b.loggedAt!).getTime() - parseLocalTimestamp(a.loggedAt!).getTime())[0];
+  .sort((a, b) => parseUTCToLocal(b.loggedAt!).getTime() - parseUTCToLocal(a.loggedAt!).getTime())[0];
 
   // Get sleep status message with duration
   const getSleepStatus = () => {
@@ -309,7 +306,7 @@ const lastDiaper = displayActivities
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-  const napStart = parseLocalTimestamp(ongoingNap.loggedAt!);
+  const napStart = parseUTCToLocal(ongoingNap.loggedAt!);
   napStart.setHours(hour24, minutes, 0, 0);
       
       const sleepMinutes = differenceInMinutes(currentTime, napStart);
@@ -688,7 +685,7 @@ const lastDiaper = displayActivities
         if (period === 'PM' && hours !== 12) hour24 += 12;
         if (period === 'AM' && hours === 12) hour24 = 0;
         
-        const napStart = parseLocalTimestamp(ongoingNap.loggedAt!);
+        const napStart = parseUTCToLocal(ongoingNap.loggedAt!);
         napStart.setHours(hour24, minutes, 0, 0);
         
         napDuration = differenceInMinutes(currentTime, napStart);
