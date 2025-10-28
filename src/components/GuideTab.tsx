@@ -764,19 +764,26 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* What to Know */}
           {hasMinimumData && guideSections && guideSections.what_to_know && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-primary" />
-                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
-              </div>
-              <div className="space-y-2 pl-1">
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {guideSections.what_to_know[0]}
-                  </p>
-                </div>
-                {guideSections.what_to_know.length > 1 && (
-                  <Collapsible>
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button className="flex items-center justify-between w-full group">
+                    <div className="flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-primary" />
+                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
+                    </div>
+                    {guideSections.what_to_know.length > 1 && (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <div className="space-y-2 pl-1 mt-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {guideSections.what_to_know[0]}
+                    </p>
+                  </div>
+                  {guideSections.what_to_know.length > 1 && (
                     <CollapsibleContent>
                       {guideSections.what_to_know.slice(1).map((item, idx) => (
                         <div key={idx} className="flex items-start gap-2 mt-2">
@@ -787,34 +794,35 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                         </div>
                       ))}
                     </CollapsibleContent>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="sm" className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground h-7">
-                        <ChevronDown className="w-3 h-3 mr-1" />
-                        Show {guideSections.what_to_know.length - 1} more
-                      </Button>
-                    </CollapsibleTrigger>
-                  </Collapsible>
-                )}
-              </div>
+                  )}
+                </div>
+              </Collapsible>
             </div>
           )}
 
           {/* What To Do */}
           {hasMinimumData && guideSections && guideSections.what_to_do && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <CheckSquare className="w-4 h-4 text-primary" />
-                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
-              </div>
-              <div className="space-y-2 pl-1">
-                <div className="flex items-start gap-2">
-                  <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {guideSections.what_to_do[0]}
-                  </p>
-                </div>
-                {guideSections.what_to_do.length > 1 && (
-                  <Collapsible>
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button className="flex items-center justify-between w-full group">
+                    <div className="flex items-center gap-2">
+                      <CheckSquare className="w-4 h-4 text-primary" />
+                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
+                    </div>
+                    {guideSections.what_to_do.length > 1 && (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <div className="space-y-2 pl-1 mt-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {guideSections.what_to_do[0]}
+                    </p>
+                  </div>
+                  {guideSections.what_to_do.length > 1 && (
                     <CollapsibleContent>
                       {guideSections.what_to_do.slice(1).map((item, idx) => (
                         <div key={idx} className="flex items-start gap-2 mt-2">
@@ -825,15 +833,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                         </div>
                       ))}
                     </CollapsibleContent>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="sm" className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground h-7">
-                        <ChevronDown className="w-3 h-3 mr-1" />
-                        Show {guideSections.what_to_do.length - 1} more
-                      </Button>
-                    </CollapsibleTrigger>
-                  </Collapsible>
-                )}
-              </div>
+                  )}
+                </div>
+              </Collapsible>
             </div>
           )}
 
