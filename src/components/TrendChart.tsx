@@ -402,7 +402,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Section Header */}
         <div className="flex items-center gap-2.5">
           <div className="w-1 h-6 bg-gradient-feed rounded-full"></div>
-          <h2 className="text-lg font-medium text-foreground tracking-wide">Feeding Trends</h2>
+          <h2 className="text-base font-medium text-foreground">Feeding Trends</h2>
         </div>
 
         {/* Level 1: Summary Cards */}
@@ -452,7 +452,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         <div ref={feedChartRef} className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50 transition-all hover:shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <h3 className="text-base font-medium text-foreground tracking-wide">
+              <h3 className="text-sm font-medium text-foreground">
                 Volume ({feedUnit})
               </h3>
               <div className="flex items-center gap-2 bg-muted/20 px-2.5 py-1 rounded-full">
@@ -525,7 +525,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Section Header */}
         <div className="flex items-center gap-2.5">
           <div className="w-1 h-6 bg-gradient-nap rounded-full"></div>
-          <h2 className="text-lg font-medium text-foreground tracking-wide">Sleep Trends</h2>
+          <h2 className="text-base font-medium text-foreground">Sleep Trends</h2>
         </div>
 
         {/* Level 1: Summary Card */}
@@ -561,7 +561,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Level 2: Duration Chart */}
         <div ref={napChartRef} className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50 transition-all hover:shadow-lg">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-base font-medium text-foreground tracking-wide">
+            <h3 className="text-sm font-medium text-foreground">
               Duration (hours)
             </h3>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(napChartRef, 'Sleep Trends')}>
