@@ -265,9 +265,23 @@ function filterOutliers(activities: Activity[], tz: string): Activity[] {
         return sum + parseInt(n.details.duration);
       }
       if (n.details?.startTime && n.details?.endTime) {
-        const start = new Date(`1970-01-01 ${n.details.startTime}`);
-        const end = new Date(`1970-01-01 ${n.details.endTime}`);
-        let diff = (end.getTime() - start.getTime()) / (1000 * 60);
+        // Parse time strings manually
+        const parseTime = (timeStr: string) => {
+          const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (!match) return null;
+          let hours = parseInt(match[1], 10);
+          const minutes = parseInt(match[2], 10);
+          const period = match[3].toUpperCase();
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          return hours * 60 + minutes;
+        };
+        
+        const startMins = parseTime(n.details.startTime);
+        const endMins = parseTime(n.details.endTime);
+        if (startMins === null || endMins === null) return sum;
+        
+        let diff = endMins - startMins;
         if (diff < 0) diff += 24 * 60;
         if (diff > 720) diff = 720; // Cap at 12 hours
         return sum + diff;
@@ -314,10 +328,29 @@ function calculateMetrics(activities: Activity[]) {
       return parseInt(a.details.duration);
     }
     if (a.details?.startTime && a.details?.endTime) {
-      const start = new Date(`1970-01-01 ${a.details.startTime}`);
-      const end = new Date(`1970-01-01 ${a.details.endTime}`);
-      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
-      if (diff < 0) diff += 24 * 60;
+      // Parse time strings manually to avoid Date constructor issues
+      const parseTime = (timeStr: string) => {
+        const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (!match) return null;
+        
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const period = match[3].toUpperCase();
+        
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        return hours * 60 + minutes; // Return total minutes from midnight
+      };
+      
+      const startMins = parseTime(a.details.startTime);
+      const endMins = parseTime(a.details.endTime);
+      
+      if (startMins === null || endMins === null) return 0;
+      
+      let diff = endMins - startMins;
+      if (diff < 0) diff += 24 * 60; // Handle overnight
+      
       // Cap at reasonable duration (12 hours)
       if (diff > 720) diff = 720;
       return diff;
@@ -370,17 +403,8 @@ function calculateMetrics(activities: Activity[]) {
     const current = sortedNaps[i];
     const next = sortedNaps[i + 1];
     
-    // Calculate current nap duration
-    let currentDuration = 0;
-    if (current.details?.duration) {
-      currentDuration = parseInt(current.details.duration);
-    } else if (current.details?.startTime && current.details?.endTime) {
-      const start = new Date(`1970-01-01 ${current.details.startTime}`);
-      const end = new Date(`1970-01-01 ${current.details.endTime}`);
-      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
-      if (diff < 0) diff += 24 * 60;
-      currentDuration = diff;
-    }
+    // Calculate current nap duration using the helper
+    const currentDuration = calculateSleepDuration(current);
     
     const currentEnd = new Date(current.logged_at).getTime() + (currentDuration * 60000);
     const nextStart = new Date(next.logged_at).getTime();
