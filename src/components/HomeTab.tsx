@@ -287,9 +287,29 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return awakeHours > 0 ? `${awakeHours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
   };
 
-const lastFeed = displayActivities
-  .filter(a => a.type === 'feed')
+const feedsToday = displayActivities.filter(a => a.type === 'feed');
+const lastFeed = feedsToday
   .sort((a, b) => parseUTCToLocal(b.loggedAt!).getTime() - parseUTCToLocal(a.loggedAt!).getTime())[0];
+
+// Debug last feed selection
+if (typeof window !== 'undefined') {
+  console.log('🍼 Last Feed Debug:', {
+    totalFeeds: feedsToday.length,
+    allFeeds: feedsToday.map(f => ({
+      id: f.id?.slice(0, 8),
+      time: f.time,
+      loggedAt: f.loggedAt,
+      parsedUTC: parseUTCToLocal(f.loggedAt!).toLocaleString(),
+      utcMs: parseUTCToLocal(f.loggedAt!).getTime()
+    })),
+    selected: lastFeed ? {
+      id: lastFeed.id?.slice(0, 8),
+      time: lastFeed.time,
+      loggedAt: lastFeed.loggedAt,
+      parsedUTC: parseUTCToLocal(lastFeed.loggedAt!).toLocaleString()
+    } : 'none'
+  });
+}
 
 // Get last diaper
 const lastDiaper = displayActivities
