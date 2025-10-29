@@ -40,15 +40,20 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
   
   let displayTime: string;
   
+  // For naps, use startTime if available (it's already in local time format from user selection)
+  // Otherwise convert the UTC logged_at timestamp to local time
   if (dbActivity.type === 'nap' && dbActivity.details.startTime) {
-    // For naps, use the startTime directly as it's already in display format
     displayTime = dbActivity.details.startTime;
+    if (dbActivity.details.endTime) {
+      displayTime = `${dbActivity.details.startTime} - ${dbActivity.details.endTime}`;
+    }
   } else {
-    // Convert UTC to local display time
+    // Convert UTC to current local timezone for display
     displayTime = utcDate.toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
-      hour12: true 
+      hour12: true,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
     });
   }
 
