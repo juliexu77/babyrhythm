@@ -1,6 +1,7 @@
 import { Activity } from "./ActivityCard";
 import { TrendingUp, Share, ChevronLeft, ChevronRight, Milk, Moon, Activity as ActivityIcon } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
+import { toZonedTime } from "date-fns-tz";
 import { useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -128,21 +129,49 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     return data;
   };
 
-  // Helper function to parse time strings like "7:30 AM" into Date objects
-  const parseTimeString = (timeStr: string, baseDate: Date = new Date('2000/01/01')): Date | null => {
-    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-    if (!match) return null;
+  // Helper function to calculate nap duration from UTC timestamps
+  const calculateNapDuration = (nap: Activity): number => {
+    if (!nap.loggedAt) return 0;
     
-    let hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
-    const period = match[3].toUpperCase();
+    // Get the start time from logged_at (UTC)
+    const startUtc = new Date(nap.loggedAt);
     
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
+    // If there's an endTime in details, we need to parse it relative to the start time
+    if (nap.details.endTime && nap.details.startTime) {
+      const timezone = nap.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Convert start UTC to local time in the activity's timezone
+      const startLocal = toZonedTime(startUtc, timezone);
+      
+      // Parse end time string to get hours and minutes
+      const endMatch = nap.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!endMatch) return 0;
+      
+      let endHours = parseInt(endMatch[1], 10);
+      const endMinutes = parseInt(endMatch[2], 10);
+      const endPeriod = endMatch[3].toUpperCase();
+      
+      if (endPeriod === 'PM' && endHours !== 12) endHours += 12;
+      if (endPeriod === 'AM' && endHours === 12) endHours = 0;
+      
+      // Create end time based on start date
+      const endLocal = new Date(startLocal);
+      endLocal.setHours(endHours, endMinutes, 0, 0);
+      
+      // Handle overnight naps (end time is next day)
+      if (endLocal < startLocal) {
+        endLocal.setDate(endLocal.getDate() + 1);
+      }
+      
+      const diffMs = endLocal.getTime() - startLocal.getTime();
+      
+      // Validate duration is reasonable (max 24 hours)
+      if (diffMs > 0 && diffMs <= 24 * 60 * 60 * 1000) {
+        return diffMs / (1000 * 60 * 60); // Convert to hours
+      }
+    }
     
-    const date = new Date(baseDate);
-    date.setHours(hours, minutes, 0, 0);
-    return date;
+    return 0;
   };
 
   // Calculate real nap duration data for the past 7 days
@@ -186,27 +215,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       
       let totalHours = 0;
       dayNaps.forEach(nap => {
-        if (nap.details.startTime && nap.details.endTime) {
-          const start = parseTimeString(nap.details.startTime);
-          const end = parseTimeString(nap.details.endTime);
-          
-          // Validate dates are valid
-          if (!start || !end) {
-            console.warn('Invalid time format in nap:', nap);
-            return;
-          }
-          
-          let diff = end.getTime() - start.getTime();
-          
-          // Handle overnight naps (end time is next day)
-          if (diff < 0) {
-            diff = diff + (24 * 60 * 60 * 1000); // Add 24 hours
-          }
-          
-          // Only add positive durations (max 24 hours to prevent invalid data)
-          if (diff > 0 && diff <= 24 * 60 * 60 * 1000) {
-            totalHours += diff / (1000 * 60 * 60);
-          }
+        const duration = calculateNapDuration(nap);
+        if (duration > 0) {
+          totalHours += duration;
         }
       });
       
@@ -297,23 +308,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       
       let totalHours = 0;
       dayNaps.forEach(nap => {
-        if (nap.details.startTime && nap.details.endTime) {
-          const start = parseTimeString(nap.details.startTime);
-          const end = parseTimeString(nap.details.endTime);
-          
-          // Validate dates are valid
-          if (!start || !end) {
-            return;
-          }
-          
-          let diff = end.getTime() - start.getTime();
-          if (diff < 0) {
-            diff = diff + (24 * 60 * 60 * 1000);
-          }
-          // Only add positive durations (max 24 hours)
-          if (diff > 0 && diff <= 24 * 60 * 60 * 1000) {
-            totalHours += diff / (1000 * 60 * 60);
-          }
+        const duration = calculateNapDuration(nap);
+        if (duration > 0) {
+          totalHours += duration;
         }
       });
       
