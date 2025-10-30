@@ -13,31 +13,9 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
 // Convert UTC timestamp string to local Date object
-// Activities are stored in UTC but should be interpreted in the user's current timezone
 const parseUTCToLocal = (ts: string): Date => {
+  // The database returns UTC timestamps - convert to local time
   return new Date(ts);
-};
-
-// Check if a date is "today" based on the user's timezone
-// Baby's "day" runs from nightSleepEndHour (e.g., 7am) to nightSleepEndHour next day
-const isBabyToday = (date: Date, nightSleepEndHour: number = 7): boolean => {
-  const now = new Date();
-  
-  // Define the start of the current "baby day"
-  const babyDayStart = new Date(now);
-  babyDayStart.setHours(nightSleepEndHour, 0, 0, 0);
-  
-  // If current time is before nightSleepEndHour, the baby day started yesterday
-  if (now.getHours() < nightSleepEndHour) {
-    babyDayStart.setDate(babyDayStart.getDate() - 1);
-  }
-  
-  // Define the end of the current "baby day" (next nightSleepEndHour)
-  const babyDayEnd = new Date(babyDayStart);
-  babyDayEnd.setDate(babyDayEnd.getDate() + 1);
-  
-  // Check if the activity date falls within this baby day
-  return date >= babyDayStart && date < babyDayEnd;
 };
 
 interface HomeTabProps {
@@ -152,35 +130,21 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return userName ? `${greeting}, ${userName}` : greeting;
   };
 
-  // Get today's activities only - using baby day definition
+  // Get today's activities only
   const todayActivities = activities.filter(a => {
     if (!a.loggedAt) return false;
     const parsed = parseUTCToLocal(a.loggedAt);
-    return isBabyToday(parsed, nightSleepEndHour);
+    const result = isToday(parsed);
+    return result;
   });
 
   // Get yesterday's activities for context when today is empty
   const yesterdayActivities = activities.filter(a => {
     if (!a.loggedAt) return false;
     const activityDate = parseUTCToLocal(a.loggedAt);
-    
-    // Calculate yesterday's baby day range
-    const now = new Date();
-    const yesterdayBabyDayStart = new Date(now);
-    yesterdayBabyDayStart.setHours(nightSleepEndHour, 0, 0, 0);
-    
-    // If current time is before nightSleepEndHour, baby day started yesterday
-    // So yesterday's baby day started 2 days ago
-    if (now.getHours() < nightSleepEndHour) {
-      yesterdayBabyDayStart.setDate(yesterdayBabyDayStart.getDate() - 2);
-    } else {
-      yesterdayBabyDayStart.setDate(yesterdayBabyDayStart.getDate() - 1);
-    }
-    
-    const yesterdayBabyDayEnd = new Date(yesterdayBabyDayStart);
-    yesterdayBabyDayEnd.setDate(yesterdayBabyDayEnd.getDate() + 1);
-    
-    return activityDate >= yesterdayBabyDayStart && activityDate < yesterdayBabyDayEnd;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return activityDate.toDateString() === yesterday.toDateString();
   });
 
   // Use yesterday's data as context if nothing logged today
