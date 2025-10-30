@@ -256,13 +256,6 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
             {prediction.type === 'feed' ? t('logFeedNow') : t('logNapNow')}
           </Button>
         )}
-        
-        {/* Expanded details */}
-        {isExpanded && (
-          <div className="pt-2 border-t border-border">
-            <p className="text-xs text-muted-foreground leading-relaxed">{prediction.reason}</p>
-          </div>
-        )}
       </div>
     </div>
   );
