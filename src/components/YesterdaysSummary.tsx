@@ -1,20 +1,15 @@
 import { Activity } from "./ActivityCard";
 import { Baby, Moon, Palette, StickyNote, TrendingDown } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
+import { getYesterdayActivities } from "@/utils/activityDateFilters";
 
 interface YesterdaysSummaryProps {
   activities: Activity[];
 }
 
 export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
-  // Filter activities by yesterday's date using actual logged date
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayActivities = activities.filter(a => {
-    if (!a.loggedAt) return false;
-    const activityDate = new Date(a.loggedAt);
-    return activityDate.toDateString() === yesterday.toDateString();
-  });
+  // Filter activities by yesterday's date using shared utility
+  const yesterdayActivities = getYesterdayActivities(activities);
 
   const getYesterdaysDate = () => {
     const yesterday = new Date();

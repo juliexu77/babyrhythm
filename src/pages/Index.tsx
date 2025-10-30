@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
+import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Settings, Undo2, Filter, Share, Sprout, X, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -597,20 +598,8 @@ const ongoingNap = activities
                     return "🌙";
                   })()}
                 </span>
-                {(() => {
-                  const today = new Date();
-                  const todayKey = today.getFullYear() + '-' + 
-                                 String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                                 String(today.getDate()).padStart(2, '0');
-                  
-                  const todayActivities = activities.filter(a => {
-                    if (!a.loggedAt) return false;
-                    const activityDate = new Date(a.loggedAt);
-                    const y = activityDate.getFullYear();
-                    const m = String(activityDate.getMonth() + 1).padStart(2, '0');
-                    const d = String(activityDate.getDate()).padStart(2, '0');
-                    return `${y}-${m}-${d}` === todayKey;
-                  });
+              {(() => {
+                  const todayActivities = getTodayActivities(activities);
                   
                   const naps = todayActivities.filter(a => a.type === 'nap' && a.details.endTime).length;
                   const feeds = todayActivities.filter(a => a.type === 'feed').length;

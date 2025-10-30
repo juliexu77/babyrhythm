@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
+import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -130,20 +131,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return userName ? `${greeting}, ${userName}` : greeting;
   };
 
-  // Get today's activities only - using actual logged date
-  const todayActivities = activities.filter(a => {
-    if (!a.loggedAt) return false;
-    return isToday(new Date(a.loggedAt));
-  });
-
-  // Get yesterday's activities for context when today is empty
-  const yesterdayActivities = activities.filter(a => {
-    if (!a.loggedAt) return false;
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const activityDate = new Date(a.loggedAt);
-    return activityDate.toDateString() === yesterday.toDateString();
-  });
+  // Get today's and yesterday's activities using shared utility
+  const todayActivities = getTodayActivities(activities);
+  const yesterdayActivities = getYesterdayActivities(activities);
 
   // Use yesterday's data as context if nothing logged today
   const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;

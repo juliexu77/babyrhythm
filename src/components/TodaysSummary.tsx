@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { ActivityDetailModal } from "./ActivityDetailModal";
+import { getActivitiesByDate } from "@/utils/activityDateFilters";
 
 interface TodaysSummaryProps {
   activities: Activity[];
@@ -53,12 +54,8 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
   const [selectedDate, setSelectedDate] = useState(getAvailableDates()[0]);
   const availableDates = getAvailableDates();
 
-  // Filter activities for selected date using actual logged date
-  const dayActivities = activities.filter(a => {
-    if (!a.loggedAt) return false;
-    const activityDate = new Date(a.loggedAt).toDateString();
-    return activityDate === selectedDate.date.toDateString();
-  });
+  // Filter activities for selected date using shared utility
+  const dayActivities = getActivitiesByDate(activities, selectedDate.date);
 
   const calculateStats = () => {
     const stats = {
