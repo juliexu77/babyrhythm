@@ -289,7 +289,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
 const feedsToday = displayActivities.filter(a => a.type === 'feed');
 const lastFeed = feedsToday
-  .sort((a, b) => parseUTCToLocal(b.loggedAt!).getTime() - parseUTCToLocal(a.loggedAt!).getTime())[0];
+  .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
 
 // Debug last feed selection
 if (typeof window !== 'undefined') {
