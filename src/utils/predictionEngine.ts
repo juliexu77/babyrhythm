@@ -192,9 +192,17 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
       // PostgreSQL timestamp with time zone is stored as UTC
       const utcTimestamp = activity.loggedAt ? new Date(activity.loggedAt) : new Date();
       
-      // For nap start/end times (stored as local wall time strings like "6:45 PM"),
+      // For activity times (stored as local wall time strings like "6:45 PM"),
       // we need to convert them to Date objects on the same calendar day as the activity
       const dateStr = utcTimestamp.toDateString();
+
+      // Parse the actual activity time (e.g., "6:45 PM" for feeds)
+      let activityTimestamp = utcTimestamp;
+      if (activity.time) {
+        activityTimestamp = new Date(`${dateStr} ${activity.time}`);
+      } else if (activity.details?.displayTime) {
+        activityTimestamp = new Date(`${dateStr} ${activity.details.displayTime}`);
+      }
 
       let startTime: Date | undefined = undefined;
       let endTime: Date | undefined = undefined;
@@ -212,7 +220,7 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
       return {
         id: activity.id,
         type: activity.type,
-        timestamp: utcTimestamp,  // UTC for all interval calculations
+        timestamp: activityTimestamp,  // Use actual activity time for calculations
         startTime,
         endTime,
         details: activity.details
