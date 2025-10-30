@@ -255,6 +255,13 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
 function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
   const sleepEvents = events.filter(e => e.type === 'nap');
 
+  console.log('💤 extractSleepSegments - raw naps:', sleepEvents.map(e => ({
+    id: e.id,
+    start: e.startTime?.toISOString() || e.timestamp.toISOString(),
+    end: e.endTime?.toISOString() || 'null',
+    hasEndTime: !!e.endTime
+  })));
+
   const sleepSegments = sleepEvents
     .map(e => ({
       start: e.startTime || e.timestamp,
@@ -262,6 +269,12 @@ function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
       type: (isNightTime(e.startTime || e.timestamp) ? 'night' : 'nap') as 'nap' | 'night'
     }))
     .sort((a, b) => b.start.getTime() - a.start.getTime()); // Most recent first
+  
+  console.log('💤 extractSleepSegments - processed segments:', sleepSegments.slice(0, 3).map(s => ({
+    start: s.start.toISOString(),
+    end: s.end?.toISOString() || 'null',
+    type: s.type
+  })));
     
   // Try to infer an end time for open sleeps using the next event after the start
   // But don't auto-close ongoing night sleep or very recent sleep
