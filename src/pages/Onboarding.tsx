@@ -45,8 +45,8 @@ const Onboarding = () => {
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="max-w-md mx-auto text-center space-y-12">
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="max-w-md mx-auto text-center space-y-10">
           {/* Logo */}
           <div className="flex flex-col items-center justify-center leading-none">
             <span className="text-2xl font-heading font-bold text-primary tracking-tight">
@@ -54,44 +54,30 @@ const Onboarding = () => {
             </span>
           </div>
 
-          {/* Message */}
-          <div className="space-y-5">
-            <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground tracking-tight leading-tight">
-              Intelligence meets intuition
+          {/* Welcome Message */}
+          <div className="space-y-6">
+            <h1 className="text-3xl md:text-4xl font-sans font-semibold text-foreground tracking-tight leading-tight">
+              Every baby has a rhythm.
             </h1>
-            <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
-              Powered by the shared wisdom of parents, experts, and caregivers — tailored to your baby's unique rhythm.
+            <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
+              BabyRhythm learns yours — predicting feeds, naps, and wake windows so you can relax and stay one step ahead.
             </p>
+            
+            {/* AI Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <span className="text-lg">✨</span>
+              <span className="text-sm font-medium text-primary">AI-Powered Predictions</span>
+            </div>
           </div>
 
           {/* CTA */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                type="text"
-                placeholder="Enter invite code"
-                value={inviteCode}
-                onChange={(e) => {
-                  setInviteCode(e.target.value);
-                  setError("");
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleGetStarted();
-                  }
-                }}
-                className="h-12 text-center rounded-full"
-              />
-              {error && (
-                <p className="text-sm text-destructive text-center">{error}</p>
-              )}
-            </div>
+          <div className="pt-4">
             <Button
               onClick={handleGetStarted}
               size="lg"
-              className="w-full h-12 text-base font-bold rounded-full"
+              className="w-full h-14 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all"
             >
-              Get Started
+              Start My Rhythm
             </Button>
           </div>
         </div>

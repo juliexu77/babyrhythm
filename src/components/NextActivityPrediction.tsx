@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { BabyCarePredictionEngine } from "@/utils/predictionEngine";
 import { useHousehold } from "@/hooks/useHousehold";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface NextActivityPredictionProps {
   activities: Activity[];
@@ -52,7 +53,7 @@ const addMinutesToTime = (timeString: string, minutes: number): string => {
 
 export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, babyName, onLogPredictedActivity }: NextActivityPredictionProps) => {
   const { t } = useLanguage();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const { household } = useHousehold();
   
   // Use the new prediction engine but adapt to old UI format
@@ -168,7 +169,103 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
 
   const prediction = predictNextActivity();
   
-  // If no prediction due to insufficient data, don't show anything
+  // Check if we have minimal data for placeholder vs empty state
+  const hasAnyData = activities && activities.length > 0;
+  const hasMinimalData = activities && (
+    activities.filter(a => a.type === 'feed').length >= 1 ||
+    activities.filter(a => a.type === 'nap').length >= 1
+  );
+  
+  // Empty state - no data yet
+  if (!hasAnyData) {
+    return (
+      <Card className="bg-card border border-border/40 p-6 rounded-2xl">
+        <div className="text-center space-y-4">
+          <div className="inline-flex p-3 bg-primary/10 rounded-full">
+            <Clock className="h-6 w-6 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold text-foreground">
+              Your baby's next rhythm prediction will appear here
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
+              <span className="font-medium">Example:</span> Next feed likely around 1:15 PM
+              <br />
+              <span className="text-xs opacity-80 mt-2 block">
+                Once you log a few activities, these get personalized just for your baby.
+              </span>
+            </p>
+          </div>
+          <div className="pt-2">
+            <p className="text-xs text-muted-foreground">
+              💡 BabyRhythm predicts your baby's next move using recent patterns
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Placeholder state - minimal data, show generalized prediction
+  if (!prediction && hasMinimalData && babyName) {
+    const avgNapInterval = 150; // 2.5 hours default
+    const now = new Date();
+    const predictedTime = new Date(now.getTime() + avgNapInterval * 60 * 1000);
+    const timeStr = predictedTime.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+
+    return (
+      <Card className="bg-card border border-border/40 p-4 rounded-2xl animate-in fade-in duration-300">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-1.5 bg-primary/10 rounded-lg">
+                <Moon className="h-4 w-4 text-primary" />
+              </div>
+              <h3 className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+                {t('nextActivity')}
+              </h3>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-base text-foreground font-medium leading-relaxed">
+                Most babies this age nap about every 2½ hours. Next nap around {timeStr}.
+              </p>
+              
+              {isExpanded && (
+                <div className="pt-3 mt-3 border-t border-border/40">
+                  <p className="text-sm text-muted-foreground">
+                    We'll refine this as we learn from your logs.
+                  </p>
+                  <div className="mt-2 flex items-start gap-2">
+                    <span className="text-xs text-muted-foreground/80">
+                      ℹ️ Predicted by BabyRhythm's AI
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-2 items-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-7 w-7 p-0"
+            >
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // No prediction and not enough data
   if (!prediction) {
     return null;
   }

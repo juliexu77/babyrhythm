@@ -550,6 +550,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       }
     }
 
+    // Track if this is one of the first few activities
+    const isEarlyActivity = !activities || activities.length < 5;
+
     setIsSaving(true);
     
     try {
@@ -572,6 +575,15 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         };
 
         await onAddActivity(newActivity, selectedDate, activityTime);
+        
+        // Show encouraging toast for early activities
+        if (isEarlyActivity) {
+          toast({
+            title: "Got it!",
+            description: "I'm learning your baby's rhythm.",
+            duration: 3000,
+          });
+        }
       }
       
       resetForm();
