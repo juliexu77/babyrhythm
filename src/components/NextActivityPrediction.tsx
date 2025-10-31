@@ -250,7 +250,6 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
         {/* Log predicted activity button */}
         {onLogPredictedActivity && !ongoingNap && hasActionablePrediction && (
           <Button
-            variant="outline"
             size="lg"
             onClick={() => onLogPredictedActivity(prediction.type)}
             className="w-full"
