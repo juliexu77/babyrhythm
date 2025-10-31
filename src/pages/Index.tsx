@@ -132,20 +132,31 @@ yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 yesterdayStart.setHours(0, 0, 0, 0);
 const now = new Date();
 
-const ongoingNap = activities
-  .filter(a => {
+const ongoingNap = (() => {
+  const candidates = activities.filter(a => {
     if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId) {
       return false;
     }
-    
     const loggedDate = new Date(a.loggedAt!);
-    if (loggedDate < yesterdayStart) return false;
-    
-    // Parse the start time and check if it's actually in the past
-    const napStartTime = parseTimeToDate(a.details.startTime, loggedDate);
-    return napStartTime <= now;
-  })
-  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+    return loggedDate >= yesterdayStart;
+  }).map(a => {
+    const loggedDate = new Date(a.loggedAt!);
+    const napStartTime = parseTimeToDate(a.details!.startTime!, loggedDate);
+    return { a, loggedDate, napStartTime, inPast: napStartTime <= now };
+  });
+
+  try {
+    console.groupCollapsed('🛌 ongoingNap detection');
+    console.log('nowLocal:', now.toLocaleString());
+    candidates.forEach(({ a, loggedDate, napStartTime, inPast }) => {
+      console.log({ id: a.id, startTime: a.details?.startTime, loggedAtLocal: loggedDate.toLocaleString(), napStartLocal: napStartTime.toLocaleString(), inPast });
+    });
+    console.groupEnd();
+  } catch {}
+
+  const valid = candidates.filter(c => c.inPast);
+  return valid.sort((x, y) => new Date(y.a.loggedAt!).getTime() - new Date(x.a.loggedAt!).getTime())[0]?.a;
+})();
 
   // Get current user's role from collaborators
   const currentUserRole = collaborators.find(c => c.user_id === user?.id)?.role;
