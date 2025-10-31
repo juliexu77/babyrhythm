@@ -236,59 +236,78 @@ return (
                 <span className="font-medium">{wakeWindowData.totalSleep}</span>
               </div>
               
-              {/* Nested actual patterns from baby's data */}
-              {(sleepInsights.length > 0 || sleepMetrics.avgWakeWindowHours) && (
-                <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Brain className="h-3 w-3 text-primary/70" />
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {household.baby_name}'s Patterns
-                    </span>
-                  </div>
-                  {sleepMetrics.napsPerDay > 0 && (
-                    <div className="flex items-start justify-between gap-2 text-xs">
-                      <div className="flex items-start gap-2 flex-1">
-                        <Moon className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                        <span className="text-primary/90">Naps per day: {sleepMetrics.napsPerDay}</span>
-                      </div>
-                    </div>
-                  )}
-                  {sleepInsights.filter(insight => 
-                    !insight.text.toLowerCase().includes('naps before noon') &&
-                    !insight.text.toLowerCase().includes('naps per day')
-                  ).map((insight, idx) => {
-                    const IconComponent = insight.icon;
-                    // Get min and max from wake window array for proper range
-                    const wakeWindowValues = wakeWindowData.wakeWindows.map((w: string) => {
-                      const match = w.match(/(\d+\.?\d*)/);
-                      return match ? parseFloat(match[1]) : 0;
-                    }).filter(v => v > 0);
-                    const minWW = Math.min(...wakeWindowValues);
-                    const maxWW = Math.max(...wakeWindowValues);
-                    const wakeWindowRange = `${minWW}-${maxWW}hrs`;
-                    const match = getPatternMatch(insight, wakeWindowRange, 'wake');
-                    
-                    const TrendIcon = match?.trend === 'up' ? TrendingUp : 
-                                     match?.trend === 'down' ? TrendingDown : 
-                                     Minus;
-                    const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
-                                      match?.trend === 'down' ? 'text-blue-500' : 
-                                      'text-muted-foreground/50';
-                    
-                    return (
-                      <div key={idx} className="flex items-start justify-between gap-2 text-xs">
-                        <div className="flex items-start gap-2 flex-1">
-                          <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                          <span className="text-primary/90">{insight.text}</span>
-                        </div>
-                        {match && match.trend !== 'normal' && (
-                          <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
-                        )}
-                      </div>
-                    );
-                  })}
+              {/* Nested actual patterns from baby's data OR ghost cards for new users */}
+              <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="h-3 w-3 text-primary/70" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {household.baby_name}'s Patterns
+                  </span>
                 </div>
-              )}
+                
+                {/* Show actual patterns if we have data */}
+                {(sleepInsights.length > 0 || sleepMetrics.napsPerDay > 0) ? (
+                  <>
+                    {sleepMetrics.napsPerDay > 0 && (
+                      <div className="flex items-start justify-between gap-2 text-xs">
+                        <div className="flex items-start gap-2 flex-1">
+                          <Moon className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                          <span className="text-primary/90">Naps per day: {sleepMetrics.napsPerDay}</span>
+                        </div>
+                      </div>
+                    )}
+                    {sleepInsights.filter(insight => 
+                      !insight.text.toLowerCase().includes('naps before noon') &&
+                      !insight.text.toLowerCase().includes('naps per day')
+                    ).map((insight, idx) => {
+                      const IconComponent = insight.icon;
+                      // Get min and max from wake window array for proper range
+                      const wakeWindowValues = wakeWindowData.wakeWindows.map((w: string) => {
+                        const match = w.match(/(\d+\.?\d*)/);
+                        return match ? parseFloat(match[1]) : 0;
+                      }).filter(v => v > 0);
+                      const minWW = Math.min(...wakeWindowValues);
+                      const maxWW = Math.max(...wakeWindowValues);
+                      const wakeWindowRange = `${minWW}-${maxWW}hrs`;
+                      const match = getPatternMatch(insight, wakeWindowRange, 'wake');
+                      
+                      const TrendIcon = match?.trend === 'up' ? TrendingUp : 
+                                       match?.trend === 'down' ? TrendingDown : 
+                                       Minus;
+                      const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
+                                        match?.trend === 'down' ? 'text-blue-500' : 
+                                        'text-muted-foreground/50';
+                      
+                      return (
+                        <div key={idx} className="flex items-start justify-between gap-2 text-xs">
+                          <div className="flex items-start gap-2 flex-1">
+                            <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                            <span className="text-primary/90">{insight.text}</span>
+                          </div>
+                          {match && match.trend !== 'normal' && (
+                            <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  /* Ghost cards previewing future predictions */
+                  <div className="space-y-2 opacity-40">
+                    <div className="flex items-start gap-2 text-xs">
+                      <Clock className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Wake windows: ~2.5h average</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-xs">
+                      <Moon className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Naps per day: 4 typical</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground/70 italic mt-3">
+                      Keep logging naps to see {household.baby_name}'s unique patterns
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -324,48 +343,67 @@ return (
                 </div>
               )}
               
-              {/* Nested actual patterns from baby's data */}
-              {(feedingInsights.length > 0 || feedingMetrics.avgFrequency || feedingMetrics.avgAmount) && (
-                <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Brain className="h-3 w-3 text-primary/70" />
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {household.baby_name}'s Patterns
-                    </span>
-                  </div>
-                  {feedingMetrics.avgAmount && (
-                    <div className="flex items-start justify-between gap-2 text-xs">
-                      <div className="flex items-start gap-2 flex-1">
-                        <Milk className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                        <span className="text-primary/90">Amount per feed: {feedingMetrics.avgAmount} oz</span>
-                      </div>
-                    </div>
-                  )}
-                  {feedingInsights.map((insight, idx) => {
-                    const IconComponent = insight.icon;
-                    const match = getPatternMatch(insight, feedingGuidance.frequency, 'feed');
-                    
-                    const TrendIcon = match?.trend === 'up' ? TrendingUp : 
-                                     match?.trend === 'down' ? TrendingDown : 
-                                     Minus;
-                    const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
-                                      match?.trend === 'down' ? 'text-blue-500' : 
-                                      'text-muted-foreground/50';
-                    
-                    return (
-                      <div key={idx} className="flex items-start justify-between gap-2 text-xs">
-                        <div className="flex items-start gap-2 flex-1">
-                          <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                          <span className="text-primary/90">{insight.text}</span>
-                        </div>
-                        {match && match.trend !== 'normal' && (
-                          <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
-                        )}
-                      </div>
-                    );
-                  })}
+              {/* Nested actual patterns from baby's data OR ghost cards for new users */}
+              <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="h-3 w-3 text-primary/70" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {household.baby_name}'s Patterns
+                  </span>
                 </div>
-              )}
+                
+                {/* Show actual patterns if we have data */}
+                {(feedingInsights.length > 0 || feedingMetrics.avgAmount) ? (
+                  <>
+                    {feedingMetrics.avgAmount && (
+                      <div className="flex items-start justify-between gap-2 text-xs">
+                        <div className="flex items-start gap-2 flex-1">
+                          <Milk className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                          <span className="text-primary/90">Amount per feed: {feedingMetrics.avgAmount} oz</span>
+                        </div>
+                      </div>
+                    )}
+                    {feedingInsights.map((insight, idx) => {
+                      const IconComponent = insight.icon;
+                      const match = getPatternMatch(insight, feedingGuidance.frequency, 'feed');
+                      
+                      const TrendIcon = match?.trend === 'up' ? TrendingUp : 
+                                       match?.trend === 'down' ? TrendingDown : 
+                                       Minus;
+                      const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
+                                        match?.trend === 'down' ? 'text-blue-500' : 
+                                        'text-muted-foreground/50';
+                      
+                      return (
+                        <div key={idx} className="flex items-start justify-between gap-2 text-xs">
+                          <div className="flex items-start gap-2 flex-1">
+                            <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                            <span className="text-primary/90">{insight.text}</span>
+                          </div>
+                          {match && match.trend !== 'normal' && (
+                            <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  /* Ghost cards previewing future predictions */
+                  <div className="space-y-2 opacity-40">
+                    <div className="flex items-start gap-2 text-xs">
+                      <Milk className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Amount per feed: ~3.5 oz typical</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-xs">
+                      <Clock className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Feed interval: Every 3-4h average</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground/70 italic mt-3">
+                      Keep logging feeds to see {household.baby_name}'s unique patterns
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
