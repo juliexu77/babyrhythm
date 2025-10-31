@@ -700,13 +700,128 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
-          {/* Guide Sections Loading State */}
+          {/* Empty State with Ghost Cards - Preview of AI Intelligence */}
           {!hasMinimumData && !needsBirthdaySetup && (
-            <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
-              <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">
-                Track at least 4 naps and 4 feeds to see personalized guidance
-              </p>
+            <div className="space-y-4">
+              {/* Header Message */}
+              <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
+                <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground mb-2">
+                  Track at least 4 naps and 4 feeds to unlock personalized AI guidance
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Here's a preview of what's coming...
+                </p>
+              </div>
+
+              {/* Ghost Card: Data Pulse Preview */}
+              <div className="p-4 bg-accent/10 rounded-lg border border-border/40 opacity-50">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-primary" />
+                    <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Moon className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">Total sleep</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">+23 min</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bed className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">Naps</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">+1</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">Wake average</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">-12 min</span>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
+                    AI detects subtle pattern changes and alerts you to shifts in {babyName}'s rhythm
+                  </p>
+                </div>
+              </div>
+
+              {/* Ghost Card: What to Know Preview */}
+              <div className="space-y-3 opacity-50">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
+                </div>
+                <div className="space-y-2 pl-1">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {babyName}'s wake windows are extending as they develop—expect slightly longer periods between naps
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Morning naps are becoming more consolidated, a sign of maturing sleep patterns
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ghost Card: What To Do Preview */}
+              <div className="space-y-3 opacity-50">
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
+                </div>
+                <div className="space-y-2 pl-1">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Try extending the first wake window to 2 hours to align with their natural rhythm
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Watch for early sleepy cues in the afternoon—overtiredness can disrupt bedtime
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ghost Card: What's Next Preview */}
+              <div className="space-y-3 opacity-50">
+                <div className="flex items-center gap-2">
+                  <ArrowRight className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What's Next</h3>
+                </div>
+                <div className="space-y-3 pl-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Based on current patterns, {babyName} may be ready to drop to 3 naps within the next 2 weeks. AI will guide you through this transition.
+                  </p>
+                  <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
+                    <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Prep tip:</span> Start tracking wake-up times to help AI predict optimal nap windows
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom CTA */}
+              <div className="text-center pt-2">
+                <p className="text-xs text-muted-foreground italic">
+                  Keep logging to unlock {babyName}'s personalized AI insights
+                </p>
+              </div>
             </div>
           )}
 
