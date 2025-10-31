@@ -217,9 +217,21 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       dayNaps.forEach(nap => {
         const duration = calculateNapDuration(nap);
         if (duration > 0) {
+          console.log(`[TrendChart] ${dateStr}: Nap from ${nap.details.startTime} to ${nap.details.endTime} = ${duration.toFixed(2)}h`);
           totalHours += duration;
         }
       });
+      
+      if (totalHours > 24) {
+        console.warn(`[TrendChart] ${dateStr}: Total sleep exceeds 24h (${totalHours.toFixed(2)}h) - ${dayNaps.length} naps found`);
+        console.log('[TrendChart] Naps:', dayNaps.map(n => ({
+          id: n.id,
+          loggedAt: n.loggedAt,
+          start: n.details.startTime,
+          end: n.details.endTime,
+          timezone: n.timezone
+        })));
+      }
       
       const value = Math.round(totalHours * 10) / 10;
       const napCount = dayNaps.length;
