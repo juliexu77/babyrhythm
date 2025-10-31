@@ -122,9 +122,25 @@ serve(async (req) => {
       if (a.details?.date_local) {
         return new Date(a.details.date_local + 'T00:00:00Z');
       }
-      // Fallback to logged_at converted to user timezone
-      const loggedDate = new Date(a.logged_at);
-      return new Date(loggedDate.toLocaleString('en-US', { timeZone: tz }));
+      // Fallback: Convert UTC logged_at to user's timezone and extract date
+      // This matches the frontend's getDateKeyFromActivity logic
+      const utcDate = new Date(a.logged_at);
+      
+      // Get the date components in the user's timezone
+      // Using Intl.DateTimeFormat to get timezone-aware components
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      const parts = formatter.formatToParts(utcDate);
+      const year = parts.find(p => p.type === 'year')!.value;
+      const month = parts.find(p => p.type === 'month')!.value;
+      const day = parts.find(p => p.type === 'day')!.value;
+      
+      // Return a Date object at midnight in the user's timezone
+      return new Date(`${year}-${month}-${day}T00:00:00Z`);
     };
 
     // Recent: Last 2 complete days (by activity date, not logged_at)
@@ -236,13 +252,24 @@ serve(async (req) => {
 function filterOutliers(activities: Activity[], tz: string): Activity[] {
   if (activities.length === 0) return [];
   
-  // Group activities by day
+  // Group activities by day using same logic as getActivityDate
   const days = new Map<string, Activity[]>();
   activities.forEach(activity => {
-    const activityDate = activity.details?.date_local 
-      ? new Date(activity.details.date_local)
-      : new Date(new Date(activity.logged_at).toLocaleString('en-US', { timeZone: tz }));
-    const dayKey = activityDate.toISOString().split('T')[0];
+    const utcDate = new Date(activity.logged_at);
+    
+    // Get the date components in the user's timezone
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const parts = formatter.formatToParts(utcDate);
+    const year = parts.find(p => p.type === 'year')!.value;
+    const month = parts.find(p => p.type === 'month')!.value;
+    const day = parts.find(p => p.type === 'day')!.value;
+    
+    const dayKey = `${year}-${month}-${day}`;
     if (!days.has(dayKey)) {
       days.set(dayKey, []);
     }
