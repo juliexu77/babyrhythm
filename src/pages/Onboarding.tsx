@@ -48,22 +48,16 @@ const Onboarding = () => {
           {/* Welcome Message */}
           <div className="space-y-6">
             <h1 className="text-3xl md:text-4xl font-sans font-semibold text-foreground tracking-tight leading-tight">
-              Your AI parenting companion
+              Every baby has a rhythm.
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
-              Our AI learns your baby's unique patterns and predicts their next feed, nap, and wake window — so you're always one step ahead.
+              BabyRhythm learns yours — predicting feeds, naps, and wake windows so you can relax and stay one step ahead.
             </p>
             
-            {/* AI Features */}
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                <span className="text-lg">🤖</span>
-                <span className="text-sm font-medium text-primary">AI predicts your baby's schedule</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                <span className="text-lg">💬</span>
-                <span className="text-sm font-medium text-primary">Chat with your AI night doula 24/7</span>
-              </div>
+            {/* AI Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <span className="text-lg">✨</span>
+              <span className="text-sm font-medium text-primary">AI-Powered Predictions</span>
             </div>
           </div>
 
