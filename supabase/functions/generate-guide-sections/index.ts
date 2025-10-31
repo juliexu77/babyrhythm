@@ -175,6 +175,14 @@ serve(async (req) => {
     const recentActivitiesFiltered = filterOutliers(recentActivities, tz);
     const previousActivitiesFiltered = filterOutliers(previousActivities, tz);
     
+    // Count unique days after filtering to avoid skewed averages
+    const recentDayCount = new Set(
+      recentActivitiesFiltered.map(a => getActivityDateString(a))
+    ).size;
+    const previousDayCount = new Set(
+      previousActivitiesFiltered.map(a => getActivityDateString(a))
+    ).size;
+    
     const recentMetrics = calculateMetrics(recentActivitiesFiltered);
     const previousMetrics = calculateMetrics(previousActivitiesFiltered);
     
@@ -196,7 +204,7 @@ serve(async (req) => {
       previousCount: previousActivities.length,
     });
 
-    const deltas = computeDeltas(recentMetrics, previousMetrics, 5, trendAnalysis);
+    const deltas = computeDeltas(recentMetrics, previousMetrics, recentDayCount, previousDayCount, trendAnalysis);
     const insights = extractInsights(deltas, ageMonths, trendAnalysis);
 
     const allWindowActivities = activities.filter(a => {
@@ -476,16 +484,18 @@ function calculateMetrics(activities: Activity[]) {
   };
 }
 
-function computeDeltas(recent: any, previous: any, baselineDays: number = 5, trendAnalysis?: any): MetricDelta[] {
+function computeDeltas(recent: any, previous: any, recentDaysCount: number, previousDaysCount: number, trendAnalysis?: any): MetricDelta[] {
   const deltas: MetricDelta[] = [];
 
-  // Compute average per day for baseline metrics (excluding outliers)
-  const recentDays = 2;
+  // Compute average per day for baseline metrics using actual included day counts
+  const recentDays = Math.max(1, recentDaysCount || 0);
+  const baselineDays = Math.max(1, previousDaysCount || 0);
   const avgRecentSleep = recent.totalSleepMinutes / recentDays;
   const avgPreviousSleep = previous.totalSleepMinutes / baselineDays;
   const avgRecentFeed = recent.totalFeedVolume / recentDays;
   const avgPreviousFeed = previous.totalFeedVolume / baselineDays;
   const avgPreviousWake = previous.avgWakeWindow; // already an average
+
 
   // Total sleep delta (last 2 days avg vs 5-day baseline avg) - ALL SLEEP
   const sleepDelta = avgRecentSleep - avgPreviousSleep;
