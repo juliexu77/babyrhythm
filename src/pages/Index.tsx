@@ -112,18 +112,20 @@ const Index = () => {
 
 const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
 
-// Helper to parse time string to Date object
-const parseTimeToDate = (timeStr: string, baseDate: Date): Date => {
-  const [time, period] = timeStr.split(' ');
+// Helper: parse local date (YYYY-MM-DD) and 12h time (e.g., "7:15 PM") into a local Date
+const parseLocalDateTime = (dateLocal: string, timeStr: string): Date => {
+  const [year, month, day] = dateLocal.split('-').map(Number);
+  const [time, periodRaw] = timeStr.split(' ');
   const [hStr, mStr] = time.split(':');
   let h = parseInt(hStr, 10);
   const m = parseInt(mStr || '0', 10);
+  const period = (periodRaw || '').toUpperCase();
   if (period === 'PM' && h !== 12) h += 12;
   if (period === 'AM' && h === 12) h = 0;
-  
-  const result = new Date(baseDate);
-  result.setHours(h, m, 0, 0);
-  return result;
+  const d = new Date();
+  d.setFullYear(year, (month - 1), day);
+  d.setHours(h, m, 0, 0);
+  return d;
 };
 
 // Show wake-up for open naps from today or yesterday only (ignore older accidentally open naps)
@@ -137,19 +139,38 @@ const ongoingNap = (() => {
     if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId) {
       return false;
     }
-    const loggedDate = new Date(a.loggedAt!);
-    return loggedDate >= yesterdayStart;
+    // Determine the activity's local date from details if available
+    const dateLocal = (a.details as any).date_local as string | undefined;
+    const baseLocalDate = dateLocal ? dateLocal : (() => {
+      const d = new Date(a.loggedAt!);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    })();
+    
+    // Only consider naps from today or yesterday (based on local date)
+    const baseDateObj = new Date(baseLocalDate + 'T00:00:00');
+    return baseDateObj >= yesterdayStart;
   }).map(a => {
-    const loggedDate = new Date(a.loggedAt!);
-    const napStartTime = parseTimeToDate(a.details!.startTime!, loggedDate);
-    return { a, loggedDate, napStartTime, inPast: napStartTime <= now };
+    const dateLocal = (a.details as any).date_local as string | undefined;
+    const baseLocalDate = dateLocal ? dateLocal : (() => {
+      const d = new Date(a.loggedAt!);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    })();
+    const napStartTime = parseLocalDateTime(baseLocalDate, a.details!.startTime!);
+    return { a, baseLocalDate, napStartTime, inPast: napStartTime <= now };
   });
 
   try {
     console.groupCollapsed('🛌 ongoingNap detection');
     console.log('nowLocal:', now.toLocaleString());
-    candidates.forEach(({ a, loggedDate, napStartTime, inPast }) => {
-      console.log({ id: a.id, startTime: a.details?.startTime, loggedAtLocal: loggedDate.toLocaleString(), napStartLocal: napStartTime.toLocaleString(), inPast });
+    candidates.forEach(({ a, baseLocalDate, napStartTime, inPast }) => {
+      const loggedDate = new Date(a.loggedAt!);
+      console.log({ id: a.id, startTime: a.details?.startTime, date_local: baseLocalDate, loggedAtLocal: loggedDate.toLocaleString(), napStartLocal: napStartTime.toLocaleString(), inPast });
     });
     console.groupEnd();
   } catch {}
