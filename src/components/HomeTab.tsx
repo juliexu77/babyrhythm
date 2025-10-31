@@ -218,8 +218,30 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     } catch {}
   }
   
-  // Use the ongoingNap passed from parent (Index.tsx) for consistency
-  const ongoingNap = passedOngoingNap;
+// Use the ongoingNap passed from parent (Index.tsx) for consistency
+const ongoingNap = passedOngoingNap;
+
+// Compute a reliable nap start Date for display/guarding future times
+const parseTimeToDateLocal = (timeStr: string, baseDate: Date): Date | null => {
+  if (!timeStr) return null;
+  const [time, period] = timeStr.split(' ');
+  const [hStr, mStrRaw] = time.split(':');
+  let h = parseInt(hStr, 10);
+  const m = parseInt((mStrRaw || '0').replace(/\D/g, ''), 10);
+  const p = period ? period.toUpperCase() : '';
+  if (p === 'PM' && h !== 12) h += 12;
+  if (p === 'AM' && h === 12) h = 0;
+  const d = new Date(baseDate);
+  d.setHours(h, m, 0, 0);
+  return d;
+};
+
+const napStartDate = ongoingNap
+  ? parseTimeToDateLocal(
+      ongoingNap.details?.startTime || ongoingNap.time,
+      ongoingNap.loggedAt ? parseUTCToLocal(ongoingNap.loggedAt) : new Date()
+    )
+  : null;
 
   // Calculate awake time
   const getAwakeTime = () => {
@@ -1307,11 +1329,11 @@ const lastDiaper = displayActivities
             )}
 
             {/* Sleep Status */}
-            {ongoingNap ? (
+            {ongoingNap && napStartDate && napStartDate <= currentTime ? (
               <div className="flex items-center gap-3">
                 <Moon className="w-5 h-5 text-primary" />
                 <p className="text-sm flex-1 text-muted-foreground">
-                  Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                  Sleeping since — <span className="font-medium text-foreground">{format(napStartDate, 'h:mm aa')}</span>
                 </p>
                 <Button
                   onClick={() => {
