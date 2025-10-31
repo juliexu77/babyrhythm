@@ -302,7 +302,8 @@ function filterOutliers(activities: Activity[], tz: string): Activity[] {
     
     const feedVolume = feeds.reduce((sum, f) => {
       const qty = parseFloat(f.details?.quantity || '0');
-      const unit = f.details?.unit || 'ml';
+      // Use same fallback logic as frontend: if no unit, assume ml if >50, oz otherwise
+      const unit = f.details?.unit || (qty > 50 ? 'ml' : 'oz');
       return sum + (unit === 'oz' ? qty : qty / 29.5735);
     }, 0);
 
@@ -430,8 +431,10 @@ function calculateMetrics(activities: Activity[]) {
   const totalFeedVolume = feedActivities.reduce((sum, a) => {
     if (!a.details?.quantity) return sum;
     const quantity = parseFloat(a.details.quantity);
-    if (a.details.unit === 'oz') return sum + quantity;
-    if (a.details.unit === 'ml') return sum + (quantity / 29.5735);
+    // Use same fallback logic as frontend: if no unit, assume ml if >50, oz otherwise
+    const unit = a.details.unit || (quantity > 50 ? 'ml' : 'oz');
+    if (unit === 'oz') return sum + quantity;
+    if (unit === 'ml') return sum + (quantity / 29.5735);
     return sum;
   }, 0);
   const feedCount = feedActivities.length;
