@@ -13,9 +13,6 @@ const Onboarding = () => {
   const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const { household, loading: householdLoading } = useHousehold();
-  const [inviteCode, setInviteCode] = useState("");
-  const [error, setError] = useState("");
-
   // Redirect returning users with households to main app
   useEffect(() => {
     if (authLoading || householdLoading) return;
@@ -25,13 +22,7 @@ const Onboarding = () => {
   }, [user, household, authLoading, householdLoading, navigate]);
 
   const handleGetStarted = () => {
-    // TEMPORARY: Bypass invite code for testing
-    navigate("/");
-    // if (inviteCode.toLowerCase() === "village") {
-    //   navigate("/auth");
-    // } else {
-    //   setError("Invalid invite code");
-    // }
+    navigate("/auth");
   };
 
   return (

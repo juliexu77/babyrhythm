@@ -19,41 +19,17 @@ const BabySetup = () => {
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
 
-  // Remove the auth check from BabySetup redirect
+  // Redirect to auth if not logged in
   useEffect(() => {
     if (!user) {
-      // When no user, create temp household in localStorage for demo
-      const tempHousehold = localStorage.getItem('temp_household');
-      if (!tempHousehold) {
-        localStorage.setItem('temp_household', JSON.stringify({
-          id: 'temp',
-          baby_name: 'Baby',
-          baby_birthday: null
-        }));
-      }
-      return;
+      navigate('/auth');
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // If no user, save to localStorage only
-    if (!user) {
-      localStorage.setItem('temp_household', JSON.stringify({
-        id: 'temp',
-        baby_name: babyName,
-        baby_birthday: babyBirthday
-      }));
-      
-      toast({
-        title: "Profile saved locally!",
-        description: `Welcome to ${babyName}'s journey. Sign up to sync across devices.`,
-      });
-      
-      navigate("/onboarding/village");
-      return;
-    }
+    if (!user) return;
 
     setIsLoading(true);
 

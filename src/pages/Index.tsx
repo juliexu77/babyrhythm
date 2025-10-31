@@ -101,7 +101,7 @@ const Index = () => {
 
   console.log('🏠 Index.tsx - Activities loaded:', {
     user: !!user,
-    household: !!household || !!localStorage.getItem('temp_household'),
+    household: !!household,
     dbActivitiesCount: dbActivities?.length || 0,
     activitiesCount: activities.length,
     feedCount: activities.filter(a => a.type === 'feed').length,
@@ -308,23 +308,7 @@ const ongoingNap = (() => {
   useEffect(() => {
     if (loading || householdLoading || hasEverBeenCollaborator === null) return;
     
-    // Allow app to work without user (localStorage mode)
-    if (!user) {
-      // Load temp household from localStorage
-      const tempHousehold = localStorage.getItem('temp_household');
-      if (tempHousehold) {
-        const parsed = JSON.parse(tempHousehold);
-        setBabyProfile({ 
-          name: parsed.baby_name || 'Baby', 
-          birthday: parsed.baby_birthday || undefined 
-        });
-        setHasProfile(true);
-      } else {
-        // New user without account - redirect to setup
-        navigate('/onboarding/baby-setup');
-      }
-      return;
-    }
+    if (!user) return; // Auth required
 
     if (household) {
       // User has a household - load profile
