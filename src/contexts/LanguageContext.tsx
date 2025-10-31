@@ -80,10 +80,10 @@ const translations = {
     
     // Village Invite
     villageHeadline: "Who's in your village?",
-    villageSubheadline: "Parenting is easier when shared.",
-    villageDescription: "Invite partners, grandparents, or your nanny to stay in sync.",
-    villageSkip: "You can skip for now — invites can be sent anytime.",
-    villageMicrocopy: "Each caregiver sees the same daily rhythm — feeding, sleep, and gentle insights — so everyone moves together.",
+    villageSubheadline: "BabyRhythm syncs instantly across caregivers — parents, partners, and nannies see the same log in real time.",
+    villageDescription: "Invite your caregiver now so your rhythm learns twice as fast.",
+    villageSkip: "Skip for now",
+    villageMicrocopy: "Multiple caregivers = more data points = smarter predictions",
     addSomeone: "Add Someone",
     
     // Ready Screen

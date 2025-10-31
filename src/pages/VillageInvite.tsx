@@ -59,9 +59,11 @@ const VillageInvite = () => {
           <h1 className="text-2xl font-heading font-semibold text-foreground leading-tight">
             Who's in your village?
           </h1>
-          <p className="text-sm text-muted-foreground font-light leading-relaxed">
-            Parenting is easier when shared.<br />
-            Invite your partner, grandparent, or nanny to stay in sync.
+          <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-sm mx-auto">
+            BabyRhythm syncs instantly across caregivers — parents, partners, and nannies see the same log in real time.
+          </p>
+          <p className="text-xs text-primary/90 font-medium pt-1">
+            Invite your caregiver now so your rhythm learns twice as fast.
           </p>
         </div>
 
@@ -79,11 +81,11 @@ const VillageInvite = () => {
               variant="ghost"
               className="w-full font-normal text-muted-foreground"
             >
-              Skip for now — you can invite them anytime
+              Skip for now
             </Button>
 
-            <p className="text-xs text-center text-muted-foreground italic leading-relaxed pt-2">
-              Everyone sees the same daily rhythm — so care feels consistent and connected.
+            <p className="text-xs text-center text-muted-foreground/80 leading-relaxed pt-2">
+              Multiple caregivers = more data points = smarter predictions
             </p>
           </CardContent>
         </Card>
