@@ -128,12 +128,11 @@ const parseLocalDateTime = (dateLocal: string, timeStr: string): Date => {
   return d;
 };
 
-// Show wake-up for open naps from today or yesterday only (ignore older accidentally open naps)
-const yesterdayStart = new Date(); 
-yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-yesterdayStart.setHours(0, 0, 0, 0);
+// Show wake-up only for open naps that started today (ignore previous days to avoid stale entries)
+const todayStart = new Date();
+todayStart.setHours(0, 0, 0, 0);
 const now = new Date();
-
+ 
 const ongoingNap = (() => {
   const candidates = activities.filter(a => {
     if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId) {
@@ -149,9 +148,9 @@ const ongoingNap = (() => {
       return `${yyyy}-${mm}-${dd}`;
     })();
     
-    // Only consider naps from today or yesterday (based on local date)
+    // Only consider naps from today (based on local date) to avoid stale open naps
     const baseDateObj = new Date(baseLocalDate + 'T00:00:00');
-    return baseDateObj >= yesterdayStart;
+    return baseDateObj >= todayStart;
   }).map(a => {
     const dateLocal = (a.details as any).date_local as string | undefined;
     const baseLocalDate = dateLocal ? dateLocal : (() => {
