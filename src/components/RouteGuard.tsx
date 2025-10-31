@@ -16,9 +16,9 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
       location.pathname === route || location.pathname.startsWith(route + '/')
     );
 
-    // Redirect unauthenticated users to auth
+    // Redirect unauthenticated users to onboarding
     if (!user && !isPublicRoute) {
-      navigate("/auth", { replace: true });
+      navigate("/onboarding", { replace: true });
       return;
     }
 
