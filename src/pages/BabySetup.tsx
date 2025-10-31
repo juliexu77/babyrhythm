@@ -19,18 +19,41 @@ const BabySetup = () => {
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
 
-  // Require authentication for Baby Setup
-  // If user is not logged in, redirect to Auth
-  // This avoids RLS errors when trying to write as anon
+  // Remove the auth check from BabySetup redirect
   useEffect(() => {
     if (!user) {
-      navigate("/auth", { replace: true });
+      // When no user, create temp household in localStorage for demo
+      const tempHousehold = localStorage.getItem('temp_household');
+      if (!tempHousehold) {
+        localStorage.setItem('temp_household', JSON.stringify({
+          id: 'temp',
+          baby_name: 'Baby',
+          baby_birthday: null
+        }));
+      }
+      return;
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    
+    // If no user, save to localStorage only
+    if (!user) {
+      localStorage.setItem('temp_household', JSON.stringify({
+        id: 'temp',
+        baby_name: babyName,
+        baby_birthday: babyBirthday
+      }));
+      
+      toast({
+        title: "Profile saved locally!",
+        description: `Welcome to ${babyName}'s journey. Sign up to sync across devices.`,
+      });
+      
+      navigate("/onboarding/village");
+      return;
+    }
 
     setIsLoading(true);
 

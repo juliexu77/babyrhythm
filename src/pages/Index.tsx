@@ -56,7 +56,9 @@ const Index = () => {
     activities: dbActivities, 
     loading: activitiesLoading, 
     refetch: refetchActivities,
-    deleteActivity
+    deleteActivity,
+    addActivity: hookAddActivity,
+    updateActivity: hookUpdateActivity
   } = useActivities();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ const Index = () => {
   const [hasEverBeenCollaborator, setHasEverBeenCollaborator] = useState<boolean | null>(null);
 
   // Convert database activities to UI activities
-  const activities: Activity[] = user && household && dbActivities 
+  const activities: Activity[] = dbActivities 
     ? dbActivities.map(dbActivity => {
         // Use displayTime from details if available (for consistent display), 
         // otherwise fall back to converting logged_at
@@ -99,7 +101,7 @@ const Index = () => {
 
   console.log('🏠 Index.tsx - Activities loaded:', {
     user: !!user,
-    household: !!household,
+    household: !!household || !!localStorage.getItem('temp_household'),
     dbActivitiesCount: dbActivities?.length || 0,
     activitiesCount: activities.length,
     feedCount: activities.filter(a => a.type === 'feed').length,
@@ -305,7 +307,24 @@ const ongoingNap = (() => {
   // Check household status and redirect new users to setup
   useEffect(() => {
     if (loading || householdLoading || hasEverBeenCollaborator === null) return;
-    if (!user) return;
+    
+    // Allow app to work without user (localStorage mode)
+    if (!user) {
+      // Load temp household from localStorage
+      const tempHousehold = localStorage.getItem('temp_household');
+      if (tempHousehold) {
+        const parsed = JSON.parse(tempHousehold);
+        setBabyProfile({ 
+          name: parsed.baby_name || 'Baby', 
+          birthday: parsed.baby_birthday || undefined 
+        });
+        setHasProfile(true);
+      } else {
+        // New user without account - redirect to setup
+        navigate('/onboarding/baby-setup');
+      }
+      return;
+    }
 
     if (household) {
       // User has a household - load profile
@@ -336,8 +355,21 @@ const ongoingNap = (() => {
 
 
   const addActivity = async (type: string, details: any = {}, activityDate?: Date, activityTime?: string) => {
+    // Use localStorage mode when no user
     if (!user) {
-      console.error('User not available');
+      console.log('💾 Saving to localStorage (no user)');
+      
+      // Create local activity using hook
+      await hookAddActivity({
+        type: type as any,
+        time: activityTime || new Date().toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit', 
+          hour12: true 
+        }),
+        details
+      });
+      
       return;
     }
 

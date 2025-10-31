@@ -7,7 +7,7 @@ import { useToast } from "./use-toast";
 export interface DatabaseActivity {
   id: string;
   household_id: string;
-  type: 'feed' | 'diaper' | 'nap' | 'note';
+  type: 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo';
   logged_at: string;
   timezone?: string; // IANA timezone name (e.g., "America/Los_Angeles")
   details: {
@@ -65,7 +65,9 @@ export function useActivities() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // If no user, use localStorage for temporary storage
     if (!user) {
+      loadLocalActivities();
       setLoading(false);
       return;
     }
@@ -97,6 +99,29 @@ export function useActivities() {
       };
     }
   }, [user, household]);
+
+  const loadLocalActivities = () => {
+    try {
+      const stored = localStorage.getItem('temp_activities');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setActivities(parsed);
+      } else {
+        setActivities([]);
+      }
+    } catch (error) {
+      console.error('Error loading local activities:', error);
+      setActivities([]);
+    }
+  };
+
+  const saveLocalActivities = (acts: DatabaseActivity[]) => {
+    try {
+      localStorage.setItem('temp_activities', JSON.stringify(acts));
+    } catch (error) {
+      console.error('Error saving local activities:', error);
+    }
+  };
 
   const fetchActivities = async () => {
     if (!household) {
@@ -146,11 +171,35 @@ export function useActivities() {
   };
 
   const addActivity = async (activity: {
-    type: 'feed' | 'diaper' | 'nap' | 'note';
+    type: 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo';
     time: string;
     details: any;
   }) => {
-    if (!user || !household) throw new Error('User not authenticated or no household');
+    // If no user, save to localStorage
+    if (!user || !household) {
+      const now = new Date().toISOString();
+      const newActivity: DatabaseActivity = {
+        id: crypto.randomUUID(),
+        household_id: 'temp',
+        type: activity.type,
+        logged_at: now,
+        created_by: 'temp',
+        created_at: now,
+        updated_at: now,
+        details: activity.details
+      };
+      
+      const updated = [...activities, newActivity];
+      setActivities(updated);
+      saveLocalActivities(updated);
+      
+      toast({
+        title: "Activity saved locally",
+        description: "Sign up to sync your data across devices.",
+      });
+      
+      return newActivity;
+    }
 
     try {
       // CLIENT SENDS LOCAL TIME + TIMEZONE TO SERVER
@@ -212,7 +261,15 @@ export function useActivities() {
   };
 
   const updateActivity = async (activityId: string, updates: Partial<DatabaseActivity>) => {
-    if (!user) throw new Error('User not authenticated');
+    // If no user, update localStorage
+    if (!user) {
+      const updated = activities.map(a => 
+        a.id === activityId ? { ...a, ...updates } : a
+      );
+      setActivities(updated);
+      saveLocalActivities(updated);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -243,7 +300,13 @@ export function useActivities() {
   };
 
   const deleteActivity = async (activityId: string) => {
-    if (!user) throw new Error('User not authenticated');
+    // If no user, delete from localStorage
+    if (!user) {
+      const updated = activities.filter(a => a.id !== activityId);
+      setActivities(updated);
+      saveLocalActivities(updated);
+      return;
+    }
 
     try {
       // Rely on RLS to ensure only the creator can delete. Use RETURNING to detect if a row was actually deleted.
