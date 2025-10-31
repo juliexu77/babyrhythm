@@ -528,10 +528,10 @@ function computeDeltas(recent: any, previous: any, recentDayCount: number, previ
   // Feed volume delta (last 2 days avg vs 5-day baseline avg)
   if (avgPreviousFeed > 0) {
     const feedPercent = ((avgRecentFeed - avgPreviousFeed) / avgPreviousFeed) * 100;
-    if (Math.abs(feedPercent) >= 3) {
+    if (Math.abs(feedPercent) >= 5) {
       deltas.push({
         name: 'Feed volume',
-        change: `${feedPercent > 0 ? '+' : ''}${Math.round(feedPercent)}%`,
+        change: `${feedPercent > 0 ? '+' : ''}${Math.round(feedPercent / 5) * 5}%`,
         rawDelta: feedPercent,
         priority: Math.abs(feedPercent) / 10 // scale to 0-10
       } as any);
