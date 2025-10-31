@@ -9,34 +9,35 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (loading) return;
+    // TEMPORARY: Auth disabled for testing
+    // if (loading) return;
 
-    const publicRoutes = ['/auth', '/login', '/invite', '/onboarding'];
-    const isPublicRoute = publicRoutes.some(route => 
-      location.pathname === route || location.pathname.startsWith(route + '/')
-    );
+    // const publicRoutes = ['/auth', '/login', '/invite', '/onboarding'];
+    // const isPublicRoute = publicRoutes.some(route => 
+    //   location.pathname === route || location.pathname.startsWith(route + '/')
+    // );
 
-    // Redirect unauthenticated users to onboarding
-    if (!user && !isPublicRoute) {
-      navigate("/onboarding", { replace: true });
-      return;
-    }
+    // // Redirect unauthenticated users to onboarding
+    // if (!user && !isPublicRoute) {
+    //   navigate("/onboarding", { replace: true });
+    //   return;
+    // }
 
-    // Redirect authenticated users away from auth/login pages only (allow onboarding subpages for setup)
-    if (user && (location.pathname === "/auth" || location.pathname === "/login")) {
-      navigate("/", { replace: true });
-      return;
-    }
+    // // Redirect authenticated users away from auth/login pages only (allow onboarding subpages for setup)
+    // if (user && (location.pathname === "/auth" || location.pathname === "/login")) {
+    //   navigate("/", { replace: true });
+    //   return;
+    // }
   }, [user, loading, location.pathname, navigate]);
 
-  // Show loading spinner while checking auth
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  // TEMPORARY: Skip loading spinner for testing
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <LoadingSpinner />
+  //     </div>
+  //   );
+  // }
 
   return <>{children}</>;
 };
