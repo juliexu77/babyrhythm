@@ -48,13 +48,15 @@ const Onboarding = () => {
           {/* Welcome Message */}
           <div className="space-y-6">
             <h1 className="text-3xl md:text-4xl font-sans font-semibold text-foreground tracking-tight leading-tight">
-              Hi, I'm BabyRhythm — I help you and your caregivers stay in sync with your baby's natural rhythm.
+              Your AI parenting companion
             </h1>
-            <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
+            <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto font-medium">
+              Intelligence meets Intuition
+            </p>
+            <p className="text-sm text-muted-foreground/80 max-w-sm mx-auto">
               Log naps, feeds, and diapers. I'll learn from your entries and start predicting wake windows once I have enough data.
             </p>
-            
-            <p className="text-sm text-muted-foreground/80 italic max-w-sm mx-auto">
+            <p className="text-xs text-muted-foreground/70 italic max-w-sm mx-auto">
               Predictions begin after a few days of logs — but I can chat and guide you right away.
             </p>
           </div>
