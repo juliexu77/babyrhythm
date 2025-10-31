@@ -140,25 +140,34 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     if (nap.details.endTime && nap.details.startTime) {
       const timezone = nap.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      // Convert start UTC to local time in the activity's timezone
-      const startLocal = toZonedTime(startUtc, timezone);
+      // Convert start UTC to local time in the activity's timezone (for the correct date)
+      const baseLocal = toZonedTime(startUtc, timezone);
       
-      // Parse end time string to get hours and minutes
+      // Parse start time string (e.g., "7:15 PM")
+      const startMatch = nap.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       const endMatch = nap.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (!endMatch) return 0;
+      if (!startMatch || !endMatch) return 0;
+      
+      let startHours = parseInt(startMatch[1], 10);
+      const startMinutes = parseInt(startMatch[2], 10);
+      const startPeriod = startMatch[3].toUpperCase();
       
       let endHours = parseInt(endMatch[1], 10);
       const endMinutes = parseInt(endMatch[2], 10);
       const endPeriod = endMatch[3].toUpperCase();
       
+      if (startPeriod === 'PM' && startHours !== 12) startHours += 12;
+      if (startPeriod === 'AM' && startHours === 12) startHours = 0;
       if (endPeriod === 'PM' && endHours !== 12) endHours += 12;
       if (endPeriod === 'AM' && endHours === 12) endHours = 0;
       
-      // Create end time based on start date
-      const endLocal = new Date(startLocal);
+      // Build start and end local Date objects on the same base date
+      const startLocal = new Date(baseLocal);
+      startLocal.setHours(startHours, startMinutes, 0, 0);
+      const endLocal = new Date(baseLocal);
       endLocal.setHours(endHours, endMinutes, 0, 0);
       
-      // Handle overnight naps (end time is next day)
+      // Handle overnight sleep (end time on the next day)
       if (endLocal < startLocal) {
         endLocal.setDate(endLocal.getDate() + 1);
       }
