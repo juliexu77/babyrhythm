@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { shareElement, getWeekCaption } from "@/utils/share/chartShare";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { getActivitiesByDate } from "@/utils/activityDateFilters";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -77,17 +78,10 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset);
-      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      // Filter activities for this specific date using loggedAt timestamp
-      const dayFeeds = activities.filter(a => {
-        if (a.type !== "feed" || !a.loggedAt) return false;
-        const activityDate = new Date(a.loggedAt);
-        // Compare dates by year, month, and day to avoid timezone issues
-        return activityDate.getFullYear() === date.getFullYear() &&
-               activityDate.getMonth() === date.getMonth() &&
-               activityDate.getDate() === date.getDate();
-      });
+      // Use shared date filtering utility (same as Log tab)
+      const dayActivities = getActivitiesByDate(activities, date);
+      const dayFeeds = dayActivities.filter(a => a.type === "feed");
       
       let totalValue = 0;
       
@@ -194,15 +188,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       date.setDate(date.getDate() - i - daysOffset);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      // Filter activities for this specific date using loggedAt timestamp
-      const dayNaps = activities.filter(a => {
-        if (a.type !== "nap" || !a.loggedAt) return false;
-        const activityDate = new Date(a.loggedAt);
-        // Compare dates by year, month, and day to avoid timezone issues
-        return activityDate.getFullYear() === date.getFullYear() &&
-               activityDate.getMonth() === date.getMonth() &&
-               activityDate.getDate() === date.getDate();
-      });
+      // Use shared date filtering utility (same as Log tab)
+      const dayActivities = getActivitiesByDate(activities, date);
+      const dayNaps = dayActivities.filter(a => a.type === "nap");
       
       // Helper to check if nap is daytime (starts between 7 AM - 7 PM)
       const isDaytimeNap = (nap: Activity) => {
@@ -272,13 +260,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset - 7); // Previous week
       
-      const dayFeeds = activities.filter(a => {
-        if (a.type !== "feed" || !a.loggedAt) return false;
-        const activityDate = new Date(a.loggedAt);
-        return activityDate.getFullYear() === date.getFullYear() &&
-               activityDate.getMonth() === date.getMonth() &&
-               activityDate.getDate() === date.getDate();
-      });
+      // Use shared date filtering utility
+      const dayActivities = getActivitiesByDate(activities, date);
+      const dayFeeds = dayActivities.filter(a => a.type === "feed");
       
       let totalValue = 0;
       dayFeeds.forEach(feed => {
@@ -319,13 +303,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset - 7); // Previous week
       
-      const dayNaps = activities.filter(a => {
-        if (a.type !== "nap" || !a.loggedAt) return false;
-        const activityDate = new Date(a.loggedAt);
-        return activityDate.getFullYear() === date.getFullYear() &&
-               activityDate.getMonth() === date.getMonth() &&
-               activityDate.getDate() === date.getDate();
-      });
+      // Use shared date filtering utility
+      const dayActivities = getActivitiesByDate(activities, date);
+      const dayNaps = dayActivities.filter(a => a.type === "nap");
       
       let totalHours = 0;
       dayNaps.forEach(nap => {
