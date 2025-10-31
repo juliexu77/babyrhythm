@@ -484,12 +484,12 @@ function calculateMetrics(activities: Activity[]) {
   };
 }
 
-function computeDeltas(recent: any, previous: any, recentDaysCount: number, previousDaysCount: number, trendAnalysis?: any): MetricDelta[] {
+function computeDeltas(recent: any, previous: any, recentDayCount: number, previousDayCount: number, trendAnalysis?: any): MetricDelta[] {
   const deltas: MetricDelta[] = [];
 
   // Compute average per day for baseline metrics using actual included day counts
-  const recentDays = Math.max(1, recentDaysCount || 0);
-  const baselineDays = Math.max(1, previousDaysCount || 0);
+  const recentDays = Math.max(1, recentDayCount || 1);
+  const baselineDays = Math.max(1, previousDayCount || 1);
   const avgRecentSleep = recent.totalSleepMinutes / recentDays;
   const avgPreviousSleep = previous.totalSleepMinutes / baselineDays;
   const avgRecentFeed = recent.totalFeedVolume / recentDays;
