@@ -491,7 +491,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       const insightCard: InsightCard = {
         id: "daily-insight",
         icon: <Sprout className="w-5 h-5 text-primary" />,
-        title: "About Today's Activities",
+        title: "AI Daily Analysis",
         content: content.trim(),
         questions: [
           "Why did the pattern change?",
@@ -640,7 +640,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading guidance...</p>
+            <p className="text-muted-foreground">AI preparing guidance...</p>
           </div>
         </div>
       ) : (
@@ -653,9 +653,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   <Calendar className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <p className="text-sm font-medium">Set your baby's birthday for personalized guidance</p>
+                  <p className="text-sm font-medium">Set your baby's birthday for AI-powered guidance</p>
                   <p className="text-xs text-muted-foreground">
-                    The Guide provides age-appropriate insights when we know your baby's age.
+                    Our AI provides age-specific insights and predictions once it knows your baby's age.
                   </p>
                   <Button
                     size="sm"
@@ -705,7 +705,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
               <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">
-                Track at least 4 naps and 4 feeds to see personalized guidance
+                AI needs at least 4 naps and 4 feeds to generate personalized guidance
               </p>
             </div>
           )}
@@ -715,7 +715,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
               <p className="text-sm text-muted-foreground">
-                Generating personalized guidance...
+                AI analyzing your baby's patterns...
               </p>
             </div>
           )}
@@ -726,9 +726,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
                 <div className="flex items-center gap-2">
                   <Activity className="w-4 h-4 text-primary" />
-                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">AI Data Pulse</h3>
                 </div>
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">vs Last 5 Days</span>
               </div>
               
               <div className="space-y-2">
@@ -778,7 +778,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   <button className="flex items-center justify-between w-full group">
                     <div className="flex items-center gap-2">
                       <Lightbulb className="w-4 h-4 text-primary" />
-                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
+                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">AI Insights</h3>
                     </div>
                     {guideSections.what_to_know.length > 1 && (
                       <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
@@ -817,7 +817,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   <button className="flex items-center justify-between w-full group">
                     <div className="flex items-center gap-2">
                       <CheckSquare className="w-4 h-4 text-primary" />
-                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
+                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">AI Recommendations</h3>
                     </div>
                     {guideSections.what_to_do.length > 1 && (
                       <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
@@ -853,7 +853,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowRight className="w-4 h-4 text-primary" />
-                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What's Next</h3>
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">AI Prediction</h3>
               </div>
               <div className="space-y-3 pl-1">
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -863,7 +863,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
                     <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-foreground">
-                      <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
+                      <span className="font-medium">AI tip:</span> {guideSections.prep_tip}
                     </p>
                   </div>
                 )}

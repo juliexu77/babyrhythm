@@ -62,9 +62,9 @@ export const Helper = ({ activities, babyBirthDate, onGoToSettings }: HelperProp
       <div className="h-full flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto animate-pulse">
-            <span className="text-2xl">🌿</span>
+            <span className="text-2xl">🤖</span>
           </div>
-          <p className="text-sm text-muted-foreground">Preparing your guide...</p>
+          <p className="text-sm text-muted-foreground">AI assistant initializing...</p>
         </div>
       </div>
     );

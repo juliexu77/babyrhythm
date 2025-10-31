@@ -21,7 +21,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading insights...</p>
+          <p className="text-muted-foreground">AI analyzing your data...</p>
         </div>
       </div>
     );
@@ -204,9 +204,9 @@ return (
     {/* Age-Appropriate Guidance - NOW FIRST */}
     <div className="bg-card rounded-xl p-6 shadow-card border border-border">
       <div className="flex items-center gap-2 mb-4">
-        <Lightbulb className="h-5 w-5 text-primary" />
+        <Brain className="h-5 w-5 text-primary" />
         <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
-          {t('whatToExpectAt')} {Math.floor(ageInWeeks)} {t('weeks')}
+          AI Insights for {Math.floor(ageInWeeks)} {t('weeks')}
         </h2>
       </div>
       
@@ -242,7 +242,7 @@ return (
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-3 w-3 text-primary/70" />
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {household.baby_name}'s Patterns
+                      AI-Detected Patterns for {household.baby_name}
                     </span>
                   </div>
                   {sleepMetrics.napsPerDay > 0 && (
@@ -330,7 +330,7 @@ return (
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-3 w-3 text-primary/70" />
                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {household.baby_name}'s Patterns
+                      AI-Detected Patterns for {household.baby_name}
                     </span>
                   </div>
                   {feedingMetrics.avgAmount && (

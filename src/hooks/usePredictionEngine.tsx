@@ -69,7 +69,7 @@ export function usePredictionEngine(activities: Activity[]) {
 
   // Helper to translate intent to user-friendly copy
   const getIntentCopy = (result: NextActionResult | null, babyName?: string): string => {
-    if (!result) return "Keep logging activities to build your rhythm";
+    if (!result) return "AI learning your baby's rhythm—keep logging to unlock predictions";
 
     const name = babyName?.split(' ')[0] || 'Baby';
     const { intent, confidence, timing } = result;
@@ -121,22 +121,22 @@ export function usePredictionEngine(activities: Activity[]) {
     // Low confidence - educational
     switch (intent) {
       case 'FEED_SOON':
-        return 'Feed or nap could be next — watch for hunger and sleep cues';
+        return 'AI detecting feeding or sleep need—watch for hunger and sleep cues';
       case 'START_WIND_DOWN':
-        return 'Nap or feed could be next — trust your instincts';
+        return 'AI learning patterns—nap or feed could be next, trust your instincts';
       case 'LET_SLEEP_CONTINUE':
-      return `${name} is resting — we will learn more as patterns emerge`;
+      return `${name} is resting — AI will sharpen predictions as patterns strengthen`;
       case 'INDEPENDENT_TIME':
-        return `${name} is between patterns — both feeding and nap could happen soon`;
+        return `${name} is between patterns — AI analyzing both feeding and sleep signals`;
       default:
-        return 'Keep logging to help us understand your rhythm better';
+        return 'AI building pattern model—keep logging to improve accuracy';
     }
   };
 
   // Helper to get reasons with appropriate tone
   const getReasonsCopy = (result: NextActionResult | null): string[] => {
     if (!result || result.reasons.length === 0) {
-      return ['Building pattern data from your logs'];
+      return ['AI building pattern model from your activity logs'];
     }
     return result.reasons;
   };

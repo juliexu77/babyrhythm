@@ -405,7 +405,7 @@ const lastDiaper = displayActivities
     
     // Early Days message - first 24 hours
     if (isEarlyDays) {
-      return `Every log helps us learn ${babyName?.split(' ')[0] || 'your baby'}'s natural rhythm. You're building the foundation for personalized insights.`;
+      return `Our AI is learning ${babyName?.split(' ')[0] || 'your baby'}'s natural rhythm. Every log trains the AI to provide smarter predictions.`;
     }
     
     // Check cumulative activity counts (all time, not just today)
@@ -414,7 +414,7 @@ const lastDiaper = displayActivities
     
     // Early state message - insufficient cumulative data (but past first 24 hours)
     if (totalFeeds < 4 || totalNaps < 4) {
-      return `Keep logging feeds and sleeps—patterns will emerge soon! Every entry helps us understand ${babyName?.split(' ')[0] || 'your baby'}'s unique rhythm.`;
+      return `Keep logging—our AI needs a few more data points to unlock personalized predictions for ${babyName?.split(' ')[0] || 'your baby'}.`;
     }
     
     // Calculate 7-day rolling averages (simplified for now)

@@ -186,19 +186,19 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
           </div>
           <div className="space-y-2">
             <h3 className="text-base font-semibold text-foreground">
-              Your baby's next rhythm prediction will appear here
+              AI predictions will appear here
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
-              <span className="font-medium">Example:</span> Next feed likely around 1:15 PM
+              <span className="font-medium">Example:</span> "Next feed likely around 1:15 PM"
               <br />
               <span className="text-xs opacity-80 mt-2 block">
-                Once you log a few activities, these get personalized just for your baby.
+                Our AI learns your baby's unique patterns and predicts their next need with increasing accuracy.
               </span>
             </p>
           </div>
           <div className="pt-2">
             <p className="text-xs text-muted-foreground">
-              💡 BabyRhythm predicts your baby's next move using recent patterns
+              🤖 AI-powered predictions personalized to your baby's rhythm
             </p>
           </div>
         </div>
@@ -238,11 +238,11 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
               {isExpanded && (
                 <div className="pt-3 mt-3 border-t border-border/40">
                   <p className="text-sm text-muted-foreground">
-                    We'll refine this as we learn from your logs.
+                    Our AI refines predictions as it learns your baby's unique patterns.
                   </p>
                   <div className="mt-2 flex items-start gap-2">
                     <span className="text-xs text-muted-foreground/80">
-                      ℹ️ Predicted by BabyRhythm's AI
+                      🤖 AI-powered prediction
                     </span>
                   </div>
                 </div>
