@@ -1372,10 +1372,27 @@ const lastDiaper = displayActivities
               <div className="flex items-center gap-3">
                 <Milk className="w-5 h-5 text-primary" />
                 <p className="text-sm flex-1 text-muted-foreground">
-                  Last feed — <span className="font-medium text-foreground">{lastFeed.time}</span>
+                  Last feed — <span className="font-medium text-foreground">
+                    {(() => {
+                      const feedTime = parseUI12hToMinutes(lastFeed.time);
+                      if (feedTime === null) return lastFeed.time;
+                      
+                      const now = new Date();
+                      const today = new Date(now.toDateString());
+                      const feedDate = new Date(today);
+                      feedDate.setHours(Math.floor(feedTime / 60), feedTime % 60, 0, 0);
+                      
+                      const minutesAgo = differenceInMinutes(now, feedDate);
+                      if (minutesAgo < 0) return lastFeed.time;
+                      
+                      const hours = Math.floor(minutesAgo / 60);
+                      const mins = minutesAgo % 60;
+                      return hours > 0 ? `${hours}h ${mins}m ago` : `${mins}m ago`;
+                    })()}
+                  </span>
                   {lastFeed.details?.quantity && (
                     <span className="ml-1">
-                      {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
+                      ({lastFeed.details.quantity} {lastFeed.details.unit || 'ml'})
                     </span>
                   )}
                 </p>
@@ -1413,7 +1430,26 @@ const lastDiaper = displayActivities
               <div className="flex items-center gap-3">
                 <Moon className="w-5 h-5 text-primary" />
                 <p className="text-sm flex-1 text-muted-foreground">
-                  Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                  Asleep for — <span className="font-medium text-foreground">
+                    {(() => {
+                      const startTime = ongoingNap.details?.startTime || ongoingNap.time;
+                      const [time, period] = startTime.split(' ');
+                      const [hours, minutes] = time.split(':').map(Number);
+                      let hour24 = hours;
+                      if (period === 'PM' && hours !== 12) hour24 += 12;
+                      if (period === 'AM' && hours === 12) hour24 = 0;
+                      
+                      const today = new Date();
+                      const napStart = new Date(today.toDateString());
+                      napStart.setHours(hour24, minutes, 0, 0);
+                      
+                      const sleepMinutes = differenceInMinutes(currentTime, napStart);
+                      const sleepHours = Math.floor(sleepMinutes / 60);
+                      const remainingMinutes = sleepMinutes % 60;
+                      
+                      return sleepHours > 0 ? `${sleepHours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
+                    })()}
+                  </span>
                 </p>
                 <Button
                   onClick={() => {
@@ -1451,7 +1487,7 @@ const lastDiaper = displayActivities
               <div className="flex items-center gap-3">
                 <Moon className="w-5 h-5 text-primary" />
                 <p className="text-sm flex-1 text-muted-foreground">
-                  Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
+                  Sleep — <span className="font-medium text-foreground">not logged yet</span>
                 </p>
                 <Button
                   onClick={() => onAddActivity('nap')}
