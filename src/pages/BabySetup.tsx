@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -18,8 +19,15 @@ const BabySetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
-  const [bedtime, setBedtime] = useState("19:00"); // Default 7 PM
-  const [wakeTime, setWakeTime] = useState("07:00"); // Default 7 AM
+  const [bedtimeHour, setBedtimeHour] = useState(19); // Default 7 PM
+  const [wakeTimeHour, setWakeTimeHour] = useState(7); // Default 7 AM
+
+  // Format hour to 12-hour time string
+  const formatHour = (hour: number) => {
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:00 ${period}`;
+  };
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -66,14 +74,11 @@ const BabySetup = () => {
       if (collaboratorError) throw collaboratorError;
 
       // Update user profile with sleep schedule
-      const bedtimeHour = parseInt(bedtime.split(':')[0]);
-      const wakeHour = parseInt(wakeTime.split(':')[0]);
-      
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
           night_sleep_start_hour: bedtimeHour,
-          night_sleep_end_hour: wakeHour,
+          night_sleep_end_hour: wakeTimeHour,
         })
         .eq('user_id', user.id);
 
@@ -155,36 +160,48 @@ const BabySetup = () => {
               </div>
 
               <div className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label htmlFor="bedtime" className="text-sm font-medium">
                     Typical Bedtime
                   </Label>
-                  <Input
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl font-semibold text-foreground">
+                      {formatHour(bedtimeHour)}
+                    </span>
+                  </div>
+                  <Slider
                     id="bedtime"
-                    type="time"
-                    value={bedtime}
-                    onChange={(e) => setBedtime(e.target.value)}
-                    required
+                    min={18}
+                    max={23}
+                    step={1}
+                    value={[bedtimeHour]}
+                    onValueChange={(value) => setBedtimeHour(value[0])}
                     disabled={isLoading}
-                    className="text-sm"
+                    className="w-full"
                   />
                   <p className="text-xs text-muted-foreground">
                     When does night sleep usually start?
                   </p>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label htmlFor="wakeTime" className="text-sm font-medium">
                     Typical Wake Time
                   </Label>
-                  <Input
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl font-semibold text-foreground">
+                      {formatHour(wakeTimeHour)}
+                    </span>
+                  </div>
+                  <Slider
                     id="wakeTime"
-                    type="time"
-                    value={wakeTime}
-                    onChange={(e) => setWakeTime(e.target.value)}
-                    required
+                    min={5}
+                    max={10}
+                    step={1}
+                    value={[wakeTimeHour]}
+                    onValueChange={(value) => setWakeTimeHour(value[0])}
                     disabled={isLoading}
-                    className="text-sm"
+                    className="w-full"
                   />
                   <p className="text-xs text-muted-foreground">
                     When does morning usually start?
