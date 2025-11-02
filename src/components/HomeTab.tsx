@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
+import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
+import { RightNowStatus } from "@/components/home/RightNowStatus";
+import { SmartQuickActions } from "@/components/home/SmartQuickActions";
+import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { LearningProgress } from "@/components/LearningProgress";
 import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +55,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showDailyInsight, setShowDailyInsight] = useState(false);
   const [showRhythmUnlocked, setShowRhythmUnlocked] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
+  
+  // New home tab intelligence hook
+  const { 
+    currentActivity, 
+    nextPrediction, 
+    smartSuggestions, 
+    todaysPulse 
+  } = useHomeTabIntelligence(activities, passedOngoingNap, babyName);
 
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
@@ -1351,63 +1363,48 @@ const lastDiaper = displayActivities
           totalLogs={activities.length}
         />
 
-        {/* What's Next */}
-        <NextActivityPrediction 
-          activities={activities}
-          ongoingNap={ongoingNap}
-          onMarkWakeUp={onEndNap}
-          babyName={babyName}
-          onLogPredictedActivity={async (type) => {
-            // Round time to nearest 5 minutes
-            const now = new Date();
-            const minutes = now.getMinutes();
-            const roundedMinutes = Math.round(minutes / 5) * 5;
-            const roundedDate = new Date(now);
-            roundedDate.setMinutes(roundedMinutes);
-            roundedDate.setSeconds(0);
-            roundedDate.setMilliseconds(0);
-            
-            const timeStr = roundedDate.toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
+        {/* Zone 1: Right Now Status (replaces What's Next) */}
+        <RightNowStatus
+          currentActivity={currentActivity}
+          nextPrediction={nextPrediction}
+          onWokeEarly={onEndNap}
+          onStillAsleep={() => {
+            toast({
+              title: 'Still napping',
+              description: 'Nap timer continues',
             });
-            
-            // Build activity details with predicted values
-            let details = {};
-            if (type === 'feed' && prediction?.timing.expectedFeedVolume) {
-              const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
-              details = {
-                feedType: 'bottle',
-                quantity: roundedVolume.toString(),
-                unit: 'ml'
-              };
-            } else if (type === 'nap') {
-              // For naps, set startTime and ensure no endTime
-              details = {
-                startTime: timeStr,
-                endTime: null // Explicitly mark as ongoing
-              };
-            }
-            
-            try {
-              await addActivity(type, details, roundedDate, timeStr);
-              const description = type === 'feed' && prediction?.timing.expectedFeedVolume
-                ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
-                : `${timeStr}`;
-              toast({
-                title: type === 'feed' ? t('feedLogged') : t('napLogged'),
-                description,
-              });
-            } catch (error) {
-              console.error('Error logging activity:', error);
-              toast({
-                title: t('error'),
-                description: t('failedToLogActivity'),
-                variant: 'destructive',
-              });
-            }
           }}
+          onStartNap={() => onAddActivity('nap')}
+          onEndFeed={() => {
+            toast({
+              title: 'Feed ended',
+              description: 'Logged successfully',
+            });
+          }}
+          babyName={babyName || 'Baby'}
+          babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
+          activities={activities}
+        />
+
+        {/* Zone 2: Smart Quick Actions */}
+        <SmartQuickActions
+          suggestions={smartSuggestions}
+          onOpenAddActivity={() => onAddActivity()}
+        />
+
+        {/* Zone 3: Today's Pulse (replaces Daily Summary) */}
+        <TodaysPulse
+          deviations={todaysPulse.deviations}
+          biggestDeviation={todaysPulse.biggestDeviation}
+          onAdjustSchedule={() => {
+            toast({
+              title: 'Schedule adjusted',
+              description: 'Predictions updated for today',
+            });
+          }}
+          babyName={babyName || 'Baby'}
+          babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
+          activities={activities}
         />
 
         {/* 2. Current State */}

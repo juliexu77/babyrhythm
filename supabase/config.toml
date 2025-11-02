@@ -23,3 +23,6 @@ verify_jwt = true
 
 [functions.generate-rhythm-insights]
 verify_jwt = true
+
+[functions.generate-home-insights]
+verify_jwt = true
