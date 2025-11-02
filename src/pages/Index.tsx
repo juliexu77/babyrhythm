@@ -39,7 +39,6 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChatPanel } from "@/components/ChatPanel";
  
 const Index = () => {
   const { user, loading } = useAuth();
@@ -204,7 +203,6 @@ const ongoingNap = (() => {
   const [reportConfig, setReportConfig] = useState<ReportConfig | undefined>();
   const [showReportShare, setShowReportShare] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
-  const [showAIChat, setShowAIChat] = useState(false);
   const [recentCollaboratorActivity, setRecentCollaboratorActivity] = useState<{
     userName: string;
     activityType: string;
@@ -1441,16 +1439,6 @@ return (
             </div>
           </DialogContent>
         </Dialog>
-
-        {/* AI Chat Panel - Show on home tab */}
-        {activeTab === 'home' && (
-          <ChatPanel
-            activities={activities}
-            isOpen={showAIChat}
-            onToggle={() => setShowAIChat(!showAIChat)}
-            showFixedButton={true}
-          />
-        )}
 
       </div>
     </ErrorBoundary>

@@ -60,11 +60,9 @@ const Auth = () => {
       });
     } else {
       toast({
-        title: "Welcome to BabyRhythm!",
-        description: "You can start using the app now. We've sent a confirmation email to verify your account.",
+        title: "Check your email",
+        description: "We've sent you a confirmation link to complete your registration.",
       });
-      // Navigate to app immediately without waiting for confirmation
-      navigate("/app");
     }
 
     setIsLoading(false);

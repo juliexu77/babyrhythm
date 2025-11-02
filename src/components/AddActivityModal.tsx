@@ -57,13 +57,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     });
   };
   
-  // Helper function to get time X minutes ago
-  const getTimeMinutesAgo = (minutesAgo: number) => {
-    const date = new Date();
-    date.setMinutes(date.getMinutes() - minutesAgo);
-    return getRoundedTime(date);
-  };
-  
   const [time, setTime] = useState(() => getRoundedTime());
   
   // Feed state
@@ -101,7 +94,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Sleep state
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [hasEndTime, setHasEndTime] = useState(false); // Controls whether end time is included (default to false for new naps)
+  const [hasEndTime, setHasEndTime] = useState(true); // Controls whether end time is included
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [timerStart, setTimerStart] = useState<Date | null>(null);
   
@@ -128,8 +121,22 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       // Populate form with editing activity data
       setActivityType(editingActivity.type);
       
-      // Keep the original time as-is (already rounded when first created)
-      setTime(editingActivity.time);
+      // Round the time to nearest 5 minutes when editing
+      const originalTime = editingActivity.time;
+      // Parse the time and round it
+      const roundedTime = (() => {
+        try {
+          const [timePart, period] = originalTime.split(' ');
+          const [hours, minutes] = timePart.split(':').map(Number);
+          const date = new Date();
+          date.setHours(period === 'PM' && hours !== 12 ? hours + 12 : hours === 12 && period === 'AM' ? 0 : hours);
+          date.setMinutes(minutes);
+          return getRoundedTime(date);
+        } catch {
+          return getRoundedTime(); // Fallback to current time if parsing fails
+        }
+      })();
+      setTime(roundedTime);
       
       // Set the selected date based on the original logged date
       if (editingActivity.loggedAt) {
@@ -158,7 +165,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         const details = editingActivity.details;
         setStartTime(details.startTime || "");
         setEndTime(details.endTime || "");
-        setHasEndTime(!!details.endTime); // Set checkbox based on whether end time exists when editing
+        setHasEndTime(!!details.endTime); // Set checkbox based on whether end time exists
       } else if (editingActivity.type === "note") {
         setNote(editingActivity.details.note || "");
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
@@ -277,7 +284,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setHasCream(false);
     setStartTime("");
     setEndTime("");
-    setHasEndTime(false); // Reset to default (no end time for new naps)
+    setHasEndTime(true); // Reset to default (end time included)
     setIsTimerActive(false);
     setTimerStart(null);
     setNote("");
@@ -699,45 +706,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 {/* Time Picker - Moved below feed type */}
-                <div className="space-y-2">
-                  <TimeScrollPicker 
-                    value={time} 
-                    selectedDate={selectedDate}
-                    onChange={setTime} 
-                    onDateChange={setSelectedDate}
-                    label={t('time')} 
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getRoundedTime())}
-                    >
-                      <Clock className="h-3 w-3 mr-1" />
-                      Now
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(15))}
-                    >
-                      15 min ago
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(30))}
-                    >
-                      30 min ago
-                    </Button>
-                  </div>
-                </div>
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label={t('time')} 
+                />
 
                 {/* Dynamic amount/details based on feed type */}
                 {feedType === "bottle" && (
@@ -775,44 +750,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 {feedType === "nursing" && (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="minutes-left" className="text-sm font-medium">{t('leftSide')}</Label>
-                        <Input
-                          id="minutes-left"
-                          type="number"
-                          inputMode="numeric"
-                          min="0"
-                          max="99"
-                          value={minutesLeft}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || (Number(value) >= 0 && Number(value) <= 99)) {
-                              setMinutesLeft(value);
-                            }
-                          }}
-                          placeholder="0"
-                          className="h-12 text-center text-lg"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="minutes-right" className="text-sm font-medium">{t('rightSide')}</Label>
-                        <Input
-                          id="minutes-right"
-                          type="number"
-                          inputMode="numeric"
-                          min="0"
-                          max="99"
-                          value={minutesRight}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (value === '' || (Number(value) >= 0 && Number(value) <= 99)) {
-                              setMinutesRight(value);
-                            }
-                          }}
-                          placeholder="0"
-                          className="h-12 text-center text-lg"
-                        />
-                      </div>
+                      <MinuteScrollPicker
+                        value={minutesLeft}
+                        onChange={setMinutesLeft}
+                        label={t('leftSide')}
+                      />
+                      <MinuteScrollPicker
+                        value={minutesRight}
+                        onChange={setMinutesRight}
+                        label={t('rightSide')}
+                      />
                     </div>
                   </div>
                 )}
@@ -849,45 +796,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "diaper" && (
               <div className="space-y-5">
                 {/* Time Picker for Diaper */}
-                <div className="space-y-2">
-                  <TimeScrollPicker 
-                    value={time} 
-                    selectedDate={selectedDate}
-                    onChange={setTime} 
-                    onDateChange={setSelectedDate}
-                    label={t('time')} 
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getRoundedTime())}
-                    >
-                      <Clock className="h-3 w-3 mr-1" />
-                      Now
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(15))}
-                    >
-                      15 min ago
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(30))}
-                    >
-                      30 min ago
-                    </Button>
-                  </div>
-                </div>
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label={t('time')} 
+                />
                 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
@@ -964,45 +879,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "nap" && (
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <div className="space-y-2">
-                    <TimeScrollPicker 
-                      value={startTime} 
-                      selectedDate={selectedDate}
-                      onChange={setStartTime} 
-                      onDateChange={setSelectedDate}
-                      label={t('startTime')} 
-                    />
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-8 text-xs"
-                        onClick={() => setStartTime(getRoundedTime())}
-                      >
-                        <Clock className="h-3 w-3 mr-1" />
-                        Now
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-8 text-xs"
-                        onClick={() => setStartTime(getTimeMinutesAgo(15))}
-                      >
-                        15 min ago
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-8 text-xs"
-                        onClick={() => setStartTime(getTimeMinutesAgo(30))}
-                      >
-                        30 min ago
-                      </Button>
-                    </div>
-                  </div>
+                  <TimeScrollPicker 
+                    value={startTime} 
+                    selectedDate={selectedDate}
+                    onChange={setStartTime} 
+                    onDateChange={setSelectedDate}
+                    label={t('startTime')} 
+                  />
                   
                   {/* End Time Checkbox */}
                   <div className="flex items-center space-x-2">
@@ -1023,45 +906,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                   {/* End Time Picker - Only show when checkbox is checked */}
                   {hasEndTime && (
-                    <div className="space-y-2">
-                      <TimeScrollPicker 
-                        value={endTime} 
-                        selectedDate={selectedEndDate}
-                        onChange={setEndTime} 
-                        onDateChange={setSelectedEndDate}
-                        label={t('endTime')} 
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs"
-                          onClick={() => setEndTime(getRoundedTime())}
-                        >
-                          <Clock className="h-3 w-3 mr-1" />
-                          Now
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs"
-                          onClick={() => setEndTime(getTimeMinutesAgo(15))}
-                        >
-                          15 min ago
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs"
-                          onClick={() => setEndTime(getTimeMinutesAgo(30))}
-                        >
-                          30 min ago
-                        </Button>
-                      </div>
-                    </div>
+                    <TimeScrollPicker 
+                      value={endTime} 
+                      selectedDate={selectedEndDate}
+                      onChange={setEndTime} 
+                      onDateChange={setSelectedEndDate}
+                      label={t('endTime')} 
+                    />
                   )}
                 </div>
               </div>
@@ -1071,45 +922,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "note" && (
               <div className="space-y-4">
                 {/* Time Picker */}
-                <div className="space-y-2">
-                  <TimeScrollPicker 
-                    value={time} 
-                    selectedDate={selectedDate}
-                    onChange={setTime} 
-                    onDateChange={setSelectedDate}
-                    label={t('time')} 
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getRoundedTime())}
-                    >
-                      <Clock className="h-3 w-3 mr-1" />
-                      Now
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(15))}
-                    >
-                      15 min ago
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(30))}
-                    >
-                      30 min ago
-                    </Button>
-                  </div>
-                </div>
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label={t('time')} 
+                />
 
                 <div>
                   <Label htmlFor="note" className="text-sm font-medium mb-2 block">{t('noteText')}</Label>
@@ -1203,45 +1022,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Measure Details */}
             {activityType === "measure" && (
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <TimeScrollPicker 
-                    value={time} 
-                    selectedDate={selectedDate}
-                    onChange={setTime} 
-                    onDateChange={setSelectedDate}
-                    label={t('time')} 
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getRoundedTime())}
-                    >
-                      <Clock className="h-3 w-3 mr-1" />
-                      Now
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(15))}
-                    >
-                      15 min ago
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(30))}
-                    >
-                      30 min ago
-                    </Button>
-                  </div>
-                </div>
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label={t('time')} 
+                />
 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">{t('weight')}</Label>
@@ -1310,45 +1097,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Photo Activity Details */}
             {activityType === "photo" && (
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <TimeScrollPicker 
-                    value={time} 
-                    selectedDate={selectedDate}
-                    onChange={setTime} 
-                    onDateChange={setSelectedDate}
-                    label="Time" 
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getRoundedTime())}
-                    >
-                      <Clock className="h-3 w-3 mr-1" />
-                      Now
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(15))}
-                    >
-                      15 min ago
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 h-8 text-xs"
-                      onClick={() => setTime(getTimeMinutesAgo(30))}
-                    >
-                      30 min ago
-                    </Button>
-                  </div>
-                </div>
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label="Time" 
+                />
 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Photo</Label>

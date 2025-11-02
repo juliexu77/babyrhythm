@@ -63,7 +63,7 @@ const VillageInvite = () => {
             BabyRhythm syncs instantly across caregivers — parents, partners, and nannies see the same log in real time.
           </p>
           <p className="text-xs text-primary/90 font-medium pt-1">
-            You can invite caregivers later from settings. (Email confirmation required to share)
+            Invite your caregiver now so your rhythm learns twice as fast.
           </p>
         </div>
 
@@ -81,11 +81,11 @@ const VillageInvite = () => {
               variant="ghost"
               className="w-full font-normal text-muted-foreground"
             >
-              Start exploring
+              Skip for now
             </Button>
 
             <p className="text-xs text-center text-muted-foreground/80 leading-relaxed pt-2">
-              Start logging activities now. You can invite others anytime from Settings → Caregivers.
+              Multiple caregivers = more data points = smarter predictions
             </p>
           </CardContent>
         </Card>

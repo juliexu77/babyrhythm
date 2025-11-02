@@ -23,8 +23,6 @@ interface Collaborator {
 import { UserPlus, Trash2, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 
 interface CaregiverManagementProps {
   onClose: () => void;
@@ -33,7 +31,6 @@ interface CaregiverManagementProps {
 export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
   const { household, collaborators, removeCollaborator, updateCollaboratorRole, generateInviteLink } = useHousehold();
   const { t } = useLanguage();
-  const { user } = useAuth();
   const [isActive, setIsActive] = useState(true);
   const [emailInvite, setEmailInvite] = useState("");
   const [isInviting, setIsInviting] = useState(false);
@@ -41,18 +38,6 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
 
   console.log('CaregiverManagement - household:', household);
   console.log('CaregiverManagement - collaborators:', collaborators);
-
-  const checkEmailConfirmation = async () => {
-    if (!user?.email_confirmed_at) {
-      toast({
-        title: "Email confirmation required",
-        description: "Please confirm your email before inviting others. Check your inbox for the confirmation link.",
-        variant: "destructive"
-      });
-      return false;
-    }
-    return true;
-  };
 
   const getInitials = (name: string) => {
     if (!name) return "??";
@@ -78,8 +63,6 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
   };
 
 const handleAddCaregiver = async () => {
-    if (!(await checkEmailConfirmation())) return;
-    
     try {
       const inviteData = await generateInviteLink();
       if (inviteData?.link) {
@@ -130,8 +113,6 @@ const handleAddCaregiver = async () => {
       });
       return;
     }
-
-    if (!(await checkEmailConfirmation())) return;
 
     setIsInviting(true);
     try {
