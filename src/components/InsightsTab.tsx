@@ -1,62 +1,46 @@
 import { Activity } from "./ActivityCard";
-import { Card } from "@/components/ui/card";
-import { Clock, Milk, Moon, Sun, Sunrise, AlertCircle, CheckCircle2, TrendingUp, TrendingDown, ChevronDown, Lightbulb } from "lucide-react";
-import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Baby, Clock, Milk, Moon, Lightbulb, Brain, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { calculateAgeInWeeks, getWakeWindowForAge, getFeedingGuidanceForAge } from "@/utils/huckleberrySchedules";
 import { useHousehold } from "@/hooks/useHousehold";
-import { usePredictionEngine } from "@/hooks/usePredictionEngine";
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
 
 interface InsightsTabProps {
   activities: Activity[];
 }
 
-interface TimeSegment {
-  start: number; // hour (0-24)
-  end: number;
-  type: 'awake' | 'nap' | 'night';
-  label?: string;
-}
-
-interface DailyPattern {
-  wakeTime: string;
-  naps: Array<{ start: string; end: string; duration: number }>;
-  feeds: Array<{ time: string }>;
-  bedtime: string;
-  nightWake?: string;
-}
-
 export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
-  const { prediction, getIntentCopy, formatTime } = usePredictionEngine(activities);
-  const [showTrendDetails, setShowTrendDetails] = useState(false);
+  const { t } = useLanguage();
+  const { insights } = usePatternAnalysis(activities);
   
+  // Show loading state while household data is being fetched
   if (householdLoading || !household) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading rhythm data...</p>
+          <p className="text-muted-foreground">Loading insights...</p>
         </div>
       </div>
     );
   }
-
+  
   const ageInWeeks = household?.baby_birthday ? calculateAgeInWeeks(household.baby_birthday) : 0;
-  const ageInMonths = Math.floor(ageInWeeks / 4.33);
-  const babyName = household?.baby_name || 'Baby';
-
-  // Calculate average daily pattern from last 5 days
-  const averagePattern = useMemo(() => {
-    const now = new Date();
-    const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
-    const recentActivities = activities.filter(a => {
-      const activityDate = a.loggedAt ? new Date(a.loggedAt) : new Date();
-      return activityDate >= fiveDaysAgo;
-    });
-
-    // Helper to parse time strings to minutes since midnight
-    const parseTimeToMinutes = (timeStr: string): number => {
+  const wakeWindowData = getWakeWindowForAge(ageInWeeks);
+  const feedingGuidance = getFeedingGuidanceForAge(ageInWeeks);
+  
+  // Categorize insights by type
+  const sleepInsights = insights.filter(i => i.type === 'sleep');
+  const feedingInsights = insights.filter(i => i.type === 'feeding');
+  
+  // Calculate actual sleep metrics from activities (daytime naps only)
+  const calculateSleepMetrics = () => {
+    const naps = activities.filter(a => a.type === 'nap' && a.details.startTime && a.details.endTime);
+    
+    // Helper to parse time to minutes
+    const parseTimeToMinutes = (timeStr: string) => {
       const [time, period] = timeStr.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
       let totalMinutes = (hours % 12) * 60 + minutes;
@@ -64,474 +48,378 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       if (period === 'AM' && hours === 12) totalMinutes = minutes;
       return totalMinutes;
     };
-
-    // Calculate average nap times
-    const naps = recentActivities.filter(a => a.type === 'nap' && a.details.startTime && a.details.endTime);
-    const napsByOrder: Array<Array<{ start: number; end: number }>> = [[], [], []]; // First 3 naps
-
-    naps.forEach(nap => {
-      const startMinutes = parseTimeToMinutes(nap.details.startTime!);
-      const endMinutes = parseTimeToMinutes(nap.details.endTime!);
-      
-      // Categorize into nap order based on time
-      if (startMinutes < 11 * 60) napsByOrder[0].push({ start: startMinutes, end: endMinutes });
-      else if (startMinutes < 15 * 60) napsByOrder[1].push({ start: startMinutes, end: endMinutes });
-      else if (startMinutes < 19 * 60) napsByOrder[2].push({ start: startMinutes, end: endMinutes });
-    });
-
-    // Calculate averages
-    const avgNaps = napsByOrder.map((napGroup, idx) => {
-      if (napGroup.length === 0) return null;
-      const avgStart = napGroup.reduce((sum, n) => sum + n.start, 0) / napGroup.length;
-      const avgEnd = napGroup.reduce((sum, n) => sum + n.end, 0) / napGroup.length;
-      const avgDuration = avgEnd - avgStart;
-      
-      return {
-        start: formatMinutesToTime(avgStart),
-        end: formatMinutesToTime(avgEnd),
-        duration: Math.round(avgDuration),
-        order: idx + 1
-      };
-    }).filter(Boolean);
-
-    // Calculate average wake time (first activity or nap end before 9am)
-    const morningActivities = recentActivities.filter(a => {
-      const time = parseTimeToMinutes(a.time);
-      return time >= 5 * 60 && time < 9 * 60;
-    });
-    const avgWakeMinutes = morningActivities.length > 0
-      ? morningActivities.reduce((sum, a) => sum + parseTimeToMinutes(a.time), 0) / morningActivities.length
-      : 6 * 60 + 30;
-
-    // Calculate average bedtime (last nap after 6pm)
-    const eveningNaps = naps.filter(n => parseTimeToMinutes(n.details.startTime!) >= 18 * 60);
-    const avgBedtimeMinutes = eveningNaps.length > 0
-      ? eveningNaps.reduce((sum, n) => sum + parseTimeToMinutes(n.details.startTime!), 0) / eveningNaps.length
-      : 19 * 60 + 30;
-
-    return {
-      wakeTime: formatMinutesToTime(avgWakeMinutes),
-      naps: avgNaps as Array<{ start: string; end: string; duration: number; order: number }>,
-      bedtime: formatMinutesToTime(avgBedtimeMinutes),
-      feeds: [] // Simplified for now
+    
+    // Get date from loggedAt timestamp
+    const getDateKey = (activity: Activity) => {
+      if (activity.loggedAt) {
+        return new Date(activity.loggedAt).toDateString();
+      }
+      return new Date().toDateString(); // Fallback to today
     };
-  }, [activities]);
-
-  // Helper to format minutes to time string
-  const formatMinutesToTime = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-    return `${displayHour}:${mins.toString().padStart(2, '0')} ${period}`;
+    
+    // Filter for daytime naps only (7 AM - 7 PM)
+    const daytimeNaps = naps.filter(nap => {
+      const startMinutes = parseTimeToMinutes(nap.details.startTime!);
+      return startMinutes >= 7 * 60 && startMinutes < 19 * 60; // 7 AM to 7 PM
+    });
+    
+    // Group naps by date
+    const napsByDate = daytimeNaps.reduce((acc, nap) => {
+      const dateKey = getDateKey(nap);
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(nap);
+      return acc;
+    }, {} as Record<string, Activity[]>);
+    
+    // Count naps per day
+    const daysWithNaps = Object.keys(napsByDate).length;
+    const napsPerDay = daysWithNaps > 0 ? Math.round(daytimeNaps.length / daysWithNaps) : 0;
+    
+    // Calculate wake windows only within the same day
+    const wakeWindows: number[] = [];
+    
+    Object.values(napsByDate).forEach(dayNaps => {
+      const sortedDayNaps = [...dayNaps].sort((a, b) => 
+        parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!)
+      );
+      
+      for (let i = 1; i < sortedDayNaps.length; i++) {
+        const prevNapEnd = parseTimeToMinutes(sortedDayNaps[i - 1].details.endTime!);
+        const currentNapStart = parseTimeToMinutes(sortedDayNaps[i].details.startTime!);
+        const wakeWindow = currentNapStart - prevNapEnd;
+        if (wakeWindow > 0 && wakeWindow < 360) { // Valid wake window (< 6 hours)
+          wakeWindows.push(wakeWindow);
+        }
+      }
+    });
+    
+    const avgWakeWindow = wakeWindows.length > 0 
+      ? wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length 
+      : 0;
+    
+    return {
+      napsPerDay,
+      avgWakeWindowHours: avgWakeWindow > 0 ? (avgWakeWindow / 60).toFixed(1) : null
+    };
+  };
+  
+  // Calculate feeding metrics from activities
+  const calculateFeedingMetrics = () => {
+    const feeds = activities.filter(a => a.type === 'feed');
+    
+    // Calculate frequency
+    const parseTimeToMinutes = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let totalMinutes = (hours % 12) * 60 + minutes;
+      if (period === 'PM' && hours !== 12) totalMinutes += 12 * 60;
+      if (period === 'AM' && hours === 12) totalMinutes = minutes;
+      return totalMinutes;
+    };
+    
+    const intervals: number[] = [];
+    for (let i = 1; i < feeds.length; i++) {
+      const current = parseTimeToMinutes(feeds[i-1].time);
+      const previous = parseTimeToMinutes(feeds[i].time);
+      const interval = Math.abs(current - previous);
+      if (interval > 30 && interval < 360) {
+        intervals.push(interval);
+      }
+    }
+    
+    const avgFrequency = intervals.length > 0 
+      ? (intervals.reduce((a, b) => a + b, 0) / intervals.length / 60).toFixed(1)
+      : null;
+    
+    // Calculate average amount per feed
+    const bottleFeeds = feeds.filter(f => f.details.feedType === 'bottle' && f.details.quantity);
+    const amounts = bottleFeeds.map(f => {
+      const qty = parseFloat(f.details.quantity!);
+      // Convert ml to oz if needed (1 oz = 29.57 ml)
+      return f.details.unit === 'ml' ? qty / 29.57 : qty;
+    });
+    
+    const avgAmount = amounts.length > 0 
+      ? (amounts.reduce((a, b) => a + b, 0) / amounts.length).toFixed(1)
+      : null;
+    
+    return { avgFrequency, avgAmount };
+  };
+  
+  const sleepMetrics = calculateSleepMetrics();
+  const feedingMetrics = calculateFeedingMetrics();
+  
+  // Helper to match patterns to guidelines and get trend
+  const getPatternMatch = (insight: any, expectedRange: string, type: 'wake' | 'feed') => {
+    // Extract hours from insight text (e.g., "~6h 43m" or "2.8h")
+    const insightMatch = insight.text.match(/(\d+\.?\d*)h/);
+    if (!insightMatch) return null;
+    const actualValue = parseFloat(insightMatch[1]);
+    
+    // Parse expected range (e.g., "2.5-3.5hrs" or "Every 4-5 hours")
+    const rangeMatch = expectedRange.match(/(\d+\.?\d*)\s*-?\s*(\d+\.?\d*)/);
+    if (!rangeMatch) return null;
+    
+    const minExpected = parseFloat(rangeMatch[1]);
+    const maxExpected = parseFloat(rangeMatch[2] || rangeMatch[1]);
+    
+    // Determine trend
+    let trend: 'up' | 'down' | 'normal' = 'normal';
+    let comparison = '';
+    
+    if (actualValue > maxExpected) {
+      trend = 'up';
+      const diff = (actualValue - maxExpected).toFixed(1);
+      comparison = `+${diff}h above expected`;
+    } else if (actualValue < minExpected) {
+      trend = 'down';
+      const diff = (minExpected - actualValue).toFixed(1);
+      comparison = `-${diff}h below expected`;
+    } else {
+      trend = 'normal';
+      comparison = 'within expected range';
+    }
+    
+    return { trend, comparison, actualValue, minExpected, maxExpected };
   };
 
-  // Calculate pattern shifts (this week vs last week)
-  const patternShifts = useMemo(() => {
-    const now = new Date();
-    const thisWeekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const lastWeekStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-    
-    const thisWeekNaps = activities.filter(a => {
-      const date = a.loggedAt ? new Date(a.loggedAt) : new Date();
-      return a.type === 'nap' && date >= thisWeekStart;
-    });
-    
-    const lastWeekNaps = activities.filter(a => {
-      const date = a.loggedAt ? new Date(a.loggedAt) : new Date();
-      return a.type === 'nap' && date >= lastWeekStart && date < thisWeekStart;
-    });
+  const getAgeStage = (weeks: number) => {
+    if (weeks < 4) return t('newborn');
+    if (weeks < 12) return t('youngInfant');
+    if (weeks < 26) return t('olderInfant');
+    if (weeks < 52) return t('mobileInfant');
+    return t('toddler');
+  };
 
-    const shifts: string[] = [];
-    
-    // Nap timing comparison
-    if (thisWeekNaps.length > 0 && lastWeekNaps.length > 0) {
-      const thisWeekAvgStart = thisWeekNaps.reduce((sum, n) => {
-        if (!n.details.startTime) return sum;
-        const [time, period] = n.details.startTime.split(' ');
-        const [hours, minutes] = time.split(':').map(Number);
-        return sum + (hours + minutes / 60);
-      }, 0) / thisWeekNaps.length;
+  const getDevelopmentFocus = (weeks: number) => {
+    if (weeks < 4) return t('devFocus0to4');
+    if (weeks >= 4 && weeks < 12) return t('devFocus4to12');
+    if (weeks >= 12 && weeks < 26) return t('devFocus12to26');
+    if (weeks >= 26 && weeks < 52) return t('devFocus26to52');
+    return t('devFocus52plus');
+  };
+
+return (
+  <div className="space-y-6">
+    {/* Age-Appropriate Guidance - NOW FIRST */}
+    <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+      <div className="flex items-center gap-2 mb-4">
+        <Lightbulb className="h-5 w-5 text-primary" />
+        <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
+          {t('whatToExpectAt')} {Math.floor(ageInWeeks)} {t('weeks')}
+        </h2>
+      </div>
       
-      const lastWeekAvgStart = lastWeekNaps.reduce((sum, n) => {
-        if (!n.details.startTime) return sum;
-        const [time, period] = n.details.startTime.split(' ');
-        const [hours, minutes] = time.split(':').map(Number);
-        return sum + (hours + minutes / 60);
-      }, 0) / lastWeekNaps.length;
-      
-      const diff = Math.abs(thisWeekAvgStart - lastWeekAvgStart) * 60;
-      if (diff > 15) {
-        shifts.push(`Naps have been starting ~${Math.round(diff)} min ${thisWeekAvgStart < lastWeekAvgStart ? 'earlier' : 'later'} this week`);
-      }
-    }
-    
-    // Total sleep consistency
-    const thisWeekSleepTotal = thisWeekNaps.reduce((sum, n) => {
-      if (!n.details.startTime || !n.details.endTime) return sum;
-      const parseTime = (t: string) => {
-        const [time, period] = t.split(' ');
-        const [h, m] = time.split(':').map(Number);
-        return h * 60 + m + (period === 'PM' && h !== 12 ? 12 * 60 : 0);
-      };
-      return sum + (parseTime(n.details.endTime) - parseTime(n.details.startTime));
-    }, 0) / thisWeekNaps.length;
-    
-    if (thisWeekSleepTotal > 0) {
-      const hours = Math.floor(thisWeekSleepTotal / 60);
-      const mins = Math.round(thisWeekSleepTotal % 60);
-      shifts.push(`Total daytime sleep steady at ${hours} h ${mins} m`);
-    }
-
-    // Bedtime consistency
-    if (averagePattern.bedtime) {
-      shifts.push(`Bedtime holding consistent around ${averagePattern.bedtime}`);
-    }
-
-    return shifts;
-  }, [activities, averagePattern]);
-
-  // Generate coaching cards
-  const coachingCards = useMemo(() => {
-    const cards = [];
-    
-    // Age-based coaching
-    if (ageInMonths >= 6 && ageInMonths < 9) {
-      cards.push({
-        type: 'know',
-        title: 'Nap Consolidation',
-        message: `Nap timings are consolidating — this pattern is common around ${ageInMonths} months.`,
-        icon: Lightbulb
-      });
-      cards.push({
-        type: 'do',
-        title: 'Stretch Wake Windows',
-        message: 'Try stretching the first wake window to 3 hours to support the 2-nap transition.',
-        icon: CheckCircle2
-      });
-    } else if (ageInMonths < 4) {
-      cards.push({
-        type: 'know',
-        title: 'Building Rhythm',
-        message: 'Patterns are still emerging — consistency helps your baby learn day vs night.',
-        icon: Lightbulb
-      });
-      cards.push({
-        type: 'do',
-        title: 'Follow Wake Windows',
-        message: 'Watch for sleepy cues after 1-1.5 hours awake — this prevents overtiredness.',
-        icon: CheckCircle2
-      });
-    } else {
-      cards.push({
-        type: 'know',
-        title: 'Rhythm Stability',
-        message: 'Sleep patterns are more predictable now — your baby is learning self-regulation.',
-        icon: Lightbulb
-      });
-      cards.push({
-        type: 'do',
-        title: 'Maintain Consistency',
-        message: 'Keep nap times within 20-30 minutes of usual times to support circadian development.',
-        icon: CheckCircle2
-      });
-    }
-    
-    return cards;
-  }, [ageInMonths]);
-
-  // Generate today's forecast
-  const todayForecast = useMemo(() => {
-    if (!prediction) return [];
-    
-    const forecast = [];
-    
-    // Add predicted naps based on pattern
-    averagePattern.naps.forEach((nap, idx) => {
-      forecast.push({
-        type: 'nap',
-        label: `Nap ${idx + 1}`,
-        time: `${nap.start}–${nap.end}`,
-        icon: Moon
-      });
-    });
-    
-    // Add bedtime
-    if (averagePattern.bedtime) {
-      forecast.push({
-        type: 'bedtime',
-        label: 'Bedtime',
-        time: `around ${averagePattern.bedtime}`,
-        icon: Moon
-      });
-    }
-    
-    return forecast;
-  }, [prediction, averagePattern]);
-
-  // Generate timeline segments
-  const timelineSegments = useMemo((): TimeSegment[] => {
-    const segments: TimeSegment[] = [];
-    
-    // Parse times to hours
-    const parseToHour = (timeStr: string): number => {
-      const [time, period] = timeStr.split(' ');
-      const [hours] = time.split(':').map(Number);
-      let hour = hours % 12;
-      if (period === 'PM') hour += 12;
-      return hour;
-    };
-    
-    const wakeHour = parseToHour(averagePattern.wakeTime);
-    const bedtimeHour = parseToHour(averagePattern.bedtime);
-    
-    // Night sleep (before wake time)
-    if (wakeHour > 6) {
-      segments.push({
-        start: 0,
-        end: wakeHour,
-        type: 'night',
-        label: `Wake ${averagePattern.wakeTime}`
-      });
-    }
-    
-    // Daytime with naps
-    let currentHour = wakeHour;
-    averagePattern.naps.forEach((nap, idx) => {
-      const napStartHour = parseToHour(nap.start);
-      const napEndHour = parseToHour(nap.end);
-      
-      // Awake period before nap
-      if (napStartHour > currentHour) {
-        segments.push({
-          start: currentHour,
-          end: napStartHour,
-          type: 'awake'
-        });
-      }
-      
-      // Nap period
-      segments.push({
-        start: napStartHour,
-        end: napEndHour,
-        type: 'nap',
-        label: `Nap ${idx + 1} ${nap.start}–${nap.end}`
-      });
-      
-      currentHour = napEndHour;
-    });
-    
-    // Final awake period until bedtime
-    if (bedtimeHour > currentHour) {
-      segments.push({
-        start: currentHour,
-        end: bedtimeHour,
-        type: 'awake'
-      });
-    }
-    
-    // Night sleep (after bedtime)
-    segments.push({
-      start: bedtimeHour,
-      end: 24,
-      type: 'night',
-      label: `Bedtime ${averagePattern.bedtime}`
-    });
-    
-    return segments;
-  }, [averagePattern]);
-
-  return (
-    <div className="space-y-6 pb-8">
-      {/* Header */}
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">
-          {babyName} • {ageInMonths} month{ageInMonths !== 1 ? 's' : ''}
-        </h1>
-        <p className="text-sm font-medium text-muted-foreground">
-          Average Day (last 5 days)
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Here's when {babyName} usually eats, naps, and sleeps based on recent patterns.
-        </p>
+      <div className="text-sm text-muted-foreground mb-4">
+        {getAgeStage(ageInWeeks)} {t('stage')}
       </div>
 
-      {/* Daily Rhythm Timeline */}
-      <Card className="overflow-hidden">
-        <div className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground">Daily Rhythm</h2>
-          </div>
-          
-          {/* Timeline visualization */}
-          <div className="relative">
-            {/* Hour labels */}
-            <div className="flex justify-between text-xs text-muted-foreground mb-2">
-              <span>6 AM</span>
-              <span>Noon</span>
-              <span>6 PM</span>
-              <span>Midnight</span>
+      <div className="grid gap-4">
+        {/* Sleep Guidance with actual patterns nested */}
+        {wakeWindowData && (
+          <div className="p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <Moon className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-medium text-foreground uppercase tracking-wide">{t('sleepPatterns')}</h3>
             </div>
-            
-            {/* Timeline bar */}
-            <div className="relative h-16 rounded-lg overflow-hidden border border-border">
-              {timelineSegments.map((segment, idx) => {
-                const width = ((segment.end - segment.start) / 24) * 100;
-                const left = (segment.start / 24) * 100;
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Avg Wake Windows:</span>
+                <span className="font-medium">{wakeWindowData.wakeWindows.join(", ")}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Naps per Day:</span>
+                <span className="font-medium">{wakeWindowData.napCount} {t('perDay')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t('totalSleepNeed')}:</span>
+                <span className="font-medium">{wakeWindowData.totalSleep}</span>
+              </div>
+              
+              {/* Nested actual patterns from baby's data OR ghost cards for new users */}
+              <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="h-3 w-3 text-primary/70" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {household.baby_name}'s Patterns
+                  </span>
+                </div>
                 
-                const bgColor = segment.type === 'night' 
-                  ? 'bg-blue-500/20' 
-                  : segment.type === 'nap'
-                  ? 'bg-purple-400/30'
-                  : 'bg-amber-200/40';
-                
-                return (
-                  <div
-                    key={idx}
-                    className={`absolute h-full ${bgColor} border-r border-border/30`}
-                    style={{ left: `${left}%`, width: `${width}%` }}
-                  >
-                    {segment.label && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[10px] font-medium text-foreground/80 px-1 text-center leading-tight">
-                          {segment.label}
-                        </span>
+                {/* Show actual patterns if we have data */}
+                {(sleepInsights.length > 0 || sleepMetrics.napsPerDay > 0) ? (
+                  <>
+                    {sleepMetrics.napsPerDay > 0 && (
+                      <div className="flex items-start justify-between gap-2 text-xs">
+                        <div className="flex items-start gap-2 flex-1">
+                          <Moon className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                          <span className="text-primary/90">Naps per day: {sleepMetrics.napsPerDay}</span>
+                        </div>
                       </div>
                     )}
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Legend */}
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Sunrise className="h-3 w-3 text-amber-500" />
-                <span>Awake</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Moon className="h-3 w-3 text-purple-500" />
-                <span>Naps</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Moon className="h-3 w-3 text-blue-500" />
-                <span>Night Sleep</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Pattern Shift Summary */}
-      {patternShifts.length > 0 && (
-        <Card>
-          <div className="p-6 space-y-3">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Today's Rhythm Shift</h2>
-            </div>
-            <div className="space-y-2">
-              {patternShifts.slice(0, 2).map((shift, idx) => (
-                <p key={idx} className="text-sm text-muted-foreground">
-                  • {shift}
-                </p>
-              ))}
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Coaching Cards */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {coachingCards.map((card, idx) => (
-          <Card key={idx} className={card.type === 'know' ? 'bg-blue-500/5' : 'bg-green-500/5'}>
-            <div className="p-5 space-y-2">
-              <div className="flex items-center gap-2">
-                <card.icon className={`h-5 w-5 ${card.type === 'know' ? 'text-blue-500' : 'text-green-500'}`} />
-                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-                  {card.type === 'know' ? 'What to Know' : 'What to Do'}
-                </h3>
-              </div>
-              <p className="text-lg font-medium text-foreground">{card.title}</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">{card.message}</p>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Today's Forecast */}
-      {todayForecast.length > 0 && (
-        <Card>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <Sun className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Today's Expected Rhythm</h2>
-            </div>
-            <div className="space-y-3">
-              {todayForecast.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <item.icon className="h-4 w-4 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{item.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.time}</p>
+                    {sleepInsights.filter(insight => 
+                      !insight.text.toLowerCase().includes('naps before noon') &&
+                      !insight.text.toLowerCase().includes('naps per day')
+                    ).map((insight, idx) => {
+                      const IconComponent = insight.icon;
+                      // Get min and max from wake window array for proper range
+                      const wakeWindowValues = wakeWindowData.wakeWindows.map((w: string) => {
+                        const match = w.match(/(\d+\.?\d*)/);
+                        return match ? parseFloat(match[1]) : 0;
+                      }).filter(v => v > 0);
+                      const minWW = Math.min(...wakeWindowValues);
+                      const maxWW = Math.max(...wakeWindowValues);
+                      const wakeWindowRange = `${minWW}-${maxWW}hrs`;
+                      const match = getPatternMatch(insight, wakeWindowRange, 'wake');
+                      
+                      const TrendIcon = match?.trend === 'up' ? TrendingUp : 
+                                       match?.trend === 'down' ? TrendingDown : 
+                                       Minus;
+                      const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
+                                        match?.trend === 'down' ? 'text-blue-500' : 
+                                        'text-muted-foreground/50';
+                      
+                      return (
+                        <div key={idx} className="flex items-start justify-between gap-2 text-xs">
+                          <div className="flex items-start gap-2 flex-1">
+                            <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                            <span className="text-primary/90">{insight.text}</span>
+                          </div>
+                          {match && match.trend !== 'normal' && (
+                            <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  /* Ghost cards previewing future predictions */
+                  <div className="space-y-2 opacity-40">
+                    <div className="flex items-start gap-2 text-xs">
+                      <Clock className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Wake windows: ~2.5h average</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-xs">
+                      <Moon className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Naps per day: 4 typical</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground/70 italic mt-3">
+                      Keep logging naps to see {household.baby_name}'s unique patterns
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-xs">
-                    ⏰ Remind
-                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Feeding Guidance with actual patterns nested */}
+        {feedingGuidance && (
+          <div className="p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <Milk className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-medium text-foreground uppercase tracking-wide">{t('feedingPatterns')}</h3>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Feed Frequency:</span>
+                <span className="font-medium">{feedingGuidance.frequency}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Amount per Feed:</span>
+                <span className="font-medium">{feedingGuidance.amount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t('dailyTotal')}:</span>
+                <span className="font-medium">{feedingGuidance.dailyTotal}</span>
+              </div>
+              {feedingGuidance.notes && (
+                <div className="pt-2 text-xs text-muted-foreground border-t border-border/50">
+                  {feedingGuidance.notes === "Newborns need frequent small feeds. Follow baby's hunger cues." && t('newbornsFeedFrequent')}
+                  {feedingGuidance.notes === "Feeding patterns are becoming more predictable." && t('feedingPatternsBecoming')}
+                  {feedingGuidance.notes === "Baby can go longer between feeds now." && t('babyCanGoLonger')}
+                  {feedingGuidance.notes === "Sleep periods are getting longer, affecting feeding schedule." && t('sleepPeriodsLonger')}
+                  {feedingGuidance.notes === "May start showing interest in solid foods around 4-6 months." && t('mayStartSolids')}
+                  {feedingGuidance.notes === "Solid foods are becoming a bigger part of nutrition." && t('solidsBecomingBigger')}
                 </div>
-              ))}
+              )}
+              
+              {/* Nested actual patterns from baby's data OR ghost cards for new users */}
+              <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="h-3 w-3 text-primary/70" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {household.baby_name}'s Patterns
+                  </span>
+                </div>
+                
+                {/* Show actual patterns if we have data */}
+                {(feedingInsights.length > 0 || feedingMetrics.avgAmount) ? (
+                  <>
+                    {feedingMetrics.avgAmount && (
+                      <div className="flex items-start justify-between gap-2 text-xs">
+                        <div className="flex items-start gap-2 flex-1">
+                          <Milk className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                          <span className="text-primary/90">Amount per feed: {feedingMetrics.avgAmount} oz</span>
+                        </div>
+                      </div>
+                    )}
+                    {feedingInsights.map((insight, idx) => {
+                      const IconComponent = insight.icon;
+                      const match = getPatternMatch(insight, feedingGuidance.frequency, 'feed');
+                      
+                      const TrendIcon = match?.trend === 'up' ? TrendingUp : 
+                                       match?.trend === 'down' ? TrendingDown : 
+                                       Minus;
+                      const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
+                                        match?.trend === 'down' ? 'text-blue-500' : 
+                                        'text-muted-foreground/50';
+                      
+                      return (
+                        <div key={idx} className="flex items-start justify-between gap-2 text-xs">
+                          <div className="flex items-start gap-2 flex-1">
+                            <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                            <span className="text-primary/90">{insight.text}</span>
+                          </div>
+                          {match && match.trend !== 'normal' && (
+                            <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  /* Ghost cards previewing future predictions */
+                  <div className="space-y-2 opacity-40">
+                    <div className="flex items-start gap-2 text-xs">
+                      <Milk className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Amount per feed: ~3.5 oz typical</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-xs">
+                      <Clock className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Feed interval: Every 3-4h average</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground/70 italic mt-3">
+                      Keep logging feeds to see {household.baby_name}'s unique patterns
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            {patternShifts.length > 1 && (
-              <p className="text-xs text-muted-foreground pt-2 border-t border-border">
-                {patternShifts[0].includes('earlier') 
-                  ? "Looks like an earlier rhythm today — naps may shift 10–15 min forward."
-                  : "Rhythm is steady — expect times within usual range."}
-              </p>
-            )}
           </div>
-        </Card>
-      )}
+        )}
 
-      {/* Optional Trend View Toggle */}
-      <Button
-        variant="ghost"
-        className="w-full text-sm text-muted-foreground hover:text-foreground"
-        onClick={() => setShowTrendDetails(!showTrendDetails)}
-      >
-        {showTrendDetails ? 'Hide' : 'View'} trend lines
-        <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${showTrendDetails ? 'rotate-180' : ''}`} />
-      </Button>
-
-      {showTrendDetails && (
-        <Card>
-          <div className="p-6 space-y-4">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-              Pattern Details
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Naps per day</p>
-                <p className="text-2xl font-semibold text-foreground">{averagePattern.naps.length}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Avg nap duration</p>
-                <p className="text-2xl font-semibold text-foreground">
-                  {averagePattern.naps.length > 0 
-                    ? Math.round(averagePattern.naps.reduce((sum, n) => sum + n.duration, 0) / averagePattern.naps.length)
-                    : 0} min
-                </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Wake time</p>
-                <p className="text-2xl font-semibold text-foreground">{averagePattern.wakeTime}</p>
-              </div>
-            </div>
+        {/* Development Milestones */}
+        <div className="p-4 bg-muted/30 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Baby className="h-4 w-4 text-primary" />
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wide">{t('developmentFocus')}</h3>
           </div>
-        </Card>
-      )}
+          <div className="text-sm text-muted-foreground">
+            {getDevelopmentFocus(ageInWeeks)}
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  </div>
+);
 };

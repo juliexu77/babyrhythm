@@ -346,36 +346,48 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   };
 
   return (
-    <div className="space-y-3">
-      {/* Prediction text with icon - always visible */}
-      <div className="flex items-center gap-2 text-foreground">
-        <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-        <span className="text-sm font-medium">{getPredictionText()}</span>
+    <div className="next-action-card bg-card rounded-lg border border-border p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-medium text-base text-foreground">What's Next</h3>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-1 hover:bg-muted rounded"
+        >
+          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
       </div>
 
-      {/* Wake up button */}
-      {ongoingNap && onMarkWakeUp && (
-        <Button
-          onClick={onMarkWakeUp}
-          className="w-full"
-          size="lg"
-        >
-          {(babyName || 'Baby') + ' woke up'}
-        </Button>
-      )}
-      
-      {/* Log predicted activity button */}
-      {onLogPredictedActivity && !ongoingNap && hasActionablePrediction && (
-        <Button
-          size="lg"
-          onClick={() => onLogPredictedActivity(prediction.type)}
-          className="w-full"
-        >
-          {prediction.type === 'feed' 
-            ? t('logFeedNow') 
-            : `${babyName || 'Baby'} fell asleep`}
-        </Button>
-      )}
+      <div className="space-y-3">
+        {/* Prediction text with icon - always visible */}
+        <div className="flex items-center gap-2 text-foreground">
+          <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          <span className="text-sm">{getPredictionText()}</span>
+        </div>
+
+        {/* Wake up button */}
+        {ongoingNap && onMarkWakeUp && (
+          <Button
+            onClick={onMarkWakeUp}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            size="lg"
+          >
+            {(babyName || 'Baby') + ' woke up'}
+          </Button>
+        )}
+        
+        {/* Log predicted activity button */}
+        {onLogPredictedActivity && !ongoingNap && hasActionablePrediction && (
+          <Button
+            size="lg"
+            onClick={() => onLogPredictedActivity(prediction.type)}
+            className="w-full"
+          >
+            {prediction.type === 'feed' 
+              ? t('logFeedNow') 
+              : `${babyName || 'Baby'} fell asleep`}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

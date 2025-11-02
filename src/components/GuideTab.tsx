@@ -3,17 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { 
   Sprout, Send, Calendar, Activity, TrendingUp, 
   Sun, Moon, Target, Milk, CloudRain, 
   Clock, Timer, Bed, Lightbulb, CheckSquare, 
-  ArrowRight, Compass, ChevronDown, ChevronUp, Bell
+  ArrowRight, Compass, ChevronDown
 } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getDailySentiment } from "@/utils/sentimentAnalysis";
 
 interface Activity {
   id: string;
@@ -32,22 +34,38 @@ interface Message {
   content: string;
 }
 
-interface TimeSegment {
-  start: number; // minutes from midnight
-  end: number;
-  type: 'awake' | 'nap' | 'night';
-  label?: string;
+interface GuideSections {
+  data_pulse: {
+    metrics: Array<{ name: string; change: string }>;
+    note: string;
+  };
+  what_to_know: string[];
+  what_to_do: string[];
+  whats_next: string;
+  prep_tip: string;
 }
 
-// Simple text formatter
+interface InsightCard {
+  id: string;
+  icon: React.ReactNode;
+  title: string;
+  content: string;
+  questions: string[];
+}
+
+// Simple text formatter - uses React's built-in XSS protection
 const formatText = (text: string) => {
   const paragraphs = text.split('\n\n').filter(p => p.trim());
   
   return paragraphs.map((paragraph, idx) => {
+    // Parse bold text **text**
     const parts = paragraph.split(/(\*\*[^*]+\*\*)/g);
+    
+    // Check if this paragraph should be a list
     const isListItem = paragraph.trim().startsWith('- ');
     
     if (isListItem) {
+      // Handle list items
       const listItems = paragraph.split('\n').filter(line => line.trim().startsWith('- '));
       return (
         <ul key={idx} className="list-disc pl-5 space-y-1 mb-3">
@@ -82,7 +100,80 @@ const formatText = (text: string) => {
   });
 };
 
+// Helper to get pattern tooltip
+const getPatternTooltip = (pattern: string): string => {
+  switch (pattern) {
+    case "Smooth Flow":
+      return "Stable naps, predictable feeds, balanced energy.";
+    case "Building Rhythm":
+      return "Adjusting wake windows or feeding intervals.";
+    case "In Sync":
+      return "Perfectly aligned with developmental expectations.";
+    case "Extra Sleepy":
+      return "More rest than usual, often during growth or recovery.";
+    case "Active Feeding":
+      return "Increased appetite and feeding frequency.";
+    case "Off Rhythm":
+      return "Recovering from changes like travel, teething, or illness.";
+    default:
+      return "Unique daily pattern reflecting current needs.";
+  }
+};
+
+// Helper to get pattern insight descriptions
+const getPatternInsight = (pattern: string): { title: string; description: string } => {
+  switch (pattern) {
+    case "Smooth Flow":
+      return {
+        title: "Smooth Flow",
+        description: "Stable sleep patterns and consistent appetite throughout the day. This indicates a well-regulated rhythm."
+      };
+    case "Building Rhythm":
+      return {
+        title: "Building Rhythm", 
+        description: "Experimenting with new wake windows as developmental changes emerge. Patterns are forming but still adjusting."
+      };
+    case "In Sync":
+      return {
+        title: "In Sync",
+        description: "Perfect alignment with developmental expectations. This harmonious pattern suggests established routines."
+      };
+    case "Extra Sleepy":
+      return {
+        title: "Extra Sleepy",
+        description: "More sleep than usual, often indicating growth spurts, recovery, or developmental leaps."
+      };
+    case "Active Feeding":
+      return {
+        title: "Active Feeding",
+        description: "Increased appetite and feeding frequency, common during growth periods or increased activity."
+      };
+    case "Off Rhythm":
+      return {
+        title: "Off Rhythm",
+        description: "Recovery after schedule changes or environmental shifts. Tomorrow often brings familiar patterns back."
+      };
+    default:
+      return {
+        title: pattern,
+        description: "Unique daily pattern reflecting your baby's current needs and adjustments."
+      };
+  }
+};
+
+// Helper to get daily tone for rhythm tracking - now uses shared sentiment logic
+const getDailyTone = (dayActivities: Activity[], allActivities: Activity[], babyBirthday?: string) => {
+  // Calculate baby's age in months from birthday
+  const babyAgeMonths = babyBirthday 
+    ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+    : null;
+  
+  // Use the shared sentiment analysis function
+  return getDailySentiment(dayActivities, allActivities, babyAgeMonths, 12); // Use noon as default hour
+};
+
 export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
+  // ===== ALL HOOKS FIRST (must be before any conditional returns) =====
   const { household, loading: householdLoading } = useHousehold();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -90,288 +181,227 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [showTrendView, setShowTrendView] = useState(false);
+  const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
+  const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
+  const [showStreakInsight, setShowStreakInsight] = useState(false);
+  const [guideSections, setGuideSections] = useState<GuideSections | null>(null);
+  const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // ===== DERIVED VALUES (safe to calculate even if household is null) =====
   const babyName = household?.baby_name || 'Baby';
-  const babyBirthday = household?.baby_birthday;
+  const babyAgeInWeeks = household?.baby_birthday ? 
+    Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
   
-  // Calculate baby's age
-  const getBabyAge = () => {
-    if (!babyBirthday) return null;
-    const birthDate = new Date(babyBirthday);
-    const today = new Date();
+  // Calculate tone frequencies for the last 7 days (safe even without household)
+  const toneFrequencies = (() => {
+    if (!household) return { frequency: {}, tones: [], currentStreak: 0, streakTone: "" };
     
-    let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
-                      (today.getMonth() - birthDate.getMonth());
-    
-    if (today.getDate() < birthDate.getDate()) {
-      totalMonths--;
-    }
-    
-    const months = Math.max(0, totalMonths);
-    const monthsDate = new Date(birthDate);
-    monthsDate.setMonth(monthsDate.getMonth() + totalMonths);
-    const daysDiff = Math.floor((today.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
-    const weeks = Math.floor(daysDiff / 7);
-    
-    return { months, weeks };
-  };
-
-  const babyAge = getBabyAge();
-  const babyAgeInWeeks = babyAge ? babyAge.months * 4 + babyAge.weeks : 0;
-  const needsBirthdaySetup = !babyAge || babyAgeInWeeks === 0;
-
-  // Check minimum data requirements
-  const naps = activities.filter(a => a.type === 'nap');
-  const feeds = activities.filter(a => a.type === 'feed');
-  const hasMinimumData = naps.length >= 4 && feeds.length >= 4;
-
-  // Calculate average daily pattern from last 5 days
-  const calculateAverageDayPattern = (): TimeSegment[] => {
-    if (!hasMinimumData) return [];
-
-    const last5Days = Array.from({ length: 5 }, (_, i) => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
       return date;
     }).reverse();
-
-    // Helper to parse time string to minutes from midnight
-    const parseTime = (timeStr: string): number => {
-      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (!match) return 0;
-      let h = parseInt(match[1], 10);
-      const mins = parseInt(match[2], 10);
-      const period = match[3].toUpperCase();
-      if (period === 'PM' && h !== 12) h += 12;
-      if (period === 'AM' && h === 12) h = 0;
-      return h * 60 + mins;
-    };
-
-    // Collect all naps from last 5 days
-    const recentNaps = activities.filter(a => {
-      const activityDate = new Date(a.logged_at);
-      return last5Days.some(d => activityDate.toDateString() === d.toDateString()) && 
-             a.type === 'nap' && a.details?.startTime && a.details?.endTime;
-    });
-
-    // Average nap times
-    const napSegments: TimeSegment[] = [];
-    const napGroups: { [key: number]: { starts: number[]; ends: number[] } } = {};
-
-    recentNaps.forEach(nap => {
-      const start = parseTime(nap.details.startTime);
-      const end = parseTime(nap.details.endTime);
-      const napNumber = Math.floor(start / 480); // Roughly group by time of day
-      if (!napGroups[napNumber]) napGroups[napNumber] = { starts: [], ends: [] };
-      napGroups[napNumber].starts.push(start);
-      napGroups[napNumber].ends.push(end);
-    });
-
-    Object.keys(napGroups).forEach((key, idx) => {
-      const group = napGroups[parseInt(key)];
-      const avgStart = Math.round(group.starts.reduce((a, b) => a + b, 0) / group.starts.length);
-      const avgEnd = Math.round(group.ends.reduce((a, b) => a + b, 0) / group.ends.length);
-      
-      const formatMin = (mins: number) => {
-        const h = Math.floor(mins / 60);
-        const m = mins % 60;
-        const period = h >= 12 ? 'PM' : 'AM';
-        const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
-        return `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
-      };
-
-      napSegments.push({
-        start: avgStart,
-        end: avgEnd,
-        type: 'nap',
-        label: `Nap ${idx + 1} ${formatMin(avgStart)}–${formatMin(avgEnd)}`
+    
+    const tones = last7Days.map(date => {
+      const dayActivities = activities.filter(a => {
+        const activityDate = new Date(a.logged_at);
+        return activityDate.toDateString() === date.toDateString();
       });
+      return getDailyTone(dayActivities, activities, household.baby_birthday);
     });
-
-    // Add night sleep (assume 7:30 PM - 6:00 AM)
-    napSegments.push({
-      start: 1170, // 7:30 PM
-      end: 360, // 6:00 AM next day
-      type: 'night',
-      label: 'Night sleep'
-    });
-
-    return napSegments.sort((a, b) => a.start - b.start);
-  };
-
-  const dayPattern = calculateAverageDayPattern();
-
-  // Calculate pattern shifts (compare this week to last week)
-  const getPatternShifts = () => {
-    if (!hasMinimumData) return [];
-
-    const thisWeek = activities.filter(a => {
-      const date = new Date(a.logged_at);
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      return date >= weekAgo;
-    });
-
-    const lastWeek = activities.filter(a => {
-      const date = new Date(a.logged_at);
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      return date >= twoWeeksAgo && date < weekAgo;
-    });
-
-    const shifts: string[] = [];
-
-    // Compare nap counts
-    const thisWeekNaps = thisWeek.filter(a => a.type === 'nap').length;
-    const lastWeekNaps = lastWeek.filter(a => a.type === 'nap').length;
-    const napDiff = Math.round((thisWeekNaps - lastWeekNaps) / 7 * 10) / 10;
-
-    if (Math.abs(napDiff) >= 0.3) {
-      if (napDiff > 0) {
-        shifts.push(`Naps increased by ~${Math.abs(napDiff).toFixed(1)} per day this week`);
-      } else {
-        shifts.push(`Naps decreased by ~${Math.abs(napDiff).toFixed(1)} per day this week`);
-      }
-    }
-
-    // Compare total daytime sleep
-    const getTotalDaySleep = (acts: Activity[]) => {
-      const parseTime = (timeStr: string): number => {
-        const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-        if (!match) return 0;
-        let h = parseInt(match[1], 10);
-        const mins = parseInt(match[2], 10);
-        const period = match[3].toUpperCase();
-        if (period === 'PM' && h !== 12) h += 12;
-        if (period === 'AM' && h === 12) h = 0;
-        return h * 60 + mins;
-      };
-
-      return acts
-        .filter(a => a.type === 'nap' && a.details?.startTime && a.details?.endTime)
-        .reduce((total, nap) => {
-          const start = parseTime(nap.details.startTime);
-          const end = parseTime(nap.details.endTime);
-          const duration = end >= start ? end - start : (24 * 60) - start + end;
-          return total + duration;
-        }, 0);
-    };
-
-    const thisSleep = getTotalDaySleep(thisWeek) / 7;
-    const lastSleep = getTotalDaySleep(lastWeek) / 7;
-    const sleepDiff = Math.round((thisSleep - lastSleep) / 60 * 10) / 10;
-
-    if (Math.abs(sleepDiff) >= 0.3) {
-      if (sleepDiff > 0) {
-        shifts.push(`Total daytime sleep up by ${Math.abs(sleepDiff).toFixed(1)}h per day`);
-      } else {
-        shifts.push(`Total daytime sleep down by ${Math.abs(sleepDiff).toFixed(1)}h per day`);
-      }
-    } else {
-      shifts.push(`Total daytime sleep steady around ${(thisSleep / 60).toFixed(1)}h per day`);
-    }
-
-    return shifts;
-  };
-
-  const patternShifts = getPatternShifts();
-
-  // Get coaching based on age
-  const getWhatToKnow = () => {
-    if (!babyAge) return [];
-    const { months } = babyAge;
-
-    if (months < 3) {
-      return [
-        "Nap patterns are still forming — expect variability",
-        "Sleep cycles are shorter (45-60 min) and may need help linking"
-      ];
-    } else if (months < 6) {
-      return [
-        "Wake windows are extending — typically 1.5-2 hours now",
-        "Naps are beginning to consolidate into more predictable windows"
-      ];
-    } else if (months < 9) {
-      return [
-        "Most babies drop to 3 naps around this age",
-        "Wake windows extend to 2-3 hours between naps"
-      ];
-    } else if (months < 12) {
-      return [
-        "Transitioning toward 2 naps per day is common",
-        "Morning nap may shift later as rhythm consolidates"
-      ];
-    }
-
-    return ["Approaching 1-nap transition — watch for longer wake windows"];
-  };
-
-  const getWhatToDo = () => {
-    if (!babyAge) return [];
-    const { months } = babyAge;
-
-    if (months < 3) {
-      return [
-        "Follow sleepy cues closely — yawning, eye rubbing, fussiness",
-        "Keep wake windows under 90 minutes to prevent overtiredness"
-      ];
-    } else if (months < 6) {
-      return [
-        "Start establishing consistent nap routines (darkened room, white noise)",
-        "Watch for the first wake window to stretch — it's often longest"
-      ];
-    } else if (months < 9) {
-      return [
-        "Try stretching the first wake window to 2.5-3 hours",
-        "Protect the afternoon nap — overtiredness impacts bedtime"
-      ];
-    } else if (months < 12) {
-      return [
-        "If mornings feel rushed, consider slightly earlier bedtime",
-        "Watch for refusal of 3rd nap — it's a sign to drop it"
-      ];
-    }
-
-    return ["Offer one longer afternoon nap and monitor for readiness to transition"];
-  };
-
-  // Forecast today's rhythm
-  const getTodayForecast = () => {
-    if (dayPattern.length === 0) return [];
-
-    const formatTime = (mins: number) => {
-      let adjustedMins = mins;
-      if (mins >= 1440) adjustedMins = mins - 1440; // Handle next day wrap
-
-      const h = Math.floor(adjustedMins / 60);
-      const m = adjustedMins % 60;
-      const period = h >= 12 ? 'PM' : 'AM';
-      const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h;
-      return `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
-    };
-
-    return dayPattern
-      .filter(seg => seg.type === 'nap')
-      .map((seg, idx) => ({
-        icon: '💤',
-        label: `Nap ${idx + 1}: ${formatTime(seg.start)}–${formatTime(seg.end)}`
-      }))
-      .concat([
-        {
-          icon: '🌙',
-          label: `Bedtime: around ${formatTime(dayPattern.find(s => s.type === 'night')?.start || 1170)}`
+    
+    const frequency = tones.reduce((acc, tone) => {
+      acc[tone.text] = (acc[tone.text] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    // Calculate current streak (consecutive days with same tone)
+    let currentStreak = 0;
+    let streakTone = "";
+    if (tones.length > 0) {
+      const lastTone = tones[tones.length - 1].text;
+      for (let i = tones.length - 1; i >= 0; i--) {
+        if (tones[i].text === lastTone) {
+          currentStreak++;
+        } else {
+          break;
         }
-      ]);
+      }
+      if (currentStreak >= 2) {
+        streakTone = lastTone;
+      }
+    }
+    
+    return { frequency, tones, currentStreak, streakTone };
+  })();
+  
+  const currentTone = toneFrequencies.tones[toneFrequencies.tones.length - 1];
+  const sortedTones = Object.entries(toneFrequencies.frequency)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
+  
+  // Get emoji for each pattern
+  const getPatternEmoji = (pattern: string): string => {
+    if (pattern === "Smooth Flow") return "☀️";
+    if (pattern === "Building Rhythm") return "🌿";
+    if (pattern === "In Sync") return "🎯";
+    if (pattern === "Extra Sleepy") return "🌙";
+    if (pattern === "Active Feeding") return "🍼";
+    if (pattern === "Off Rhythm") return "🌧";
+    return "🌿";
   };
 
-  const todayForecast = getTodayForecast();
+  // Calculate last month's data for progress comparison (safe even without household)
+  const lastMonthData = (() => {
+    if (!household) return {};
+    
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+    
+    const lastMonthActivities = activities.filter(a => {
+      const activityDate = new Date(a.logged_at);
+      return activityDate >= sixtyDaysAgo && activityDate < thirtyDaysAgo;
+    });
+    
+    const lastMonthDays = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - 60 + i);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    });
+    
+    const lastMonthTones = lastMonthDays.map(date => {
+      const dayActivities = lastMonthActivities.filter(a => {
+        const activityDate = new Date(a.logged_at);
+        return activityDate.toDateString() === date.toDateString();
+      });
+      return getDailyTone(dayActivities, activities, household.baby_birthday);
+    });
+    
+    const frequency = lastMonthTones.reduce((acc, tone) => {
+      acc[tone.text] = (acc[tone.text] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    return frequency;
+  })();
+  
+  const thisMonthSmoothFlow = toneFrequencies.frequency["Smooth Flow"] || 0;
+  const lastMonthSmoothFlow = lastMonthData["Smooth Flow"] || 0;
+  const smoothFlowDiff = thisMonthSmoothFlow - lastMonthSmoothFlow;
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
+
+  const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
+
+  // Check minimum data requirements (same as prediction engine)
+  const naps = activities.filter(a => a.type === 'nap');
+  const feeds = activities.filter(a => a.type === 'feed');
+  const hasMinimumData = naps.length >= 4 && feeds.length >= 4;
+
+  // ===== ALL EFFECTS =====
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 GuideTab Debug:', {
+      totalActivities: activities.length,
+      naps: naps.length,
+      feeds: feeds.length,
+      hasMinimumData,
+      babyName,
+      babyAgeInWeeks,
+      hasInitialized,
+      insightCardsCount: insightCards.length
+    });
+  }, [activities.length, naps.length, feeds.length, hasMinimumData, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
+
+  // Fetch guide sections once daily at 5am
+  useEffect(() => {
+    if (!hasMinimumData || !user || !household) return;
+    
+    const fetchGuideSections = async () => {
+      setGuideSectionsLoading(true);
+      try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        console.log('🔄 Fetching guide sections from edge function...');
+        const { data, error } = await supabase.functions.invoke('generate-guide-sections', {
+          body: { timezone }
+        });
+        
+        if (error) {
+          console.error('❌ Error fetching guide sections:', error);
+          return;
+        }
+        
+        if (data) {
+          console.log('✅ Guide sections fetched:', data);
+          setGuideSections(data);
+          localStorage.setItem('guideSections', JSON.stringify(data));
+          localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch guide sections:', err);
+      } finally {
+        setGuideSectionsLoading(false);
+      }
+    };
+
+    // Check if we need to fetch
+    const lastFetch = localStorage.getItem('guideSectionsLastFetch');
+    const cached = localStorage.getItem('guideSections');
+    const now = new Date();
+    const fiveAM = new Date();
+    fiveAM.setHours(5, 0, 0, 0);
+    
+    // Load cached data first
+    if (cached && !guideSections) {
+      try {
+        const parsed = JSON.parse(cached);
+        console.log('📦 Loaded cached guide sections:', parsed);
+        // Check if cached data has new format with data_pulse
+        if (!parsed.data_pulse) {
+          console.log('⚠️ Old cache format detected, will fetch fresh data');
+          localStorage.removeItem('guideSections');
+          localStorage.removeItem('guideSectionsLastFetch');
+        } else {
+          setGuideSections(parsed);
+        }
+      } catch (e) {
+        console.error('Failed to parse cached guide sections:', e);
+        localStorage.removeItem('guideSections');
+      }
+    }
+    
+    // Determine if we should fetch new data - only once per day at 5am
+    let shouldFetch = false;
+    
+    if (!lastFetch) {
+      // Never fetched before, fetch now if we're past 5am today
+      shouldFetch = now >= fiveAM;
+    } else {
+      const lastFetchDate = new Date(lastFetch);
+      // Check if last fetch was before today's 5am
+      shouldFetch = now >= fiveAM && lastFetchDate < fiveAM;
+    }
+    
+    if (shouldFetch && hasMinimumData) {
+      console.log('🚀 Fetching fresh guide sections...');
+      fetchGuideSections();
+    }
+  }, [hasMinimumData, user, guideSections, household]);
+
+  // Load initial insight
+  useEffect(() => {
+    if (!hasInitialized && hasMinimumData && babyName && babyAgeInWeeks > 0 && household) {
+      setHasInitialized(true);
+      loadInitialInsight();
+    }
+  }, [hasInitialized, hasMinimumData, babyName, babyAgeInWeeks, household]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -381,6 +411,104 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       });
     }
   }, [messages]);
+
+  // ===== HANDLERS =====
+
+  const loadInitialInsight = async () => {
+    setIsLoading(true);
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const recentActivities = activities.filter(a => 
+        new Date(a.logged_at) >= twoWeeksAgo
+      );
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      console.log('🔐 GuideTab: invoking parenting-chat (initial)', { hasToken: !!token, CHAT_URL });
+      if (!token) throw new Error('No active session token for parenting-chat');
+
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ 
+          messages: [],
+          activities: recentActivities,
+          householdId: household.id,
+          babyName,
+          babyAgeInWeeks,
+          babySex: household.baby_sex,
+          timezone,
+          isInitial: true
+        }),
+      });
+
+      if (!resp.ok) throw new Error("Failed to load insight");
+      if (!resp.body) throw new Error("No response body");
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let streamDone = false;
+      let content = "";
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const chunk = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (chunk) content += chunk;
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Parse the insight into a card
+      const insightCard: InsightCard = {
+        id: "daily-insight",
+        icon: <Sprout className="w-5 h-5 text-primary" />,
+        title: "About Today's Activities",
+        content: content.trim(),
+        questions: [
+          "Why did the pattern change?",
+          "Is this normal for their age?",
+          "How long until adjustment?",
+          "Will this affect night sleep?",
+          "When should I be concerned?"
+        ]
+      };
+
+      setInsightCards([insightCard]);
+    } catch (error) {
+      console.error("Error loading insight:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || isLoading) return;
@@ -400,7 +528,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      if (!token) throw new Error('No active session token');
+      console.log('🔐 GuideTab: invoking parenting-chat (chat)', { hasToken: !!token, CHAT_URL });
+      if (!token) throw new Error('No active session token for parenting-chat');
 
       const resp = await fetch(CHAT_URL, {
         method: "POST",
@@ -506,15 +635,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   return (
     <div className="flex flex-col h-full bg-background pb-24">
+      {/* Loading State */}
       {householdLoading || !household ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading rhythm...</p>
+            <p className="text-muted-foreground">Loading guidance...</p>
           </div>
         </div>
       ) : (
         <>
+          {/* Birthday Setup Prompt */}
           {needsBirthdaySetup && (
             <div className="p-4 bg-accent/20 border-b border-border/40">
               <div className="flex items-start gap-3">
@@ -522,9 +653,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   <Calendar className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <p className="text-sm font-medium">Set your baby's birthday for personalized rhythm insights</p>
+                  <p className="text-sm font-medium">Set your baby's birthday for personalized guidance</p>
                   <p className="text-xs text-muted-foreground">
-                    Age-specific guidance helps you understand their daily patterns better.
+                    The Guide provides age-appropriate insights when we know your baby's age.
                   </p>
                   <Button
                     size="sm"
@@ -539,289 +670,392 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
+
+
+          {/* Main Content */}
           <ScrollArea className="flex-1">
-            <div ref={scrollRef} className="px-4 pt-4 space-y-5">
-              {/* Header */}
-              {!needsBirthdaySetup && (
-                <div className="space-y-1">
-                  <h2 className="text-lg font-semibold text-foreground">
-                    {babyName} • {babyAge?.months} month{babyAge?.months !== 1 ? 's' : ''}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    Average Day (last 5 days)
-                  </p>
-                  <p className="text-xs text-muted-foreground pt-0.5">
-                    Here's when {babyName} usually eats, naps, and sleeps based on recent patterns.
-                  </p>
+        <div ref={scrollRef} className="px-4 pt-4 space-y-6">
+          {/* Streak Chip */}
+          {!needsBirthdaySetup && hasMinimumData && toneFrequencies.currentStreak >= 2 && (
+            <div className="space-y-3">
+              <button 
+                onClick={() => setShowStreakInsight(!showStreakInsight)}
+                className="text-left"
+              >
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                  <span className="text-sm">{getPatternEmoji(toneFrequencies.streakTone)}</span>
+                  <span className="text-sm font-medium text-accent-foreground">{toneFrequencies.streakTone}</span>
                 </div>
+              </button>
+              
+              {showStreakInsight && (
+                <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
+                  {getPatternTooltip(toneFrequencies.streakTone)}
+                </p>
               )}
 
-              {/* Empty State */}
-              {!hasMinimumData && !needsBirthdaySetup && (
-                <div className="space-y-4">
-                  <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
-                    <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Track at least 4 naps and 4 feeds to see {babyName}'s daily rhythm map
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      The timeline will show when {babyName} typically wakes, naps, feeds, and sleeps
-                    </p>
+              <p className="text-sm text-muted-foreground leading-relaxed italic">
+                {toneFrequencies.currentStreak}-day &apos;{toneFrequencies.streakTone}&apos; streak — typically appears during steady growth or after routines stabilize.
+              </p>
+            </div>
+          )}
+
+          {/* Empty State with Ghost Cards - Preview of AI Intelligence */}
+          {!hasMinimumData && !needsBirthdaySetup && (
+            <div className="space-y-4">
+              {/* Header Message */}
+              <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
+                <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground mb-2">
+                  Track at least 4 naps and 4 feeds to unlock personalized AI guidance
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  Here's a preview of what's coming...
+                </p>
+              </div>
+
+              {/* Ghost Card: Data Pulse Preview */}
+              <div className="p-4 bg-accent/10 rounded-lg border border-border/40 opacity-50">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-primary" />
+                    <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
                   </div>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
                 </div>
-              )}
-
-              {/* Daily Rhythm Timeline */}
-              {hasMinimumData && dayPattern.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Daily Rhythm Timeline
-                  </h3>
-                  
-                  {/* 24-hour visualization */}
-                  <div className="relative h-16 bg-accent/10 rounded-lg border border-border/40 overflow-hidden">
-                    {/* Time labels */}
-                    <div className="absolute inset-0 flex items-center justify-between px-2">
-                      <span className="text-xs text-muted-foreground">6 AM</span>
-                      <span className="text-xs text-muted-foreground">Noon</span>
-                      <span className="text-xs text-muted-foreground">6 PM</span>
-                      <span className="text-xs text-muted-foreground">12 AM</span>
-                    </div>
-                    
-                    {/* Sleep segments */}
-                    <div className="absolute inset-0 flex">
-                      {dayPattern.map((segment, idx) => {
-                        const startPercent = ((segment.start - 360) / 1080) * 100; // 6 AM to midnight
-                        let endPercent = ((segment.end - 360) / 1080) * 100;
-                        
-                        // Handle overnight sleep
-                        if (segment.type === 'night') {
-                          if (segment.end < segment.start) {
-                            endPercent = ((segment.end + 1440 - 360) / 1080) * 100;
-                          }
-                        }
-                        
-                        const width = endPercent - startPercent;
-                        
-                        return (
-                          <div
-                            key={idx}
-                            className={`absolute top-0 bottom-0 ${
-                              segment.type === 'night' ? 'bg-blue-500/30' :
-                              segment.type === 'nap' ? 'bg-purple-500/30' :
-                              'bg-amber-500/10'
-                            } border-l border-r border-border/40`}
-                            style={{
-                              left: `${Math.max(0, startPercent)}%`,
-                              width: `${Math.min(100 - Math.max(0, startPercent), width)}%`
-                            }}
-                            title={segment.label}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Legend */}
-                  <div className="flex items-center gap-4 text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded bg-amber-500/10 border border-border/40" />
-                      <span className="text-muted-foreground">Awake</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded bg-purple-500/30 border border-border/40" />
-                      <span className="text-muted-foreground">Naps</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded bg-blue-500/30 border border-border/40" />
-                      <span className="text-muted-foreground">Night sleep</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Pattern Shift Summary */}
-              {hasMinimumData && patternShifts.length > 0 && (
+                
                 <div className="space-y-2">
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Today's Rhythm Shift
-                  </h3>
-                  <div className="space-y-1.5">
-                    {patternShifts.map((shift, idx) => (
-                      <p key={idx} className="text-sm text-muted-foreground">
-                        • {shift}
-                      </p>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Moon className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">Total sleep</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">+23 min</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bed className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">Naps</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">+1</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">Wake average</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">-12 min</span>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
+                    AI detects subtle pattern changes and alerts you to shifts in {babyName}'s rhythm
+                  </p>
+                </div>
+              </div>
+
+              {/* Ghost Card: What to Know Preview */}
+              <div className="space-y-3 opacity-50">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
+                </div>
+                <div className="space-y-2 pl-1">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {babyName}'s wake windows are extending as they develop—expect slightly longer periods between naps
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Morning naps are becoming more consolidated, a sign of maturing sleep patterns
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* What to Know / What to Do */}
-              {hasMinimumData && (
-                <div className="grid grid-cols-1 gap-4">
-                  {/* What to Know */}
-                  <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
-                    <div className="flex items-center gap-2 mb-3">
+              {/* Ghost Card: What To Do Preview */}
+              <div className="space-y-3 opacity-50">
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
+                </div>
+                <div className="space-y-2 pl-1">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Try extending the first wake window to 2 hours to align with their natural rhythm
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Watch for early sleepy cues in the afternoon—overtiredness can disrupt bedtime
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ghost Card: What's Next Preview */}
+              <div className="space-y-3 opacity-50">
+                <div className="flex items-center gap-2">
+                  <ArrowRight className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What's Next</h3>
+                </div>
+                <div className="space-y-3 pl-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Based on current patterns, {babyName} may be ready to drop to 3 naps within the next 2 weeks. AI will guide you through this transition.
+                  </p>
+                  <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
+                    <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Prep tip:</span> Start tracking wake-up times to help AI predict optimal nap windows
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom CTA */}
+              <div className="text-center pt-2">
+                <p className="text-xs text-muted-foreground italic">
+                  Keep logging to unlock {babyName}'s personalized AI insights
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Guide Sections Loading Indicator */}
+          {hasMinimumData && guideSectionsLoading && !guideSections && (
+            <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+              <p className="text-sm text-muted-foreground">
+                Generating personalized guidance...
+              </p>
+            </div>
+          )}
+
+          {/* Data Pulse */}
+          {hasMinimumData && guideSections && guideSections.data_pulse && (
+            <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
+                </div>
+                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
+              </div>
+              
+              <div className="space-y-2">
+                
+                {guideSections.data_pulse.metrics.length > 0 ? (
+                  guideSections.data_pulse.metrics.map((metric, idx) => {
+                    const getMetricIcon = () => {
+                      if (metric.name === 'Total sleep') return <Moon className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Naps') return <Bed className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Feed volume') return <Milk className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Wake average') return <Clock className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Nap duration') return <Bed className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Feed duration') return <Timer className="w-4 h-4 text-primary" />;
+                      return <Activity className="w-4 h-4 text-primary" />;
+                    };
+                    
+                    return (
+                      <div key={idx} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {getMetricIcon()}
+                          <span className="text-sm text-foreground">{metric.name}</span>
+                        </div>
+                        <span className="text-sm font-medium text-foreground">
+                          {metric.change}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    No significant changes detected
+                  </p>
+                )}
+                
+                <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
+                  {guideSections.data_pulse.note}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* What to Know */}
+          {hasMinimumData && guideSections && guideSections.what_to_know && (
+            <div className="space-y-3">
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button className="flex items-center justify-between w-full group">
+                    <div className="flex items-center gap-2">
                       <Lightbulb className="w-4 h-4 text-primary" />
                       <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
                     </div>
-                    <div className="space-y-2">
-                      {getWhatToKnow().map((item, idx) => (
-                        <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
-                          → {item}
-                        </p>
-                      ))}
-                    </div>
+                    {guideSections.what_to_know.length > 1 && (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+                <div className="space-y-2 pl-1 mt-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {guideSections.what_to_know[0]}
+                    </p>
                   </div>
+                  {guideSections.what_to_know.length > 1 && (
+                    <CollapsibleContent>
+                      {guideSections.what_to_know.slice(1).map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2 mt-2">
+                          <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {item}
+                          </p>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  )}
+                </div>
+              </Collapsible>
+            </div>
+          )}
 
-                  {/* What to Do */}
-                  <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
-                    <div className="flex items-center gap-2 mb-3">
+          {/* What To Do */}
+          {hasMinimumData && guideSections && guideSections.what_to_do && (
+            <div className="space-y-3">
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button className="flex items-center justify-between w-full group">
+                    <div className="flex items-center gap-2">
                       <CheckSquare className="w-4 h-4 text-primary" />
                       <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
                     </div>
-                    <div className="space-y-2">
-                      {getWhatToDo().map((item, idx) => (
-                        <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
-                          ☑️ {item}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Upcoming Day Forecast */}
-              {hasMinimumData && todayForecast.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Today's Expected Rhythm
-                  </h3>
-                  <div className="space-y-2">
-                    {todayForecast.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {item.icon} {item.label}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs"
-                        >
-                          <Bell className="w-3 h-3 mr-1" />
-                          Remind
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground italic pt-2 border-t border-border/40">
-                    Times may shift ±15 min based on {babyName}'s cues today
-                  </p>
-                </div>
-              )}
-
-              {/* Optional mini trend view */}
-              {hasMinimumData && (
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setShowTrendView(!showTrendView)}
-                    className="flex items-center justify-between w-full text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
-                  >
-                    View pattern details
-                    <ChevronDown 
-                      className={`h-3 w-3 transition-transform ${showTrendView ? 'rotate-180' : ''}`}
-                    />
+                    {guideSections.what_to_do.length > 1 && (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
+                    )}
                   </button>
-                  
-                  {showTrendView && (
-                    <div className="grid grid-cols-3 gap-2 text-xs pt-2">
-                      <div className="p-2 bg-accent/10 rounded border border-border/40">
-                        <p className="text-muted-foreground mb-1">Naps/day</p>
-                        <p className="font-medium text-foreground">
-                          {(naps.length / Math.max(1, activities.length / 10)).toFixed(1)}
-                        </p>
-                      </div>
-                      <div className="p-2 bg-accent/10 rounded border border-border/40">
-                        <p className="text-muted-foreground mb-1">Avg nap</p>
-                        <p className="font-medium text-foreground">1.2h</p>
-                      </div>
-                      <div className="p-2 bg-accent/10 rounded border border-border/40">
-                        <p className="text-muted-foreground mb-1">Wake time</p>
-                        <p className="font-medium text-foreground">6:15 AM</p>
-                      </div>
-                    </div>
+                </CollapsibleTrigger>
+                <div className="space-y-2 pl-1 mt-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {guideSections.what_to_do[0]}
+                    </p>
+                  </div>
+                  {guideSections.what_to_do.length > 1 && (
+                    <CollapsibleContent>
+                      {guideSections.what_to_do.slice(1).map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2 mt-2">
+                          <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {item}
+                          </p>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
                   )}
                 </div>
-              )}
+              </Collapsible>
+            </div>
+          )}
 
-              {/* Chat Messages */}
-              {messages.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-border/40">
-                  {messages.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
-                    >
-                      {msg.role === "assistant" && (
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Sprout className="w-4 h-4 text-primary" />
-                        </div>
-                      )}
-                      <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                          msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-accent/30"
-                        }`}
-                      >
-                        <div className="text-sm leading-relaxed">
-                          {formatText(msg.content)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+          {/* What's Next */}
+          {hasMinimumData && guideSections && guideSections.whats_next && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <ArrowRight className="w-4 h-4 text-primary" />
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What's Next</h3>
+              </div>
+              <div className="space-y-3 pl-1">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {guideSections.whats_next}
+                </p>
+                {guideSections.prep_tip && (
+                  <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
+                    <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
-                  {isLoading && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Sprout className="w-4 h-4 text-primary animate-pulse" />
-                      </div>
-                      <div className="bg-accent/30 rounded-2xl px-4 py-3">
-                        <div className="flex gap-1">
-                          <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                          <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                          <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                        </div>
-                      </div>
+
+          {/* Chat Messages */}
+          {messages.length > 0 && (
+            <div className="space-y-4 pt-4 border-t border-border/40">
+              {messages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
+                >
+                  {msg.role === "assistant" && (
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Sprout className="w-4 h-4 text-primary" />
                     </div>
                   )}
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                      msg.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-accent/30"
+                    }`}
+                  >
+                    <div className="text-sm leading-relaxed">
+                      {formatText(msg.content)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading Indicator */}
+              {isLoading && (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Sprout className="w-4 h-4 text-primary animate-pulse" />
+                  </div>
+                  <div className="bg-accent/30 rounded-2xl px-4 py-3">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          </ScrollArea>
+          )}
+        </div>
+      </ScrollArea>
 
-          {/* Chat Input */}
-          <Separator className="mt-4 bg-border" />
-          <div className="bg-background p-4">
-            <div className="flex gap-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Ask about patterns, routines, or development..."
-                className="min-h-[44px] max-h-32 resize-none"
-                disabled={isLoading}
-              />
-              <Button
-                onClick={() => handleSendMessage(input)}
-                disabled={!input.trim() || isLoading}
-                size="icon"
-                className="h-[44px] w-[44px] flex-shrink-0"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+      {/* Chat Input */}
+      <Separator className="mt-4 bg-border" />
+      <div className="bg-background p-4">
+        <div className="flex gap-2">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder="Ask about patterns, routines, or development..."
+            className="min-h-[44px] max-h-32 resize-none"
+            disabled={isLoading}
+          />
+          <Button
+            onClick={() => handleSendMessage(input)}
+            disabled={!input.trim() || isLoading}
+            size="icon"
+            className="h-[44px] w-[44px] flex-shrink-0"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
         </>
       )}
     </div>
