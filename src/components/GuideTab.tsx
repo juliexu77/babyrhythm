@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
-import { generatePredictedSchedule, type ScheduleEvent } from "@/utils/schedulePredictor";
+import { generatePredictedSchedule, calculatePredictionAccuracy, type ScheduleEvent, type PredictedSchedule } from "@/utils/schedulePredictor";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
@@ -211,6 +211,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     transition_note?: string;
   } | null>(null);
   const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
+  const [predictedSchedule, setPredictedSchedule] = useState<PredictedSchedule | null>(null);
+  const [lastActivityCount, setLastActivityCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -651,6 +653,59 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [hasMinimumData, user, guideSections, household]);
 
+  // Generate and update predicted schedule with accuracy tracking and adaptive recalculation
+  useEffect(() => {
+    if (!household?.baby_birthday || !hasMinimumData) {
+      setPredictedSchedule(null);
+      return;
+    }
+
+    const generateSchedule = () => {
+      const newSchedule = generatePredictedSchedule(activities, household.baby_birthday);
+      
+      // Calculate accuracy if we had a previous prediction from today
+      if (predictedSchedule && predictedSchedule.lastUpdated) {
+        const prevUpdateDate = new Date(predictedSchedule.lastUpdated);
+        const isToday = prevUpdateDate.toDateString() === new Date().toDateString();
+        
+        if (isToday) {
+          const accuracy = calculatePredictionAccuracy(predictedSchedule, activities);
+          newSchedule.accuracyScore = accuracy;
+          console.log('📊 Prediction accuracy:', accuracy + '%');
+        }
+      }
+      
+      // Detect if schedule needs adjustment due to new activities
+      const activityCountChanged = activities.length !== lastActivityCount;
+      if (activityCountChanged && lastActivityCount > 0 && predictedSchedule) {
+        const newActivitiesCount = activities.length - lastActivityCount;
+        
+        // Get today's activities only
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayActivities = activities.filter(a => {
+          const actDate = new Date(a.logged_at);
+          return actDate >= today;
+        });
+        
+        // Check what type of activities were added
+        const recentActivity = activities[activities.length - 1];
+        if (recentActivity && todayActivities.length > 0) {
+          const activityType = recentActivity.type === 'nap' ? 'nap' : 
+                              recentActivity.type === 'feed' ? 'feed' : 'activity';
+          newSchedule.adjustmentNote = `Schedule updated based on recent ${activityType}`;
+          console.log('🔄 Schedule adjusted:', newSchedule.adjustmentNote);
+        }
+      }
+      
+      setPredictedSchedule(newSchedule);
+      setLastActivityCount(activities.length);
+    };
+
+    generateSchedule();
+  }, [activities.length, household?.baby_birthday, hasMinimumData]);
+
+
   // Load initial insight
   useEffect(() => {
     if (!hasInitialized && hasMinimumData && babyName && babyAgeInWeeks > 0 && household) {
@@ -971,7 +1026,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               )}
               
               <ScheduleTimeline 
-                schedule={generatePredictedSchedule(activities, household?.baby_birthday)} 
+                schedule={predictedSchedule || generatePredictedSchedule(activities, household?.baby_birthday)} 
                 babyName={babyName} 
               />
               

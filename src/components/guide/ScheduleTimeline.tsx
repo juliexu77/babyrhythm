@@ -1,17 +1,26 @@
-import { Moon, Sun, Milk, Bed } from "lucide-react";
+import { Moon, Sun, Milk, Bed, Clock, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
 
 interface ScheduleEvent {
   time: string;
   type: 'wake' | 'nap' | 'feed' | 'bed';
   duration?: string;
   notes?: string;
+  confidence?: 'high' | 'medium' | 'low';
+  reasoning?: string;
+  actualTime?: string;
+  actualDuration?: string;
 }
 
 interface PredictedSchedule {
   events: ScheduleEvent[];
   confidence: 'high' | 'medium' | 'low';
   basedOn: string;
+  accuracyScore?: number;
+  lastUpdated?: string;
+  adjustmentNote?: string;
 }
 
 interface ScheduleTimelineProps {
@@ -31,6 +40,35 @@ interface GroupedActivity {
 }
 
 export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) => {
+  const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
+
+  // Get current time for progress indicator
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  
+  const parseTime = (timeStr: string): number => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return 0;
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const period = match[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
+
+  const toggleExpanded = (eventId: string) => {
+    setExpandedEvents(prev => {
+      const next = new Set(prev);
+      if (next.has(eventId)) {
+        next.delete(eventId);
+      } else {
+        next.add(eventId);
+      }
+      return next;
+    });
+  };
+
   // Group related activities
   const groupedActivities: GroupedActivity[] = [];
   
@@ -94,14 +132,21 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   
   return (
     <div className="space-y-4">
-      {/* Header with confidence badge */}
+      {/* Header with confidence badge and accuracy */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
           {babyName}'s Predicted Schedule
         </h3>
-        <Badge variant={schedule.confidence === 'high' ? 'default' : 'secondary'}>
-          {schedule.confidence} confidence
-        </Badge>
+        <div className="flex items-center gap-2">
+          {schedule.accuracyScore !== undefined && schedule.accuracyScore > 0 && (
+            <Badge variant="outline" className="text-xs">
+              {schedule.accuracyScore}% accurate
+            </Badge>
+          )}
+          <Badge variant={schedule.confidence === 'high' ? 'default' : 'secondary'}>
+            {schedule.confidence} confidence
+          </Badge>
+        </div>
       </div>
       
       {/* Summary at the top - now hidden since AI summary replaces it */}
@@ -111,37 +156,81 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         </p>
       </div>
       
-      <p className="text-xs text-muted-foreground">
-        {schedule.basedOn}
-      </p>
+      <div className="space-y-1">
+        <p className="text-xs text-muted-foreground">
+          {schedule.basedOn}
+        </p>
+        {schedule.adjustmentNote && (
+          <p className="text-xs text-primary font-medium animate-fade-in">
+            ⚡ {schedule.adjustmentNote}
+          </p>
+        )}
+      </div>
       
       {/* Timeline view */}
-      <div className="space-y-3">
-        {groupedActivities.map((activity) => {
+      <div className="space-y-3 relative">
+        {groupedActivities.map((activity, idx) => {
+          // Find matching event for confidence/reasoning
+          const matchingEvent = schedule.events.find(e => e.time === activity.time);
+          const eventTime = parseTime(activity.time);
+          const isPast = eventTime < currentMinutes;
+          const isCurrent = !isPast && idx === groupedActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
+          
+          // Confidence styling
+          const confidenceOpacity = matchingEvent?.confidence === 'high' ? 'opacity-100' : 
+                                     matchingEvent?.confidence === 'medium' ? 'opacity-80' : 'opacity-60';
+          
           if (activity.type === 'morning') {
             return (
-              <div key={activity.id} className="flex items-start gap-3 group">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                    <Sun className="w-4 h-4 text-amber-600" />
+              <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
+                {isCurrent && (
+                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <div className="h-0.5 w-[calc(100%+2rem)] bg-primary/50" />
                   </div>
-                  <div className="w-0.5 h-4 bg-border/40" />
-                </div>
-                <div className="flex-1 pb-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold text-foreground">
-                      {activity.time}
-                    </span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">
-                      {activity.title}
-                    </span>
-                  </div>
-                  {activity.feedTime && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                      <Milk className="w-3 h-3" />
-                      <span>Feed at {activity.feedTime}</span>
+                )}
+                <div className="flex items-start gap-3 group">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-amber-500/20' : 'bg-amber-500/10'} flex items-center justify-center flex-shrink-0`}>
+                      <Sun className="w-4 h-4 text-amber-600" />
                     </div>
-                  )}
+                    <div className="w-0.5 h-4 bg-border/40" />
+                  </div>
+                  <div className="flex-1 pb-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold text-foreground">
+                        {activity.time}
+                      </span>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                        {activity.title}
+                      </span>
+                      {matchingEvent?.confidence && (
+                        <Badge variant="outline" className="text-[10px] h-4">
+                          {matchingEvent.confidence}
+                        </Badge>
+                      )}
+                    </div>
+                    {activity.feedTime && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                        <Milk className="w-3 h-3" />
+                        <span>Feed at {activity.feedTime}</span>
+                      </div>
+                    )}
+                    {matchingEvent?.reasoning && (
+                      <Collapsible open={expandedEvents.has(activity.id)}>
+                        <CollapsibleTrigger 
+                          onClick={() => toggleExpanded(activity.id)}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                        >
+                          <ChevronDown className={`w-3 h-3 transition-transform ${expandedEvents.has(activity.id) ? 'rotate-180' : ''}`} />
+                          Why this time?
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="text-xs text-muted-foreground mt-1 pl-4 border-l-2 border-primary/20">
+                          {matchingEvent.reasoning}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -149,33 +238,60 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           
           if (activity.type === 'nap-block') {
             return (
-              <div key={activity.id} className="flex items-start gap-3 group">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                    <Moon className="w-4 h-4 text-blue-600" />
+              <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
+                {isCurrent && (
+                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <div className="h-0.5 w-[calc(100%+2rem)] bg-primary/50" />
                   </div>
-                  {activity.id !== groupedActivities[groupedActivities.length - 1].id && (
-                    <div className="w-0.5 h-8 bg-border/40" />
-                  )}
-                </div>
-                <div className="flex-1 pb-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-bold text-foreground">
-                      {activity.time}
-                    </span>
-                    <span className="text-xs font-medium text-foreground uppercase tracking-wide">
-                      {activity.title}
-                    </span>
-                    <span className="text-xs font-medium text-blue-600">
-                      {activity.napDuration}
-                    </span>
-                  </div>
-                  {activity.feedTime && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                      <Milk className="w-3 h-3" />
-                      <span>Feed at {activity.feedTime}</span>
+                )}
+                <div className="flex items-start gap-3 group">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-blue-500/20' : 'bg-blue-500/10'} flex items-center justify-center flex-shrink-0`}>
+                      <Moon className="w-4 h-4 text-blue-600" />
                     </div>
-                  )}
+                    {activity.id !== groupedActivities[groupedActivities.length - 1].id && (
+                      <div className="w-0.5 h-8 bg-border/40" />
+                    )}
+                  </div>
+                  <div className="flex-1 pb-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-bold text-foreground">
+                        {activity.time}
+                      </span>
+                      <span className="text-xs font-medium text-foreground uppercase tracking-wide">
+                        {activity.title}
+                      </span>
+                      <span className="text-xs font-medium text-blue-600">
+                        {activity.napDuration}
+                      </span>
+                      {matchingEvent?.confidence && (
+                        <Badge variant="outline" className="text-[10px] h-4">
+                          {matchingEvent.confidence}
+                        </Badge>
+                      )}
+                    </div>
+                    {activity.feedTime && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                        <Milk className="w-3 h-3" />
+                        <span>Feed at {activity.feedTime}</span>
+                      </div>
+                    )}
+                    {matchingEvent?.reasoning && (
+                      <Collapsible open={expandedEvents.has(activity.id)}>
+                        <CollapsibleTrigger 
+                          onClick={() => toggleExpanded(activity.id)}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                        >
+                          <ChevronDown className={`w-3 h-3 transition-transform ${expandedEvents.has(activity.id) ? 'rotate-180' : ''}`} />
+                          Why this time?
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="text-xs text-muted-foreground mt-1 pl-4 border-l-2 border-primary/20">
+                          {matchingEvent.reasoning}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -183,24 +299,51 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           
           if (activity.type === 'bedtime') {
             return (
-              <div key={activity.id} className="flex items-start gap-3 group">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                    <Bed className="w-4 h-4 text-purple-600" />
+              <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
+                {isCurrent && (
+                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <div className="h-0.5 w-[calc(100%+2rem)] bg-primary/50" />
                   </div>
-                </div>
-                <div className="flex-1 pb-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold text-foreground">
-                      {activity.time}
-                    </span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">
-                      {activity.title}
-                    </span>
+                )}
+                <div className="flex items-start gap-3 group">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-purple-500/20' : 'bg-purple-500/10'} flex items-center justify-center flex-shrink-0`}>
+                      <Bed className="w-4 h-4 text-purple-600" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                    <Bed className="w-3 h-3" />
-                    <span>Bedtime at {activity.endTime}</span>
+                  <div className="flex-1 pb-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold text-foreground">
+                        {activity.time}
+                      </span>
+                      <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                        {activity.title}
+                      </span>
+                      {matchingEvent?.confidence && (
+                        <Badge variant="outline" className="text-[10px] h-4">
+                          {matchingEvent.confidence}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                      <Bed className="w-3 h-3" />
+                      <span>Bedtime at {activity.endTime}</span>
+                    </div>
+                    {matchingEvent?.reasoning && (
+                      <Collapsible open={expandedEvents.has(activity.id)}>
+                        <CollapsibleTrigger 
+                          onClick={() => toggleExpanded(activity.id)}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                        >
+                          <ChevronDown className={`w-3 h-3 transition-transform ${expandedEvents.has(activity.id) ? 'rotate-180' : ''}`} />
+                          Why this time?
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="text-xs text-muted-foreground mt-1 pl-4 border-l-2 border-primary/20">
+                          {matchingEvent.reasoning}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
                   </div>
                 </div>
               </div>

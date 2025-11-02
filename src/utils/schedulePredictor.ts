@@ -10,12 +10,19 @@ export interface ScheduleEvent {
   type: 'wake' | 'nap' | 'feed' | 'bed';
   duration?: string;
   notes?: string;
+  confidence?: 'high' | 'medium' | 'low';
+  reasoning?: string;
+  actualTime?: string; // Track actual time for accuracy comparison
+  actualDuration?: string;
 }
 
 export interface PredictedSchedule {
   events: ScheduleEvent[];
   confidence: 'high' | 'medium' | 'low';
   basedOn: string;
+  accuracyScore?: number; // 0-100 percentage
+  lastUpdated?: string;
+  adjustmentNote?: string;
 }
 
 /**
@@ -59,11 +66,22 @@ export function generatePredictedSchedule(
   const events: ScheduleEvent[] = [];
   let currentTime = wakeTime;
   
+  // Determine event-level confidence based on data quality
+  const eventConfidence = (type: string): 'high' | 'medium' | 'low' => {
+    if (confidence === 'high') return 'high';
+    if (confidence === 'medium') return type === 'wake' || type === 'bed' ? 'high' : 'medium';
+    return 'low';
+  };
+
   // Add wake time
   events.push({
     time: formatTime(currentTime),
     type: 'wake',
-    notes: 'Morning wake up'
+    notes: 'Morning wake up',
+    confidence: eventConfidence('wake'),
+    reasoning: nightSleeps.length > 3 
+      ? `Based on ${nightSleeps.length} recent wake times averaging ${formatTime(wakeTime)}`
+      : 'Based on typical wake time for age'
   });
   
   // Add first feed (usually within 30-60 min of waking)
@@ -71,7 +89,11 @@ export function generatePredictedSchedule(
   events.push({
     time: formatTime(currentTime),
     type: 'feed',
-    notes: 'Morning feed'
+    notes: 'Morning feed',
+    confidence: eventConfidence('feed'),
+    reasoning: feedIntervals.typical > 0
+      ? `Typically fed ${Math.round(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m after waking`
+      : 'Based on typical feeding pattern for age'
   });
   
   // Generate naps and feeds throughout the day
@@ -89,7 +111,11 @@ export function generatePredictedSchedule(
         time: formatTime(currentTime),
         type: 'nap',
         duration: `${Math.floor(napDuration / 60)}h ${napDuration % 60}m`,
-        notes: `Nap ${napCount + 1}`
+        notes: `Nap ${napCount + 1}`,
+        confidence: eventConfidence('nap'),
+        reasoning: wakeWindows.typical > 0
+          ? `Average wake window: ${Math.floor(wakeWindows.typical / 60)}h ${wakeWindows.typical % 60}m`
+          : `Typical nap timing for ${targetNaps}-nap schedule`
       });
       currentTime += napDuration;
       napCount++;
@@ -100,7 +126,9 @@ export function generatePredictedSchedule(
         events.push({
           time: formatTime(currentTime),
           type: 'feed',
-          notes: 'Post-nap feed'
+          notes: 'Post-nap feed',
+          confidence: eventConfidence('feed'),
+          reasoning: 'Post-nap feeds help establish routine'
         });
       }
     }
@@ -110,14 +138,20 @@ export function generatePredictedSchedule(
   events.push({
     time: formatTime(bedTime - 30),
     type: 'feed',
-    notes: 'Bedtime feed'
+    notes: 'Bedtime feed',
+    confidence: eventConfidence('feed'),
+    reasoning: 'Full feed before bed supports longer sleep'
   });
   
   // Add bedtime
   events.push({
     time: formatTime(bedTime),
     type: 'bed',
-    notes: 'Bedtime'
+    notes: 'Bedtime',
+    confidence: eventConfidence('bed'),
+    reasoning: nightSleeps.length > 3
+      ? `Based on ${nightSleeps.length} recent bedtimes averaging ${formatTime(bedTime)}`
+      : 'Based on recommended bedtime for age'
   });
   
   // Determine confidence based on data availability (Tiered system)
@@ -153,8 +187,53 @@ export function generatePredictedSchedule(
   return {
     events,
     confidence,
-    basedOn: basedOnText
+    basedOn: basedOnText,
+    lastUpdated: new Date().toISOString()
   };
+}
+
+/**
+ * Calculate accuracy of predictions by comparing with actual activities
+ */
+export function calculatePredictionAccuracy(
+  predictedSchedule: PredictedSchedule,
+  actualActivities: GuideTabActivity[]
+): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const todayActivities = actualActivities.filter(a => {
+    const actDate = new Date(a.logged_at);
+    return actDate >= today;
+  });
+
+  if (todayActivities.length === 0) return 0;
+
+  let matchCount = 0;
+  let totalPredictions = 0;
+
+  // Compare each predicted event with actual activities
+  predictedSchedule.events.forEach(predicted => {
+    totalPredictions++;
+    const predictedMinutes = parseTimeString(predicted.time);
+    
+    // Find matching activity type within ±45 minutes
+    const hasMatch = todayActivities.some(actual => {
+      if (actual.type !== predicted.type && !(predicted.type === 'wake' && actual.type === 'nap')) {
+        return false;
+      }
+      
+      const actualTime = new Date(actual.logged_at);
+      const actualMinutes = actualTime.getHours() * 60 + actualTime.getMinutes();
+      const diff = Math.abs(actualMinutes - predictedMinutes);
+      
+      return diff <= 45; // Within 45 minutes is considered a match
+    });
+
+    if (hasMatch) matchCount++;
+  });
+
+  return totalPredictions > 0 ? Math.round((matchCount / totalPredictions) * 100) : 0;
 }
 
 // Helper functions
