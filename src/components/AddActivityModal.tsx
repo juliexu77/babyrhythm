@@ -57,6 +57,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     });
   };
   
+  // Helper function to get time X minutes ago
+  const getTimeMinutesAgo = (minutesAgo: number) => {
+    const date = new Date();
+    date.setMinutes(date.getMinutes() - minutesAgo);
+    return getRoundedTime(date);
+  };
+  
   const [time, setTime] = useState(() => getRoundedTime());
   
   // Feed state
@@ -692,13 +699,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 {/* Time Picker - Moved below feed type */}
-                <TimeScrollPicker 
-                  value={time} 
-                  selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
-                />
+                <div className="space-y-2">
+                  <TimeScrollPicker 
+                    value={time} 
+                    selectedDate={selectedDate}
+                    onChange={setTime} 
+                    onDateChange={setSelectedDate}
+                    label={t('time')} 
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getRoundedTime())}
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Now
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(15))}
+                    >
+                      15 min ago
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(30))}
+                    >
+                      30 min ago
+                    </Button>
+                  </div>
+                </div>
 
                 {/* Dynamic amount/details based on feed type */}
                 {feedType === "bottle" && (
@@ -810,13 +849,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "diaper" && (
               <div className="space-y-5">
                 {/* Time Picker for Diaper */}
-                <TimeScrollPicker 
-                  value={time} 
-                  selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
-                />
+                <div className="space-y-2">
+                  <TimeScrollPicker 
+                    value={time} 
+                    selectedDate={selectedDate}
+                    onChange={setTime} 
+                    onDateChange={setSelectedDate}
+                    label={t('time')} 
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getRoundedTime())}
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Now
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(15))}
+                    >
+                      15 min ago
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(30))}
+                    >
+                      30 min ago
+                    </Button>
+                  </div>
+                </div>
                 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
@@ -893,13 +964,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "nap" && (
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <TimeScrollPicker 
-                    value={startTime} 
-                    selectedDate={selectedDate}
-                    onChange={setStartTime} 
-                    onDateChange={setSelectedDate}
-                    label={t('startTime')} 
-                  />
+                  <div className="space-y-2">
+                    <TimeScrollPicker 
+                      value={startTime} 
+                      selectedDate={selectedDate}
+                      onChange={setStartTime} 
+                      onDateChange={setSelectedDate}
+                      label={t('startTime')} 
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-8 text-xs"
+                        onClick={() => setStartTime(getRoundedTime())}
+                      >
+                        <Clock className="h-3 w-3 mr-1" />
+                        Now
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-8 text-xs"
+                        onClick={() => setStartTime(getTimeMinutesAgo(15))}
+                      >
+                        15 min ago
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-8 text-xs"
+                        onClick={() => setStartTime(getTimeMinutesAgo(30))}
+                      >
+                        30 min ago
+                      </Button>
+                    </div>
+                  </div>
                   
                   {/* End Time Checkbox */}
                   <div className="flex items-center space-x-2">
@@ -920,13 +1023,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                   {/* End Time Picker - Only show when checkbox is checked */}
                   {hasEndTime && (
-                    <TimeScrollPicker 
-                      value={endTime} 
-                      selectedDate={selectedEndDate}
-                      onChange={setEndTime} 
-                      onDateChange={setSelectedEndDate}
-                      label={t('endTime')} 
-                    />
+                    <div className="space-y-2">
+                      <TimeScrollPicker 
+                        value={endTime} 
+                        selectedDate={selectedEndDate}
+                        onChange={setEndTime} 
+                        onDateChange={setSelectedEndDate}
+                        label={t('endTime')} 
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs"
+                          onClick={() => setEndTime(getRoundedTime())}
+                        >
+                          <Clock className="h-3 w-3 mr-1" />
+                          Now
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs"
+                          onClick={() => setEndTime(getTimeMinutesAgo(15))}
+                        >
+                          15 min ago
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs"
+                          onClick={() => setEndTime(getTimeMinutesAgo(30))}
+                        >
+                          30 min ago
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -936,13 +1071,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "note" && (
               <div className="space-y-4">
                 {/* Time Picker */}
-                <TimeScrollPicker 
-                  value={time} 
-                  selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
-                />
+                <div className="space-y-2">
+                  <TimeScrollPicker 
+                    value={time} 
+                    selectedDate={selectedDate}
+                    onChange={setTime} 
+                    onDateChange={setSelectedDate}
+                    label={t('time')} 
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getRoundedTime())}
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Now
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(15))}
+                    >
+                      15 min ago
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(30))}
+                    >
+                      30 min ago
+                    </Button>
+                  </div>
+                </div>
 
                 <div>
                   <Label htmlFor="note" className="text-sm font-medium mb-2 block">{t('noteText')}</Label>
@@ -1036,13 +1203,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Measure Details */}
             {activityType === "measure" && (
               <div className="space-y-4">
-                <TimeScrollPicker 
-                  value={time} 
-                  selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
-                />
+                <div className="space-y-2">
+                  <TimeScrollPicker 
+                    value={time} 
+                    selectedDate={selectedDate}
+                    onChange={setTime} 
+                    onDateChange={setSelectedDate}
+                    label={t('time')} 
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getRoundedTime())}
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Now
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(15))}
+                    >
+                      15 min ago
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(30))}
+                    >
+                      30 min ago
+                    </Button>
+                  </div>
+                </div>
 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">{t('weight')}</Label>
@@ -1111,13 +1310,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Photo Activity Details */}
             {activityType === "photo" && (
               <div className="space-y-4">
-                <TimeScrollPicker 
-                  value={time} 
-                  selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label="Time" 
-                />
+                <div className="space-y-2">
+                  <TimeScrollPicker 
+                    value={time} 
+                    selectedDate={selectedDate}
+                    onChange={setTime} 
+                    onDateChange={setSelectedDate}
+                    label="Time" 
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getRoundedTime())}
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Now
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(15))}
+                    >
+                      15 min ago
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs"
+                      onClick={() => setTime(getTimeMinutesAgo(30))}
+                    >
+                      30 min ago
+                    </Button>
+                  </div>
+                </div>
 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Photo</Label>
