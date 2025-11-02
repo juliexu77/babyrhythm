@@ -14,6 +14,7 @@ import {
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generatePredictedSchedule, type ScheduleEvent } from "@/utils/schedulePredictor";
@@ -319,11 +320,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const smoothFlowDiff = thisMonthSmoothFlow - lastMonthSmoothFlow;
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
+  const { isNightTime } = useNightSleepWindow();
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
 
   // Tiered data requirements
-  const naps = activities.filter(a => a.type === 'nap');
+  // Filter out night sleep - only count daytime naps
+  const allSleepActivities = activities.filter(a => a.type === 'nap');
+  const daytimeNaps = allSleepActivities.filter(a => {
+    const activityTime = new Date(a.logged_at);
+    return !isNightTime(activityTime);
+  });
+  
   const feeds = activities.filter(a => a.type === 'feed');
   const totalActivities = activities.length;
   
@@ -333,9 +341,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Tier 2: Pattern emerging (4+ total activities)
   const hasTier2Data = totalActivities >= 4 && !needsBirthdaySetup;
   
-  // Tier 3: Personalized AI (10+ total activities AND 4+ naps AND 4+ feeds)
-  // This ensures prediction engine has meaningful data
-  const hasTier3Data = totalActivities >= 10 && naps.length >= 4 && feeds.length >= 4;
+  // Tier 3: Personalized AI (10+ total activities AND 4+ daytime naps AND 4+ feeds)
+  // This ensures prediction engine has meaningful data (excludes night sleep)
+  const hasTier3Data = totalActivities >= 10 && daytimeNaps.length >= 4 && feeds.length >= 4;
   
   // Show schedule at Tier 1, AI insights at Tier 3
   const hasMinimumData = hasTier1Data;
@@ -345,7 +353,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   useEffect(() => {
     console.log('🔍 GuideTab Debug:', {
       totalActivities: activities.length,
-      naps: naps.length,
+      allSleepActivities: allSleepActivities.length,
+      daytimeNaps: daytimeNaps.length,
+      nightSleepCount: allSleepActivities.length - daytimeNaps.length,
       feeds: feeds.length,
       hasTier1Data,
       hasTier2Data,
@@ -355,7 +365,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       hasInitialized,
       insightCardsCount: insightCards.length
     });
-  }, [activities.length, naps.length, feeds.length, hasTier1Data, hasTier2Data, hasTier3Data, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
+  }, [activities.length, daytimeNaps.length, feeds.length, hasTier1Data, hasTier2Data, hasTier3Data, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
 
   // Fetch rhythm insights once daily (only for Tier 3)
   useEffect(() => {
@@ -886,7 +896,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading guidance...</p>
+            <p className="text-muted-foreground">Analyzing recent activity…</p>
           </div>
         </div>
       ) : (
