@@ -6,6 +6,7 @@ import { BabyCarePredictionEngine } from "@/utils/predictionEngine";
 import { useHousehold } from "@/hooks/useHousehold";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 interface NextActivityPredictionProps {
   activities: Activity[];
@@ -365,7 +366,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
         </div>
 
         {/* Action buttons */}
-        {((ongoingNap && onMarkWakeUp) || (fullPrediction.intent === 'LET_SLEEP_CONTINUE' && onMarkWakeUp)) ? (
+        {(ongoingNap && onMarkWakeUp) ? (
           <Button
             onClick={(e) => {
               e.preventDefault();
@@ -376,9 +377,11 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
                 intent: fullPrediction.intent,
                 buttonElement: e.currentTarget
               });
-              if (onMarkWakeUp) {
-                onMarkWakeUp();
+              if (!ongoingNap) {
+                console.warn('No ongoing nap in progress; cannot mark wake-up.');
+                return;
               }
+              onMarkWakeUp();
             }}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground relative z-10 touch-manipulation"
             size="lg"
