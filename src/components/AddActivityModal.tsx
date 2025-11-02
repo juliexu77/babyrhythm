@@ -736,16 +736,44 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 {feedType === "nursing" && (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
-                      <MinuteScrollPicker
-                        value={minutesLeft}
-                        onChange={setMinutesLeft}
-                        label={t('leftSide')}
-                      />
-                      <MinuteScrollPicker
-                        value={minutesRight}
-                        onChange={setMinutesRight}
-                        label={t('rightSide')}
-                      />
+                      <div className="space-y-2">
+                        <Label htmlFor="minutes-left" className="text-sm font-medium">{t('leftSide')}</Label>
+                        <Input
+                          id="minutes-left"
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          max="99"
+                          value={minutesLeft}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (Number(value) >= 0 && Number(value) <= 99)) {
+                              setMinutesLeft(value);
+                            }
+                          }}
+                          placeholder="0"
+                          className="h-12 text-center text-lg"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="minutes-right" className="text-sm font-medium">{t('rightSide')}</Label>
+                        <Input
+                          id="minutes-right"
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          max="99"
+                          value={minutesRight}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === '' || (Number(value) >= 0 && Number(value) <= 99)) {
+                              setMinutesRight(value);
+                            }
+                          }}
+                          placeholder="0"
+                          className="h-12 text-center text-lg"
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
