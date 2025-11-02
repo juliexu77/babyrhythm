@@ -1,14 +1,25 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Milk, Moon, Clock, Baby, Utensils, CircleDot, ChevronDown } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Plus, Circle, Ruler, TrendingUp, Activity as ActivityIcon, FileText, Sun, Eye, BarChart3, Sprout, Milk } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { differenceInMinutes } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
+import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
-import { useHousehold } from "@/hooks/useHousehold";
-import { BabyCarePredictionEngine } from "@/utils/predictionEngine";
-import { getTodayActivities } from "@/utils/activityDateFilters";
-import { cn } from "@/lib/utils";
+import { NextActivityPrediction } from "@/components/NextActivityPrediction";
+import { LearningProgress } from "@/components/LearningProgress";
+import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
+import { useToast } from "@/hooks/use-toast";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
+import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
+import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
+// Convert UTC timestamp string to local Date object
+const parseUTCToLocal = (ts: string): Date => {
+  // The database returns UTC timestamps - convert to local time
+  return new Date(ts);
+};
 
 interface HomeTabProps {
   activities: Activity[];
@@ -25,19 +36,102 @@ interface HomeTabProps {
   addActivity?: (type: string, details?: any, activityDate?: Date, activityTime?: string) => Promise<void>;
 }
 
-export const HomeTab = ({ activities, babyName, userName, onAddActivity, onEndNap, ongoingNap }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile, addActivity }: HomeTabProps) => {
   const { t } = useLanguage();
-  const { household } = useHousehold();
+  const { toast } = useToast();
+  const { nightSleepEndHour } = useNightSleepWindow();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showFeedDetails, setShowFeedDetails] = useState(false);
+  const [showSleepDetails, setShowSleepDetails] = useState(false);
+  const [showGrowthDetails, setShowGrowthDetails] = useState(false);
+  const [showToneInsight, setShowToneInsight] = useState(false);
+  const [showPredictionInsight, setShowPredictionInsight] = useState(false);
+  const [showFeedStatusInsight, setShowFeedStatusInsight] = useState(false);
+  const [showSleepStatusInsight, setShowSleepStatusInsight] = useState(false);
+  const [showDailyInsight, setShowDailyInsight] = useState(false);
+  const [showRhythmUnlocked, setShowRhythmUnlocked] = useState(false);
+  const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
+
+  // Track visited tabs for progressive disclosure
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('babyrhythm_visited_tabs');
+      return stored ? new Set(JSON.parse(stored)) : new Set(['home']);
+    } catch {
+      return new Set(['home']);
+    }
+  });
+
+  // Track tab visits from parent via click events
+  useEffect(() => {
+    const handleTabClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const button = target.closest('[data-tab]');
+      if (button) {
+        const tab = button.getAttribute('data-tab');
+        if (tab) {
+          setVisitedTabs(prev => {
+            const newSet = new Set(prev).add(tab);
+            localStorage.setItem('babyrhythm_visited_tabs', JSON.stringify([...newSet]));
+            return newSet;
+          });
+        }
+      }
+    };
+
+    document.addEventListener('click', handleTabClick);
+    return () => document.removeEventListener('click', handleTabClick);
+  }, []);
+
+  const hasVisitedAllTabs = visitedTabs.has('home') && visitedTabs.has('trends') && 
+                             visitedTabs.has('guide') && visitedTabs.has('log');
+  
+  // Show educational content until user has logged at least one feed AND one sleep, OR 5+ total activities
+  const hasFeed = activities.some(a => a.type === 'feed');
+  const hasSleep = activities.some(a => a.type === 'nap');
+  const hasMinimumLogs = (hasFeed && hasSleep) || activities.length >= 5;
+  const showEducationalContent = !hasMinimumLogs;
+
+  // Check if rhythm is unlocked
+  const napsCount = activities.filter(a => a.type === 'nap').length;
+  const feedsCount = activities.filter(a => a.type === 'feed').length;
+  const isRhythmUnlocked = napsCount >= 4 && feedsCount >= 4;
+
+  // Calculate baby's age in months and weeks
+  const getBabyAge = () => {
+    if (!babyBirthday) return null;
+    const birthDate = new Date(babyBirthday);
+    const today = new Date();
+    
+    // Calculate total months, accounting for whether we've passed the birth day this month
+    let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                      (today.getMonth() - birthDate.getMonth());
+    
+    // If we haven't reached the birth day of the month yet, subtract 1 month
+    if (today.getDate() < birthDate.getDate()) {
+      totalMonths--;
+    }
+    
+    const months = Math.max(0, totalMonths);
+    
+    // Calculate remaining weeks from the last "month birthday"
+    const monthsDate = new Date(birthDate);
+    monthsDate.setMonth(monthsDate.getMonth() + totalMonths);
+    const daysDiff = Math.floor((today.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
+    const weeks = Math.floor(daysDiff / 7);
+    
+    return { months, weeks };
+  };
+
+  const babyAge = getBabyAge();
+  const babyAgeMonths = babyAge?.months || null;
 
   // Update current time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
-
-  // Get today's activities
-  const todayActivities = getTodayActivities(activities);
 
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -47,29 +141,126 @@ export const HomeTab = ({ activities, babyName, userName, onAddActivity, onEndNa
     return t('goodEvening');
   };
 
-  // Helper: parse time string to minutes
-  const parseTimeToMinutes = (timeStr: string) => {
-    const [time, period] = timeStr.split(' ');
-    const [hStr, mStr] = time.split(':');
-    let h = parseInt(hStr, 10);
-    const m = parseInt(mStr || '0', 10);
+  // Get the greeting line including user name
+  const getGreetingLine = () => {
+    const greeting = getGreeting();
+    return userName ? `${greeting}, ${userName}` : greeting;
+  };
+
+  // Get today's and yesterday's activities using shared utility
+  const todayActivities = getTodayActivities(activities);
+  const yesterdayActivities = getYesterdayActivities(activities);
+
+  // Use yesterday's data as context if nothing logged today
+  const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
+  const showingYesterday = todayActivities.length === 0 && yesterdayActivities.length > 0;
+  
+  // Debug: detailed activity breakdown
+  if (typeof window !== 'undefined') {
+    console.groupCollapsed('HomeTab - Today vs Yesterday filter');
+    console.log('All activities count:', activities.length);
+    console.log('Today count:', todayActivities.length);
+    console.log('Yesterday count:', yesterdayActivities.length);
+    console.log('Showing yesterday fallback?', showingYesterday);
+    console.log('Today\'s dates:', todayActivities.map(a => ({ 
+      id: a.id?.slice(0,8), 
+      type: a.type, 
+      loggedAt: a.loggedAt,
+      parsed: parseUTCToLocal(a.loggedAt!).toLocaleString()
+    })));
+    if (showingYesterday) {
+      console.log('Yesterday\'s dates:', yesterdayActivities.map(a => ({ 
+        id: a.id?.slice(0,8), 
+        type: a.type, 
+        loggedAt: a.loggedAt,
+        parsed: parseUTCToLocal(a.loggedAt!).toLocaleString()
+      })));
+    }
+    console.groupEnd();
+  }
+  
+  // Helper: parse a UI time string like "7:05 AM" (handles "7:05 AM - 8:15 AM")
+  const parseUI12hToMinutes = (timeStr?: string | null): number | null => {
+    if (!timeStr) return null;
+    const first = timeStr.includes(' - ') ? timeStr.split(' - ')[0] : timeStr;
+    const m = first.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!m) return null;
+    let h = parseInt(m[1], 10);
+    const mins = parseInt(m[2], 10);
+    const period = m[3].toUpperCase();
     if (period === 'PM' && h !== 12) h += 12;
     if (period === 'AM' && h === 12) h = 0;
-    return h * 60 + m;
+    return h * 60 + mins;
   };
+
+  // Compute a comparable timestamp for sorting: use activity time on today's date
+  const getComparableTime = (a: Activity): number => {
+    const today = new Date();
+    const base = new Date(today.toDateString()); // Start with today at midnight
+    let minutes: number | null = null;
+    if (a.type === 'nap' && a.details?.startTime) {
+      minutes = parseUI12hToMinutes(a.details.startTime);
+    } else if (a.details?.displayTime) {
+      minutes = parseUI12hToMinutes(a.details.displayTime);
+    } else if (a.time) {
+      minutes = parseUI12hToMinutes(a.time);
+    }
+    if (minutes !== null) {
+      base.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+    }
+    return base.getTime();
+  };
+  
+  // Precompute sorted activities for timeline and debug
+  const sortedActivities = [...displayActivities].sort((a, b) => getComparableTime(a) - getComparableTime(b));
+  if (typeof window !== 'undefined') {
+    try {
+      console.groupCollapsed('HomeTab timeline order');
+      sortedActivities.forEach((a, idx) => {
+        const cmp = getComparableTime(a);
+        console.log(`#${idx + 1}`, {
+          id: a.id,
+          type: a.type,
+          time: a.time,
+          startTime: a.details?.startTime,
+          endTime: a.details?.endTime,
+          displayTime: a.details?.displayTime,
+          loggedAt: a.loggedAt,
+          comparableLocal: new Date(cmp).toLocaleString(),
+          comparableMs: cmp,
+        });
+      });
+      console.groupEnd();
+    } catch {}
+  }
+  
+// Use the ongoingNap passed from parent (Index.tsx) for consistency
+const ongoingNap = passedOngoingNap;
 
   // Calculate awake time
   const getAwakeTime = () => {
     if (ongoingNap) return null;
 
-    const recentNaps = todayActivities.filter(a =>
+    const parseTimeToMinutes = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hStr, mStr] = time.split(':');
+      let h = parseInt(hStr, 10);
+      const m = parseInt(mStr || '0', 10);
+      if (period === 'PM' && h !== 12) h += 12;
+      if (period === 'AM' && h === 12) h = 0;
+      return h * 60 + m;
+    };
+
+    // Find the most recent completed nap from displayActivities (today or yesterday)
+    const recentNaps = displayActivities.filter(a =>
       a.type === 'nap' && a.details?.endTime
     );
 
     if (recentNaps.length === 0) return null;
 
     const napsWithEndDate = recentNaps.map(nap => {
-      const loggedDate = nap.loggedAt ? new Date(nap.loggedAt) : new Date();
+      // Use the actual logged date from the activity
+      const loggedDate = nap.loggedAt ? parseUTCToLocal(nap.loggedAt) : new Date();
       const baseDate = new Date(loggedDate.toDateString());
       const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
       const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
@@ -79,6 +270,7 @@ export const HomeTab = ({ activities, babyName, userName, onAddActivity, onEndNa
       const endMins = endMinutes % 60;
       endDate.setHours(endHours, endMins, 0, 0);
 
+      // If we have startTime and end < start, it ended after midnight (next day)
       if (startMinutes !== null && endMinutes < startMinutes) {
         endDate.setDate(endDate.getDate() + 1);
       }
@@ -96,275 +288,1539 @@ export const HomeTab = ({ activities, babyName, userName, onAddActivity, onEndNa
     return awakeHours > 0 ? `${awakeHours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
   };
 
-  // Get sleep duration for ongoing nap
-  const getSleepDuration = () => {
-    if (!ongoingNap) return null;
-    
-    const startTime = ongoingNap.details?.startTime || ongoingNap.time;
-    const [time, period] = startTime.split(' ');
-    const [hours, minutes] = time.split(':').map(Number);
-    let hour24 = hours;
-    if (period === 'PM' && hours !== 12) hour24 += 12;
-    if (period === 'AM' && hours === 12) hour24 = 0;
-    
-    const today = new Date();
-    const napStart = new Date(today.toDateString());
-    napStart.setHours(hour24, minutes, 0, 0);
-    
-    const sleepMinutes = differenceInMinutes(currentTime, napStart);
-    const sleepHours = Math.floor(sleepMinutes / 60);
-    const remainingMinutes = sleepMinutes % 60;
-    
-    return sleepHours > 0 
-      ? `${sleepHours}h ${remainingMinutes}m` 
-      : `${remainingMinutes}m`;
-  };
+const feedsToday = displayActivities.filter(a => a.type === 'feed');
+const lastFeed = feedsToday
+  .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
 
-  // Get last feed
-  const feedsToday = todayActivities.filter(a => a.type === 'feed');
-  const lastFeed = feedsToday.sort((a, b) => {
-    const aTime = a.loggedAt ? new Date(a.loggedAt).getTime() : 0;
-    const bTime = b.loggedAt ? new Date(b.loggedAt).getTime() : 0;
-    return bTime - aTime;
-  })[0];
+// Debug last feed selection
+if (typeof window !== 'undefined') {
+  console.log('🍼 Last Feed Debug:', {
+    totalFeeds: feedsToday.length,
+    allFeeds: feedsToday.map(f => ({
+      id: f.id?.slice(0, 8),
+      time: f.time,
+      loggedAt: f.loggedAt,
+      parsedUTC: parseUTCToLocal(f.loggedAt!).toLocaleString(),
+      utcMs: parseUTCToLocal(f.loggedAt!).getTime()
+    })),
+    selected: lastFeed ? {
+      id: lastFeed.id?.slice(0, 8),
+      time: lastFeed.time,
+      loggedAt: lastFeed.loggedAt,
+      parsedUTC: parseUTCToLocal(lastFeed.loggedAt!).toLocaleString()
+    } : 'none'
+  });
+}
 
-  // Get prediction
-  const engine = activities.length > 0 ? new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined) : null;
-  const prediction = engine?.getNextAction();
+// Get last diaper - using actual activity time
+const lastDiaper = displayActivities
+  .filter(a => a.type === 'diaper')
+  .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
 
-  // Format time for display
-  const formatTime = (date: Date) => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-    return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
-  };
-
-  // Get what's next message
-  const getWhatsNextMessage = () => {
+  // Get sleep status message with duration
+  const getSleepStatus = () => {
     if (ongoingNap) {
-      const wakeTime = prediction?.timing?.nextWakeAt;
+      const startTime = ongoingNap.details?.startTime || ongoingNap.time;
+      
+      // Calculate sleep duration
+      const [time, period] = startTime.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let hour24 = hours;
+      if (period === 'PM' && hours !== 12) hour24 += 12;
+      if (period === 'AM' && hours === 12) hour24 = 0;
+      
+      const today = new Date();
+      const napStart = new Date(today.toDateString());
+      napStart.setHours(hour24, minutes, 0, 0);
+      
+      const sleepMinutes = differenceInMinutes(currentTime, napStart);
+      const sleepHours = Math.floor(sleepMinutes / 60);
+      const remainingMinutes = sleepMinutes % 60;
+      
+      const durationText = sleepHours > 0 
+        ? `${sleepHours}h ${remainingMinutes}m` 
+        : `${remainingMinutes}m`;
+      
+      const qualityText = sleepHours >= 2 
+        ? t('strongRestorativeNap')
+        : sleepHours >= 1 
+          ? t('restingDeeply')
+          : t('settlingIn');
+      
       return {
-        text: wakeTime ? `Currently sleeping — may wake around ${formatTime(wakeTime)}` : "Currently sleeping",
-        action: `${babyName || 'Baby'} woke up`,
-        actionType: "wakeup" as const
+        main: `${babyName || t('baby')} ${t('hasBeenSleepingSince')} ${startTime}`,
+        sub: `${babyName?.split(' ')[0] || t('baby')} ${t('hasBeenRestingFor')} ${durationText} — ${qualityText}.`
       };
     }
-
-    if (prediction?.intent === "FEED_SOON") {
-      const feedTime = prediction.timing?.nextFeedAt;
+    
+    // If showing yesterday's data, adapt the message
+    if (showingYesterday) {
       return {
-        text: feedTime ? `Next feed expected around ${formatTime(feedTime)}` : "Next feed expected soon",
-        action: "Log feed",
-        actionType: "feed" as const
+        main: `${t('startingNewDay')} ${babyName || t('baby')}`,
+        sub: t('yesterdayRhythm')
       };
     }
-
-    if (prediction?.intent === "START_WIND_DOWN") {
-      const napTime = prediction.timing?.nextNapWindowStart;
+    
+    const awakeTime = getAwakeTime();
+    if (awakeTime) {
       return {
-        text: napTime ? `Next nap likely around ${formatTime(napTime)}` : "Next nap likely soon",
-        action: "Log nap now",
-        actionType: "nap" as const
+        main: `${babyName || t('baby')} ${t('hasBeenAwakeFor')} ${awakeTime}`,
+        sub: null
       };
     }
-
+    
     return {
-      text: "Building rhythm — log activities to see predictions",
-      action: null,
-      actionType: null
+      main: `${babyName || t('baby')} ${t('readyToStartDay')}`,
+      sub: null
     };
   };
 
-  const whatsNext = getWhatsNextMessage();
-  const awakeTime = getAwakeTime();
-  const sleepDuration = getSleepDuration();
-
-  // Get tone/sentiment
-  const getTone = () => {
-    const feedCount = feedsToday.length;
-    const napCount = todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
-    
-    if (!household?.baby_birthday) return { emoji: "🌱", text: "Building Rhythm" };
-    
-    const ageMonths = Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 30));
-    
-    // Expected ranges
-    const expectedFeeds = ageMonths < 3 ? { min: 6, max: 10 } :
-                         ageMonths < 6 ? { min: 5, max: 7 } :
-                         ageMonths < 9 ? { min: 4, max: 6 } :
-                         { min: 3, max: 5 };
-    
-    const expectedNaps = ageMonths < 3 ? { min: 4, max: 6 } :
-                        ageMonths < 6 ? { min: 3, max: 5 } :
-                        ageMonths < 9 ? { min: 2, max: 3 } :
-                        { min: 1, max: 2 };
-    
-    if (feedCount >= expectedFeeds.min && feedCount <= expectedFeeds.max &&
-        napCount >= expectedNaps.min && napCount <= expectedNaps.max) {
-      return { emoji: "☀️", text: "Smooth Flow" };
-    }
-    
-    if (feedCount > expectedFeeds.max + 1) {
-      return { emoji: "🌿", text: "Growth Transition" };
-    }
-    
-    return { emoji: "🔄", text: "Adjusting Rhythm" };
+  // Get daily sentiment using shared logic
+  const getDailySentiment = () => {
+    return calculateDailySentiment(
+      todayActivities,
+      activities,
+      babyAgeMonths,
+      currentTime.getHours()
+    );
   };
 
-  const tone = getTone();
+  // Get developmental phase description
+  const getDevelopmentalPhase = () => {
+    if (!babyAge) return null;
+    
+    const { months, weeks } = babyAge;
+    
+    if (months < 3) return t('inSleepyNewbornPhase');
+    if (months < 6) return t('discoveringWorld');
+    if (months < 9) return t('curiousExploratoryPhase');
+    if (months < 12) return t('becomingMobile');
+    if (months < 18) return t('learningToCommunicate');
+    return t('growingIntoOwnPerson');
+  };
 
-  // Calculate daily summary
-  const feedCount = feedsToday.length;
-  const napCount = todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
-  const totalNapMinutes = todayActivities
-    .filter(a => a.type === 'nap' && a.details?.endTime)
-    .reduce((total, nap) => {
-      const startMinutes = parseTimeToMinutes(nap.details?.startTime || nap.time);
-      const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
-      const duration = endMinutes >= startMinutes 
-        ? endMinutes - startMinutes 
-        : (24 * 60) - startMinutes + endMinutes;
-      return total + duration;
-    }, 0);
+  // Get contextual daily insight - one line per day
+  const getDailyInsight = () => {
+    const summary = getDailySummary();
+    const expected = getExpectedFeeds(babyAgeMonths);
+    const expectedNaps = getExpectedNaps(babyAgeMonths);
+    
+    // Check if user is in early days (first 24 hours)
+    let isEarlyDays = false;
+    if (activities.length > 0) {
+      const firstActivity = [...activities].sort((a, b) => 
+        getComparableTime(a) - getComparableTime(b)
+      )[0];
+      
+      if (firstActivity) {
+        const firstActivityTime = new Date(new Date().toDateString() + ' ' + firstActivity.time);
+        const hoursSinceFirst = differenceInHours(currentTime, firstActivityTime);
+        isEarlyDays = hoursSinceFirst < 24;
+      }
+    }
+    
+    // Early Days message - first 24 hours
+    if (isEarlyDays) {
+      return `Every log helps us learn ${babyName?.split(' ')[0] || 'your baby'}'s natural rhythm. You're building the foundation for personalized insights.`;
+    }
+    
+    // Check cumulative activity counts (all time, not just today)
+    const totalFeeds = activities.filter(a => a.type === 'feed').length;
+    const totalNaps = activities.filter(a => a.type === 'nap').length;
+    
+    // Early state message - insufficient cumulative data (but past first 24 hours)
+    if (totalFeeds < 4 || totalNaps < 4) {
+      return `Keep logging feeds and sleeps—patterns will emerge soon! Every entry helps us understand ${babyName?.split(' ')[0] || 'your baby'}'s unique rhythm.`;
+    }
+    
+    // Calculate 7-day rolling averages (simplified for now)
+    const recentFeeds = activities.filter(a => a.type === 'feed').length / 7;
+    const recentNaps = activities.filter(a => a.type === 'nap' && a.details?.endTime).length / 7;
+    
+    // Sleep insights
+    if (summary.napCount > 0 && expectedNaps) {
+      const napDurations = displayActivities
+        .filter(a => a.type === 'nap' && a.details?.endTime)
+        .map(nap => {
+          const parseTime = (timeStr: string) => {
+            const [time, period] = timeStr.split(' ');
+            const [hStr, mStr] = time.split(':');
+            let h = parseInt(hStr, 10);
+            const m = parseInt(mStr || '0', 10);
+            if (period === 'PM' && h !== 12) h += 12;
+            if (period === 'AM' && h === 12) h = 0;
+            return h * 60 + m;
+          };
+          const startMinutes = parseTime(nap.details.startTime || nap.time);
+          const endMinutes = parseTime(nap.details.endTime!);
+          return endMinutes >= startMinutes 
+            ? endMinutes - startMinutes 
+            : (24 * 60) - startMinutes + endMinutes;
+        });
+      
+      const avgNapDuration = napDurations.reduce((a, b) => a + b, 0) / napDurations.length;
+      
+      // 1. Nap consolidation
+      if (avgNapDuration > 90 && babyAgeMonths !== null && babyAgeMonths >= 3) {
+        return `Naps have been lengthening lately — a sign ${babyName?.split(' ')[0] || 'he'}'s settling into a two-nap rhythm.`;
+      }
+      
+      // 2. Short nap phase
+      if (avgNapDuration < 45) {
+        return `Shorter naps today — common when babies are practicing new skills or adjusting wake windows.`;
+      }
+      
+      // 3. Earlier wake trend (would need historical data, simplified)
+      const firstNap = displayActivities
+        .filter(a => a.type === 'nap' && a.details?.startTime)
+        .sort((a, b) => getComparableTime(a) - getComparableTime(b))[0];
+      
+      if (firstNap) {
+        const startTime = firstNap.details?.startTime || firstNap.time;
+        const hour = parseInt(startTime.split(':')[0]);
+        if (hour < 7 || (startTime.includes('AM') && hour === 6)) {
+          return `${babyName?.split(' ')[0] || 'He'}'s been waking a little earlier the past few days — often just a temporary shift.`;
+        }
+      }
+      
+      // 4. Overtired day
+      const awakeMinutes = awakeTime ? parseInt(awakeTime.split('h')[0] || '0') * 60 + parseInt(awakeTime.split('m')[0] || '0') : 0;
+      const expectedWindow = babyAgeMonths !== null && babyAgeMonths < 3 ? 90 : 
+                            babyAgeMonths !== null && babyAgeMonths < 6 ? 120 : 
+                            babyAgeMonths !== null && babyAgeMonths < 9 ? 150 : 180;
+      if (awakeMinutes > expectedWindow + 30) {
+        return `Sleep windows stretched a bit long — watch for early sleepy cues tonight.`;
+      }
+    }
+    
+    // Feed insights
+    if (expected) {
+      // 5. Growth week
+      if (summary.feedCount > expected.max + 2) {
+        return `Feed volume is trending higher — typical during a growth transition at this age.`;
+      }
+      
+      // 6. On steady rhythm
+      if (summary.feedCount >= expected.min && summary.feedCount <= expected.max) {
+        return `Feeds are spacing beautifully today — right on rhythm for this stage.`;
+      }
+      
+      // 7. Light intake day
+      if (summary.feedCount < expected.min && summary.feedCount >= expected.min - 2) {
+        return `Fewer feeds so far, but total intake still looks healthy.`;
+      }
+    }
+    
+    // Combined rhythm
+    if (expected && expectedNaps) {
+      // 8. Balanced day
+      if (summary.feedCount >= expected.min && summary.feedCount <= expected.max &&
+          summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max) {
+        return `Today's flow looks balanced — naps and feeds finding their natural rhythm.`;
+      }
+      
+      // 9. Active day
+      if (summary.feedCount + summary.napCount > (expected.max + expectedNaps.max)) {
+        return `A more active rhythm today — expect a sleepier evening ahead.`;
+      }
+      
+      // 10. Reset in progress
+      if ((summary.feedCount < expected.min - 1 || summary.napCount < expectedNaps.min - 1)) {
+        return `The day's been a little off-pattern — often how babies find their next rhythm.`;
+      }
+    }
+    
+    // Developmental transitions
+    if (babyAgeMonths !== null) {
+      // 11. Emerging independence
+      if (babyAgeMonths >= 4 && summary.napCount >= 2 && summary.feedCount >= 4) {
+        return `${babyName?.split(' ')[0] || 'He'}'s showing signs of self-regulation — longer naps and steady feeds are helping ${babyName?.split(' ')[0].toLowerCase() || 'him'} adjust.`;
+      }
+      
+      // 12. Growth transition
+      if ([3, 4, 6, 9, 12].includes(babyAgeMonths)) {
+        return `Patterns are shifting — short-term changes that often mean new milestones are near.`;
+      }
+    }
+    
+    // Default
+    return `Today's rhythm is unfolding naturally — every day helps you understand ${babyName?.split(' ')[0] || 'baby'} better.`;
+  };
+
+  // Get detailed insight for the current sentiment
+  const getToneInsight = (sentiment: { emoji: string; text: string }) => {
+    const summary = getDailySummary();
+    const expected = getExpectedFeeds(babyAgeMonths);
+    const expectedNaps = getExpectedNaps(babyAgeMonths);
+
+    switch (sentiment.text) {
+      case "Growth Spurt Week":
+        return `${babyName || 'Baby'} is showing signs of a growth spurt with ${summary.feedCount} feeds today, which is above the typical range. Growth spurts often mean increased hunger and may affect sleep patterns. This is completely normal and usually lasts a few days.`;
+      
+      case "Feed-Heavy Day":
+        return `Today has ${summary.feedCount} feeds, slightly above average. This could indicate increased hunger, a developmental leap, or simply a hungrier day. Keep offering feeds on demand.`;
+      
+      case "Extra Sleepy Day":
+        return `${babyName || 'Baby'} has had ${summary.napCount} naps today, more than usual. Extra sleep can indicate a growth spurt, fighting off illness, or catching up on rest. Monitor for other symptoms if concerned.`;
+      
+      case "Smooth Flow":
+        return `Everything is flowing naturally today with ${summary.feedCount} feeds and ${summary.napCount} naps, all within expected ranges for ${babyName}'s age. This balanced rhythm suggests ${babyName?.split(' ')[0] || 'baby'} is well-regulated.`;
+      
+      case "In Sync":
+        return `${babyName || 'Baby'} is perfectly aligned with developmental expectations today. This harmonious pattern suggests a well-established routine and good sleep-wake balance.`;
+      
+      case "Mixed Patterns":
+        return `Today shows some variations from typical patterns. This is normal and often reflects ${babyName}'s changing needs as they grow and develop. Every day is different.`;
+      
+      case "Adjusting Rhythm":
+        return `${babyName}'s patterns are shifting slightly from the usual range. This often happens during transitions like sleep regressions, developmental leaps, or routine changes.`;
+      
+      case "High-Energy Day":
+        return `With ${summary.feedCount + summary.napCount + summary.diaperCount} total activities logged, this has been an active day! High-energy days are normal and show ${babyName} is engaged and thriving.`;
+      
+      case "Growth Transition":
+        return `At ${babyAgeMonths} months, ${babyName} is in a key developmental window. Patterns may shift as new milestones emerge. These transitions are part of healthy growth.`;
+      
+      case "New Discovery":
+        return `The day is just beginning with ${summary.feedCount + summary.napCount} activities so far. Every day brings new moments to discover ${babyName}'s evolving rhythm.`;
+      
+      case "Off Rhythm Day":
+        return `Today's patterns are notably different from usual. This can happen due to schedule changes, environment shifts, or developmental adjustments. Tomorrow often brings back familiar rhythms.`;
+      
+      case "Building Rhythm":
+      default:
+        return `${babyName} is establishing their unique daily patterns. With ${summary.feedCount} feeds and ${summary.napCount} naps logged, you're learning their natural rhythm together.`;
+    }
+  };
+
+  // Get detailed reasoning for the prediction
+  const getPredictionReasoning = () => {
+    if (!prediction) return "We're analyzing your baby's patterns to provide predictions.";
+
+    const summary = getDailySummary();
+    const awakeMinutes = awakeTime ? parseInt(awakeTime.split('h')[0]) * 60 + parseInt(awakeTime.split('h')[1]?.split('m')[0] || '0') : 0;
+    
+    if (prediction.intent === 'LET_SLEEP_CONTINUE') {
+      // Baby is currently sleeping - calculate duration using proper local time handling
+      let napDuration = 0;
+      if (ongoingNap?.details?.startTime) {
+        const startTime = ongoingNap.details.startTime;
+        const [time, period] = startTime.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+        let hour24 = hours;
+        if (period === 'PM' && hours !== 12) hour24 += 12;
+        if (period === 'AM' && hours === 12) hour24 = 0;
+        
+        const today = new Date();
+        const napStart = new Date(today.toDateString());
+        napStart.setHours(hour24, minutes, 0, 0);
+        
+        napDuration = differenceInMinutes(currentTime, napStart);
+      }
+      
+      const napHours = Math.floor(napDuration / 60);
+      const napMins = napDuration % 60;
+      
+      return `${babyName} is currently napping and has been asleep for ${napHours > 0 ? `${napHours}h ` : ''}${napMins}m. ${babyName} has had ${summary.napCount} nap${summary.napCount !== 1 ? 's' : ''} today, and babies at ${babyAgeMonths || 0} months typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day. Let them rest and they'll wake when ready.`;
+    } else if (prediction.intent === 'START_WIND_DOWN') {
+      // Nap is coming soon
+      const expectedWindow = babyAgeMonths !== null && babyAgeMonths < 3 ? 90 : 
+                           babyAgeMonths !== null && babyAgeMonths < 6 ? 120 : 
+                           babyAgeMonths !== null && babyAgeMonths < 9 ? 150 : 180;
+      
+      // Only show wake window if we have valid data
+      const wakeWindowText = awakeTime ? ` and current wake window of ${awakeTime}` : '';
+      
+      return `Based on ${babyName}'s age (${babyAgeMonths || 0} months)${wakeWindowText}, we predict a nap is coming soon. Typical wake windows for this age are around ${Math.floor(expectedWindow / 60)}h ${expectedWindow % 60}m. ${babyName} has had ${summary.napCount} nap${summary.napCount !== 1 ? 's' : ''} today, and babies at this age typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day.`;
+    } else if (prediction.intent === 'FEED_SOON') {
+      const lastFeedTime = lastFeed ? lastFeed.time : 'earlier';
+      const avgFeedAmount = lastFeed?.details?.quantity ? `around ${lastFeed.details.quantity}${lastFeed.details.unit || 'ml'}` : 'their usual amount';
+      
+      return `Based on recent feeding patterns, ${babyName} typically feeds every 2-3 hours. The last feed was at ${lastFeedTime}. Today has had ${summary.feedCount} feed${summary.feedCount !== 1 ? 's' : ''}, and babies at ${babyAgeMonths || 0} months typically need ${getExpectedFeeds(babyAgeMonths)?.typical || '6-8'} feeds per day. We predict a feed of ${avgFeedAmount}.`;
+    }
+    
+    return `This prediction is based on ${babyName}'s established patterns from ${activities.length} logged moments, considering age-appropriate wake windows and feeding intervals.`;
+  };
+
+  // Calculate percentiles using WHO growth standards
+  const calculatePercentile = (value: number, ageInMonths: number, measurementType: 'weight' | 'length' | 'headCirc'): number => {
+    // WHO Growth Standards - selected percentile values (3rd, 15th, 50th, 85th, 97th)
+    // Assuming male for now (could be enhanced with baby sex)
+    const lengthTable: { [month: number]: number[] } = {
+      0: [46.1, 48.0, 49.9, 51.8, 53.7], 1: [50.8, 52.8, 54.7, 56.7, 58.6],
+      2: [54.4, 56.4, 58.4, 60.4, 62.4], 3: [57.3, 59.4, 61.4, 63.5, 65.5],
+      4: [59.7, 61.8, 63.9, 66.0, 68.0], 5: [61.7, 63.8, 65.9, 68.0, 70.1],
+      6: [63.3, 65.5, 67.6, 69.8, 71.9], 9: [67.7, 70.1, 72.0, 74.2, 76.5],
+      12: [71.0, 73.4, 75.7, 78.1, 80.5], 18: [76.0, 78.7, 81.3, 83.9, 86.5],
+      24: [79.9, 82.8, 85.6, 88.4, 91.2]
+    };
+    const weightTable: { [month: number]: number[] } = {
+      0: [2.5, 2.9, 3.3, 3.9, 4.4], 1: [3.4, 3.9, 4.5, 5.1, 5.8],
+      2: [4.3, 4.9, 5.6, 6.3, 7.1], 3: [5.0, 5.7, 6.4, 7.2, 8.0],
+      4: [5.6, 6.2, 7.0, 7.8, 8.7], 5: [6.0, 6.7, 7.5, 8.4, 9.3],
+      6: [6.4, 7.1, 7.9, 8.8, 9.8], 9: [7.1, 8.0, 8.9, 9.9, 10.9],
+      12: [7.7, 8.6, 9.6, 10.8, 11.9], 18: [8.8, 9.8, 10.9, 12.2, 13.5],
+      24: [9.7, 10.8, 12.2, 13.6, 15.3]
+    };
+    const headCircTable: { [month: number]: number[] } = {
+      0: [32.1, 33.2, 34.5, 35.7, 36.9], 1: [35.1, 36.3, 37.6, 38.9, 40.1],
+      2: [36.9, 38.1, 39.5, 40.8, 42.2], 3: [38.1, 39.4, 40.8, 42.2, 43.6],
+      4: [39.0, 40.4, 41.8, 43.3, 44.7], 5: [39.7, 41.1, 42.6, 44.1, 45.6],
+      6: [40.3, 41.7, 43.3, 44.8, 46.4], 9: [41.6, 43.1, 44.7, 46.3, 47.9],
+      12: [42.6, 44.1, 45.8, 47.5, 49.2], 18: [44.1, 45.8, 47.5, 49.2, 50.9],
+      24: [45.2, 46.9, 48.7, 50.5, 52.3]
+    };
+
+    const table = measurementType === 'weight' ? weightTable : measurementType === 'length' ? lengthTable : headCircTable;
+    const availableMonths = Object.keys(table).map(Number).sort((a, b) => a - b);
+    let closestMonth = availableMonths.reduce((prev, curr) => 
+      Math.abs(curr - ageInMonths) < Math.abs(prev - ageInMonths) ? curr : prev
+    );
+
+    const percentileValues = table[closestMonth];
+    if (!percentileValues) return 50;
+
+    if (value <= percentileValues[0]) return 3;
+    if (value <= percentileValues[1]) return Math.round(3 + ((value - percentileValues[0]) / (percentileValues[1] - percentileValues[0])) * 12);
+    if (value <= percentileValues[2]) return Math.round(15 + ((value - percentileValues[1]) / (percentileValues[2] - percentileValues[1])) * 35);
+    if (value <= percentileValues[3]) return Math.round(50 + ((value - percentileValues[2]) / (percentileValues[3] - percentileValues[2])) * 35);
+    if (value <= percentileValues[4]) return Math.round(85 + ((value - percentileValues[3]) / (percentileValues[4] - percentileValues[3])) * 12);
+    return 97;
+  };
+
+  // Get latest measurement from all activities - using activity time
+  const getLatestMeasurement = () => {
+    const measurements = activities
+      .filter(a => a.type === 'measure')
+      .sort((a, b) => getComparableTime(b) - getComparableTime(a));
+    
+    if (measurements.length === 0) return null;
+    
+    const latest = measurements[0];
+    const details = latest.details || {};
+    const weightLbs = parseFloat(details.weightLbs || '0');
+    const weightOz = parseFloat(details.weightOz || '0');
+    const weightKg = (weightLbs * 0.453592) + (weightOz * 0.0283495);
+    const heightInches = parseFloat(details.heightInches || '0');
+    const heightCm = heightInches * 2.54;
+    const headCirc = parseFloat(details.headCircumference || '0');
+    
+    const result: any = { date: latest.loggedAt };
+    
+    if (weightKg > 0 && babyAgeMonths !== null) {
+      result.weight = {
+        display: `${weightLbs}lb ${weightOz}oz`,
+        percentile: calculatePercentile(weightKg, babyAgeMonths, 'weight')
+      };
+    }
+    if (heightCm > 0 && babyAgeMonths !== null) {
+      result.length = {
+        display: `${heightInches}"`,
+        percentile: calculatePercentile(heightCm, babyAgeMonths, 'length')
+      };
+    }
+    if (headCirc > 0 && babyAgeMonths !== null) {
+      result.headCirc = {
+        display: `${headCirc}"`,
+        percentile: calculatePercentile(headCirc, babyAgeMonths, 'headCirc')
+      };
+    }
+    
+    // Generate contextual summary
+    if (result.weight || result.length) {
+      const avgPercentile = [
+        result.weight?.percentile,
+        result.length?.percentile
+      ].filter(p => p !== undefined).reduce((a, b) => a! + b!, 0)! / 
+        [result.weight?.percentile, result.length?.percentile].filter(p => p !== undefined).length;
+      
+      let summary = '';
+      if (avgPercentile >= 85) {
+        summary = 'Growing strong — tracking above average';
+      } else if (avgPercentile >= 50) {
+        summary = 'Gaining steadily — right on track for his age';
+      } else if (avgPercentile >= 25) {
+        summary = 'Growing at his own pace — steady and healthy';
+      } else {
+        summary = 'Following his own growth curve — consistent progress';
+      }
+      
+      result.summary = summary;
+    }
+    
+    return Object.keys(result).length > 1 ? result : null;
+  };
+
+  // Activity summary data
+  const getDailySummary = () => {
+    const feedCount = displayActivities.filter(a => a.type === 'feed').length;
+    const napCount = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
+    const diaperCount = displayActivities.filter(a => a.type === 'diaper').length;
+    const measureCount = displayActivities.filter(a => a.type === 'measure').length;
+
+    return { feedCount, napCount, diaperCount, measureCount };
+  };
+
+  // Get age-appropriate expectations
+  const getExpectedFeeds = (months: number | null) => {
+    if (months === null) return null;
+    if (months < 1) return { min: 8, max: 12, typical: "8-12" };
+    if (months < 3) return { min: 6, max: 8, typical: "6-8" };
+    if (months < 6) return { min: 5, max: 7, typical: "5-7" };
+    if (months < 9) return { min: 4, max: 6, typical: "4-6" };
+    if (months < 12) return { min: 3, max: 5, typical: "3-5" };
+    return { min: 3, max: 4, typical: "3-4" };
+  };
+
+  const getExpectedNaps = (months: number | null) => {
+    if (months === null) return null;
+    if (months < 3) return { min: 4, max: 6, typical: "4-6" };
+    if (months < 6) return { min: 3, max: 4, typical: "3-4" };
+    if (months < 9) return { min: 2, max: 3, typical: "2-3" };
+    if (months < 12) return { min: 2, max: 3, typical: "2-3" };
+    if (months < 18) return { min: 1, max: 2, typical: "1-2" };
+    return { min: 1, max: 2, typical: "1-2" };
+  };
+
+  const getFeedComparison = (count: number, months: number | null) => {
+    const expected = getExpectedFeeds(months);
+    if (!expected) return t('feedsConsistent');
+    
+    if (count >= expected.min && count <= expected.max) {
+      return t('rightOnRhythm').replace('{months}', String(months));
+    } else if (count < expected.min && count === 0) {
+      return t('gettingStartedToday');
+    } else if (count < expected.min) {
+      return t('lightFeedingDay').replace('{months}', String(months));
+    } else {
+      return t('extraFeedsToday');
+    }
+  };
+
+  const getNapComparison = (count: number, months: number | null) => {
+    const expected = getExpectedNaps(months);
+    if (!expected) return t('everyNapProgress');
+    
+    if (count >= expected.min && count <= expected.max) {
+      return t('solidNapRhythm').replace('{baby}', babyName?.split(' ')[0] || t('baby'));
+    } else if (count < expected.min && count === 0) {
+      return t('earlyInDay');
+    } else if (count < expected.min) {
+      return t('moreRestComing');
+    } else {
+      return t('extraRestToday');
+    }
+  };
+
+  // Get status indicator for feeds (time-aware)
+  const getFeedStatusIndicator = (count: number, months: number | null) => {
+    const expected = getExpectedFeeds(months);
+    if (!expected) return 'on-track';
+    
+    const hour = currentTime.getHours();
+    
+    // Calculate progress based on WAKING hours only (not full 24 hours)
+    // Assume typical waking hours: 7am-7pm = 12 hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour; // 12 hours
+    
+    // If before wake time or after sleep time, use total day
+    if (hour < wakeHour) {
+      return 'on-track'; // Too early to judge
+    }
+    
+    // Calculate how many waking hours have passed
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    
+    // Use midpoint of expected range for calculation
+    const typicalFeeds = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalFeeds * dayProgress);
+    
+    // Early in the day (before 10am), be lenient
+    if (hour < 10) {
+      return count >= 1 ? 'on-track' : 'on-track'; // Having any feed in morning is fine
+    }
+    
+    // Mid to late day: compare to proportional expectations
+    if (count >= expectedByNow) {
+      return 'on-track';
+    } else if (count < expectedByNow && count >= expectedByNow - 1) {
+      return 'on-track'; // Within 1 of expected is still ok
+    } else {
+      return 'attention'; // More than 1 behind
+    }
+  };
+
+  // Get status indicator for sleep (time-aware)
+  const getSleepStatusIndicator = (count: number, months: number | null) => {
+    const expected = getExpectedNaps(months);
+    if (!expected) return 'on-track';
+    
+    const hour = currentTime.getHours();
+    
+    // Calculate progress based on waking hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour;
+    
+    if (hour < wakeHour) {
+      return 'on-track';
+    }
+    
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    const typicalNaps = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalNaps * dayProgress);
+    
+    // Early in the day (before 10am), be lenient
+    if (hour < 10) {
+      return 'on-track'; // No pressure for naps early
+    }
+    
+    // Mid to late day: compare to proportional expectations
+    if (count >= expectedByNow) {
+      return 'on-track';
+    } else if (count < expectedByNow && count >= expectedByNow - 1) {
+      return 'on-track'; // Within 1 of expected is still ok
+    } else {
+      return 'attention'; // More than 1 behind
+    }
+  };
+
+  // Get detailed explanation for feed status
+  const getFeedStatusExplanation = (count: number, months: number | null) => {
+    const expected = getExpectedFeeds(months);
+    if (!expected) return "We're learning your baby's feeding patterns.";
+    
+    const hour = currentTime.getHours();
+    
+    // Calculate progress based on waking hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour;
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    
+    const typicalFeeds = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalFeeds * dayProgress);
+    const status = getFeedStatusIndicator(count, months);
+    
+    if (status === 'on-track') {
+      if (hour < 10) {
+        return `${count} feed${count !== 1 ? 's' : ''} so far this morning is on track. Babies typically need ${expected.typical} feeds throughout the entire day.`;
+      }
+      return `${count} feed${count !== 1 ? 's' : ''} is great progress. Based on the time of day, we'd expect around ${expectedByNow} feeds by now, and you're right on track for ${expected.typical} total feeds today.`;
+    } else {
+      return `${count} feed${count !== 1 ? 's' : ''} by this time might be slightly behind. Based on typical patterns for ${months}-month-olds (${expected.typical} per day), we'd expect around ${expectedByNow} by now. Consider offering a feed if baby shows hunger cues.`;
+    }
+  };
+
+  // Get detailed explanation for sleep status
+  const getSleepStatusExplanation = (count: number, months: number | null) => {
+    const expected = getExpectedNaps(months);
+    if (!expected) return "We're learning your baby's sleep patterns.";
+    
+    const hour = currentTime.getHours();
+    
+    // Calculate progress based on waking hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour;
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    
+    const typicalNaps = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalNaps * dayProgress);
+    const status = getSleepStatusIndicator(count, months);
+    
+    if (status === 'on-track') {
+      if (hour < 10) {
+        return `${count} nap${count !== 1 ? 's' : ''} so far is perfectly fine for the morning. Babies typically need ${expected.typical} naps throughout the entire day.`;
+      }
+      return `${count} nap${count !== 1 ? 's' : ''} is great progress. Based on the time of day, we'd expect around ${expectedByNow} naps by now, and you're right on track for ${expected.typical} total naps today.`;
+    } else {
+      return `${count} nap${count !== 1 ? 's' : ''} by this time might be slightly behind. Based on typical patterns for ${months}-month-olds (${expected.typical} per day), we'd expect around ${expectedByNow} by now. Watch for sleepy cues.`;
+    }
+  };
+
+  // Get status indicator for growth
+  const getGrowthStatusIndicator = (measurement: any) => {
+    return '🌱'; // Growth sprout emoji
+  };
   
-  const napHours = Math.floor(totalNapMinutes / 60);
-  const napMins = totalNapMinutes % 60;
-
-  // Get growth status
-  const getGrowthStatus = () => {
-    if (!household?.baby_birthday) return "Building data";
+  
+  // Legacy helper for backward compatibility
+  const getNextPredictedAction_LEGACY = () => {
+    const expectedNaps = getExpectedNaps(babyAgeMonths);
     
-    const ageMonths = Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 30));
-    const expectedFeeds = ageMonths < 3 ? { min: 6, max: 10 } :
-                         ageMonths < 6 ? { min: 5, max: 7 } :
-                         ageMonths < 9 ? { min: 4, max: 6 } :
-                         { min: 3, max: 5 };
-    
-    if (feedCount > expectedFeeds.max) {
-      return "Growing strong — tracking above average";
+    if (ongoingNap) {
+      // Baby is sleeping - predict wake time and next feed
+      const startTime = ongoingNap.details?.startTime || ongoingNap.time;
+      const [time, period] = startTime.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let hour24 = hours;
+      if (period === 'PM' && hours !== 12) hour24 += 12;
+      if (period === 'AM' && hours === 12) hour24 = 0;
+      
+      const today = new Date();
+      const napStart = new Date(today.toDateString());
+      napStart.setHours(hour24, minutes, 0, 0);
+      
+      // Calculate average nap duration based on age
+      let expectedNapDuration = 90; // default 90 minutes
+      if (babyAgeMonths !== null) {
+        if (babyAgeMonths < 3) expectedNapDuration = 120; // 2 hours for newborns
+        else if (babyAgeMonths < 6) expectedNapDuration = 90; // 1.5 hours
+        else if (babyAgeMonths < 12) expectedNapDuration = 75; // 1h 15m
+        else expectedNapDuration = 60; // 1 hour for older babies
+      }
+      
+      const currentDuration = differenceInMinutes(currentTime, napStart);
+      const expectedWakeTime = new Date(napStart.getTime() + expectedNapDuration * 60000);
+      const expectedFeedTime = new Date(expectedWakeTime.getTime() + 10 * 60000); // 10 min after wake
+      
+      const wakeTimeStr = expectedWakeTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+      const feedTimeStr = expectedFeedTime.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+      
+      // Get last feed to estimate amount
+      const recentFeeds = todayActivities
+        .filter(a => a.type === 'feed' && a.details?.quantity)
+        .sort((a, b) => getComparableTime(b) - getComparableTime(a));
+      const avgAmount = recentFeeds.length > 0 
+        ? Math.round(recentFeeds.slice(0, 3).reduce((sum, f) => sum + (parseFloat(f.details.quantity!) || 0), 0) / Math.min(3, recentFeeds.length))
+        : 180;
+      
+      // If nap is longer than expected, adjust message
+      if (currentDuration > expectedNapDuration + 20) {
+        return `${babyName?.split(' ')[0] || 'Baby'} has been asleep ${Math.floor(currentDuration / 60)}h ${currentDuration % 60}m — might be ready to wake soon.`;
+      }
+      
+      return `May wake around ${wakeTimeStr} — consider offering feed around ${feedTimeStr} (typically ${avgAmount} ml).`;
+    } else {
+      // Baby is awake - predict next nap
+      const awakeMinutes = awakeTime ? parseInt(awakeTime) : 0;
+      let expectedAwakeWindow = 120; // default 2 hours
+      
+      if (babyAgeMonths !== null) {
+        if (babyAgeMonths < 3) expectedAwakeWindow = 90; // 1.5 hours
+        else if (babyAgeMonths < 6) expectedAwakeWindow = 120; // 2 hours
+        else if (babyAgeMonths < 9) expectedAwakeWindow = 150; // 2.5 hours
+        else expectedAwakeWindow = 180; // 3 hours
+      }
+      
+      const lastNap = todayActivities
+        .filter(a => a.type === 'nap' && a.details?.endTime)
+        .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
+      
+      if (lastNap && lastNap.details?.endTime) {
+        const [time, period] = lastNap.details.endTime.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+        let hour24 = hours;
+        if (period === 'PM' && hours !== 12) hour24 += 12;
+        if (period === 'AM' && hours === 12) hour24 = 0;
+        
+        // Parse start time to check for day rollover
+        const startTime = lastNap.details.startTime || lastNap.time;
+        const [startTimePart, startPeriod] = startTime.split(' ');
+        const [startHours, startMinutes] = startTimePart.split(':').map(Number);
+        let startHour24 = startHours;
+        if (startPeriod === 'PM' && startHours !== 12) startHour24 += 12;
+        if (startPeriod === 'AM' && startHours === 12) startHour24 = 0;
+        
+        const today = new Date();
+        const wakeTime = new Date(today.toDateString());
+        wakeTime.setHours(hour24, minutes, 0, 0);
+        
+        // If end time is before start time, it crossed midnight
+        const endMinutes = hour24 * 60 + minutes;
+        const startMinutesOfDay = startHour24 * 60 + startMinutes;
+        if (endMinutes < startMinutesOfDay) {
+          wakeTime.setDate(wakeTime.getDate() + 1);
+        }
+        
+        const expectedNapTime = new Date(wakeTime.getTime() + expectedAwakeWindow * 60000);
+        const napTimeStr = expectedNapTime.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit', 
+          hour12: true 
+        });
+        
+        const minutesUntilNap = differenceInMinutes(expectedNapTime, currentTime);
+        
+        if (minutesUntilNap < 15 && minutesUntilNap > 0) {
+          return `Next nap expected around ${napTimeStr} — watch for sleepy cues soon.`;
+        } else if (awakeMinutes > expectedAwakeWindow + 30) {
+          return `Awake for ${awakeTime} — consider starting wind-down routine.`;
+        } else {
+          return `Next nap expected around ${napTimeStr} — watch for sleepy cues.`;
+        }
+      }
+      
+      return `Watch for sleepy cues — typical wake window is ${Math.floor(expectedAwakeWindow / 60)}h ${expectedAwakeWindow % 60}m.`;
     }
-    if (feedCount >= expectedFeeds.min) {
-      return "On track — healthy rhythm";
-    }
-    return "Building pattern — keep logging";
   };
 
-  return (
-    <div className="flex flex-col gap-6 pb-24">
-      {/* Greeting */}
-      <div className="px-1">
-        <h1 className="text-2xl font-semibold text-foreground">
-          {getGreeting()}{userName ? `, ${userName}` : ''}
-        </h1>
-      </div>
+  // Use unified prediction engine
+  const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
+  if (typeof window !== 'undefined') {
+    const feedSamples = activities
+      .filter(a => a.type === 'feed')
+      .slice(0, 5)
+      .map(a => ({
+        id: a.id,
+        time: a.time,
+        loggedAt: a.loggedAt
+      }));
 
-      {/* What's Next Card */}
-      <Card className="p-6 bg-card">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              What's Next
+    console.info('HomeTab - Prediction snapshot', {
+      hasPrediction: !!prediction,
+      intent: prediction?.intent,
+      confidence: prediction?.confidence,
+      rationale: prediction?.rationale,
+      timing: prediction?.timing ? {
+        nextFeedAt: prediction?.timing?.nextFeedAt,
+        nextNapWindowStart: prediction?.timing?.nextNapWindowStart,
+        nextWakeAt: prediction?.timing?.nextWakeAt,
+        expectedFeedVolume: prediction?.timing?.expectedFeedVolume
+      } : null,
+      reasons: prediction?.reasons,
+      dayProgress: prediction?.dayProgress,
+      feedSamples
+    });
+  }
+
+  const summary = getDailySummary();
+  const latestMeasurement = getLatestMeasurement();
+  if (typeof window !== 'undefined') {
+    console.info('HomeTab - measurement count', { showingYesterday, measureCount: summary.measureCount, latestMeasurement });
+  }
+  const awakeTime = getAwakeTime();
+  const sleepStatus = getSleepStatus();
+  const sentiment = getDailySentiment();
+  const developmentalPhase = getDevelopmentalPhase();
+
+  // Empty state for new users with no activities
+  if (activities.length === 0) {
+    return (
+      <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in">
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* Welcome Message */}
+          <div className="space-y-3">
+            <h2 className="text-xl font-semibold text-foreground">
+              Hi {userName || 'there'} 👋
             </h2>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </div>
-          
-          <div className="flex items-start gap-3">
-            <Clock className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <p className="text-base text-foreground font-medium flex-1">
-              {whatsNext.text}
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Let's discover {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm together.
             </p>
           </div>
 
-          {whatsNext.action && (
-            <Button 
-              size="lg" 
-              className="w-full"
-              onClick={() => {
-                if (whatsNext.actionType === "wakeup" && onEndNap) {
-                  onEndNap();
-                } else if (whatsNext.actionType === "feed" || whatsNext.actionType === "nap") {
-                  onAddActivity(whatsNext.actionType);
-                }
-              }}
-            >
-              {whatsNext.action}
-            </Button>
+          {/* Tone Chip removed in favor of inline messaging */}
+
+          {/* Empty State Card with Ghost Predictions */}
+          <Card className="p-6 bg-card/50 border border-border/40">
+            <div className="space-y-5">
+              <h3 className="text-base font-semibold text-foreground">
+                As you log, I'll start building {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm
+              </h3>
+              
+              <p className="text-sm text-muted-foreground">
+                I'll need about 4 naps and 4 feeds before I can predict the next wake window.
+              </p>
+              
+              <div className="space-y-3 pt-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Preview of what's coming:
+                </p>
+                
+                {/* Ghost Cards */}
+                <div className="space-y-2.5 opacity-40 pointer-events-none">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
+                    <Moon className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">Next nap likely around 2:45 PM</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
+                    <Baby className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">Feed around 3 oz expected</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="pt-3 border-t border-border/20">
+                <Button
+                  onClick={() => onAddActivity()}
+                  variant="default"
+                  className="w-full"
+                  size="lg"
+                >
+                  Log your first activity
+                </Button>
+              </div>
+              
+              {/* Secondary CTA */}
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    const helperTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+                    helperTab?.click();
+                  }}
+                  className="text-sm text-primary hover:underline font-medium"
+                >
+                  Ask me anything →
+                </button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Educational Content for New Users */}
+          {showEducationalContent && (
+            <div className="space-y-6 pt-4 border-t border-border/40">
+              {/* Trends Tab Info */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      After a few days of tracking, you'll see {babyName ? `${babyName}'s` : 'your baby\'s'} sleep, feeding, and mood patterns emerge on the Trends section.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const trendsTab = document.querySelector('[data-tab="trends"]') as HTMLElement;
+                    trendsTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Trends
+                </Button>
+              </div>
+
+              {/* Rhythm Tab Info */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <ActivityIcon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Rhythm shows your baby's daily patterns and helps you understand their unique schedule.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+                    guideTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Rhythm
+                </Button>
+              </div>
+
+              {/* Log Tab Info */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Export and share your data with partners or pediatricians anytime from your Log.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const logTab = document.querySelector('[data-tab="log"]') as HTMLElement;
+                    logTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Log
+                </Button>
+              </div>
+            </div>
           )}
         </div>
-      </Card>
+      </div>
+    );
+  }
 
-      {/* Tone Chip */}
-      <div className="px-1">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50">
-          <span className="text-lg">{tone.emoji}</span>
-          <span className="text-sm font-medium text-foreground">{tone.text}</span>
-        </div>
+  // Get dynamic background gradient based on current state
+  const getContextGradient = () => {
+    if (ongoingNap) {
+      // Sleeping - use calming blue tones
+      return "bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-background";
+    } else if (prediction?.intent === 'FEED_SOON') {
+      // Feed time approaching - warm tones
+      return "bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-background";
+    } else if (prediction?.intent === 'START_WIND_DOWN') {
+      // Nap time approaching - dusk tones
+      return "bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-background";
+    }
+    // Default - neutral
+    return "bg-gradient-to-br from-primary/5 to-background";
+  };
+
+  return (
+    <div className="pb-24">
+      {/* 1. Sticky Header - Empty for now */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-2 border-b border-border/40">
       </div>
 
-      {/* Snapshot Stats */}
-      <div className="space-y-3 px-1">
-        {lastFeed && (
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <span className="text-2xl">🍼</span>
-            <span className="text-sm">
-              Last feed — <span className="text-foreground font-medium">{lastFeed.time}</span>
-              {lastFeed.details?.quantity && (
-                <span className="text-foreground font-medium"> {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}</span>
-              )}
-            </span>
-          </div>
-        )}
-        
-        {ongoingNap ? (
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <span className="text-2xl">🌙</span>
-            <span className="text-sm">
-              Sleeping since — <span className="text-foreground font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
-            </span>
-          </div>
-        ) : awakeTime && (
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <span className="text-2xl">🕐</span>
-            <span className="text-sm">
-              Awake for — <span className="text-foreground font-medium">{awakeTime}</span>
-            </span>
-          </div>
-        )}
-      </div>
+      <div className="px-4 pt-3 space-y-4">
 
-      {/* Daily Summary */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Daily Summary
+        {/* 1️⃣ Greeting with AI Presence Line */}
+        <div className="space-y-1.5">
+          <h2 className="text-xl font-semibold text-foreground">
+            {getGreetingLine()} 👋
           </h2>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            I've been watching {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm today.
+          </p>
         </div>
 
-        <div className="space-y-3 px-1">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-[hsl(var(--feed-color))]"></div>
-            <span className="text-sm text-foreground">
-              <span className="font-semibold">Feeds:</span> {feedCount} total
-            </span>
-          </div>
+        {/* Learning Progress Chip */}
+        {!isRhythmUnlocked && activities.length > 0 && (
+          <LearningProgress 
+            activities={activities}
+            babyName={babyName}
+            onRhythmUnlocked={() => setShowRhythmUnlocked(true)}
+          />
+        )}
 
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-[hsl(var(--nap-color))]"></div>
-            <span className="text-sm text-foreground">
-              <span className="font-semibold">Sleep:</span> {napCount} naps ({napHours}h {napMins}m)
-            </span>
-          </div>
+        {/* Rhythm Unlocked Modal */}
+        <RhythmUnlockedModal 
+          isOpen={showRhythmUnlocked}
+          onClose={() => setShowRhythmUnlocked(false)}
+          babyName={babyName}
+          totalLogs={activities.length}
+        />
 
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-primary"></div>
-            <span className="text-sm text-foreground">
-              <span className="font-semibold">Growth:</span> {getGrowthStatus()}
-            </span>
+        {/* 1️⃣ CARD 1: Rhythm Summary (Hero Card) */}
+        <Card className={`${getContextGradient()} transition-all duration-500 border-none shadow-md`}>
+          <div className="p-6 space-y-4">
+            {/* Flow State Chip */}
+            <button 
+              onClick={() => setShowToneInsight(!showToneInsight)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              <span className="text-sm font-medium text-foreground">{sentiment.text} — rhythms are {sentiment.text.toLowerCase()} today</span>
+            </button>
+            
+            {showToneInsight && (
+              <p className="text-xs text-muted-foreground leading-relaxed italic">
+                {getToneInsight(sentiment)}
+              </p>
+            )}
+
+            {/* Prediction Content */}
+            <NextActivityPrediction 
+              activities={activities}
+              ongoingNap={ongoingNap}
+              onMarkWakeUp={onEndNap}
+              babyName={babyName}
+              onLogPredictedActivity={async (type) => {
+                // Round time to nearest 5 minutes
+                const now = new Date();
+                const minutes = now.getMinutes();
+                const roundedMinutes = Math.round(minutes / 5) * 5;
+                const roundedDate = new Date(now);
+                roundedDate.setMinutes(roundedMinutes);
+                roundedDate.setSeconds(0);
+                roundedDate.setMilliseconds(0);
+                
+                const timeStr = roundedDate.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                });
+                
+                // Build activity details with predicted values
+                let details = {};
+                if (type === 'feed' && prediction?.timing.expectedFeedVolume) {
+                  const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
+                  details = {
+                    feedType: 'bottle',
+                    quantity: roundedVolume.toString(),
+                    unit: 'ml'
+                  };
+                } else if (type === 'nap') {
+                  // For naps, set startTime and ensure no endTime
+                  details = {
+                    startTime: timeStr,
+                    endTime: null // Explicitly mark as ongoing
+                  };
+                }
+                
+                try {
+                  await addActivity(type, details, roundedDate, timeStr);
+                  const description = type === 'feed' && prediction?.timing.expectedFeedVolume
+                    ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
+                    : `${timeStr}`;
+                  toast({
+                    title: type === 'feed' ? t('feedLogged') : t('napLogged'),
+                    description,
+                  });
+                } catch (error) {
+                  console.error('Error logging activity:', error);
+                  toast({
+                    title: t('error'),
+                    description: t('failedToLogActivity'),
+                    variant: 'destructive',
+                  });
+                }
+              }}
+            />
           </div>
-        </div>
+        </Card>
+
+        {/* 2️⃣ CARD 2: Snapshot Card */}
+        <Card className="bg-card border-border/40 shadow-none">
+          <div className="p-4 space-y-2">
+            {/* Last Feed */}
+            {lastFeed ? (
+              <div className="flex items-center gap-2 text-sm">
+                <Milk className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Last feed</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-foreground">{lastFeed.time}</span>
+                  {lastFeed.details?.quantity && (
+                    <span className="ml-1.5 text-muted-foreground">
+                      · {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm">
+                <Milk className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Last feed</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-muted-foreground italic">not logged yet</span>
+                </div>
+              </div>
+            )}
+
+            {/* Sleep Status */}
+            {ongoingNap ? (
+              <div className="flex items-center gap-2 text-sm">
+                <Moon className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Sleeping since</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                </div>
+              </div>
+            ) : awakeTime ? (
+              <div className="flex items-center gap-2 text-sm">
+                <Eye className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Awake for</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-foreground">{awakeTime}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm">
+                <Moon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Sleeping since</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-muted-foreground italic">not logged yet</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* 3️⃣ CARD 3: Daily Summary Card */}
+        {displayActivities.length > 0 && (
+          <Card className="bg-card border-border/40 shadow-none">
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                  Daily Summary
+                </h3>
+              </div>
+
+              {/* Compact stats grid */}
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                {/* Feeds */}
+                <button 
+                  onClick={() => setShowFeedDetails(!showFeedDetails)}
+                  className="flex flex-col items-start text-left hover:bg-accent/10 p-2 rounded-lg transition-colors"
+                >
+                  <span className="text-xs text-muted-foreground mb-0.5">Feeds</span>
+                  <span className="text-base font-semibold text-foreground">{summary.feedCount} total</span>
+                </button>
+
+                {/* Sleep */}
+                {summary.napCount > 0 && (
+                  <button 
+                    onClick={() => setShowSleepDetails(!showSleepDetails)}
+                    className="flex flex-col items-start text-left hover:bg-accent/10 p-2 rounded-lg transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground mb-0.5">Sleep</span>
+                    <span className="text-base font-semibold text-foreground">
+                      {summary.napCount} naps {(() => {
+                        const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
+                        if (naps.length === 0) return '';
+                        
+                        let totalMinutes = 0;
+                        naps.forEach(nap => {
+                          const parseTime = (timeStr: string) => {
+                            const [time, period] = timeStr.split(' ');
+                            const [hStr, mStr] = time.split(':');
+                            let h = parseInt(hStr, 10);
+                            const m = parseInt(mStr || '0', 10);
+                            if (period === 'PM' && h !== 12) h += 12;
+                            if (period === 'AM' && h === 12) h = 0;
+                            return h * 60 + m;
+                          };
+                          
+                          const startMinutes = parseTime(nap.details.startTime || nap.time);
+                          const endMinutes = parseTime(nap.details.endTime!);
+                          let duration = endMinutes >= startMinutes 
+                            ? endMinutes - startMinutes 
+                            : (24 * 60) - startMinutes + endMinutes;
+                          totalMinutes += duration;
+                        });
+                        
+                        const hours = Math.floor(totalMinutes / 60);
+                        const mins = totalMinutes % 60;
+                        return `(${hours}h ${mins}m)`;
+                      })()}
+                    </span>
+                  </button>
+                )}
+
+                {/* Growth (if available) */}
+                {latestMeasurement && (
+                  <button 
+                    onClick={() => setShowGrowthDetails(!showGrowthDetails)}
+                    className="flex flex-col items-start text-left hover:bg-accent/10 p-2 rounded-lg transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground mb-0.5">Growth</span>
+                    <span className="text-base font-semibold text-foreground">{latestMeasurement.summary}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Expandable details */}
+              {showFeedDetails && (
+                <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
+                  {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
+                </p>
+              )}
+              {showSleepDetails && (
+                <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
+                  {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
+                </p>
+              )}
+              {showGrowthDetails && latestMeasurement && (
+                <div className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 space-y-0.5 border-l-2 border-border">
+                  {latestMeasurement.weight && (
+                    <p>Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)</p>
+                  )}
+                  {latestMeasurement.length && (
+                    <p>Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)</p>
+                  )}
+                  {latestMeasurement.headCirc && (
+                    <p>Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)</p>
+                  )}
+                </div>
+              )}
+
+              {/* Daily insight */}
+              <button 
+                onClick={() => setShowDailyInsight(!showDailyInsight)}
+                className="w-full text-left pt-1 flex items-center gap-1.5"
+              >
+                <Circle className="w-2 h-2 fill-primary text-primary" />
+                <p className="text-xs text-primary/80 font-medium hover:text-primary transition-colors">
+                  Tap for today's insight
+                </p>
+              </button>
+              
+              {showDailyInsight && (
+                <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
+                  {getDailyInsight()}
+                </p>
+              )}
+
+              {/* Timeline toggle */}
+              <button
+                onClick={() => setShowTimeline(!showTimeline)}
+                className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors pt-2"
+              >
+                Today's Timeline
+                <ChevronDown 
+                  className={`h-3 w-3 transition-transform ${showTimeline ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {/* Expandable Timeline */}
+              {showTimeline && (
+                <div className="pt-2 border-t border-border/50 space-y-1">
+                {(() => {
+                  // Detect night sleep for the day
+                  const nightSleep = detectNightSleep(sortedActivities, nightSleepEndHour);
+                  const wakeTime = nightSleep ? getWakeTime(nightSleep) : null;
+                  
+                  return sortedActivities
+                    .map((activity, index) => {
+                      const isNightSleep = nightSleep?.id === activity.id;
+                      const getActivityIcon = (type: string) => {
+                        switch(type) {
+                          case 'feed': return <Baby className="h-4 w-4" />;
+                          case 'nap': return <Moon className="h-4 w-4" />;
+                          case 'diaper': return <Droplet className="h-4 w-4" />;
+                          case 'measure': return <Ruler className="h-4 w-4" />;
+                          default: return <Clock className="h-4 w-4" />;
+                        }
+                      };
+
+                      const getActivityGradient = (type: string) => {
+                        switch (type) {
+                          case "feed": return "bg-gradient-feed";
+                          case "diaper": return "bg-gradient-diaper";
+                          case "nap": return "bg-gradient-nap";
+                          case "measure": return "bg-gradient-primary";
+                          default: return "bg-gradient-primary";
+                        }
+                      };
+                      
+                      let details = '';
+                      if (activity.type === 'feed' && activity.details?.quantity) {
+                        details = ` • ${activity.details.quantity}${activity.details.unit || 'ml'}`;
+                      } else if (activity.type === 'nap' && activity.details?.endTime) {
+                        const parseTime = (timeStr: string) => {
+                          const [time, period] = timeStr.split(' ');
+                          const [hStr, mStr] = time.split(':');
+                          let h = parseInt(hStr, 10);
+                          const m = parseInt(mStr || '0', 10);
+                          if (period === 'PM' && h !== 12) h += 12;
+                          if (period === 'AM' && h === 12) h = 0;
+                          return h * 60 + m;
+                        };
+                        
+                        const startMinutes = parseTime(activity.details.startTime || activity.time);
+                        const endMinutes = parseTime(activity.details.endTime);
+                        let duration = endMinutes >= startMinutes 
+                          ? endMinutes - startMinutes 
+                          : (24 * 60) - startMinutes + endMinutes;
+                        
+                        const hours = Math.floor(duration / 60);
+                        const mins = duration % 60;
+                        details = ` • ${hours}h ${mins}m`;
+                      } else if (activity.type === 'diaper' && activity.details?.diaperType) {
+                        details = ` • ${activity.details.diaperType}`;
+                      }
+                      
+                      return (
+                        <>
+                          <button
+                            key={index}
+                            onClick={() => onEditActivity(activity)}
+                            className="relative flex items-center gap-2 py-0.5 w-full text-left hover:bg-accent/50 rounded-md px-1 -mx-1 transition-colors"
+                          >
+                            {/* Timeline line */}
+                            {index < displayActivities.length - 1 && (
+                              <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
+                            )}
+                            
+                            {/* Timeline marker with circle */}
+                            <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
+                              {getActivityIcon(activity.type)}
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="flex-1 flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground">{activity.time}</span>
+                              <span className="text-xs text-muted-foreground capitalize">
+                                {activity.type}{details}
+                              </span>
+                            </div>
+                          </button>
+                          
+                          {/* Wake-up indicator for morning wake-ups only */}
+                          {(() => {
+                            if (activity.type !== 'nap' || !activity.details?.endTime) return null;
+                            
+                            // Parse the end time to check if it's a morning wake-up
+                            const endTimeMatch = activity.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                            if (!endTimeMatch) return null;
+                            
+                            let endHour = parseInt(endTimeMatch[1]);
+                            const endMinute = parseInt(endTimeMatch[2]);
+                            const period = endTimeMatch[3].toUpperCase();
+                            
+                            // Convert to 24-hour format
+                            if (period === 'PM' && endHour !== 12) {
+                              endHour += 12;
+                            } else if (period === 'AM' && endHour === 12) {
+                              endHour = 0;
+                            }
+                            
+                            // Check if within 1 hour before or after night sleep end hour
+                            const hourDiff = Math.abs(endHour - nightSleepEndHour);
+                            const isWithinWindow = hourDiff <= 1 || 
+                                                   (endHour === nightSleepEndHour - 1 && endMinute >= 0) ||
+                                                   (endHour === nightSleepEndHour + 1 && endMinute === 0);
+                            
+                            if (!isWithinWindow) return null;
+                            
+                            return (
+                              <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
+                                {/* Timeline line */}
+                                {index < displayActivities.length - 1 && (
+                                  <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border"></div>
+                                )}
+                                
+                                {/* Timeline marker */}
+                                <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <Sun className="w-3 h-3 text-primary" />
+                                </div>
+                                
+                                {/* Content */}
+                                <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
+                                  <p className="text-sm text-foreground font-medium break-words">
+                                    {babyName?.split(' ')[0] || 'Baby'} woke up
+                                  </p>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    {activity.details.endTime}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </>
+                      );
+                    });
+                })()}
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Educational Content for New Users */}
+        {showEducationalContent && displayActivities.length > 0 && (
+          <div className="space-y-6 pt-4 border-t border-border/40">
+            {/* Trends Tab Info */}
+            {!visitedTabs.has('trends') && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      After a few days of tracking, you'll see {babyName ? `${babyName}'s` : 'your baby\'s'} sleep, feeding, and mood patterns emerge on the Trends section.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const trendsTab = document.querySelector('[data-tab="trends"]') as HTMLElement;
+                    trendsTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Trends
+                </Button>
+              </div>
+            )}
+
+            {/* Rhythm Tab Info */}
+            {!visitedTabs.has('guide') && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <ActivityIcon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Rhythm shows your baby's daily patterns and helps you understand their unique schedule.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+                    guideTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Rhythm
+                </Button>
+              </div>
+            )}
+
+            {/* Log Tab Info */}
+            {!visitedTabs.has('log') && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Export and share your data with partners or pediatricians anytime from your Log.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const logTab = document.querySelector('[data-tab="log"]') as HTMLElement;
+                    logTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Log
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 5️⃣ Celebration Block */}
+        {activities.length > 0 && (
+          <div className="text-center pt-6 space-y-2">
+            <div className="flex items-center justify-center gap-2">
+              <Sprout className="w-4 h-4 text-primary" />
+              <p className="text-sm text-foreground font-medium">
+                You've logged {activities.length} moments together{showBadge && percentile !== null ? ` — that's top ${percentile}% of families!` : ''}
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Every log helps me learn {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm a little better.
+            </p>
+          </div>
+        )}
+
       </div>
     </div>
   );

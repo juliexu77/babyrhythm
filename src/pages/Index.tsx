@@ -1057,23 +1057,13 @@ return (
                     {babyProfile.name} · {babyProfile.birthday ? (() => {
                       const birthDate = new Date(babyProfile.birthday);
                       const today = new Date();
+                      const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
                       
-                      // Calculate total months, accounting for whether we've passed the birth day this month
-                      let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
-                                       (today.getMonth() - birthDate.getMonth());
-                      
-                      // If we haven't reached the birth day of the month yet, subtract 1 month
-                      if (today.getDate() < birthDate.getDate()) {
-                        totalMonths--;
-                      }
-                      
-                      const ageInMonths = Math.max(0, totalMonths);
-                      
-                      // Calculate remaining weeks from the last "month birthday"
-                      const monthsDate = new Date(birthDate);
-                      monthsDate.setMonth(monthsDate.getMonth() + totalMonths);
-                      const daysDiff = Math.floor((today.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
-                      const weeks = Math.floor(daysDiff / 7);
+                      // Calculate weeks from the last full month boundary
+                      const lastMonthDate = new Date(birthDate);
+                      lastMonthDate.setMonth(birthDate.getMonth() + ageInMonths);
+                      const daysSinceLastMonth = Math.floor((today.getTime() - lastMonthDate.getTime()) / (1000 * 60 * 60 * 24));
+                      const weeks = Math.floor(daysSinceLastMonth / 7);
                       
                       return ageInMonths === 0 ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
                     })() : 'age unknown'}
