@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { activities, babyName, babyAge, babyBirthday } = await req.json();
+    const { activities, babyName, babyAge, babyBirthday, aiPrediction } = await req.json();
     
     if (!activities || !babyName) {
       return new Response(
@@ -93,6 +93,15 @@ Deno.serve(async (req) => {
       ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
       : null;
 
+    // Extract transition info from AI prediction if available
+    const transitionInfo = aiPrediction?.is_transitioning 
+      ? `TRANSITION DETECTED: ${aiPrediction.transition_note || 'Baby is transitioning nap counts'}`
+      : 'No active transition detected';
+    
+    const predictedSchedule = aiPrediction 
+      ? `Predicted: ${aiPrediction.total_naps_today} naps today, bedtime at ${aiPrediction.predicted_bedtime}`
+      : null;
+
     // CALL 1: Generate Hero Insight
     const heroPrompt = `You are a warm, encouraging baby sleep expert. Based on the data below, write ONE warm, encouraging observation about this baby's sleep progress.
 
@@ -101,19 +110,24 @@ Naps per day this week: ${napsPerDayThisWeek}
 Naps per day last week: ${napsPerDayLastWeek}
 Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent (within 15 min)' : bedtimeVariation < 30 ? 'fairly consistent' : 'variable'}
 Data points: ${dataPoints} activities over 2 weeks
+${transitionInfo}
+${predictedSchedule || ''}
+
+CRITICAL: If there's a transition detected, you MUST acknowledge it in your insight. Do not contradict it.
 
 RULES:
-- Start with a relevant emoji (🎉, 💪, 🌟, ✨, 🌙, etc.)
+- Start with a relevant emoji (🎉, 💪, 🌟, ✨, 🌙, 🌿, etc.)
 - Write 1-2 short sentences (under 40 words total)
-- Focus on progress, normalizing challenges, or celebrating consistency
+- If transitioning, focus on the transition (e.g., "moving to 2 naps")
+- If stable, celebrate consistency or progress
 - Be specific to the data (mention nap transitions, bedtime consistency, etc.)
 - Sound warm and supportive, like talking to a friend
 - Do NOT use markdown formatting
 
 Examples:
-"🎉 Great news! ${babyName}'s settling into ${napsPerDayThisWeek} naps—today should be predictable!"
-"💪 ${babyName}'s wake windows are stretching. This is normal at ${ageInMonths} months!"
-"🌟 Bedtime is consistent within 15 minutes. Your routines are working!"`;
+"🌿 ${babyName}'s transitioning to 2 naps—wake windows are stretching beautifully!"
+"🎉 What a star! ${babyName}'s consistent bedtime is a huge win for developing healthy sleep habits. Keep up the great work!"
+"💪 ${babyName}'s wake windows are stretching. This is normal at ${ageInMonths} months!"`;
 
     const heroResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -146,6 +160,10 @@ Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 Current naps per day: ${napsPerDayThisWeek}
 Nap transition: ${napsPerDayLastWeek !== napsPerDayThisWeek ? `shifted from ${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps` : 'stable pattern'}
 Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
+${transitionInfo}
+${predictedSchedule || ''}
+
+CRITICAL: Your explanation MUST align with the transition state. If transitioning, explain what that means. If stable, explain the current pattern.
 
 RULES:
 - Write 2-3 sentences (under 50 words total)
@@ -156,7 +174,8 @@ RULES:
 - Do NOT use markdown formatting
 
 Examples:
-"The shift to ${napsPerDayThisWeek} naps means longer wake windows. You've got about 3 hours between morning wake and first nap—great for errands!"
+"${babyName}'s stable 3-nap pattern means consistent daily structure. You can reliably plan your outings around predictable wake windows, offering more predictability to your day."
+"Moving from 3-4 naps to 2-3 means ${babyName}'s wake windows are stretching. You've got about 3 hours between morning wake and first nap—great for errands!"
 "Consistent bedtimes mean ${babyName}'s circadian rhythm is maturing. You can plan evening activities with more confidence."`;
 
     const whyResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {

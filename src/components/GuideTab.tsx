@@ -369,7 +369,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             activities: activities.slice(-300), // Last 300 activities for performance
             babyName: household.baby_name,
             babyAge: babyAgeInWeeks,
-            babyBirthday: household.baby_birthday
+            babyBirthday: household.baby_birthday,
+            aiPrediction: aiPrediction // Pass schedule prediction for consistency
           }
         });
         
@@ -419,7 +420,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       console.log('🚀 Fetching fresh rhythm insights...');
       fetchRhythmInsights();
     }
-  }, [hasTier3Data, household, activities.length, rhythmInsights, babyAgeInWeeks]);
+  }, [hasTier3Data, household, activities.length, rhythmInsights, babyAgeInWeeks, aiPrediction]);
 
   // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {
