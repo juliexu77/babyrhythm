@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { differenceInMinutes } from 'date-fns';
+import { differenceInMinutes, format, addMinutes } from 'date-fns';
 import { Moon, Milk, Sun } from 'lucide-react';
 import { Activity } from '@/components/ActivityCard';
+import { usePredictionEngine } from '@/hooks/usePredictionEngine';
 
 interface CurrentActivityState {
   type: 'napping' | 'awake' | 'feeding';
@@ -42,6 +43,8 @@ export const useHomeTabIntelligence = (
   babyName: string = 'Baby',
   onAddActivity?: (type: 'feed' | 'nap') => void
 ) => {
+  // Use the prediction engine for intelligent forecasting
+  const { prediction } = usePredictionEngine(activities);
   // Calculate current activity state
   const currentActivity = useMemo((): CurrentActivityState | null => {
     if (ongoingNap) {
@@ -133,47 +136,77 @@ export const useHomeTabIntelligence = (
     };
   }, [activities, ongoingNap, babyName]);
 
-  // Calculate next prediction
+  // Calculate next prediction using the prediction engine
   const nextPrediction = useMemo((): NextPrediction | null => {
-    // Simple prediction logic - this would be enhanced with actual prediction engine
-    const now = new Date();
-    const currentHour = now.getHours();
+    if (!prediction) return null;
 
-    if (currentActivity?.type === 'napping') {
-      const avgNapDuration = 90; // minutes
-      const predictedWake = new Date(now.getTime() + (avgNapDuration - currentActivity.duration) * 60000);
-      const minutesUntil = Math.max(0, Math.floor((predictedWake.getTime() - now.getTime()) / 60000));
+    const now = new Date();
+    const timing = prediction.timing;
+    const intent = prediction.intent;
+
+    // Handle napping state
+    if (currentActivity?.type === 'napping' && timing?.nextWakeAt) {
+      const wakeTime = new Date(timing.nextWakeAt);
+      const minutesUntil = Math.max(0, differenceInMinutes(wakeTime, now));
       
       return {
         activity: 'Expected to wake',
-        timeRange: `${predictedWake.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} ± 15 min`,
-        countdown: `in ${minutesUntil} min`,
-        confidence: 'high'
+        timeRange: `${format(wakeTime, 'h:mm a')} ± 15 min`,
+        countdown: minutesUntil > 0 ? `in ${minutesUntil} min` : 'any moment',
+        confidence: prediction.confidence
       };
     }
 
-    if (currentActivity?.type === 'awake') {
-      if (currentActivity.duration > 120) {
-        return {
-          activity: 'Ready for Nap',
-          timeRange: 'Now - 10:20 AM',
-          countdown: 'past window',
-          confidence: 'medium'
-        };
+    // Handle feed prediction
+    if (intent === 'FEED_SOON' && timing?.nextFeedAt) {
+      const feedTime = new Date(timing.nextFeedAt);
+      const minutesUntil = Math.max(0, differenceInMinutes(feedTime, now));
+      const hoursUntil = Math.floor(minutesUntil / 60);
+      const minsRemaining = minutesUntil % 60;
+      
+      let countdown: string;
+      if (minutesUntil <= 0) {
+        countdown = 'now';
+      } else if (minutesUntil < 60) {
+        countdown = `in ${minutesUntil} min`;
+      } else {
+        countdown = `in ${hoursUntil}h ${minsRemaining}m`;
       }
-      if (currentActivity.duration > 90) {
-        const napWindow = new Date(now.getTime() + (120 - currentActivity.duration) * 60000);
-        return {
-          activity: 'Sweet spot for Nap',
-          timeRange: `${napWindow.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} ± 20 min`,
-          countdown: `in ${Math.floor((120 - currentActivity.duration))} min`,
-          confidence: 'high'
-        };
+      
+      return {
+        activity: 'Next Feed',
+        timeRange: `${format(feedTime, 'h:mm a')} ± 15 min`,
+        countdown,
+        confidence: prediction.confidence
+      };
+    }
+
+    // Handle nap prediction
+    if (intent === 'START_WIND_DOWN' && timing?.nextNapWindowStart) {
+      const napTime = new Date(timing.nextNapWindowStart);
+      const minutesUntil = Math.max(0, differenceInMinutes(napTime, now));
+      const hoursUntil = Math.floor(minutesUntil / 60);
+      const minsRemaining = minutesUntil % 60;
+      
+      let countdown: string;
+      if (minutesUntil <= 0) {
+        countdown = 'now';
+      } else if (minutesUntil < 60) {
+        countdown = `in ${minutesUntil} min`;
+      } else {
+        countdown = `in ${hoursUntil}h ${minsRemaining}m`;
       }
+      
+      return {
+        activity: 'Next Nap Window',
+        timeRange: `${format(napTime, 'h:mm a')} ± 20 min`,
+        countdown,
+        confidence: prediction.confidence
+      };
     }
 
     return null;
-  }, [currentActivity]);
+  }, [currentActivity, prediction]);
 
   // Calculate smart suggestions
   const smartSuggestions = useMemo((): SmartSuggestion[] => {
