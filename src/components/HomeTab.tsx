@@ -1315,28 +1315,23 @@ const lastDiaper = displayActivities
           totalLogs={activities.length}
         />
 
-        {/* 2️⃣ HERO BLOCK: Today's/Tonight's Rhythm - with flow state chip integrated */}
-        <Card className={`${getContextGradient()} transition-all duration-500 border-border/40`}>
+        {/* 1️⃣ CARD 1: Rhythm Summary (Hero Card) */}
+        <Card className={`${getContextGradient()} transition-all duration-500 border-none shadow-md`}>
           <div className="p-6 space-y-4">
-            {/* Header with Flow State as Subtitle */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground">
-                {ongoingNap ? "Tonight's Rhythm" : "Today's Rhythm"}
-              </h3>
-              <button 
-                onClick={() => setShowToneInsight(!showToneInsight)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/30 hover:bg-accent/40 transition-colors"
-              >
-                <span className="text-xs">{sentiment.emoji}</span>
-                <span className="text-xs font-medium text-accent-foreground">{sentiment.text} — rhythms are {sentiment.text.toLowerCase()} today</span>
-              </button>
-              
-              {showToneInsight && (
-                <p className="text-xs text-muted-foreground leading-relaxed italic pt-1">
-                  {getToneInsight(sentiment)}
-                </p>
-              )}
-            </div>
+            {/* Flow State Chip */}
+            <button 
+              onClick={() => setShowToneInsight(!showToneInsight)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              <span className="text-sm">{sentiment.emoji}</span>
+              <span className="text-sm font-medium text-foreground">{sentiment.text} — rhythms are {sentiment.text.toLowerCase()} today</span>
+            </button>
+            
+            {showToneInsight && (
+              <p className="text-xs text-muted-foreground leading-relaxed italic">
+                {getToneInsight(sentiment)}
+              </p>
+            )}
 
             {/* Prediction Content */}
             <NextActivityPrediction 
@@ -1399,263 +1394,191 @@ const lastDiaper = displayActivities
           </div>
         </Card>
 
-        {/* 3️⃣ Support Block - Recent logs helping fine-tune rhythm */}
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">
-            Recent logs helping fine-tune {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm
-          </p>
-          
-          <div className="space-y-1.5">
+        {/* 2️⃣ CARD 2: Snapshot Card */}
+        <Card className="bg-card border-border/40 shadow-none">
+          <div className="p-4 space-y-2">
             {/* Last Feed */}
             {lastFeed ? (
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2 text-sm">
                 <div className="flex-1">
                   <span className="text-muted-foreground">🍼 Last feed</span>
-                  <span className="mx-1 text-muted-foreground">—</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-foreground">{lastFeed.time}</span>
                   {lastFeed.details?.quantity && (
-                    <span className="ml-1 text-muted-foreground">
+                    <span className="ml-1.5 text-muted-foreground">
                       · {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
                     </span>
                   )}
                 </div>
-                <Button
-                  onClick={() => {
-                    const lastFeed = [...activities]
-                      .filter(a => a.type === 'feed')
-                      .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
-                    onAddActivity('feed', lastFeed);
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-1.5"
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2 text-sm">
                 <div className="flex-1">
                   <span className="text-muted-foreground">🍼 Last feed</span>
-                  <span className="mx-1 text-muted-foreground">—</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-muted-foreground italic">not logged yet</span>
                 </div>
-                <Button
-                  onClick={() => onAddActivity('feed')}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-1.5"
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
               </div>
             )}
 
             {/* Sleep Status */}
             {ongoingNap ? (
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2 text-sm">
                 <div className="flex-1">
                   <span className="text-muted-foreground">🌙 Sleeping since</span>
-                  <span className="mx-1 text-muted-foreground">—</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
                 </div>
-                <Button
-                  onClick={() => {
-                    const lastNap = [...activities]
-                      .filter(a => a.type === 'nap')
-                      .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
-                    onAddActivity('nap', lastNap);
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-1.5"
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
               </div>
             ) : awakeTime ? (
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2 text-sm">
                 <div className="flex-1">
-                  <span className="text-muted-foreground">👁️ Awake for</span>
-                  <span className="mx-1 text-muted-foreground">—</span>
+                  <span className="text-muted-foreground">🕐 Awake for</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-foreground">{awakeTime}</span>
                 </div>
-                <Button
-                  onClick={() => {
-                    const lastNap = [...activities]
-                      .filter(a => a.type === 'nap')
-                      .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
-                    onAddActivity('nap', lastNap);
-                  }}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-1.5"
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2 text-sm">
                 <div className="flex-1">
                   <span className="text-muted-foreground">🌙 Sleeping since</span>
-                  <span className="mx-1 text-muted-foreground">—</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-muted-foreground italic">not logged yet</span>
                 </div>
-                <Button
-                  onClick={() => onAddActivity('nap')}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-1.5"
-                >
-                  <Plus className="w-3 h-3" />
-                </Button>
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
-        {/* 4️⃣ Daily Summary - Compact & Factual */}
+        {/* 3️⃣ CARD 3: Daily Summary Card */}
         {displayActivities.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Daily Summary
-            </h3>
+          <Card className="bg-card border-border/40 shadow-none">
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">📊</span>
+                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                  Daily Summary
+                </h3>
+              </div>
 
-            {/* Compact stats grid */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {/* Feeds */}
-              <button 
-                onClick={() => setShowFeedDetails(!showFeedDetails)}
-                className="flex items-center gap-1.5 text-left hover:bg-accent/20 p-1.5 rounded-lg transition-colors"
-              >
-                <div className="flex items-center gap-1 flex-1">
-                  {getFeedStatusIndicator(summary.feedCount, babyAgeMonths) === 'on-track' ? (
-                    <Circle className="w-2 h-2 fill-green-500 text-green-500 flex-shrink-0" />
-                  ) : (
-                    <Circle className="w-2 h-2 fill-amber-500 text-amber-500 flex-shrink-0" />
-                  )}
-                  <span className="text-muted-foreground">Feeds</span>
-                </div>
-                <span className="font-medium text-foreground">{summary.feedCount} total</span>
-              </button>
-
-              {/* Sleep */}
-              {summary.napCount > 0 && (
+              {/* Compact stats grid */}
+              <div className="grid grid-cols-3 gap-3 text-sm">
+                {/* Feeds */}
                 <button 
-                  onClick={() => setShowSleepDetails(!showSleepDetails)}
-                  className="flex items-center gap-1.5 text-left hover:bg-accent/20 p-1.5 rounded-lg transition-colors"
+                  onClick={() => setShowFeedDetails(!showFeedDetails)}
+                  className="flex flex-col items-start text-left hover:bg-accent/10 p-2 rounded-lg transition-colors"
                 >
-                  <div className="flex items-center gap-1 flex-1">
-                    {getSleepStatusIndicator(summary.napCount, babyAgeMonths) === 'on-track' ? (
-                      <Circle className="w-2 h-2 fill-green-500 text-green-500 flex-shrink-0" />
-                    ) : (
-                      <Circle className="w-2 h-2 fill-amber-500 text-amber-500 flex-shrink-0" />
-                    )}
-                    <span className="text-muted-foreground">Sleep</span>
-                  </div>
-                  <span className="font-medium text-foreground">
-                    {summary.napCount} naps {(() => {
-                      const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
-                      if (naps.length === 0) return '';
-                      
-                      let totalMinutes = 0;
-                      naps.forEach(nap => {
-                        const parseTime = (timeStr: string) => {
-                          const [time, period] = timeStr.split(' ');
-                          const [hStr, mStr] = time.split(':');
-                          let h = parseInt(hStr, 10);
-                          const m = parseInt(mStr || '0', 10);
-                          if (period === 'PM' && h !== 12) h += 12;
-                          if (period === 'AM' && h === 12) h = 0;
-                          return h * 60 + m;
-                        };
+                  <span className="text-xs text-muted-foreground mb-0.5">Feeds</span>
+                  <span className="text-base font-semibold text-foreground">{summary.feedCount} total</span>
+                </button>
+
+                {/* Sleep */}
+                {summary.napCount > 0 && (
+                  <button 
+                    onClick={() => setShowSleepDetails(!showSleepDetails)}
+                    className="flex flex-col items-start text-left hover:bg-accent/10 p-2 rounded-lg transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground mb-0.5">Sleep</span>
+                    <span className="text-base font-semibold text-foreground">
+                      {summary.napCount} naps {(() => {
+                        const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
+                        if (naps.length === 0) return '';
                         
-                        const startMinutes = parseTime(nap.details.startTime || nap.time);
-                        const endMinutes = parseTime(nap.details.endTime!);
-                        let duration = endMinutes >= startMinutes 
-                          ? endMinutes - startMinutes 
-                          : (24 * 60) - startMinutes + endMinutes;
-                        totalMinutes += duration;
-                      });
-                      
-                      const hours = Math.floor(totalMinutes / 60);
-                      const mins = totalMinutes % 60;
-                      return `(${hours}h ${mins}m)`;
-                    })()}
-                  </span>
-                </button>
-              )}
-
-              {/* Growth (if available) */}
-              {latestMeasurement && (
-                <button 
-                  onClick={() => setShowGrowthDetails(!showGrowthDetails)}
-                  className="flex items-center gap-1.5 text-left hover:bg-accent/20 p-1.5 rounded-lg transition-colors col-span-2"
-                >
-                  <div className="flex items-center gap-1 flex-1">
-                    <Circle className="w-2 h-2 fill-primary text-primary flex-shrink-0" />
-                    <span className="text-muted-foreground">Growth</span>
-                  </div>
-                  <span className="font-medium text-foreground">{latestMeasurement.summary}</span>
-                </button>
-              )}
-            </div>
-
-            {/* Expandable details */}
-            {showFeedDetails && (
-              <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
-                {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
-              </p>
-            )}
-            {showSleepDetails && (
-              <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
-                {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
-              </p>
-            )}
-            {showGrowthDetails && latestMeasurement && (
-              <div className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 space-y-0.5 border-l-2 border-border">
-                {latestMeasurement.weight && (
-                  <p>Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)</p>
+                        let totalMinutes = 0;
+                        naps.forEach(nap => {
+                          const parseTime = (timeStr: string) => {
+                            const [time, period] = timeStr.split(' ');
+                            const [hStr, mStr] = time.split(':');
+                            let h = parseInt(hStr, 10);
+                            const m = parseInt(mStr || '0', 10);
+                            if (period === 'PM' && h !== 12) h += 12;
+                            if (period === 'AM' && h === 12) h = 0;
+                            return h * 60 + m;
+                          };
+                          
+                          const startMinutes = parseTime(nap.details.startTime || nap.time);
+                          const endMinutes = parseTime(nap.details.endTime!);
+                          let duration = endMinutes >= startMinutes 
+                            ? endMinutes - startMinutes 
+                            : (24 * 60) - startMinutes + endMinutes;
+                          totalMinutes += duration;
+                        });
+                        
+                        const hours = Math.floor(totalMinutes / 60);
+                        const mins = totalMinutes % 60;
+                        return `(${hours}h ${mins}m)`;
+                      })()}
+                    </span>
+                  </button>
                 )}
-                {latestMeasurement.length && (
-                  <p>Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)</p>
-                )}
-                {latestMeasurement.headCirc && (
-                  <p>Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)</p>
+
+                {/* Growth (if available) */}
+                {latestMeasurement && (
+                  <button 
+                    onClick={() => setShowGrowthDetails(!showGrowthDetails)}
+                    className="flex flex-col items-start text-left hover:bg-accent/10 p-2 rounded-lg transition-colors"
+                  >
+                    <span className="text-xs text-muted-foreground mb-0.5">Growth</span>
+                    <span className="text-base font-semibold text-foreground">{latestMeasurement.summary}</span>
+                  </button>
                 )}
               </div>
-            )}
 
-            {/* Daily insight */}
-            <button 
-              onClick={() => setShowDailyInsight(!showDailyInsight)}
-              className="w-full text-left pt-1"
-            >
-              <p className="text-xs text-primary/80 font-medium hover:text-primary transition-colors">
-                💡 Tap for today's insight
-              </p>
-            </button>
-            
-            {showDailyInsight && (
-              <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
-                {getDailyInsight()}
-              </p>
-            )}
+              {/* Expandable details */}
+              {showFeedDetails && (
+                <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
+                  {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
+                </p>
+              )}
+              {showSleepDetails && (
+                <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
+                  {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
+                </p>
+              )}
+              {showGrowthDetails && latestMeasurement && (
+                <div className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 space-y-0.5 border-l-2 border-border">
+                  {latestMeasurement.weight && (
+                    <p>Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)</p>
+                  )}
+                  {latestMeasurement.length && (
+                    <p>Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)</p>
+                  )}
+                  {latestMeasurement.headCirc && (
+                    <p>Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)</p>
+                  )}
+                </div>
+              )}
 
-            {/* Timeline toggle */}
-            <button
-              onClick={() => setShowTimeline(!showTimeline)}
-              className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors pt-2"
-            >
-              Today's Timeline
-              <ChevronDown 
-                className={`h-3 w-3 transition-transform ${showTimeline ? 'rotate-180' : ''}`}
-              />
-            </button>
+              {/* Daily insight */}
+              <button 
+                onClick={() => setShowDailyInsight(!showDailyInsight)}
+                className="w-full text-left pt-1"
+              >
+                <p className="text-xs text-primary/80 font-medium hover:text-primary transition-colors">
+                  💡 Tap for today's insight
+                </p>
+              </button>
+              
+              {showDailyInsight && (
+                <p className="text-xs text-muted-foreground leading-relaxed pl-3 py-1.5 italic border-l-2 border-border">
+                  {getDailyInsight()}
+                </p>
+              )}
 
-            {/* Expandable Timeline */}
-            {showTimeline && (
-              <div className="pt-2 border-t border-border/50 space-y-1">
+              {/* Timeline toggle */}
+              <button
+                onClick={() => setShowTimeline(!showTimeline)}
+                className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors pt-2"
+              >
+                Today's Timeline
+                <ChevronDown 
+                  className={`h-3 w-3 transition-transform ${showTimeline ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {/* Expandable Timeline */}
+              {showTimeline && (
+                <div className="pt-2 border-t border-border/50 space-y-1">
                 {(() => {
                   // Detect night sleep for the day
                   const nightSleep = detectNightSleep(sortedActivities, nightSleepEndHour);
@@ -1792,9 +1715,10 @@ const lastDiaper = displayActivities
                       );
                     });
                 })()}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          </Card>
         )}
 
         {/* Educational Content for New Users */}
