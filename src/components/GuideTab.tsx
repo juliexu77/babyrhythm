@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generatePredictedSchedule, type ScheduleEvent } from "@/utils/schedulePredictor";
+import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 
 interface Activity {
   id: string;
@@ -676,76 +677,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Main Content */}
           <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 pt-4 space-y-6">
-          {/* Predicted Schedule */}
+          {/* Predicted Schedule with Timeline View */}
           {!needsBirthdaySetup && hasMinimumData && (() => {
             const schedule = generatePredictedSchedule(activities, household?.baby_birthday);
-            
-            const getEventIcon = (type: string) => {
-              switch (type) {
-                case 'wake': return <Sun className="w-4 h-4" />;
-                case 'nap': return <Moon className="w-4 h-4" />;
-                case 'feed': return <Milk className="w-4 h-4" />;
-                case 'bed': return <Bed className="w-4 h-4" />;
-                default: return <Clock className="w-4 h-4" />;
-              }
-            };
-
-            const getEventColor = (type: string) => {
-              switch (type) {
-                case 'wake': return 'text-amber-500';
-                case 'nap': return 'text-blue-500';
-                case 'feed': return 'text-green-500';
-                case 'bed': return 'text-purple-500';
-                default: return 'text-muted-foreground';
-              }
-            };
-
-            return (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                    {babyName}'s Predicted Schedule
-                  </h3>
-                  <Badge variant={schedule.confidence === 'high' ? 'default' : 'secondary'}>
-                    {schedule.confidence} confidence
-                  </Badge>
-                </div>
-                
-                <p className="text-xs text-muted-foreground">
-                  {schedule.basedOn}
-                </p>
-
-                <div className="space-y-2 bg-card/50 border border-border/40 rounded-lg p-4">
-                  {schedule.events.map((event, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className={`w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5 ${getEventColor(event.type)}`}>
-                        {getEventIcon(event.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-foreground">
-                            {event.time}
-                          </span>
-                          <span className="text-xs text-muted-foreground capitalize">
-                            {event.type}
-                          </span>
-                          {event.duration && (
-                            <span className="text-xs text-muted-foreground">
-                              ({event.duration})
-                            </span>
-                          )}
-                        </div>
-                        {event.notes && (
-                          <p className="text-xs text-muted-foreground/80">
-                            {event.notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
+            return <ScheduleTimeline schedule={schedule} babyName={babyName} />;
           })()}
 
           {/* Streak Chip */}
