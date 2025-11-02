@@ -390,6 +390,53 @@ const lastDiaper = displayActivities
     return t('growingIntoOwnPerson');
   };
 
+  // Get pacing comparison to yesterday
+  const getPacingComparison = () => {
+    const currentHour = currentTime.getHours();
+    const currentMinutes = currentTime.getMinutes();
+    const currentTimeOfDay = currentHour * 60 + currentMinutes;
+    
+    // Get today's counts
+    const todayFeeds = todayActivities.filter(a => a.type === 'feed').length;
+    const todayNaps = todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
+    
+    // Get yesterday's activities up to the same time of day
+    const yesterdayAtSameTime = yesterdayActivities.filter(a => {
+      const activityTime = parseUI12hToMinutes(a.time);
+      return activityTime !== null && activityTime <= currentTimeOfDay;
+    });
+    
+    const yesterdayFeeds = yesterdayAtSameTime.filter(a => a.type === 'feed').length;
+    const yesterdayNaps = yesterdayAtSameTime.filter(a => a.type === 'nap' && a.details?.endTime).length;
+    
+    // Compare
+    const feedDiff = todayFeeds - yesterdayFeeds;
+    const napDiff = todayNaps - yesterdayNaps;
+    
+    // Generate pacing message
+    if (yesterdayActivities.length === 0) {
+      return null; // No comparison available
+    }
+    
+    let pacingText = '';
+    
+    if (feedDiff === 0 && napDiff === 0) {
+      pacingText = 'Pacing same as yesterday';
+    } else if (feedDiff > 0 || napDiff > 0) {
+      const parts = [];
+      if (feedDiff > 0) parts.push(`${feedDiff} more feed${feedDiff !== 1 ? 's' : ''}`);
+      if (napDiff > 0) parts.push(`${napDiff} more nap${napDiff !== 1 ? 's' : ''}`);
+      pacingText = `Ahead of yesterday (${parts.join(', ')})`;
+    } else {
+      const parts = [];
+      if (feedDiff < 0) parts.push(`${Math.abs(feedDiff)} fewer feed${Math.abs(feedDiff) !== 1 ? 's' : ''}`);
+      if (napDiff < 0) parts.push(`${Math.abs(napDiff)} fewer nap${Math.abs(napDiff) !== 1 ? 's' : ''}`);
+      pacingText = `Behind yesterday (${parts.join(', ')})`;
+    }
+    
+    return pacingText;
+  };
+
   // Get contextual daily insight - one line per day
   const getDailyInsight = () => {
     const summary = getDailySummary();
@@ -1593,7 +1640,12 @@ const lastDiaper = displayActivities
             </div>
             
             {/* Daily Contextual Insight */}
-            <div className="pt-3 border-t border-border/30">
+            <div className="pt-3 border-t border-border/30 space-y-2">
+              {getPacingComparison() && (
+                <p className="text-sm font-medium text-foreground">
+                  {getPacingComparison()}
+                </p>
+              )}
               <p className="text-sm text-muted-foreground leading-relaxed italic">
                 {getDailyInsight()}
               </p>
