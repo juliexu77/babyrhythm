@@ -101,7 +101,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Sleep state
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [hasEndTime, setHasEndTime] = useState(true); // Controls whether end time is included
+  const [hasEndTime, setHasEndTime] = useState(false); // Controls whether end time is included (default to false for new naps)
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [timerStart, setTimerStart] = useState<Date | null>(null);
   
@@ -158,7 +158,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         const details = editingActivity.details;
         setStartTime(details.startTime || "");
         setEndTime(details.endTime || "");
-        setHasEndTime(!!details.endTime); // Set checkbox based on whether end time exists
+        setHasEndTime(!!details.endTime); // Set checkbox based on whether end time exists when editing
       } else if (editingActivity.type === "note") {
         setNote(editingActivity.details.note || "");
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
@@ -277,7 +277,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setHasCream(false);
     setStartTime("");
     setEndTime("");
-    setHasEndTime(true); // Reset to default (end time included)
+    setHasEndTime(false); // Reset to default (no end time for new naps)
     setIsTimerActive(false);
     setTimerStart(null);
     setNote("");
