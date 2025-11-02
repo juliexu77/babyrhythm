@@ -1264,6 +1264,22 @@ const lastDiaper = displayActivities
     );
   }
 
+  // Get dynamic background gradient based on current state
+  const getContextGradient = () => {
+    if (ongoingNap) {
+      // Sleeping - use calming blue tones
+      return "bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-background";
+    } else if (prediction?.intent === 'FEED_SOON') {
+      // Feed time approaching - warm tones
+      return "bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-background";
+    } else if (prediction?.intent === 'START_WIND_DOWN') {
+      // Nap time approaching - dusk tones
+      return "bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-background";
+    }
+    // Default - neutral
+    return "bg-gradient-to-br from-primary/5 to-background";
+  };
+
   return (
     <div className="pb-24">
       {/* 1. Sticky Header - Empty for now */}
@@ -1272,28 +1288,14 @@ const lastDiaper = displayActivities
 
       <div className="px-4 pt-3 space-y-4">
 
-        {/* Greeting */}
-        <h2 className="text-xl font-semibold text-foreground">
-          {getGreetingLine()}
-        </h2>
-
-        {/* Tone Card */}
-        <div className="space-y-3">
-          <button 
-            onClick={() => setShowToneInsight(!showToneInsight)}
-            className="w-full text-left"
-          >
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-              <span className="text-sm">{sentiment.emoji}</span>
-              <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-            </div>
-          </button>
-          
-          {showToneInsight && (
-            <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-              {getToneInsight(sentiment)}
-            </p>
-          )}
+        {/* 1️⃣ Greeting with AI Presence Line */}
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold text-foreground">
+            {getGreetingLine()} 👋
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            I've been watching {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm today. Here's what's next.
+          </p>
         </div>
 
         {/* Learning Progress Chip */}
@@ -1313,22 +1315,111 @@ const lastDiaper = displayActivities
           totalLogs={activities.length}
         />
 
-        {/* 2. Current State */}
-        <div className="space-y-4 pb-4 border-b border-border">
+        {/* 2️⃣ HERO BLOCK: What's Next - with flow state chip integrated */}
+        <Card className={`${getContextGradient()} transition-all duration-500 border-border/40`}>
+          <div className="p-5 space-y-4">
+            {/* Header with Flow State as Subtitle */}
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">
+                What's Next
+              </h3>
+              <button 
+                onClick={() => setShowToneInsight(!showToneInsight)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/30 hover:bg-accent/40 transition-colors"
+              >
+                <span className="text-xs">{sentiment.emoji}</span>
+                <span className="text-xs font-medium text-accent-foreground">{sentiment.text} — rhythms are {sentiment.text.toLowerCase()} today</span>
+              </button>
+              
+              {showToneInsight && (
+                <p className="text-xs text-muted-foreground leading-relaxed italic pt-1">
+                  {getToneInsight(sentiment)}
+                </p>
+              )}
+            </div>
+
+            {/* Prediction Content */}
+            <NextActivityPrediction 
+              activities={activities}
+              ongoingNap={ongoingNap}
+              onMarkWakeUp={onEndNap}
+              babyName={babyName}
+              onLogPredictedActivity={async (type) => {
+                // Round time to nearest 5 minutes
+                const now = new Date();
+                const minutes = now.getMinutes();
+                const roundedMinutes = Math.round(minutes / 5) * 5;
+                const roundedDate = new Date(now);
+                roundedDate.setMinutes(roundedMinutes);
+                roundedDate.setSeconds(0);
+                roundedDate.setMilliseconds(0);
+                
+                const timeStr = roundedDate.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                });
+                
+                // Build activity details with predicted values
+                let details = {};
+                if (type === 'feed' && prediction?.timing.expectedFeedVolume) {
+                  const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
+                  details = {
+                    feedType: 'bottle',
+                    quantity: roundedVolume.toString(),
+                    unit: 'ml'
+                  };
+                } else if (type === 'nap') {
+                  // For naps, set startTime and ensure no endTime
+                  details = {
+                    startTime: timeStr,
+                    endTime: null // Explicitly mark as ongoing
+                  };
+                }
+                
+                try {
+                  await addActivity(type, details, roundedDate, timeStr);
+                  const description = type === 'feed' && prediction?.timing.expectedFeedVolume
+                    ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
+                    : `${timeStr}`;
+                  toast({
+                    title: type === 'feed' ? t('feedLogged') : t('napLogged'),
+                    description,
+                  });
+                } catch (error) {
+                  console.error('Error logging activity:', error);
+                  toast({
+                    title: t('error'),
+                    description: t('failedToLogActivity'),
+                    variant: 'destructive',
+                  });
+                }
+              }}
+            />
+          </div>
+        </Card>
+
+        {/* 3️⃣ Context Summary - Supporting Evidence */}
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+            These help me fine-tune your rhythm
+          </p>
           
-          <div className="space-y-3.5">
+          <div className="space-y-2.5">
             {/* Last Feed */}
             {lastFeed ? (
-              <div className="flex items-center gap-3">
-                <Milk className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Last feed — <span className="font-medium text-foreground">{lastFeed.time}</span>
+              <div className="flex items-center gap-3 text-sm">
+                <Milk className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Last feed</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-foreground">{lastFeed.time}</span>
                   {lastFeed.details?.quantity && (
-                    <span className="ml-1">
-                      {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
+                    <span className="ml-1.5 text-muted-foreground">
+                      · {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
                     </span>
                   )}
-                </p>
+                </div>
                 <Button
                   onClick={() => {
                     const lastFeed = [...activities]
@@ -1337,34 +1428,40 @@ const lastDiaper = displayActivities
                     onAddActivity('feed', lastFeed);
                   }}
                   size="sm"
-                  className="h-8 px-3"
+                  variant="ghost"
+                  className="h-7 px-2"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3 h-3" />
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <Milk className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Last feed — <span className="font-medium text-foreground">not logged yet</span>
-                </p>
+              <div className="flex items-center gap-3 text-sm">
+                <Milk className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Last feed</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-muted-foreground italic">not logged yet</span>
+                </div>
                 <Button
                   onClick={() => onAddActivity('feed')}
                   size="sm"
-                  className="h-8 px-3"
+                  variant="ghost"
+                  className="h-7 px-2"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3 h-3" />
                 </Button>
               </div>
             )}
 
             {/* Sleep Status */}
             {ongoingNap ? (
-              <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
-                </p>
+              <div className="flex items-center gap-3 text-sm">
+                <Moon className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Sleeping since</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                </div>
                 <Button
                   onClick={() => {
                     const lastNap = [...activities]
@@ -1373,17 +1470,20 @@ const lastDiaper = displayActivities
                     onAddActivity('nap', lastNap);
                   }}
                   size="sm"
-                  className="h-8 px-3"
+                  variant="ghost"
+                  className="h-7 px-2"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3 h-3" />
                 </Button>
               </div>
             ) : awakeTime ? (
-              <div className="flex items-center gap-3">
-                <Eye className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Awake for — <span className="font-medium text-foreground">{awakeTime}</span>
-                </p>
+              <div className="flex items-center gap-3 text-sm">
+                <Eye className="w-4 h-4 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Awake for</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-foreground">{awakeTime}</span>
+                </div>
                 <Button
                   onClick={() => {
                     const lastNap = [...activities]
@@ -1392,193 +1492,171 @@ const lastDiaper = displayActivities
                     onAddActivity('nap', lastNap);
                   }}
                   size="sm"
-                  className="h-8 px-3"
+                  variant="ghost"
+                  className="h-7 px-2"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3 h-3" />
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
-                </p>
+              <div className="flex items-center gap-3 text-sm">
+                <Moon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1">
+                  <span className="text-muted-foreground">Sleeping since</span>
+                  <span className="mx-1.5 text-muted-foreground">—</span>
+                  <span className="font-medium text-muted-foreground italic">not logged yet</span>
+                </div>
                 <Button
                   onClick={() => onAddActivity('nap')}
                   size="sm"
-                  className="h-8 px-3"
+                  variant="ghost"
+                  className="h-7 px-2"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3 h-3" />
                 </Button>
               </div>
             )}
-
           </div>
         </div>
 
-        {/* 3. What's Next */}
-        <NextActivityPrediction 
-          activities={activities}
-          ongoingNap={ongoingNap}
-          onMarkWakeUp={onEndNap}
-          babyName={babyName}
-          onLogPredictedActivity={async (type) => {
-            // Round time to nearest 5 minutes
-            const now = new Date();
-            const minutes = now.getMinutes();
-            const roundedMinutes = Math.round(minutes / 5) * 5;
-            const roundedDate = new Date(now);
-            roundedDate.setMinutes(roundedMinutes);
-            roundedDate.setSeconds(0);
-            roundedDate.setMilliseconds(0);
-            
-            const timeStr = roundedDate.toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            });
-            
-            // Build activity details with predicted values
-            let details = {};
-            if (type === 'feed' && prediction?.timing.expectedFeedVolume) {
-              const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
-              details = {
-                feedType: 'bottle',
-                quantity: roundedVolume.toString(),
-                unit: 'ml'
-              };
-            } else if (type === 'nap') {
-              // For naps, set startTime and ensure no endTime
-              details = {
-                startTime: timeStr,
-                endTime: null // Explicitly mark as ongoing
-              };
-            }
-            
-            try {
-              await addActivity(type, details, roundedDate, timeStr);
-              const description = type === 'feed' && prediction?.timing.expectedFeedVolume
-                ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
-                : `${timeStr}`;
-              toast({
-                title: type === 'feed' ? t('feedLogged') : t('napLogged'),
-                description,
-              });
-            } catch (error) {
-              console.error('Error logging activity:', error);
-              toast({
-                title: t('error'),
-                description: t('failedToLogActivity'),
-                variant: 'destructive',
-              });
-            }
-          }}
-        />
-
-        {/* 4. Daily Summary */}
+        {/* 4️⃣ Daily Summary - Compact & Factual */}
         {displayActivities.length > 0 && (
-          <div className="space-y-4">
-            <button
-              onClick={() => setShowTimeline(!showTimeline)}
-              className="w-full flex items-center justify-between"
-            >
-              <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
-                Daily Summary
-              </h2>
-              <ChevronDown 
-                className={`h-5 w-5 text-muted-foreground transition-transform ${showTimeline ? 'rotate-180' : ''}`}
-              />
-            </button>
+          <div className="space-y-3">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Daily Summary
+            </h3>
 
-            {/* Summary Stats */}
-            <div className="space-y-3">
+            {/* Compact stats grid */}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {/* Feeds */}
               <button 
-                onClick={() => setShowFeedStatusInsight(!showFeedStatusInsight)}
-                className="flex items-center gap-2 text-sm w-full text-left"
+                onClick={() => setShowFeedDetails(!showFeedDetails)}
+                className="flex items-center gap-2 text-left hover:bg-accent/20 p-2 rounded-lg transition-colors"
               >
-                {getFeedStatusIndicator(summary.feedCount, babyAgeMonths) === 'on-track' ? (
-                  <Circle className="w-3 h-3 fill-green-500 text-green-500 flex-shrink-0" />
-                ) : (
-                  <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                )}
-                <span className="font-medium text-foreground">Feeds:</span>
-                <span className="text-muted-foreground">{summary.feedCount} total</span>
-              </button>
-              
-              {showFeedStatusInsight && (
-                <p className="text-sm text-muted-foreground leading-relaxed pl-6 italic">
-                  {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
-                </p>
-              )}
-              
-              {summary.napCount > 0 && (
-                <>
-                  <button 
-                    onClick={() => setShowSleepStatusInsight(!showSleepStatusInsight)}
-                    className="flex items-center gap-2 text-sm w-full text-left"
-                  >
-                    {getSleepStatusIndicator(summary.napCount, babyAgeMonths) === 'on-track' ? (
-                      <Circle className="w-3 h-3 fill-green-500 text-green-500 flex-shrink-0" />
-                    ) : (
-                      <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                    )}
-                    <span className="font-medium text-foreground">Sleep:</span>
-                    <span className="text-muted-foreground">
-                      {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
-                      {(() => {
-                        const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
-                        if (naps.length === 0) return '';
-                        
-                        let totalMinutes = 0;
-                        naps.forEach(nap => {
-                          const parseTime = (timeStr: string) => {
-                            const [time, period] = timeStr.split(' ');
-                            const [hStr, mStr] = time.split(':');
-                            let h = parseInt(hStr, 10);
-                            const m = parseInt(mStr || '0', 10);
-                            if (period === 'PM' && h !== 12) h += 12;
-                            if (period === 'AM' && h === 12) h = 0;
-                            return h * 60 + m;
-                          };
-                          
-                          const startMinutes = parseTime(nap.details.startTime || nap.time);
-                          const endMinutes = parseTime(nap.details.endTime!);
-                          let duration = endMinutes >= startMinutes 
-                            ? endMinutes - startMinutes 
-                            : (24 * 60) - startMinutes + endMinutes;
-                          totalMinutes += duration;
-                        });
-                        
-                        const hours = Math.floor(totalMinutes / 60);
-                        const mins = totalMinutes % 60;
-                        return ` (${hours}h ${mins}m)`;
-                      })()}
-                    </span>
-                  </button>
-                  
-                  {showSleepStatusInsight && (
-                    <p className="text-sm text-muted-foreground leading-relaxed pl-6 italic">
-                      {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
-                    </p>
+                <div className="flex items-center gap-1.5 flex-1">
+                  {getFeedStatusIndicator(summary.feedCount, babyAgeMonths) === 'on-track' ? (
+                    <Circle className="w-2.5 h-2.5 fill-green-500 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-2.5 h-2.5 text-amber-500 flex-shrink-0" />
                   )}
-                </>
-              )}
-              
-              {latestMeasurement && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Ruler className="w-4 h-4 text-primary" />
-                  <span className="font-medium text-foreground">Growth:</span>
-                  <span className="text-muted-foreground">{latestMeasurement.summary}</span>
+                  <span className="text-muted-foreground">Feeds</span>
                 </div>
+                <span className="font-medium text-foreground">{summary.feedCount}</span>
+              </button>
+
+              {/* Sleep */}
+              {summary.napCount > 0 && (
+                <button 
+                  onClick={() => setShowSleepDetails(!showSleepDetails)}
+                  className="flex items-center gap-2 text-left hover:bg-accent/20 p-2 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-1.5 flex-1">
+                    {getSleepStatusIndicator(summary.napCount, babyAgeMonths) === 'on-track' ? (
+                      <Circle className="w-2.5 h-2.5 fill-green-500 text-green-500 flex-shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-2.5 h-2.5 text-amber-500 flex-shrink-0" />
+                    )}
+                    <span className="text-muted-foreground">Sleep</span>
+                  </div>
+                  <span className="font-medium text-foreground">
+                    {summary.napCount} {(() => {
+                      const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
+                      if (naps.length === 0) return '';
+                      
+                      let totalMinutes = 0;
+                      naps.forEach(nap => {
+                        const parseTime = (timeStr: string) => {
+                          const [time, period] = timeStr.split(' ');
+                          const [hStr, mStr] = time.split(':');
+                          let h = parseInt(hStr, 10);
+                          const m = parseInt(mStr || '0', 10);
+                          if (period === 'PM' && h !== 12) h += 12;
+                          if (period === 'AM' && h === 12) h = 0;
+                          return h * 60 + m;
+                        };
+                        
+                        const startMinutes = parseTime(nap.details.startTime || nap.time);
+                        const endMinutes = parseTime(nap.details.endTime!);
+                        let duration = endMinutes >= startMinutes 
+                          ? endMinutes - startMinutes 
+                          : (24 * 60) - startMinutes + endMinutes;
+                        totalMinutes += duration;
+                      });
+                      
+                      const hours = Math.floor(totalMinutes / 60);
+                      const mins = totalMinutes % 60;
+                      return `(${hours}h ${mins}m)`;
+                    })()}
+                  </span>
+                </button>
+              )}
+
+              {/* Growth (if available) */}
+              {latestMeasurement && (
+                <button 
+                  onClick={() => setShowGrowthDetails(!showGrowthDetails)}
+                  className="flex items-center gap-2 text-left hover:bg-accent/20 p-2 rounded-lg transition-colors col-span-2"
+                >
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <Ruler className="w-3 h-3 text-primary" />
+                    <span className="text-muted-foreground">Growth</span>
+                  </div>
+                  <span className="font-medium text-foreground text-xs">{latestMeasurement.summary}</span>
+                </button>
               )}
             </div>
+
+            {/* Expandable details */}
+            {showFeedDetails && (
+              <p className="text-xs text-muted-foreground leading-relaxed pl-4 py-2 italic border-l-2 border-border">
+                {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
+              </p>
+            )}
+            {showSleepDetails && (
+              <p className="text-xs text-muted-foreground leading-relaxed pl-4 py-2 italic border-l-2 border-border">
+                {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
+              </p>
+            )}
+            {showGrowthDetails && latestMeasurement && (
+              <div className="text-xs text-muted-foreground leading-relaxed pl-4 py-2 space-y-1 border-l-2 border-border">
+                {latestMeasurement.weight && (
+                  <p>Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)</p>
+                )}
+                {latestMeasurement.length && (
+                  <p>Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)</p>
+                )}
+                {latestMeasurement.headCirc && (
+                  <p>Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)</p>
+                )}
+              </div>
+            )}
+
+            {/* Daily insight */}
+            <button 
+              onClick={() => setShowDailyInsight(!showDailyInsight)}
+              className="w-full text-left"
+            >
+              <p className="text-xs text-primary/80 font-medium hover:text-primary transition-colors">
+                💡 Tap for today's insight
+              </p>
+            </button>
             
-            {/* Daily Contextual Insight */}
-            <div className="pt-3 border-t border-border/30">
-              <p className="text-sm text-muted-foreground leading-relaxed italic">
+            {showDailyInsight && (
+              <p className="text-xs text-muted-foreground leading-relaxed pl-4 py-2 italic border-l-2 border-border">
                 {getDailyInsight()}
               </p>
-            </div>
+            )}
+
+            {/* Timeline toggle */}
+            <button
+              onClick={() => setShowTimeline(!showTimeline)}
+              className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors py-2"
+            >
+              Today's Timeline
+              <ChevronDown 
+                className={`h-4 w-4 transition-transform ${showTimeline ? 'rotate-180' : ''}`}
+              />
+            </button>
 
             {/* Expandable Timeline */}
             {showTimeline && (
