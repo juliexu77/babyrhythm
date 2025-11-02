@@ -9,7 +9,7 @@ import {
   Sprout, Send, Calendar, Activity, TrendingUp, 
   Sun, Moon, Target, Milk, CloudRain, 
   Clock, Timer, Bed, Lightbulb, CheckSquare, 
-  ArrowRight, Compass, ChevronDown
+  ArrowRight, Compass, ChevronDown, Bell
 } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generatePredictedSchedule, calculatePredictionAccuracy, type ScheduleEvent, type PredictedSchedule } from "@/utils/schedulePredictor";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
+import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
@@ -213,6 +214,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
   const [predictedSchedule, setPredictedSchedule] = useState<PredictedSchedule | null>(null);
   const [lastActivityCount, setLastActivityCount] = useState(0);
+  const [remindersEnabled, setRemindersEnabled] = useState(() => {
+    const stored = localStorage.getItem('smartRemindersEnabled');
+    return stored !== null ? stored === 'true' : true; // Default enabled
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -349,6 +354,32 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   
   // Show schedule at Tier 1, AI insights at Tier 3
   const hasMinimumData = hasTier1Data;
+
+  // Enable smart reminders
+  const { resetReminders } = useSmartReminders({ 
+    schedule: predictedSchedule, 
+    enabled: remindersEnabled && hasMinimumData 
+  });
+
+  // Handle reminder toggle
+  const toggleReminders = () => {
+    const newValue = !remindersEnabled;
+    setRemindersEnabled(newValue);
+    localStorage.setItem('smartRemindersEnabled', String(newValue));
+    
+    if (newValue) {
+      toast({
+        title: "Smart reminders enabled",
+        description: "You'll receive notifications before naps, feeds, and bedtime",
+      });
+    } else {
+      toast({
+        title: "Smart reminders disabled",
+        description: "You won't receive schedule notifications",
+      });
+      resetReminders();
+    }
+  };
 
   // ===== ALL EFFECTS =====
   // Debug logging
@@ -653,15 +684,55 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [hasMinimumData, user, guideSections, household]);
 
-  // Generate and update predicted schedule with accuracy tracking and adaptive recalculation
+  // Generate and update predicted schedule with HYBRID prediction (local + AI)
   useEffect(() => {
     if (!household?.baby_birthday || !hasMinimumData) {
       setPredictedSchedule(null);
       return;
     }
 
-    const generateSchedule = () => {
-      const newSchedule = generatePredictedSchedule(activities, household.baby_birthday);
+    const generateHybridSchedule = () => {
+      // Always start with local prediction for instant results
+      const localSchedule = generatePredictedSchedule(activities, household.baby_birthday);
+      
+      // Enhance with AI insights if available (Tier 2+)
+      if (aiPrediction && hasTier2Data) {
+        console.log('🤝 Creating hybrid prediction (local + AI)');
+        
+        // Use AI reasoning to enhance event descriptions
+        localSchedule.basedOn = `${localSchedule.basedOn} • Enhanced with AI pattern analysis`;
+        
+        // If AI detected transitions, add to adjustment note
+        if (aiPrediction.is_transitioning && aiPrediction.transition_note) {
+          localSchedule.adjustmentNote = aiPrediction.transition_note;
+        }
+        
+        // Enhance event reasoning with AI insights
+        localSchedule.events = localSchedule.events.map(event => {
+          if (event.type === 'nap' && aiPrediction.remaining_naps > 0) {
+            return {
+              ...event,
+              reasoning: event.reasoning 
+                ? `${event.reasoning} • AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
+                : `AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
+            };
+          }
+          if (event.type === 'bed' && aiPrediction.predicted_bedtime) {
+            return {
+              ...event,
+              reasoning: event.reasoning
+                ? `${event.reasoning} • AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
+                : `AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
+            };
+          }
+          return event;
+        });
+        
+        // Boost confidence if AI agrees
+        if (localSchedule.confidence === 'medium' && aiPrediction.confidence === 'high') {
+          localSchedule.confidence = 'high';
+        }
+      }
       
       // Calculate accuracy if we had a previous prediction from today
       if (predictedSchedule && predictedSchedule.lastUpdated) {
@@ -670,7 +741,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         if (isToday) {
           const accuracy = calculatePredictionAccuracy(predictedSchedule, activities);
-          newSchedule.accuracyScore = accuracy;
+          localSchedule.accuracyScore = accuracy;
           console.log('📊 Prediction accuracy:', accuracy + '%');
         }
       }
@@ -678,8 +749,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       // Detect if schedule needs adjustment due to new activities
       const activityCountChanged = activities.length !== lastActivityCount;
       if (activityCountChanged && lastActivityCount > 0 && predictedSchedule) {
-        const newActivitiesCount = activities.length - lastActivityCount;
-        
         // Get today's activities only
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -693,17 +762,21 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         if (recentActivity && todayActivities.length > 0) {
           const activityType = recentActivity.type === 'nap' ? 'nap' : 
                               recentActivity.type === 'feed' ? 'feed' : 'activity';
-          newSchedule.adjustmentNote = `Schedule updated based on recent ${activityType}`;
-          console.log('🔄 Schedule adjusted:', newSchedule.adjustmentNote);
+          
+          // Only override adjustment note if AI didn't provide one
+          if (!localSchedule.adjustmentNote) {
+            localSchedule.adjustmentNote = `Schedule updated based on recent ${activityType}`;
+          }
+          console.log('🔄 Schedule adjusted:', localSchedule.adjustmentNote);
         }
       }
       
-      setPredictedSchedule(newSchedule);
+      setPredictedSchedule(localSchedule);
       setLastActivityCount(activities.length);
     };
 
-    generateSchedule();
-  }, [activities.length, household?.baby_birthday, hasMinimumData]);
+    generateHybridSchedule();
+  }, [activities.length, household?.baby_birthday, hasMinimumData, aiPrediction, hasTier2Data]);
 
 
   // Load initial insight
@@ -1024,6 +1097,25 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   loading={aiPredictionLoading}
                 />
               )}
+              
+              {/* Smart Reminders Toggle */}
+              <div className="flex items-center justify-between p-3 bg-accent/10 rounded-lg border border-accent/20">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Smart Reminders</p>
+                    <p className="text-xs text-muted-foreground">Get notified before naps and feeds</p>
+                  </div>
+                </div>
+                <Button
+                  variant={remindersEnabled ? "default" : "outline"}
+                  size="sm"
+                  onClick={toggleReminders}
+                  className="min-w-[60px]"
+                >
+                  {remindersEnabled ? "On" : "Off"}
+                </Button>
+              </div>
               
               <ScheduleTimeline 
                 schedule={predictedSchedule || generatePredictedSchedule(activities, household?.baby_birthday)} 
