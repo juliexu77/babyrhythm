@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Milk, Moon, Baby, Utensils, CircleDot, Clock } from "lucide-react";
+import { Milk, Moon, Clock, Baby, Utensils, CircleDot, ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { differenceInMinutes } from "date-fns";
@@ -25,7 +25,7 @@ interface HomeTabProps {
   addActivity?: (type: string, details?: any, activityDate?: Date, activityTime?: string) => Promise<void>;
 }
 
-export const HomeTab = ({ activities, babyName, onAddActivity, onEndNap, ongoingNap }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, onAddActivity, onEndNap, ongoingNap }: HomeTabProps) => {
   const { t } = useLanguage();
   const { household } = useHousehold();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -38,6 +38,14 @@ export const HomeTab = ({ activities, babyName, onAddActivity, onEndNap, ongoing
 
   // Get today's activities
   const todayActivities = getTodayActivities(activities);
+
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return t('goodMorning');
+    if (hour < 18) return t('goodAfternoon');
+    return t('goodEvening');
+  };
 
   // Helper: parse time string to minutes
   const parseTimeToMinutes = (timeStr: string) => {
@@ -136,57 +144,36 @@ export const HomeTab = ({ activities, babyName, onAddActivity, onEndNap, ongoing
   // Get what's next message
   const getWhatsNextMessage = () => {
     if (ongoingNap) {
-      const sleepDuration = getSleepDuration();
       const wakeTime = prediction?.timing?.nextWakeAt;
       return {
-        icon: Moon,
-        title: "Next wake window starts",
-        time: wakeTime ? `around ${formatTime(wakeTime)}` : "soon",
-        subtitle: `Asleep for ${sleepDuration || '...'}`,
-        action: "Baby woke up",
-        actionType: "wakeup" as const,
-        gradient: "from-primary/10 via-primary/5 to-transparent"
+        text: wakeTime ? `Currently sleeping — may wake around ${formatTime(wakeTime)}` : "Currently sleeping",
+        action: `${babyName || 'Baby'} woke up`,
+        actionType: "wakeup" as const
       };
     }
 
     if (prediction?.intent === "FEED_SOON") {
       const feedTime = prediction.timing?.nextFeedAt;
-      const lastFeedText = lastFeed ? `Last feed: ${lastFeed.time}${lastFeed.details?.quantity ? ` (${lastFeed.details.quantity}${lastFeed.details.unit || 'ml'})` : ''}` : null;
       return {
-        icon: Milk,
-        title: "Next feed expected",
-        time: feedTime ? `around ${formatTime(feedTime)}` : "soon",
-        subtitle: lastFeedText,
+        text: feedTime ? `Next feed expected around ${formatTime(feedTime)}` : "Next feed expected soon",
         action: "Log feed",
-        actionType: "feed" as const,
-        gradient: "from-[hsl(var(--feed-color))]/10 via-[hsl(var(--feed-color))]/5 to-transparent"
+        actionType: "feed" as const
       };
     }
 
     if (prediction?.intent === "START_WIND_DOWN") {
       const napTime = prediction.timing?.nextNapWindowStart;
-      const awakeTime = getAwakeTime();
       return {
-        icon: Moon,
-        title: "Next nap likely",
-        time: napTime ? `around ${formatTime(napTime)}` : "soon",
-        subtitle: awakeTime ? `Awake for ${awakeTime}` : null,
+        text: napTime ? `Next nap likely around ${formatTime(napTime)}` : "Next nap likely soon",
         action: "Log nap now",
-        actionType: "nap" as const,
-        gradient: "from-[hsl(var(--nap-color))]/10 via-[hsl(var(--nap-color))]/5 to-transparent"
+        actionType: "nap" as const
       };
     }
 
-    // Default fallback
-    const awakeTime = getAwakeTime();
     return {
-      icon: Clock,
-      title: "Building rhythm",
-      time: null,
-      subtitle: awakeTime ? `Awake for ${awakeTime}` : "Log activities to see predictions",
+      text: "Building rhythm — log activities to see predictions",
       action: null,
-      actionType: null,
-      gradient: "from-primary/10 via-primary/5 to-transparent"
+      actionType: null
     };
   };
 
@@ -194,74 +181,100 @@ export const HomeTab = ({ activities, babyName, onAddActivity, onEndNap, ongoing
   const awakeTime = getAwakeTime();
   const sleepDuration = getSleepDuration();
 
-  // Calculate today's progress
-  const feedCount = feedsToday.length;
-  const napCount = todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
-  
-  // Get expected counts based on age
-  const getExpectedCounts = () => {
-    if (!household?.baby_birthday) return { feeds: 6, naps: 4 };
+  // Get tone/sentiment
+  const getTone = () => {
+    const feedCount = feedsToday.length;
+    const napCount = todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
+    
+    if (!household?.baby_birthday) return { emoji: "🌱", text: "Building Rhythm" };
     
     const ageMonths = Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 30));
     
-    if (ageMonths < 3) return { feeds: 8, naps: 5 };
-    if (ageMonths < 6) return { feeds: 6, naps: 4 };
-    if (ageMonths < 9) return { feeds: 5, naps: 3 };
-    if (ageMonths < 12) return { feeds: 4, naps: 2 };
-    return { feeds: 3, naps: 2 };
+    // Expected ranges
+    const expectedFeeds = ageMonths < 3 ? { min: 6, max: 10 } :
+                         ageMonths < 6 ? { min: 5, max: 7 } :
+                         ageMonths < 9 ? { min: 4, max: 6 } :
+                         { min: 3, max: 5 };
+    
+    const expectedNaps = ageMonths < 3 ? { min: 4, max: 6 } :
+                        ageMonths < 6 ? { min: 3, max: 5 } :
+                        ageMonths < 9 ? { min: 2, max: 3 } :
+                        { min: 1, max: 2 };
+    
+    if (feedCount >= expectedFeeds.min && feedCount <= expectedFeeds.max &&
+        napCount >= expectedNaps.min && napCount <= expectedNaps.max) {
+      return { emoji: "☀️", text: "Smooth Flow" };
+    }
+    
+    if (feedCount > expectedFeeds.max + 1) {
+      return { emoji: "🌿", text: "Growth Transition" };
+    }
+    
+    return { emoji: "🔄", text: "Adjusting Rhythm" };
   };
 
-  const expected = getExpectedCounts();
+  const tone = getTone();
 
-  // Get encouragement message
-  const getEncouragement = () => {
-    if (feedCount >= expected.feeds && napCount >= expected.naps - 1) {
-      return "Rhythms are smooth today — you're right on track";
+  // Calculate daily summary
+  const feedCount = feedsToday.length;
+  const napCount = todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
+  const totalNapMinutes = todayActivities
+    .filter(a => a.type === 'nap' && a.details?.endTime)
+    .reduce((total, nap) => {
+      const startMinutes = parseTimeToMinutes(nap.details?.startTime || nap.time);
+      const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
+      const duration = endMinutes >= startMinutes 
+        ? endMinutes - startMinutes 
+        : (24 * 60) - startMinutes + endMinutes;
+      return total + duration;
+    }, 0);
+  
+  const napHours = Math.floor(totalNapMinutes / 60);
+  const napMins = totalNapMinutes % 60;
+
+  // Get growth status
+  const getGrowthStatus = () => {
+    if (!household?.baby_birthday) return "Building data";
+    
+    const ageMonths = Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 30));
+    const expectedFeeds = ageMonths < 3 ? { min: 6, max: 10 } :
+                         ageMonths < 6 ? { min: 5, max: 7 } :
+                         ageMonths < 9 ? { min: 4, max: 6 } :
+                         { min: 3, max: 5 };
+    
+    if (feedCount > expectedFeeds.max) {
+      return "Growing strong — tracking above average";
     }
-    if (napCount >= expected.naps - 1) {
-      return `Only ${expected.naps - napCount} nap${expected.naps - napCount !== 1 ? 's' : ''} to go before bedtime`;
+    if (feedCount >= expectedFeeds.min) {
+      return "On track — healthy rhythm";
     }
-    return "Building today's rhythm together";
+    return "Building pattern — keep logging";
   };
 
   return (
     <div className="flex flex-col gap-6 pb-24">
-      {/* Hero Card - What's Next */}
-      <Card className={cn(
-        "relative overflow-hidden border-none shadow-lg p-8",
-        "bg-gradient-to-br",
-        whatsNext.gradient
-      )}>
+      {/* Greeting */}
+      <div className="px-1">
+        <h1 className="text-2xl font-semibold text-foreground">
+          {getGreeting()}{userName ? `, ${userName}` : ''}
+        </h1>
+      </div>
+
+      {/* What's Next Card */}
+      <Card className="p-6 bg-card">
         <div className="space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-background/80 backdrop-blur">
-                  <whatsNext.icon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                    What's Next
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <h2 className="text-2xl font-bold text-foreground mb-1">
-                  {whatsNext.title}
-                </h2>
-                {whatsNext.time && (
-                  <p className="text-xl text-foreground/80 font-medium">
-                    {whatsNext.time}
-                  </p>
-                )}
-                {whatsNext.subtitle && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {whatsNext.subtitle}
-                  </p>
-                )}
-              </div>
-            </div>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              What's Next
+            </h2>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <Clock className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <p className="text-base text-foreground font-medium flex-1">
+              {whatsNext.text}
+            </p>
           </div>
 
           {whatsNext.action && (
@@ -282,134 +295,76 @@ export const HomeTab = ({ activities, babyName, onAddActivity, onEndNap, ongoing
         </div>
       </Card>
 
-      {/* Quick Log Buttons */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card 
-          className="p-6 cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98] transition-transform"
-          onClick={() => onAddActivity('feed')}
-        >
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="p-3 rounded-full bg-[hsl(var(--feed-color))]/10">
-              <Milk className="h-6 w-6 text-[hsl(var(--feed-color))]" />
-            </div>
-            <span className="font-semibold">Log Feed</span>
-          </div>
-        </Card>
-
-        <Card 
-          className="p-6 cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98] transition-transform"
-          onClick={() => onAddActivity('nap')}
-        >
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="p-3 rounded-full bg-[hsl(var(--nap-color))]/10">
-              <Moon className="h-6 w-6 text-[hsl(var(--nap-color))]" />
-            </div>
-            <span className="font-semibold">Log Nap</span>
-          </div>
-        </Card>
-
-        <Card 
-          className="p-6 cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98] transition-transform"
-          onClick={() => onAddActivity('diaper')}
-        >
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="p-3 rounded-full bg-[hsl(var(--diaper-color))]/10">
-              <CircleDot className="h-6 w-6 text-[hsl(var(--diaper-color))]" />
-            </div>
-            <span className="font-semibold">Diaper</span>
-          </div>
-        </Card>
-
-        <Card 
-          className="p-6 cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98] transition-transform"
-          onClick={() => onAddActivity()}
-        >
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Utensils className="h-6 w-6 text-primary" />
-            </div>
-            <span className="font-semibold">Solids</span>
-          </div>
-        </Card>
+      {/* Tone Chip */}
+      <div className="px-1">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50">
+          <span className="text-lg">{tone.emoji}</span>
+          <span className="text-sm font-medium text-foreground">{tone.text}</span>
+        </div>
       </div>
 
-      {/* Progress Summary */}
-      <Card className="p-5">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Feeds</span>
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                {Array.from({ length: expected.feeds }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "w-2 h-2 rounded-full",
-                      i < feedCount
-                        ? "bg-[hsl(var(--feed-color))]"
-                        : "bg-muted"
-                    )}
-                  />
-                ))}
-              </div>
-              <span className="text-sm font-bold">
-                {feedCount}/{expected.feeds}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Naps</span>
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                {Array.from({ length: expected.naps }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "w-2 h-2 rounded-full",
-                      i < napCount
-                        ? "bg-[hsl(var(--nap-color))]"
-                        : "bg-muted"
-                    )}
-                  />
-                ))}
-              </div>
-              <span className="text-sm font-bold">
-                {napCount}/{expected.naps}
-              </span>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Contextual Info */}
-      <Card className="p-5">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              {ongoingNap ? "Asleep for" : "Awake for"}
-            </span>
-            <span className="font-semibold">
-              {ongoingNap ? sleepDuration || '...' : awakeTime || 'Just woke up'}
+      {/* Snapshot Stats */}
+      <div className="space-y-3 px-1">
+        {lastFeed && (
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <span className="text-2xl">🍼</span>
+            <span className="text-sm">
+              Last feed — <span className="text-foreground font-medium">{lastFeed.time}</span>
+              {lastFeed.details?.quantity && (
+                <span className="text-foreground font-medium"> {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}</span>
+              )}
             </span>
           </div>
-          {lastFeed && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Last feed</span>
-              <span className="font-semibold">
-                {lastFeed.time}
-                {lastFeed.details?.quantity && ` · ${lastFeed.details.quantity}${lastFeed.details.unit || 'ml'}`}
-              </span>
-            </div>
-          )}
-        </div>
-      </Card>
+        )}
+        
+        {ongoingNap ? (
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <span className="text-2xl">🌙</span>
+            <span className="text-sm">
+              Sleeping since — <span className="text-foreground font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+            </span>
+          </div>
+        ) : awakeTime && (
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <span className="text-2xl">🕐</span>
+            <span className="text-sm">
+              Awake for — <span className="text-foreground font-medium">{awakeTime}</span>
+            </span>
+          </div>
+        )}
+      </div>
 
-      {/* Encouragement Footer */}
-      <div className="text-center px-4">
-        <p className="text-sm text-muted-foreground">
-          {getEncouragement()}
-        </p>
+      {/* Daily Summary */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            Daily Summary
+          </h2>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </div>
+
+        <div className="space-y-3 px-1">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-[hsl(var(--feed-color))]"></div>
+            <span className="text-sm text-foreground">
+              <span className="font-semibold">Feeds:</span> {feedCount} total
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-[hsl(var(--nap-color))]"></div>
+            <span className="text-sm text-foreground">
+              <span className="font-semibold">Sleep:</span> {napCount} naps ({napHours}h {napMins}m)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-primary"></div>
+            <span className="text-sm text-foreground">
+              <span className="font-semibold">Growth:</span> {getGrowthStatus()}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
