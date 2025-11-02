@@ -355,10 +355,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Show schedule at Tier 1, AI insights at Tier 3
   const hasMinimumData = hasTier1Data;
 
-  // Enable smart reminders
+  // Enable smart reminders - only after schedule is ready
   const { resetReminders } = useSmartReminders({ 
     schedule: predictedSchedule, 
-    enabled: remindersEnabled && hasMinimumData 
+    enabled: remindersEnabled && hasMinimumData && !!predictedSchedule
   });
 
   // Handle reminder toggle
@@ -691,91 +691,98 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       return;
     }
 
-    const generateHybridSchedule = () => {
-      // Always start with local prediction for instant results
-      const localSchedule = generatePredictedSchedule(activities, household.baby_birthday);
-      
-      // Enhance with AI insights if available (Tier 2+)
-      if (aiPrediction && hasTier2Data) {
-        console.log('🤝 Creating hybrid prediction (local + AI)');
+    try {
+      const generateHybridSchedule = () => {
+        // Always start with local prediction for instant results
+        const localSchedule = generatePredictedSchedule(activities, household.baby_birthday);
         
-        // Use AI reasoning to enhance event descriptions
-        localSchedule.basedOn = `${localSchedule.basedOn} • Enhanced with AI pattern analysis`;
-        
-        // If AI detected transitions, add to adjustment note
-        if (aiPrediction.is_transitioning && aiPrediction.transition_note) {
-          localSchedule.adjustmentNote = aiPrediction.transition_note;
-        }
-        
-        // Enhance event reasoning with AI insights
-        localSchedule.events = localSchedule.events.map(event => {
-          if (event.type === 'nap' && aiPrediction.remaining_naps > 0) {
-            return {
-              ...event,
-              reasoning: event.reasoning 
-                ? `${event.reasoning} • AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
-                : `AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
-            };
-          }
-          if (event.type === 'bed' && aiPrediction.predicted_bedtime) {
-            return {
-              ...event,
-              reasoning: event.reasoning
-                ? `${event.reasoning} • AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
-                : `AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
-            };
-          }
-          return event;
-        });
-        
-        // Boost confidence if AI agrees
-        if (localSchedule.confidence === 'medium' && aiPrediction.confidence === 'high') {
-          localSchedule.confidence = 'high';
-        }
-      }
-      
-      // Calculate accuracy if we had a previous prediction from today
-      if (predictedSchedule && predictedSchedule.lastUpdated) {
-        const prevUpdateDate = new Date(predictedSchedule.lastUpdated);
-        const isToday = prevUpdateDate.toDateString() === new Date().toDateString();
-        
-        if (isToday) {
-          const accuracy = calculatePredictionAccuracy(predictedSchedule, activities);
-          localSchedule.accuracyScore = accuracy;
-          console.log('📊 Prediction accuracy:', accuracy + '%');
-        }
-      }
-      
-      // Detect if schedule needs adjustment due to new activities
-      const activityCountChanged = activities.length !== lastActivityCount;
-      if (activityCountChanged && lastActivityCount > 0 && predictedSchedule) {
-        // Get today's activities only
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayActivities = activities.filter(a => {
-          const actDate = new Date(a.logged_at);
-          return actDate >= today;
-        });
-        
-        // Check what type of activities were added
-        const recentActivity = activities[activities.length - 1];
-        if (recentActivity && todayActivities.length > 0) {
-          const activityType = recentActivity.type === 'nap' ? 'nap' : 
-                              recentActivity.type === 'feed' ? 'feed' : 'activity';
+        // Enhance with AI insights if available (Tier 2+)
+        if (aiPrediction && hasTier2Data) {
+          console.log('🤝 Creating hybrid prediction (local + AI)');
           
-          // Only override adjustment note if AI didn't provide one
-          if (!localSchedule.adjustmentNote) {
-            localSchedule.adjustmentNote = `Schedule updated based on recent ${activityType}`;
+          // Use AI reasoning to enhance event descriptions
+          localSchedule.basedOn = `${localSchedule.basedOn} • Enhanced with AI pattern analysis`;
+          
+          // If AI detected transitions, add to adjustment note
+          if (aiPrediction.is_transitioning && aiPrediction.transition_note) {
+            localSchedule.adjustmentNote = aiPrediction.transition_note;
           }
-          console.log('🔄 Schedule adjusted:', localSchedule.adjustmentNote);
+          
+          // Enhance event reasoning with AI insights
+          localSchedule.events = localSchedule.events.map(event => {
+            if (event.type === 'nap' && aiPrediction.remaining_naps > 0) {
+              return {
+                ...event,
+                reasoning: event.reasoning 
+                  ? `${event.reasoning} • AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
+                  : `AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
+              };
+            }
+            if (event.type === 'bed' && aiPrediction.predicted_bedtime) {
+              return {
+                ...event,
+                reasoning: event.reasoning
+                  ? `${event.reasoning} • AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
+                  : `AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
+              };
+            }
+            return event;
+          });
+          
+          // Boost confidence if AI agrees
+          if (localSchedule.confidence === 'medium' && aiPrediction.confidence === 'high') {
+            localSchedule.confidence = 'high';
+          }
         }
-      }
-      
-      setPredictedSchedule(localSchedule);
-      setLastActivityCount(activities.length);
-    };
+        
+        // Calculate accuracy if we had a previous prediction from today
+        if (predictedSchedule && predictedSchedule.lastUpdated) {
+          const prevUpdateDate = new Date(predictedSchedule.lastUpdated);
+          const isToday = prevUpdateDate.toDateString() === new Date().toDateString();
+          
+          if (isToday) {
+            const accuracy = calculatePredictionAccuracy(predictedSchedule, activities);
+            localSchedule.accuracyScore = accuracy;
+            console.log('📊 Prediction accuracy:', accuracy + '%');
+          }
+        }
+        
+        // Detect if schedule needs adjustment due to new activities
+        const activityCountChanged = activities.length !== lastActivityCount;
+        if (activityCountChanged && lastActivityCount > 0) {
+          // Get today's activities only
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const todayActivities = activities.filter(a => {
+            const actDate = new Date(a.logged_at);
+            return actDate >= today;
+          });
+          
+          // Check what type of activities were added
+          const recentActivity = activities[activities.length - 1];
+          if (recentActivity && todayActivities.length > 0) {
+            const activityType = recentActivity.type === 'nap' ? 'nap' : 
+                                recentActivity.type === 'feed' ? 'feed' : 'activity';
+            
+            // Only override adjustment note if AI didn't provide one
+            if (!localSchedule.adjustmentNote) {
+              localSchedule.adjustmentNote = `Schedule updated based on recent ${activityType}`;
+            }
+            console.log('🔄 Schedule adjusted:', localSchedule.adjustmentNote);
+          }
+        }
+        
+        setPredictedSchedule(localSchedule);
+        setLastActivityCount(activities.length);
+      };
 
-    generateHybridSchedule();
+      generateHybridSchedule();
+    } catch (error) {
+      console.error('Error generating hybrid schedule:', error);
+      // Fallback to basic schedule
+      const fallbackSchedule = generatePredictedSchedule(activities, household.baby_birthday);
+      setPredictedSchedule(fallbackSchedule);
+    }
   }, [activities.length, household?.baby_birthday, hasMinimumData, aiPrediction, hasTier2Data]);
 
 
