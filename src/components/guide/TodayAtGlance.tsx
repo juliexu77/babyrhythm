@@ -53,30 +53,16 @@ export const TodayAtGlance = ({ prediction, loading }: TodayAtGlanceProps) => {
     return null;
   }
   
+  // Only show transition detection
+  if (!prediction.is_transitioning || !prediction.transition_note) {
+    return null;
+  }
+  
   return (
-    <div className="space-y-2">
-      <div className="px-4 py-3 bg-primary/5 rounded-lg border border-primary/10">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-foreground font-medium">
-            Today: {parts.join(', ')}
-          </p>
-          <Badge variant={prediction.confidence === 'high' ? 'default' : 'secondary'} className="text-xs">
-            {prediction.confidence} confidence
-          </Badge>
-        </div>
-        
-        {prediction.reasoning && (
-          <p className="text-xs text-muted-foreground">{prediction.reasoning}</p>
-        )}
-      </div>
-      
-      {prediction.is_transitioning && prediction.transition_note && (
-        <div className="px-3 py-2 bg-accent/10 rounded-lg border border-border/30">
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium">Transition detected:</span> {prediction.transition_note}
-          </p>
-        </div>
-      )}
+    <div className="px-3 py-2 bg-accent/10 rounded-lg border border-border/30">
+      <p className="text-xs text-muted-foreground">
+        <span className="font-medium">Transition detected:</span> {prediction.transition_note}
+      </p>
     </div>
   );
 };
