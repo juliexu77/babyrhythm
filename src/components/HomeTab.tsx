@@ -270,8 +270,9 @@ const ongoingNap = passedOngoingNap;
     };
 
     // Find the most recent completed nap from displayActivities (today or yesterday)
+    // Include night sleep as valid last sleep to compute awake time correctly
     const recentNaps = displayActivities.filter(a =>
-      a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime
+      a.type === 'nap' && a.details?.endTime
     );
 
     if (recentNaps.length === 0) return null;

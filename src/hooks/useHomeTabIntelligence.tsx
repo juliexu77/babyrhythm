@@ -93,38 +93,34 @@ export const useHomeTabIntelligence = (
     }
 
     // Otherwise, baby is awake
-    const lastNap = sortedActivities.find(a => a.type === 'nap' && a.details?.endTime);
-    if (lastNap) {
-      // Parse the end time properly
-      const parseTimeToMinutes = (timeStr: string) => {
-        const [time, period] = timeStr.split(' ');
-        const [hStr, mStr] = time.split(':');
-        let h = parseInt(hStr, 10);
-        const m = parseInt(mStr || '0', 10);
-        if (period === 'PM' && h !== 12) h += 12;
-        if (period === 'AM' && h === 12) h = 0;
-        return h * 60 + m;
-      };
+    // Use the nap with the most recent END time (handles overnight sleep and optimistic updates)
+    const napsWithEnd = activities
+      .filter(a => a.type === 'nap' && a.details?.endTime)
+      .map(nap => {
+        const parseTimeToMinutes = (timeStr: string) => {
+          const [time, period] = timeStr.split(' ');
+          const [hStr, mStr] = time.split(':');
+          let h = parseInt(hStr, 10);
+          const m = parseInt(mStr || '0', 10);
+          if (period === 'PM' && h !== 12) h += 12;
+          if (period === 'AM' && h === 12) h = 0;
+          return h * 60 + m;
+        };
+        const loggedDate = new Date(nap.loggedAt);
+        const baseDate = new Date(loggedDate.toDateString());
+        const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
+        const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
+        const endDate = new Date(baseDate);
+        endDate.setHours(Math.floor(endMinutes / 60), endMinutes % 60, 0, 0);
+        if (startMinutes !== null && endMinutes < startMinutes) endDate.setDate(endDate.getDate() + 1);
+        return { nap, endDate };
+      });
 
-      // Use the actual logged date from the activity (UTC timestamp auto-converts to local)
-      const loggedDate = new Date(lastNap.loggedAt);
-      const baseDate = new Date(loggedDate.toDateString());
-      const endMinutes = parseTimeToMinutes(lastNap.details.endTime!);
-      const startMinutes = lastNap.details?.startTime ? parseTimeToMinutes(lastNap.details.startTime) : null;
-
-      const napEndTime = new Date(baseDate);
-      const endHours = Math.floor(endMinutes / 60);
-      const endMins = endMinutes % 60;
-      napEndTime.setHours(endHours, endMins, 0, 0);
-
-      // If we have startTime and end < start, it ended after midnight (next day)
-      if (startMinutes !== null && endMinutes < startMinutes) {
-        napEndTime.setDate(napEndTime.getDate() + 1);
-      }
-
+    const lastByEnd = napsWithEnd.sort((a, b) => b.endDate.getTime() - a.endDate.getTime())[0];
+    if (lastByEnd) {
+      const napEndTime = lastByEnd.endDate;
       const awakeMinutes = differenceInMinutes(new Date(), napEndTime);
       if (awakeMinutes < 0) {
-        // If negative, skip this calculation
         return {
           type: 'awake',
           duration: 0,
@@ -132,7 +128,6 @@ export const useHomeTabIntelligence = (
           startTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
         };
       }
-
       const hours = Math.floor(awakeMinutes / 60);
       const mins = awakeMinutes % 60;
       return {
