@@ -173,14 +173,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       return null;
     }
     
-    if (schedule.accuracyScore < 80) {
-      return {
-        text: `Still tuning to ${babyName}'s evolving rhythm`,
-        variant: 'outline' as const,
-        showTooltip: true
-      };
-    }
-    
     return {
       text: `${schedule.accuracyScore}% accurate`,
       variant: 'outline' as const,
