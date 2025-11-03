@@ -160,7 +160,8 @@ export const useHomeTabIntelligence = (
     const intent = prediction.intent;
 
     // Handle sleeping/napping state - only if actually asleep
-    if ((currentActivity?.type === 'napping' || currentActivity?.type === 'sleeping') && timing?.nextWakeAt) {
+    // For night sleep (type === 'sleeping'), don't show countdown
+    if (currentActivity?.type === 'napping' && timing?.nextWakeAt) {
       const wakeTime = new Date(timing.nextWakeAt);
       const minutesUntil = Math.max(0, differenceInMinutes(wakeTime, now));
       
@@ -170,6 +171,11 @@ export const useHomeTabIntelligence = (
         countdown: minutesUntil > 0 ? `in ${minutesUntil} min` : 'any moment',
         confidence: prediction.confidence
       };
+    }
+    
+    // For night sleep, don't show any prediction
+    if (currentActivity?.type === 'sleeping') {
+      return null;
     }
 
     // If baby is awake (not sleeping/napping), prioritize feed predictions first
