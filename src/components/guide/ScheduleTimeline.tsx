@@ -200,9 +200,15 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   console.log('🍼 Total feed events in grouped activities:', 
     groupedActivities.filter(a => a.feedTime).length);
   
-  // Calculate summary
+  // Calculate summary - only count feeds that are in the future
   const napCount = groupedActivities.filter(a => a.type === 'nap-block').length;
-  const feedCount = schedule.events.filter(e => e.type === 'feed').length;
+  
+  // Count future feeds only (predicted feeds that haven't happened yet)
+  const futureFeedCount = schedule.events.filter(e => {
+    if (e.type !== 'feed') return false;
+    const eventTime = parseTime(e.time);
+    return eventTime >= currentMinutes;
+  }).length;
 const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'bedtime');
   
   // Determine model state display
@@ -320,7 +326,7 @@ const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'b
       {/* Summary at the top - now hidden since AI summary replaces it */}
       <div className="hidden p-3 bg-primary/5 rounded-lg border border-primary/10">
         <p className="text-sm text-foreground font-medium">
-          Today: {napCount} nap{napCount !== 1 ? 's' : ''}, {feedCount} feed{feedCount !== 1 ? 's' : ''}{bedtimeActivity ? `, bedtime at ${bedtimeActivity.endTime}` : ''}
+          Today: {napCount} nap{napCount !== 1 ? 's' : ''}, {futureFeedCount} more feed{futureFeedCount !== 1 ? 's' : ''} predicted{bedtimeActivity ? `, bedtime at ${bedtimeActivity.endTime}` : ''}
         </p>
       </div>
       
