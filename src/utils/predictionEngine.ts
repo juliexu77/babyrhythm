@@ -423,8 +423,25 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
   if (wakeWindows.length >= 3) {
     const medianWakeWindow = median(wakeWindows);
     const blended = baseParams.wake_window_max * blendRatio.age + medianWakeWindow * blendRatio.learned;
-    adaptive.wake_window_min = clamp(blended * 0.8, baseParams.wake_window_min * 0.7, baseParams.wake_window_min * 1.5);
-    adaptive.wake_window_max = clamp(blended, baseParams.wake_window_max * 0.7, baseParams.wake_window_max * 1.5);
+    
+    // Enforce stricter minimum bounds to prevent unreasonably short wake windows
+    // Use 80% of base params as absolute floor (not 70%)
+    const minWakeWindowFloor = baseParams.wake_window_min * 0.8;
+    const maxWakeWindowFloor = baseParams.wake_window_max * 0.8;
+    
+    adaptive.wake_window_min = clamp(blended * 0.8, minWakeWindowFloor, baseParams.wake_window_min * 1.5);
+    adaptive.wake_window_max = clamp(blended, maxWakeWindowFloor, baseParams.wake_window_max * 1.5);
+    
+    console.log('📊 Wake Window Adaptation:', {
+      baseMin: baseParams.wake_window_min,
+      baseMax: baseParams.wake_window_max,
+      learnedMedian: medianWakeWindow,
+      blended,
+      adaptedMin: adaptive.wake_window_min,
+      adaptedMax: adaptive.wake_window_max,
+      floorMin: minWakeWindowFloor,
+      floorMax: maxWakeWindowFloor
+    });
   }
   
   if (feedIntervals.length >= 3) {
@@ -797,10 +814,19 @@ export class BabyCarePredictionEngine {
 
     // Calculate next nap window if awake
     if (rationale.t_awake_now_min !== null) {
+      // Don't suggest nap immediately after waking - minimum 60min cooldown
+      const minCooldownAfterWake = 60;
+      
       const napWindowMinutes = this.adaptiveParams.wake_window_max - rationale.t_awake_now_min;
-      if (napWindowMinutes > 0) {
+      
+      // If we haven't reached minimum cooldown, set nap window to cooldown time
+      if (rationale.t_awake_now_min < minCooldownAfterWake) {
+        const remainingCooldown = minCooldownAfterWake - rationale.t_awake_now_min;
+        timing.nextNapWindowStart = new Date(now.getTime() + remainingCooldown * 60000);
+      } else if (napWindowMinutes > 0) {
         timing.nextNapWindowStart = new Date(now.getTime() + napWindowMinutes * 60000);
       } else {
+        // Baby has been awake longer than wake_window_max - nap is overdue
         timing.nextNapWindowStart = now;
       }
     }
