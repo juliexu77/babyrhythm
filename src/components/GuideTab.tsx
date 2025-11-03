@@ -589,18 +589,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       try {
         console.log('🔄 Fetching AI schedule prediction...');
         
-        // Get today's activities
+        // Get today's activities (use normalized activities with isNightSleep flag)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayActivities = activities.filter(a => {
+        const todayActivities = normalizedActivities.filter(a => {
           const activityDate = new Date(a.logged_at);
           return activityDate >= today;
         });
         
-        // Get last 14 days for pattern analysis
+        // Get last 14 days for pattern analysis (use normalized activities with isNightSleep flag)
         const fourteenDaysAgo = new Date();
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-        const recentActivities = activities.filter(a => {
+        const recentActivities = normalizedActivities.filter(a => {
           const activityDate = new Date(a.logged_at);
           return activityDate >= fourteenDaysAgo;
         });

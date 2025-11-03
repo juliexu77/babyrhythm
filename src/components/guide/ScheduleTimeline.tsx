@@ -143,17 +143,18 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         // Do not skip next event so morning routines still group correctly
       } else {
         napCounter++;
-        const postNapFeed = nextEvent?.type === 'feed' && nextEvent.notes?.includes('Post-nap') ? nextEvent : null;
+        // Look ahead for any feed (not just post-nap feed with specific notes)
+        const upcomingFeed = nextEvent?.type === 'feed' ? nextEvent : null;
         groupedActivities.push({
           id: `nap-${i}`,
           type: 'nap-block',
           time: event.time,
           napDuration: event.duration || '1h 30m',
-          feedTime: postNapFeed?.time,
+          feedTime: upcomingFeed?.time,
           napNumber: napCounter,
           title: `Nap ${napCounter}`
         });
-        if (postNapFeed) i++;
+        if (upcomingFeed) i++; // Skip the feed since we grouped it
       }
     }
     // Bedtime routine (bedtime feed + bed)
@@ -435,6 +436,12 @@ const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'b
                         ({activity.napDuration})
                       </span>
                     </div>
+                    {activity.feedTime && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                        <Milk className="w-3 h-3" />
+                        <span>Feed at {formatTime(activity.feedTime)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
