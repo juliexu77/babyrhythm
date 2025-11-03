@@ -318,12 +318,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         </div>
       </div>
       
-      {/* Feed tracking summary */}
-      <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-        <p className="text-sm text-foreground font-medium">
-          Feeds: {actualFeedCount} logged / {expectedFeedCount} expected today
-        </p>
-      </div>
       
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground">

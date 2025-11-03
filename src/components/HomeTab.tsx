@@ -1159,9 +1159,6 @@ const lastDiaper = displayActivities
                 As you log, I'll start building {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm
               </h3>
               
-              <p className="text-sm text-muted-foreground">
-                I'll need about 4 naps and 4 feeds before I can predict the next wake window.
-              </p>
               
               <div className="space-y-3 pt-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -1523,23 +1520,27 @@ const lastDiaper = displayActivities
         )}
 
         {/* AI Chat Section */}
-        <div className="pt-6 border-t border-border/40">
-          <h3 className="text-base font-semibold text-foreground mb-4 px-4">Chat with your guide</h3>
-          <ParentingChat
-            activities={activities.map(a => ({
-              id: a.id,
-              type: a.type,
-              logged_at: a.loggedAt || "",
-              details: a.details
-            }))}
-            babyName={babyName}
-            babyAgeInWeeks={babyAgeInWeeks}
-            babySex={household?.baby_sex || undefined}
-            userName={userName}
-            predictionIntent={prediction?.intent}
-            predictionConfidence={prediction?.confidence}
-          />
-        </div>
+        <Card className="p-0 overflow-hidden">
+          <div className="bg-muted/30 px-4 py-3 border-b border-border/40">
+            <h3 className="text-base font-semibold text-foreground">Chat with your guide</h3>
+          </div>
+          <div className="h-[500px]">
+            <ParentingChat
+              activities={activities.map(a => ({
+                id: a.id,
+                type: a.type,
+                logged_at: a.loggedAt || "",
+                details: a.details
+              }))}
+              babyName={babyName}
+              babyAgeInWeeks={babyAgeInWeeks}
+              babySex={household?.baby_sex || undefined}
+              userName={userName}
+              predictionIntent={prediction?.intent}
+              predictionConfidence={prediction?.confidence}
+            />
+          </div>
+        </Card>
 
       </div>
     </div>

@@ -548,23 +548,6 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         </div>
       )}
 
-      {/* Initial Greeting - Always at top */}
-      {greetingMessage.content && (
-        <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-b border-primary/20 animate-in fade-in duration-500">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-              <span className="text-xl">🌿</span>
-            </div>
-            <div className="flex-1 space-y-3">
-              <div className="text-sm text-foreground/90 leading-relaxed">
-                {formatText(emphasizeMicrolearning(greetingMessage.content))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Intro Text - Removed as per user request */}
 
       {/* Conversation History */}
       <ScrollArea className="flex-1 p-4">
@@ -688,29 +671,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         </div>
       </ScrollArea>
 
-      {/* Input with Contextual Chips */}
-      <div className="sticky bottom-0 border-t border-border/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        {/* Chips - only show when not loading and not focused */}
-        {currentChips.length > 0 && !isLoading && turnCount < 2 && (
-          <div className={`px-4 pt-4 pb-2 transition-all duration-300 ${inputFocused ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'}`}>
-            <div className="flex flex-wrap gap-2">
-              {currentChips.map((chip, idx) => (
-                <Button
-                  key={idx}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleChipClick(chip)}
-                  className="text-xs animate-in fade-in slide-in-from-bottom-2"
-                  style={{ animationDelay: `${idx * 50}ms` }}
-                >
-                  {chip.replace(/^["']|["']$/g, '')}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Input area */}
+      {/* Input area */}
+      <div className="border-t border-border/30 bg-background">
         <div className="p-4 pb-[calc(max(env(safe-area-inset-bottom),16px))]">
           <div className="relative flex gap-3 items-end">
             <Textarea
