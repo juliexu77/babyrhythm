@@ -184,9 +184,9 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <div className="h-0.5 w-[calc(100%+2rem)] bg-primary/50" />
+                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in z-10">
+                    <Clock className="w-4 h-4 text-primary animate-pulse" />
+                    <div className="h-0.5 w-[calc(100%+2rem)] bg-gradient-to-r from-primary via-primary/80 to-transparent animate-pulse" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
@@ -240,9 +240,9 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <div className="h-0.5 w-[calc(100%+2rem)] bg-primary/50" />
+                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in z-10">
+                    <Clock className="w-4 h-4 text-primary animate-pulse" />
+                    <div className="h-0.5 w-[calc(100%+2rem)] bg-gradient-to-r from-primary via-primary/80 to-transparent animate-pulse" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
@@ -301,9 +301,9 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <div className="h-0.5 w-[calc(100%+2rem)] bg-primary/50" />
+                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in z-10">
+                    <Clock className="w-4 h-4 text-primary animate-pulse" />
+                    <div className="h-0.5 w-[calc(100%+2rem)] bg-gradient-to-r from-primary via-primary/80 to-transparent animate-pulse" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
