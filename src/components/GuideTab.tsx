@@ -496,7 +496,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     });
   }, [activities.length, daytimeNaps.length, feeds.length, hasTier1Data, hasTier2Data, hasTier3Data, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
 
-  // Fetch rhythm insights once daily (only for Tier 3)
+  // Fetch rhythm insights once daily at midnight (only for Tier 3)
   useEffect(() => {
     if (!hasTier3Data || !household || !aiPrediction) {
       setRhythmInsightsLoading(false);
@@ -526,6 +526,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         if (data) {
           console.log('✅ Rhythm insights fetched:', data);
+          const todayDate = new Date().toDateString(); // Store date stamp
+          const insightData = {
+            ...data,
+            generatedDate: todayDate // Add date stamp to cached data
+          };
+          
           setRhythmInsights({
             heroInsight: data.heroInsight,
             whatToDo: data.whatToDo,
@@ -534,7 +540,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             whyThisMatters: data.whyThisMatters,
             confidenceScore: data.confidenceScore
           });
-          localStorage.setItem('rhythmInsights', JSON.stringify(data));
+          localStorage.setItem('rhythmInsights', JSON.stringify(insightData));
           localStorage.setItem('rhythmInsightsLastFetch', new Date().toISOString());
         }
       } catch (err) {
@@ -544,9 +550,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     };
 
-    // Check if we need to fetch - once every 6 hours
-    const lastFetch = localStorage.getItem('rhythmInsightsLastFetch');
     const cached = localStorage.getItem('rhythmInsights');
+    const todayDate = new Date().toDateString();
     
     // Detect nap count mismatch between cached insights and AI prediction
     const hasNapCountMismatch = () => {
@@ -585,16 +590,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (cached && !rhythmInsights) {
       try {
         const parsed = JSON.parse(cached);
+        const cachedDate = parsed.generatedDate;
         const napMismatch = hasNapCountMismatch();
         
-        // Only use cache if no mismatch detected
-        if (!napMismatch) {
-          console.log('📦 Loaded cached rhythm insights');
-          setRhythmInsights(parsed);
+        // Check if cache is from today and has no mismatch
+        if (cachedDate === todayDate && !napMismatch) {
+          console.log('📦 Loaded cached rhythm insights from today');
+          setRhythmInsights({
+            heroInsight: parsed.heroInsight,
+            whatToDo: parsed.whatToDo,
+            whatsNext: parsed.whatsNext,
+            prepTip: parsed.prepTip,
+            whyThisMatters: parsed.whyThisMatters,
+            confidenceScore: parsed.confidenceScore
+          });
           setRhythmInsightsLoading(false);
-          return; // Don't fetch if cache is valid
+          return; // Don't fetch if cache is from today
         } else {
-          console.log('⚠️ Cache has mismatch, will fetch fresh');
+          console.log('⚠️ Cache is from a different day or has mismatch, will fetch fresh');
           localStorage.removeItem('rhythmInsights');
         }
       } catch (e) {
@@ -603,69 +616,37 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     }
     
-    // Check if cache is still valid (within 4 hours, aligned to 6am start)
-    if (rhythmInsights && lastFetch) {
-      const lastFetchDate = new Date(lastFetch);
-      const hoursSinceLastFetch = (Date.now() - lastFetchDate.getTime()) / (1000 * 60 * 60);
-      
-      if (hoursSinceLastFetch < 4 && !hasNapCountMismatch()) {
-        setRhythmInsightsLoading(false);
-        return; // Already have valid data
+    // Check if we already have insights loaded and they're from today
+    if (rhythmInsights && cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        const cachedDate = parsed.generatedDate;
+        
+        if (cachedDate === todayDate && !hasNapCountMismatch()) {
+          setRhythmInsightsLoading(false);
+          return; // Already have valid data from today
+        }
+      } catch (e) {
+        console.error('Failed to check cached date:', e);
       }
     }
     
-    // Fetch fresh data every 4 hours starting at 6am (6am, 10am, 2pm, 6pm, 10pm, 2am)
+    // Fetch if we don't have cached data from today or if there's a nap mismatch
     const napMismatch = hasNapCountMismatch();
-    
-    // Only fetch if: no cache OR (no lastFetch AND rhythmInsights not already loaded) OR nap mismatch
-    // If we have cached insights loaded in state, don't refetch just because lastFetch is missing
-    const shouldFetch = (!cached && !rhythmInsights) || (!rhythmInsights && !lastFetch) || napMismatch;
+    const shouldFetch = !cached || !rhythmInsights || napMismatch;
     
     if (shouldFetch) {
       if (napMismatch) {
         console.log('🚀 Force refreshing insights due to nap count mismatch...');
       } else {
-        console.log('🚀 Fetching initial rhythm insights...');
+        console.log('🚀 Fetching daily rhythm insights...');
       }
       fetchRhythmInsights();
     } else {
-      console.log('✅ Using cached insights, no fetch needed');
+      console.log('✅ Using cached insights from today, no fetch needed');
       setRhythmInsightsLoading(false);
     }
   }, [hasTier3Data, household, babyAgeInWeeks, aiPrediction]);
-
-  // Separate effect to check time-based refresh every minute
-  useEffect(() => {
-    if (!hasTier3Data) return;
-    
-    const checkRefreshTime = () => {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const validFetchHours = [6, 10, 14, 18, 22, 2];
-      const lastFetch = localStorage.getItem('rhythmInsightsLastFetch');
-      const lastFetchDate = lastFetch ? new Date(lastFetch) : null;
-      const hoursSinceLastFetch = lastFetchDate ? (now.getTime() - lastFetchDate.getTime()) / (1000 * 60 * 60) : Infinity;
-      const lastFetchHour = lastFetchDate?.getHours();
-      
-      // Only fetch at valid hours if 4+ hours have passed
-      const shouldFetch = !lastFetch || 
-                          (hoursSinceLastFetch >= 4 && validFetchHours.includes(currentHour) && lastFetchHour !== currentHour);
-      
-      if (shouldFetch) {
-        console.log('⏰ Time-based refresh triggered for rhythm insights');
-        // Trigger a fetch by clearing the cache
-        localStorage.removeItem('rhythmInsights');
-        setRhythmInsights(null);
-      }
-    };
-    
-    // Check immediately
-    checkRefreshTime();
-    
-    // Then check every minute for time-based refresh
-    const interval = setInterval(checkRefreshTime, 60000);
-    return () => clearInterval(interval);
-  }, [hasTier3Data]);
 
   // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {
