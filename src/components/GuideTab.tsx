@@ -220,16 +220,45 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const babyAgeInWeeks = household?.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
   
-  // Normalize activities for schedule predictor
+  // Get night sleep window detection (needed for enriching activities)
+  const { isNightTime, isNightTimeString } = useNightSleepWindow();
+  
+  // Enrich activities with isNightSleep flag FIRST (needed by both rhythm insights and schedule predictor)
+  const enrichedActivities = useMemo(() => {
+    return activities.map(activity => {
+      if (activity.type !== 'nap') return activity;
+      
+      // Check if this nap falls within night sleep window
+      const startTime = activity.details?.startTime;
+      const endTime = activity.details?.endTime;
+      
+      let isNight = false;
+      if (startTime && isNightTimeString(startTime)) {
+        isNight = true;
+      } else if (endTime && isNightTimeString(endTime)) {
+        isNight = true;
+      }
+      
+      return {
+        ...activity,
+        details: {
+          ...activity.details,
+          isNightSleep: isNight
+        }
+      };
+    });
+  }, [activities, isNightTimeString]);
+
+  // Normalize enriched activities for schedule predictor
   const normalizedActivities = useMemo(() => {
-    return activities.map(a => ({
+    return enrichedActivities.map(a => ({
       id: a.id,
       type: a.type,
       timestamp: a.logged_at,
       logged_at: a.logged_at,
       details: a.details ?? {}
     }));
-  }, [activities]);
+  }, [enrichedActivities]);
   
   // Calculate tone frequencies for the last 7 days (safe even without household)
   const toneFrequencies = (() => {
@@ -333,35 +362,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const smoothFlowDiff = thisMonthSmoothFlow - lastMonthSmoothFlow;
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
-  const { isNightTime, isNightTimeString } = useNightSleepWindow();
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
-  
-  // Enrich activities with isNightSleep flag based on user's settings
-  const enrichedActivities = useMemo(() => {
-    return activities.map(activity => {
-      if (activity.type !== 'nap') return activity;
-      
-      // Check if this nap falls within night sleep window
-      const startTime = activity.details?.startTime;
-      const endTime = activity.details?.endTime;
-      
-      let isNight = false;
-      if (startTime && isNightTimeString(startTime)) {
-        isNight = true;
-      } else if (endTime && isNightTimeString(endTime)) {
-        isNight = true;
-      }
-      
-      return {
-        ...activity,
-        details: {
-          ...activity.details,
-          isNightSleep: isNight
-        }
-      };
-    });
-  }, [activities, isNightTimeString]);
 
   // Tiered data requirements
   // Filter out night sleep - only count daytime naps
@@ -441,14 +443,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
     // Clear rhythm insights and AI prediction caches once to force refresh
-    const hasClearedV11 = localStorage.getItem('cacheCleared_v11');
-    if (!hasClearedV11) {
-      console.log('🧹 Clearing stale prediction caches (v11 - night sleep flag enrichment fix)...');
+    const hasClearedV12 = localStorage.getItem('cacheCleared_v12');
+    if (!hasClearedV12) {
+      console.log('🧹 Clearing stale prediction caches (v12 - schedule predictor night sleep fix)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
       localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v11', 'true');
+      localStorage.setItem('cacheCleared_v12', 'true');
     }
     
     // Also clear session storage caches
