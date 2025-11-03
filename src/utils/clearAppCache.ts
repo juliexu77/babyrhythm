@@ -14,7 +14,23 @@ export const clearAppCache = () => {
         sessionStorage.removeItem(key);
       }
     });
-    console.log('✅ App cache cleared');
+    
+    // Clear localStorage caches as well
+    const localStorageCaches = [
+      'rhythmInsights',
+      'rhythmInsightsLastFetch',
+      'aiPrediction',
+      'aiPredictionLastFetch',
+      'homeInsights',
+      'homeInsightsLastFetch'
+    ];
+    
+    localStorageCaches.forEach(key => {
+      localStorage.removeItem(key);
+      console.log(`🗑️ Cleared localStorage: ${key}`);
+    });
+    
+    console.log('✅ App cache cleared - refresh to see changes');
     return true;
   } catch (error) {
     console.error('❌ Failed to clear app cache:', error);
