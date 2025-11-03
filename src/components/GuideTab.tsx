@@ -762,6 +762,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             localSchedule.adjustmentNote = `Schedule updated based on recent ${activityType}`;
           }
           console.log('🔄 Schedule adjusted:', localSchedule.adjustmentNote);
+          
+          // Show toast notification for schedule update
+          toast({
+            title: "Schedule Updated",
+            description: `Predictions adjusted based on recent ${activityType}`,
+            duration: 3000,
+          });
         }
       }
       
