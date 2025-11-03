@@ -20,14 +20,14 @@ export interface AdaptiveSchedule {
 }
 
 /**
- * Generate an adaptive schedule based on historical patterns
- * Creates a full-day schedule with multiple naps and feeds
+ * Generate an adaptive schedule focused on sleep patterns
+ * Detects nap transitions and indicates uncertain naps
  */
 export function generateAdaptiveSchedule(
   activities: Activity[],
   babyBirthday?: string
 ): AdaptiveSchedule {
-  console.log('🔮 Generating adaptive schedule from patterns');
+  console.log('🔮 Generating adaptive schedule from sleep patterns');
   
   const events: ScheduleEvent[] = [];
   const now = new Date();
@@ -82,7 +82,7 @@ export function generateAdaptiveSchedule(
     // Calculate average wake time from historical data
     const recentNightSleeps = activities
       .filter(a => a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep)
-      .slice(0, 14); // Last 2 weeks
+      .slice(0, 14);
     
     let avgWakeHour = 7;
     let avgWakeMinute = 0;
@@ -128,173 +128,86 @@ export function generateAdaptiveSchedule(
     reasoning: hasActualWake ? 'Actual logged wake time' : 'Based on typical wake pattern'
   });
   
-  // Calculate patterns from historical data
-  const recentFeeds = activities.filter(a => a.type === 'feed').slice(0, 50);
-  const recentNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).slice(0, 30);
+  // Analyze nap patterns
+  const recentNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).slice(0, 50);
   
-  // Calculate average feed interval
-  let avgFeedInterval = 180; // Default 3 hours
-  if (recentFeeds.length >= 2) {
-    const intervals: number[] = [];
-    for (let i = 0; i < recentFeeds.length - 1 && i < 20; i++) {
-      const t1 = new Date(recentFeeds[i].loggedAt).getTime();
-      const t2 = new Date(recentFeeds[i + 1].loggedAt).getTime();
-      const diff = Math.abs(t1 - t2) / 60000; // minutes
-      if (diff > 60 && diff < 360) { // Between 1-6 hours
-        intervals.push(diff);
+  let napDurations: number[] = [];
+  let napTimingsMinutesFromWake: number[] = [];
+  
+  // Get nap data with wake context
+  const daysWithWakeAndNaps = new Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>();
+  
+  activities.filter(a => a.type === 'nap' && a.details?.isNightSleep).slice(0, 21).forEach(nightSleep => {
+    if (nightSleep.details?.endTime) {
+      const wakeTime = parseTimeString(nightSleep.details.endTime);
+      if (wakeTime) {
+        const dateKey = new Date(nightSleep.loggedAt).toDateString();
+        const wakeDate = new Date(nightSleep.loggedAt);
+        wakeDate.setHours(wakeTime.getHours(), wakeTime.getMinutes(), 0, 0);
+        
+        daysWithWakeAndNaps.set(dateKey, { wakeTime: wakeDate, naps: [] });
       }
     }
-    if (intervals.length > 0) {
-      avgFeedInterval = Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length);
-    }
-  }
-  
-  // Calculate nap patterns
-  let napDurations: number[] = [];
-  let napTimings: number[] = []; // Minutes from wake
+  });
   
   recentNaps.forEach(nap => {
+    const napDate = new Date(nap.loggedAt);
+    const dateKey = napDate.toDateString();
+    const dayData = daysWithWakeAndNaps.get(dateKey);
+    
     if (nap.details?.startTime && nap.details?.endTime) {
       const start = parseTimeString(nap.details.startTime);
       const end = parseTimeString(nap.details.endTime);
       if (start && end) {
         const duration = (end.getTime() - start.getTime()) / 60000;
-        if (duration > 15 && duration < 240) { // 15 min to 4 hours
+        if (duration > 15 && duration < 240) {
           napDurations.push(duration);
           
-          // Calculate time from start of day
-          const minutesFromMidnight = start.getHours() * 60 + start.getMinutes();
-          napTimings.push(minutesFromMidnight);
+          if (dayData) {
+            const minutesFromWake = (start.getTime() - dayData.wakeTime.getTime()) / 60000;
+            if (minutesFromWake > 0 && minutesFromWake < 720) {
+              napTimingsMinutesFromWake.push(minutesFromWake);
+              dayData.naps.push({ time: start, duration });
+            }
+          }
         }
       }
     }
   });
   
-  // Determine typical nap count and durations
+  // Calculate nap count per day
+  const napCountsPerDay: number[] = [];
+  daysWithWakeAndNaps.forEach(day => {
+    if (day.naps.length > 0) {
+      napCountsPerDay.push(day.naps.length);
+    }
+  });
+  
+  // Determine if in transition
+  const isInTransition = detectNapTransition(napCountsPerDay);
+  const mostCommonNapCount = getMostCommonValue(napCountsPerDay) || 2;
+  const transitioningToCount = isInTransition ? mostCommonNapCount : null;
+  
+  // Calculate average nap duration and timings
   const avgNapDuration = napDurations.length > 0 
     ? Math.round(napDurations.reduce((a, b) => a + b, 0) / napDurations.length)
     : 90;
   
-  const dailyNapCounts = new Map<string, number>();
-  recentNaps.forEach(nap => {
-    const date = new Date(nap.loggedAt).toDateString();
-    dailyNapCounts.set(date, (dailyNapCounts.get(date) || 0) + 1);
-  });
+  // Generate nap schedule
+  const napSchedule = generateNapSchedule(
+    scheduleStartTime,
+    mostCommonNapCount,
+    avgNapDuration,
+    napTimingsMinutesFromWake,
+    isInTransition,
+    transitioningToCount
+  );
   
-  const napCountsArray = Array.from(dailyNapCounts.values());
-  const avgNapCount = napCountsArray.length > 0
-    ? Math.round(napCountsArray.reduce((a, b) => a + b, 0) / napCountsArray.length)
-    : 2;
-  
-  // Generate schedule events
-  let currentTime = new Date(scheduleStartTime.getTime());
-  
-  // Add immediate wake-up feed
-  currentTime = new Date(currentTime.getTime() + 5 * 60000); // 5 min after wake
-  events.push({
-    time: formatTime(currentTime),
-    type: 'feed',
-    notes: 'Feed',
-    confidence: 'high',
-    reasoning: 'Typically feeds right after waking'
-  });
-  
-  // Generate naps and feeds throughout the day
-  const firstNapStart = currentTime.getTime() + (avgNapCount === 1 ? 3.5 : 2.5) * 60 * 60000;
-  const napCount = Math.min(avgNapCount, 3);
-  
-  for (let i = 0; i < napCount; i++) {
-    // Calculate nap timing
-    let napStartTime: Date;
-    if (i === 0) {
-      napStartTime = new Date(firstNapStart);
-    } else {
-      // Space naps evenly through the day
-      const hoursPerCycle = napCount === 1 ? 4 : napCount === 2 ? 3.5 : 3;
-      napStartTime = new Date(firstNapStart + (i * hoursPerCycle * 60 * 60000));
-    }
-    
-    // Don't schedule naps after 5 PM
-    if (napStartTime.getHours() >= 17) continue;
-    
-    const napDuration = i === 0 ? avgNapDuration : Math.round(avgNapDuration * 0.85);
-    
-    // Add feed before nap if enough time has passed
-    const timeSinceLastFeed = napStartTime.getTime() - currentTime.getTime();
-    if (timeSinceLastFeed >= (avgFeedInterval - 30) * 60000) {
-      const preFeedTime = new Date(napStartTime.getTime() - 15 * 60000);
-      events.push({
-        time: formatTime(preFeedTime),
-        type: 'feed',
-        notes: 'Feed',
-        confidence: 'medium',
-        reasoning: 'Typical feeding interval'
-      });
-      currentTime = preFeedTime;
-    }
-    
-    // Add nap
-    events.push({
-      time: formatTime(napStartTime),
-      type: 'nap',
-      duration: formatDuration(napDuration),
-      notes: `Nap ${i + 1}`,
-      confidence: 'medium',
-      reasoning: 'Based on typical nap patterns'
-    });
-    
-    const napEndTime = new Date(napStartTime.getTime() + napDuration * 60000);
-    
-    // Add feed after nap
-    const postNapFeed = new Date(napEndTime.getTime() + 10 * 60000);
-    if (postNapFeed.getHours() < 18) {
-      events.push({
-        time: formatTime(postNapFeed),
-        type: 'feed',
-        notes: 'Feed',
-        confidence: 'medium',
-        reasoning: 'Typically feeds after waking from nap'
-      });
-      currentTime = postNapFeed;
-    }
-  }
-  
-  // Add additional feeds to fill gaps
-  const lastFeedTime = events.filter(e => e.type === 'feed').slice(-1)[0];
-  if (lastFeedTime) {
-    const lastFeed = parseDisplayTime(lastFeedTime.time, scheduleStartTime);
-    const bedtimeHour = 19; // 7 PM
-    const bedtimeMinutes = bedtimeHour * 60;
-    const lastFeedMinutes = lastFeed.getHours() * 60 + lastFeed.getMinutes();
-    const gapMinutes = bedtimeMinutes - lastFeedMinutes;
-    
-    if (gapMinutes > avgFeedInterval) {
-      const additionalFeeds = Math.floor(gapMinutes / avgFeedInterval);
-      for (let i = 1; i <= additionalFeeds; i++) {
-        const feedTime = new Date(lastFeed.getTime() + (i * avgFeedInterval * 60000));
-        if (feedTime.getHours() < 19) {
-          events.push({
-            time: formatTime(feedTime),
-            type: 'feed',
-            notes: 'Feed',
-            confidence: 'medium',
-            reasoning: 'Maintaining feeding interval'
-          });
-        }
-      }
-    }
-  }
-  
-  // Sort events by time
-  events.sort((a, b) => {
-    const timeA = parseDisplayTime(a.time, scheduleStartTime);
-    const timeB = parseDisplayTime(b.time, scheduleStartTime);
-    return timeA.getTime() - timeB.getTime();
-  });
+  events.push(...napSchedule);
   
   // Add bedtime routine
   const bedtimeRoutine = new Date(scheduleStartTime);
-  bedtimeRoutine.setHours(19, 0, 0, 0); // 7:00 PM
+  bedtimeRoutine.setHours(19, 0, 0, 0);
   
   events.push({
     time: formatTime(bedtimeRoutine),
@@ -304,15 +217,6 @@ export function generateAdaptiveSchedule(
     reasoning: 'Age-appropriate bedtime'
   });
   
-  const bedtimeFeed = new Date(bedtimeRoutine.getTime() + 10 * 60000);
-  events.push({
-    time: formatTime(bedtimeFeed),
-    type: 'feed',
-    notes: 'Bedtime feed',
-    confidence: 'high',
-    reasoning: 'Part of bedtime routine'
-  });
-  
   const sleepBy = new Date(bedtimeRoutine.getTime() + 30 * 60000);
   events.push({
     time: `Sleep by ${formatTime(sleepBy)}`,
@@ -320,17 +224,6 @@ export function generateAdaptiveSchedule(
     notes: '',
     confidence: 'high',
     reasoning: ''
-  });
-  
-  // Add dream feed
-  const dreamFeed = new Date(scheduleStartTime);
-  dreamFeed.setHours(22, 0, 0, 0); // 10:00 PM
-  events.push({
-    time: formatTime(dreamFeed),
-    type: 'feed',
-    notes: 'Dream feed',
-    confidence: 'medium',
-    reasoning: 'Optional late evening feed'
   });
   
   // Determine confidence
@@ -351,9 +244,9 @@ export function generateAdaptiveSchedule(
     eventsCount: events.length,
     confidence: overallConfidence,
     hasActualWake,
-    avgFeedInterval,
-    avgNapCount,
-    avgNapDuration
+    mostCommonNapCount,
+    avgNapDuration,
+    isInTransition
   });
   
   return {
@@ -361,6 +254,135 @@ export function generateAdaptiveSchedule(
     confidence: overallConfidence,
     basedOn
   };
+}
+
+function detectNapTransition(napCountsPerDay: number[]): boolean {
+  if (napCountsPerDay.length < 5) return false;
+  
+  // Look at last 7 days
+  const recent = napCountsPerDay.slice(0, 7);
+  const uniqueCounts = new Set(recent);
+  
+  // If we see 2+ different nap counts in recent days, likely transitioning
+  if (uniqueCounts.size >= 2) {
+    // Check if there's a trend (decreasing nap count over time)
+    const older = recent.slice(3, 7);
+    const newer = recent.slice(0, 3);
+    
+    const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+    const newerAvg = newer.reduce((a, b) => a + b, 0) / newer.length;
+    
+    // Transitioning if newer average is lower
+    return newerAvg < olderAvg;
+  }
+  
+  return false;
+}
+
+function getMostCommonValue(arr: number[]): number | null {
+  if (arr.length === 0) return null;
+  
+  const counts = new Map<number, number>();
+  arr.forEach(val => counts.set(val, (counts.get(val) || 0) + 1));
+  
+  let maxCount = 0;
+  let mostCommon = arr[0];
+  
+  counts.forEach((count, value) => {
+    if (count > maxCount) {
+      maxCount = count;
+      mostCommon = value;
+    }
+  });
+  
+  return mostCommon;
+}
+
+function generateNapSchedule(
+  wakeTime: Date,
+  napCount: number,
+  avgDuration: number,
+  timingsFromWake: number[],
+  isInTransition: boolean,
+  transitioningToCount: number | null
+): ScheduleEvent[] {
+  const naps: ScheduleEvent[] = [];
+  
+  // Determine nap timings based on historical data or defaults
+  let napStartTimes: number[] = []; // Minutes from wake
+  
+  if (timingsFromWake.length >= napCount) {
+    // Use historical data - sort and cluster into nap groups
+    const sorted = [...timingsFromWake].sort((a, b) => a - b);
+    
+    // Simple clustering: divide the day into nap periods
+    if (napCount === 1) {
+      napStartTimes = [median(sorted)];
+    } else if (napCount === 2) {
+      const mid = Math.floor(sorted.length / 2);
+      napStartTimes = [
+        median(sorted.slice(0, mid)),
+        median(sorted.slice(mid))
+      ];
+    } else if (napCount === 3) {
+      const third = Math.floor(sorted.length / 3);
+      napStartTimes = [
+        median(sorted.slice(0, third)),
+        median(sorted.slice(third, third * 2)),
+        median(sorted.slice(third * 2))
+      ];
+    }
+  } else {
+    // Use age-appropriate defaults
+    if (napCount === 1) {
+      napStartTimes = [150]; // 2.5 hours after wake
+    } else if (napCount === 2) {
+      napStartTimes = [150, 360]; // 2.5h and 6h after wake
+    } else if (napCount === 3) {
+      napStartTimes = [120, 270, 420]; // 2h, 4.5h, 7h after wake
+    }
+  }
+  
+  // Generate nap events
+  napStartTimes.forEach((minutesFromWake, index) => {
+    const napTime = new Date(wakeTime.getTime() + minutesFromWake * 60000);
+    
+    // Skip naps after 5 PM
+    if (napTime.getHours() >= 17) return;
+    
+    const napNumber = index + 1;
+    const duration = index === 0 ? avgDuration : Math.round(avgDuration * 0.85);
+    
+    // Determine if this specific nap is uncertain
+    let confidence: 'high' | 'medium' | 'low' = 'medium';
+    let notes = `Nap ${napNumber}`;
+    
+    if (isInTransition) {
+      // Last nap in the schedule is the transitional one
+      if (napNumber === napStartTimes.length && transitioningToCount && transitioningToCount < napCount) {
+        confidence = 'low';
+        notes = `Nap ${napNumber} (might not happen — transitioning to ${transitioningToCount} ${transitioningToCount === 1 ? 'nap' : 'naps'})`;
+      }
+    }
+    
+    naps.push({
+      time: formatTime(napTime),
+      type: 'nap',
+      duration: formatDuration(duration),
+      notes,
+      confidence,
+      reasoning: confidence === 'low' ? 'Nap schedule transitioning' : 'Based on typical nap timing'
+    });
+  });
+  
+  return naps;
+}
+
+function median(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
 function parseTimeString(timeStr: string): Date | null {
