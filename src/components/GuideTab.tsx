@@ -358,17 +358,35 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Memoized fallback schedule - always available as backup
   const fallbackSchedule = useMemo(() => {
-    if (!household?.baby_birthday || !hasMinimumData) return null;
+    console.log('🔄 Fallback schedule check:', {
+      hasBirthday: !!household?.baby_birthday,
+      hasMinData: hasMinimumData,
+      activitiesCount: activities.length
+    });
+
+    if (!household?.baby_birthday || !hasMinimumData) {
+      console.log('⚠️ Fallback schedule: requirements not met');
+      return null;
+    }
     try {
-      return generatePredictedSchedule(activities, household.baby_birthday);
+      const schedule = generatePredictedSchedule(activities, household.baby_birthday);
+      console.log('✅ Fallback schedule generated:', schedule?.events?.length, 'events');
+      return schedule;
     } catch (error) {
-      console.error('Failed to generate fallback schedule:', error);
+      console.error('❌ Failed to generate fallback schedule:', error);
       return null;
     }
   }, [activities, household?.baby_birthday, hasMinimumData]);
 
   // Use predicted schedule if available, otherwise use fallback
   const displaySchedule = predictedSchedule || fallbackSchedule;
+  
+  console.log('📊 Display schedule status:', {
+    hasPredicted: !!predictedSchedule,
+    hasFallback: !!fallbackSchedule,
+    hasDisplay: !!displaySchedule,
+    events: displaySchedule?.events?.length
+  });
 
   // Enable smart reminders - only after schedule is ready
   useSmartReminders({ 
@@ -695,7 +713,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Generate and update predicted schedule with HYBRID prediction (local + AI)
   useEffect(() => {
+    console.log('🔍 Schedule generation check:', {
+      hasBirthday: !!household?.baby_birthday,
+      hasMinData: hasMinimumData,
+      activitiesCount: activities.length
+    });
+
     if (!household?.baby_birthday || !hasMinimumData) {
+      console.log('⚠️ Schedule generation skipped - missing requirements');
       setPredictedSchedule(null);
       return;
     }
@@ -703,6 +728,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     try {
       // Always start with local prediction for instant results
       const localSchedule = generatePredictedSchedule(activities, household.baby_birthday);
+      console.log('✅ Generated local schedule:', localSchedule?.events?.length, 'events');
       
       // Enhance with AI insights if available (Tier 2+)
       if (aiPrediction && hasTier2Data) {
@@ -784,8 +810,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       previousScheduleRef.current = localSchedule;
       setPredictedSchedule(localSchedule);
       setLastActivityCount(activities.length);
+      console.log('📅 Schedule set successfully');
     } catch (error) {
-      console.error('Error generating hybrid schedule:', error);
+      console.error('❌ Error generating hybrid schedule:', error);
       // Fallback to basic schedule
       try {
         const fallbackSchedule = generatePredictedSchedule(activities, household.baby_birthday);
