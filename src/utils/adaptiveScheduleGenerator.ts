@@ -131,11 +131,11 @@ export function generateAdaptiveSchedule(
   // Analyze nap patterns
   const recentNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).slice(0, 50);
   
-  let napDurations: number[] = [];
   let napTimingsMinutesFromWake: number[] = [];
   
-  // Get nap data with wake context
+  // Get nap data with wake context - track durations per nap number
   const daysWithWakeAndNaps = new Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>();
+  const napDurationsByPosition = new Map<number, number[]>(); // position -> durations
   
   activities.filter(a => a.type === 'nap' && a.details?.isNightSleep).slice(0, 21).forEach(nightSleep => {
     if (nightSleep.details?.endTime) {
@@ -161,8 +161,6 @@ export function generateAdaptiveSchedule(
       if (start && end) {
         const duration = (end.getTime() - start.getTime()) / 60000;
         if (duration > 15 && duration < 240) {
-          napDurations.push(duration);
-          
           if (dayData) {
             const minutesFromWake = (start.getTime() - dayData.wakeTime.getTime()) / 60000;
             if (minutesFromWake > 0 && minutesFromWake < 720) {
@@ -173,6 +171,17 @@ export function generateAdaptiveSchedule(
         }
       }
     }
+  });
+  
+  // Group naps by position in the day and calculate average duration per position
+  daysWithWakeAndNaps.forEach(day => {
+    day.naps.sort((a, b) => a.time.getTime() - b.time.getTime());
+    day.naps.forEach((nap, index) => {
+      if (!napDurationsByPosition.has(index)) {
+        napDurationsByPosition.set(index, []);
+      }
+      napDurationsByPosition.get(index)!.push(nap.duration);
+    });
   });
   
   // Calculate nap count per day
@@ -188,16 +197,11 @@ export function generateAdaptiveSchedule(
   const mostCommonNapCount = getMostCommonValue(napCountsPerDay) || 2;
   const transitioningToCount = isInTransition ? mostCommonNapCount : null;
   
-  // Calculate average nap duration and timings
-  const avgNapDuration = napDurations.length > 0 
-    ? Math.round(napDurations.reduce((a, b) => a + b, 0) / napDurations.length)
-    : 90;
-  
   // Generate nap schedule
   const napSchedule = generateNapSchedule(
     scheduleStartTime,
     mostCommonNapCount,
-    avgNapDuration,
+    napDurationsByPosition,
     napTimingsMinutesFromWake,
     isInTransition,
     transitioningToCount
@@ -205,16 +209,48 @@ export function generateAdaptiveSchedule(
   
   events.push(...napSchedule);
   
-  // Add bedtime routine
+  // Calculate bedtime from historical night sleep data
+  const recentNightSleepsForBedtime = activities
+    .filter(a => a.type === 'nap' && a.details?.startTime && a.details?.isNightSleep)
+    .slice(0, 14);
+  
+  let bedtimeHour = 19;
+  let bedtimeMinute = 0;
+  
+  if (recentNightSleepsForBedtime.length > 0) {
+    let totalMinutes = 0;
+    let count = 0;
+    
+    recentNightSleepsForBedtime.forEach(sleep => {
+      const startTime = parseTimeString(sleep.details.startTime);
+      if (startTime) {
+        let hour = startTime.getHours();
+        const minute = startTime.getMinutes();
+        
+        // Consider bedtimes from 6 PM to 11 PM
+        if (hour >= 18 && hour <= 23) {
+          totalMinutes += hour * 60 + minute;
+          count++;
+        }
+      }
+    });
+    
+    if (count > 0) {
+      const avgTotalMinutes = Math.round(totalMinutes / count);
+      bedtimeHour = Math.floor(avgTotalMinutes / 60);
+      bedtimeMinute = avgTotalMinutes % 60;
+    }
+  }
+  
   const bedtimeRoutine = new Date(scheduleStartTime);
-  bedtimeRoutine.setHours(19, 0, 0, 0);
+  bedtimeRoutine.setHours(bedtimeHour, bedtimeMinute, 0, 0);
   
   events.push({
     time: formatTime(bedtimeRoutine),
     type: 'bed',
     notes: 'Bedtime routine',
-    confidence: 'high',
-    reasoning: 'Age-appropriate bedtime'
+    confidence: recentNightSleepsForBedtime.length > 0 ? 'high' : 'medium',
+    reasoning: recentNightSleepsForBedtime.length > 0 ? 'Based on typical bedtime' : 'Age-appropriate bedtime'
   });
   
   const sleepBy = new Date(bedtimeRoutine.getTime() + 30 * 60000);
@@ -245,7 +281,6 @@ export function generateAdaptiveSchedule(
     confidence: overallConfidence,
     hasActualWake,
     mostCommonNapCount,
-    avgNapDuration,
     isInTransition
   });
   
@@ -301,7 +336,7 @@ function getMostCommonValue(arr: number[]): number | null {
 function generateNapSchedule(
   wakeTime: Date,
   napCount: number,
-  avgDuration: number,
+  napDurationsByPosition: Map<number, number[]>,
   timingsFromWake: number[],
   isInTransition: boolean,
   transitioningToCount: number | null
@@ -351,7 +386,12 @@ function generateNapSchedule(
     if (napTime.getHours() >= 17) return;
     
     const napNumber = index + 1;
-    const duration = index === 0 ? avgDuration : Math.round(avgDuration * 0.85);
+    
+    // Use actual average duration for this nap position, or fall back to 90 minutes
+    const positionDurations = napDurationsByPosition.get(index);
+    const duration = positionDurations && positionDurations.length > 0
+      ? Math.round(positionDurations.reduce((a, b) => a + b, 0) / positionDurations.length)
+      : 90;
     
     // Determine if this specific nap is uncertain
     let confidence: 'high' | 'medium' | 'low' = 'medium';
