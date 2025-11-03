@@ -66,10 +66,16 @@ serve(async (req) => {
       }
     });
 
-    const patternSummary = Object.entries(dailyPatterns)
-      .slice(-7)
+    const dayEntries = Object.entries(dailyPatterns)
+      .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
+    const last7 = dayEntries.slice(-7);
+    const patternSummary = last7
       .map(([date, data]) => `${date}: ${data.naps} naps, ${data.feeds} feeds${data.bedtime ? `, bed at ${data.bedtime}` : ''}`)
       .join('\n');
+    const last7NapCounts = last7.map(([, data]) => data.naps);
+    const napCountsLine = last7NapCounts.join(', ');
+    const maxNapCount = last7NapCounts.length ? Math.max(...last7NapCounts) : 0;
+    const minNapCount = last7NapCounts.length ? Math.min(...last7NapCounts) : 0;
 
     // Today's activities summary
     const todayNaps = (todayActivities || []).filter((a: Activity) => a.type === 'nap').length;
@@ -77,8 +83,49 @@ serve(async (req) => {
     const lastNap = (todayActivities || [])
       .filter((a: Activity) => a.type === 'nap')
       .sort((a: Activity, b: Activity) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())[0];
-    
-    const lastNapDuration = lastNap?.details?.duration_minutes || 0;
+
+    // Robust last-nap duration in minutes
+    const parseDurationToMinutes = (s?: string): number => {
+      if (!s) return 0;
+      let mins = 0;
+      const h = s.match(/(\d+)\s*h/i);
+      const m = s.match(/(\d+)\s*m/i);
+      if (h) mins += parseInt(h[1], 10) * 60;
+      if (m) mins += parseInt(m[1], 10);
+      return mins;
+    };
+    const parseTimeToMinutes = (timeStr?: string): number => {
+      if (!timeStr) return 0;
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!match) return 0;
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const period = match[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+    let lastNapDuration = 0;
+    if (lastNap) {
+      const dm = typeof lastNap.details?.duration_minutes === 'number' ? lastNap.details.duration_minutes
+        : (typeof lastNap.details?.durationMinutes === 'number' ? lastNap.details.durationMinutes : undefined);
+      if (typeof dm === 'number') {
+        lastNapDuration = dm;
+      } else {
+        const fromString = parseDurationToMinutes(lastNap.details?.duration);
+        if (fromString > 0) {
+          lastNapDuration = fromString;
+        } else {
+          const start = parseTimeToMinutes(lastNap.details?.startTime);
+          const end = parseTimeToMinutes(lastNap.details?.endTime);
+          if (start && end) {
+            let diff = end - start;
+            if (diff < 0) diff += 24 * 60;
+            lastNapDuration = diff;
+          }
+        }
+      }
+    }
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
     const prompt = `You are analyzing baby sleep and feeding patterns to predict today's schedule.
@@ -88,10 +135,18 @@ Baby age: ${babyAgeMonths ? `${babyAgeMonths} months` : 'Unknown'}
 Recent 7-day pattern:
 ${patternSummary}
 
+Last 7 days nap counts: ${napCountsLine}
+Typical nap range (last 7): ${minNapCount}–${maxNapCount}
+
 Today so far (current time: ${currentTime}):
 - ${todayNaps} nap${todayNaps !== 1 ? 's' : ''} logged
 - ${todayFeeds} feed${todayFeeds !== 1 ? 's' : ''} logged
 ${lastNap ? `- Last nap duration: ${lastNapDuration} minutes` : ''}
+
+Strict rules:
+- Do NOT mention a transition from 4 to 3 naps unless the last 7 days include a day with 4+ naps.
+- Align all claims with the provided nap counts; do not infer unseen nap numbers.
+- If nap counts vary between 2 and 3 without 4, describe it as stabilizing between 2–3 naps (not 4→3).
 
 Analyze:
 1. Is baby transitioning nap counts? (e.g., some days 3 naps, some days 2)

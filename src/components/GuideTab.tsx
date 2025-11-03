@@ -579,7 +579,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           body: { 
             recentActivities,
             todayActivities,
-            babyBirthday: household.baby_birthday,
+            babyBirthday: household?.baby_birthday,
             aiPrediction: aiPrediction // Pass existing prediction for consistency
           }
         });
