@@ -646,13 +646,34 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Generate and update predicted schedule with HYBRID prediction (local + AI)
   useEffect(() => {
     if (!hasMinimumData) {
+      console.log('⚠️ No minimum data for schedule, clearing schedule');
       setPredictedSchedule(null);
       return;
     }
 
+    console.log('📅 Generating schedule with data:', {
+      hasMinimumData,
+      activitiesCount: normalizedActivities.length,
+      hasBirthday: !!household?.baby_birthday,
+      hasTier2: hasTier2Data,
+      hasAiPrediction: !!aiPrediction
+    });
+
     try {
       // Always start with local prediction for instant results
       const localSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
+      
+      if (!localSchedule) {
+        console.error('❌ Failed to generate local schedule - returned null');
+        setPredictedSchedule(null);
+        return;
+      }
+      
+      console.log('✅ Local schedule generated:', {
+        eventsCount: localSchedule.events.length,
+        confidence: localSchedule.confidence,
+        basedOn: localSchedule.basedOn
+      });
       
       // Enhance with AI insights if available (Tier 2+)
       if (aiPrediction && hasTier2Data) {
@@ -734,15 +755,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       previousScheduleRef.current = localSchedule;
       setPredictedSchedule(localSchedule);
       setLastActivityCount(activities.length);
+      
+      console.log('✅ Schedule updated successfully');
     } catch (error) {
-      console.error('Error generating hybrid schedule:', error);
+      console.error('❌ Error generating hybrid schedule:', error);
       // Fallback to basic schedule
       try {
-        const fallbackSchedule = generatePredictedSchedule(normalizedActivities, household.baby_birthday);
-        previousScheduleRef.current = fallbackSchedule;
-        setPredictedSchedule(fallbackSchedule);
+        console.log('🔄 Attempting fallback schedule generation...');
+        const fallbackSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
+        if (fallbackSchedule) {
+          previousScheduleRef.current = fallbackSchedule;
+          setPredictedSchedule(fallbackSchedule);
+          console.log('✅ Fallback schedule generated');
+        } else {
+          console.error('❌ Fallback schedule returned null');
+          setPredictedSchedule(null);
+        }
       } catch (fallbackError) {
-        console.error('Fallback schedule generation failed:', fallbackError);
+        console.error('❌ Fallback schedule generation failed:', fallbackError);
         setPredictedSchedule(null);
       }
     }

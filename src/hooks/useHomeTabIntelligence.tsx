@@ -154,7 +154,7 @@ export const useHomeTabIntelligence = (
     const timing = prediction.timing;
     const intent = prediction.intent;
 
-    // Handle napping state
+    // Handle napping state - only if actually napping
     if (currentActivity?.type === 'napping' && timing?.nextWakeAt) {
       const wakeTime = new Date(timing.nextWakeAt);
       const minutesUntil = Math.max(0, differenceInMinutes(wakeTime, now));
@@ -167,7 +167,62 @@ export const useHomeTabIntelligence = (
       };
     }
 
-    // Handle feed prediction
+    // If baby is awake (not napping), prioritize feed predictions first
+    if (currentActivity?.type === 'awake') {
+      // Check if feed is more imminent than nap
+      const feedTime = timing?.nextFeedAt ? new Date(timing.nextFeedAt) : null;
+      const napTime = timing?.nextNapWindowStart ? new Date(timing.nextNapWindowStart) : null;
+      
+      if (feedTime && napTime) {
+        const minutesUntilFeed = differenceInMinutes(feedTime, now);
+        const minutesUntilNap = differenceInMinutes(napTime, now);
+        
+        // If feed is within 60 minutes or sooner than nap, show feed prediction
+        if (minutesUntilFeed <= 60 || minutesUntilFeed < minutesUntilNap) {
+          const hoursUntil = Math.floor(minutesUntilFeed / 60);
+          const minsRemaining = minutesUntilFeed % 60;
+          
+          let countdown: string;
+          if (minutesUntilFeed <= 0) {
+            countdown = 'now';
+          } else if (minutesUntilFeed < 60) {
+            countdown = `in ${minutesUntilFeed} min`;
+          } else {
+            countdown = `in ${hoursUntil}h ${minsRemaining}m`;
+          }
+          
+          return {
+            activity: 'Next Feed',
+            timeRange: `${format(feedTime, 'h:mm a')} ± 15 min`,
+            countdown,
+            confidence: prediction.confidence
+          };
+        }
+      } else if (feedTime && intent === 'FEED_SOON') {
+        // Only feed prediction available
+        const minutesUntil = Math.max(0, differenceInMinutes(feedTime, now));
+        const hoursUntil = Math.floor(minutesUntil / 60);
+        const minsRemaining = minutesUntil % 60;
+        
+        let countdown: string;
+        if (minutesUntil <= 0) {
+          countdown = 'now';
+        } else if (minutesUntil < 60) {
+          countdown = `in ${minutesUntil} min`;
+        } else {
+          countdown = `in ${hoursUntil}h ${minsRemaining}m`;
+        }
+        
+        return {
+          activity: 'Next Feed',
+          timeRange: `${format(feedTime, 'h:mm a')} ± 15 min`,
+          countdown,
+          confidence: prediction.confidence
+        };
+      }
+    }
+
+    // Handle feed prediction (general case)
     if (intent === 'FEED_SOON' && timing?.nextFeedAt) {
       const feedTime = new Date(timing.nextFeedAt);
       const minutesUntil = Math.max(0, differenceInMinutes(feedTime, now));
