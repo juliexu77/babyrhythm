@@ -53,17 +53,6 @@ export const TodayAtGlance = ({ prediction, loading }: TodayAtGlanceProps) => {
     return null;
   }
   
-  // Hide the summary - it's redundant with the schedule timeline
-  // Only show transition detection if schedule doesn't already have it
-  if (prediction.is_transitioning && prediction.transition_note) {
-    return (
-      <div className="px-3 py-2 bg-accent/10 rounded-lg border border-border/30">
-        <p className="text-xs text-muted-foreground">
-          <span className="font-medium">Transition detected:</span> {prediction.transition_note}
-        </p>
-      </div>
-    );
-  }
-  
+  // Component no longer displays any content
   return null;
 };
