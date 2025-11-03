@@ -65,8 +65,8 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     return hours * 60 + minutes;
   };
   
-  // Convert exact time to approximate time range
-  const formatTimeRange = (timeStr: string, eventType: string, isDSTTransition: boolean): string => {
+  // Format time without ranges
+  const formatTime = (timeStr: string): string => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) return timeStr;
     
@@ -79,24 +79,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
     const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
     
-    // Show as range for wake and bed times, or during DST transitions
-    if (eventType === 'wake' || eventType === 'bed' || isDSTTransition) {
-      // Wider range during DST (±30 min instead of ±15 min)
-      const rangeMinutes = isDSTTransition ? 30 : 15;
-      
-      if (schedule.confidence === 'high' && !isDSTTransition) {
-        return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period} ± ${rangeMinutes} min`;
-      }
-      
-      return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period} ± ${rangeMinutes} min`;
-    }
-    
-    // Show as "time ± 15 min" for other events with medium/low confidence
-    if (schedule.confidence === 'high') {
-      return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
-    }
-    
-    return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period} ± 15 min`;
+    return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
   };
 
   const toggleExpanded = (eventId: string) => {
@@ -111,7 +94,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     });
   };
 
-  // Group related activities - exclude feeds
+  // Group related activities
   const groupedActivities: GroupedActivity[] = [];
   
   let napCounter = 0;
@@ -119,47 +102,58 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     const event = schedule.events[i];
     const nextEvent = schedule.events[i + 1];
     
-    // Skip all feed events
-    if (event.type === 'feed') {
-      continue;
-    }
-    
-    // Morning routine (wake only, no feed)
-    if (event.type === 'wake') {
-      // Skip morning feed if present
-      if (nextEvent?.type === 'feed' && nextEvent.notes?.includes('Morning')) {
-        i++; // Skip the feed
-      }
+    // Morning routine (wake + morning feed)
+    if (event.type === 'wake' && nextEvent?.type === 'feed' && nextEvent.notes?.includes('Morning')) {
       groupedActivities.push({
         id: `morning-${i}`,
         type: 'morning',
         time: event.time,
-        title: 'Morning wake'
+        feedTime: nextEvent.time,
+        title: 'Morning routine'
       });
+      i++; // Skip the next feed since we grouped it
     }
-    // Nap block (nap only, no post-nap feed)
+    // Nap block (nap + post-nap feed)
     else if (event.type === 'nap') {
       napCounter++;
-      // Skip post-nap feed if present
-      if (nextEvent?.type === 'feed' && nextEvent.notes?.includes('Post-nap')) {
-        i++; // Skip the feed
-      }
+      const postNapFeed = nextEvent?.type === 'feed' && nextEvent.notes?.includes('Post-nap') ? nextEvent : null;
       groupedActivities.push({
         id: `nap-${i}`,
         type: 'nap-block',
         time: event.time,
         napDuration: event.duration || '1h 30m',
+        feedTime: postNapFeed?.time,
         napNumber: napCounter,
         title: `Nap ${napCounter}`
       });
+      if (postNapFeed) i++; // Skip the post-nap feed if grouped
     }
-    // Bedtime (skip bedtime feed, only show bed event)
-    else if (event.type === 'bed') {
+    // Bedtime routine (bedtime feed + bed)
+    else if (event.type === 'feed' && event.notes?.includes('Bedtime') && nextEvent?.type === 'bed') {
       groupedActivities.push({
         id: `bedtime-${i}`,
         type: 'bedtime',
         time: event.time,
-        title: 'Bedtime'
+        endTime: nextEvent.time,
+        title: 'Bedtime routine'
+      });
+      i++; // Skip the bed event since we grouped it
+    }
+    // Standalone wake or feed events
+    else if (event.type === 'wake') {
+      groupedActivities.push({
+        id: `wake-${i}`,
+        type: 'morning',
+        time: event.time,
+        title: 'Morning wake'
+      });
+    }
+    else if (event.type === 'feed') {
+      groupedActivities.push({
+        id: `feed-${i}`,
+        type: 'morning',
+        time: event.time,
+        title: 'Feed'
       });
     }
   }
@@ -355,12 +349,18 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-foreground">
-                        {formatTimeRange(activity.time, 'wake', dstInfo.isDSTTransitionPeriod)}
+                        {formatTime(activity.time)}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {activity.title}
                       </span>
                     </div>
+                    {activity.feedTime && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                        <Milk className="w-3 h-3" />
+                        <span>Feed at {formatTime(activity.feedTime)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -392,7 +392,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-bold text-foreground">
-                        {formatTimeRange(activity.time, 'nap', dstInfo.isDSTTransitionPeriod)}
+                        {formatTime(activity.time)}
                       </span>
                       <span className="text-xs font-medium text-foreground">
                         {activity.title}
@@ -429,29 +429,23 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-foreground">
-                        {formatTimeRange(activity.time, 'bed', dstInfo.isDSTTransitionPeriod)}
+                        {formatTime(activity.time)}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {activity.title}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                      <Bed className="w-3 h-3" />
-                      <span>Bedtime at {formatTimeRange(activity.endTime || activity.time, 'bed', dstInfo.isDSTTransitionPeriod)}</span>
-                    </div>
-                    {matchingEvent?.reasoning && (
-                      <Collapsible open={expandedEvents.has(activity.id)}>
-                        <CollapsibleTrigger 
-                          onClick={() => toggleExpanded(activity.id)}
-                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
-                        >
-                          <ChevronDown className={`w-3 h-3 transition-transform ${expandedEvents.has(activity.id) ? 'rotate-180' : ''}`} />
-                          Why this time?
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="text-xs text-muted-foreground mt-1 pl-4 border-l-2 border-primary/20">
-                          {matchingEvent.reasoning}
-                        </CollapsibleContent>
-                      </Collapsible>
+                    {activity.feedTime && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                        <Milk className="w-3 h-3" />
+                        <span>Bedtime feed</span>
+                      </div>
+                    )}
+                    {activity.endTime && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                        <Bed className="w-3 h-3" />
+                        <span>Sleep by {formatTime(activity.endTime)}</span>
+                      </div>
                     )}
                   </div>
                 </div>
