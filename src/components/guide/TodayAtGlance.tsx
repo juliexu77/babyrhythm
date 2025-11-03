@@ -49,20 +49,36 @@ export const TodayAtGlance = ({ prediction, loading }: TodayAtGlanceProps) => {
   }
   
   // If no data, don't render anything
-  if (parts.length === 0) {
+  if (parts.length === 0 && (!prediction.is_transitioning || !prediction.transition_note)) {
     return null;
   }
   
-  // Only show transition detection
-  if (!prediction.is_transitioning || !prediction.transition_note) {
-    return null;
+  // Show summary of today's predicted activities
+  if (parts.length > 0) {
+    return (
+      <div className="px-3 py-2 bg-accent/10 rounded-lg border border-border/30">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium">Today:</span> {parts.join(', ')}
+          </p>
+          <Badge variant={prediction.confidence === 'high' ? 'default' : 'secondary'} className="text-[10px] h-5">
+            {prediction.confidence}
+          </Badge>
+        </div>
+      </div>
+    );
   }
   
-  return (
-    <div className="px-3 py-2 bg-accent/10 rounded-lg border border-border/30">
-      <p className="text-xs text-muted-foreground">
-        <span className="font-medium">Transition detected:</span> {prediction.transition_note}
-      </p>
-    </div>
-  );
+  // Only show transition detection if no summary is shown and schedule doesn't already have it
+  if (prediction.is_transitioning && prediction.transition_note) {
+    return (
+      <div className="px-3 py-2 bg-accent/10 rounded-lg border border-border/30">
+        <p className="text-xs text-muted-foreground">
+          <span className="font-medium">Transition detected:</span> {prediction.transition_note}
+        </p>
+      </div>
+    );
+  }
+  
+  return null;
 };

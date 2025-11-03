@@ -33,6 +33,18 @@ export function generatePredictedSchedule(
   babyBirthday?: string
 ): PredictedSchedule {
   
+  // Get today's activities to check if wake time already logged
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayActivities = activities.filter(a => {
+    const actDate = new Date(a.logged_at);
+    return actDate >= today;
+  });
+  
+  // Check if there's a wake time logged today
+  const todayWakeActivity = todayActivities.find(a => a.type === 'wake' || 
+    (a.type === 'nap' && a.details?.endTime && new Date(a.logged_at).getHours() < 10));
+  
   // Calculate average wake time from night sleep patterns
   const nightSleeps = activities
     .filter(a => a.type === 'nap' && a.details?.endTime)
@@ -50,8 +62,21 @@ export function generatePredictedSchedule(
     })
     .filter(nap => nap.duration > 360); // Night sleep > 6 hours
   
-  // Get average wake time (most common end time for night sleeps)
-  const wakeTime = getAverageWakeTime(nightSleeps);
+  // Use today's actual wake time if logged, otherwise use average
+  let wakeTime: number;
+  if (todayWakeActivity) {
+    // Parse the actual wake time from today
+    const wakeTimeStr = todayWakeActivity.details?.endTime || 
+      new Date(todayWakeActivity.logged_at).toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      });
+    wakeTime = parseTimeString(wakeTimeStr);
+  } else {
+    // Get average wake time (most common end time for night sleeps)
+    wakeTime = getAverageWakeTime(nightSleeps);
+  }
   
   // Get average bed time (most common start time for night sleeps)
   const bedTime = getAverageBedTime(nightSleeps);
@@ -105,13 +130,15 @@ export function generatePredictedSchedule(
 
   // Add wake time
   events.push({
-    time: formatTime(currentTime),
+    time: formatTime(wakeTime),
     type: 'wake',
     notes: 'Morning wake up',
     confidence: eventConfidence('wake'),
-    reasoning: nightSleeps.length > 3 
-      ? `Based on ${nightSleeps.length} recent wake times averaging ${formatTime(wakeTime)}`
-      : 'Based on typical wake time for age'
+    reasoning: todayWakeActivity 
+      ? `Using today's actual wake time`
+      : (nightSleeps.length > 3 
+          ? `Based on ${nightSleeps.length} recent wake times averaging ${formatTime(wakeTime)}`
+          : 'Based on typical wake time for age')
   });
   
   // Add first feed (usually within 30-60 min of waking)
