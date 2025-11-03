@@ -18,11 +18,13 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generatePredictedSchedule, calculatePredictionAccuracy, type ScheduleEvent, type PredictedSchedule } from "@/utils/schedulePredictor";
+import { useGuideSections } from "@/hooks/useGuideSections";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
+import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 
 interface Activity {
   id: string;
@@ -39,6 +41,17 @@ interface GuideTabProps {
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+interface GuideSections {
+  data_pulse: {
+    metrics: Array<{ name: string; change: string }>;
+    note: string;
+  };
+  what_to_know: string[];
+  what_to_do: string[];
+  whats_next: string;
+  prep_tip: string;
 }
 
 
@@ -183,6 +196,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
   const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
   const [showStreakInsight, setShowStreakInsight] = useState(false);
+  const { guideSections, loading: guideSectionsLoading } = useGuideSections(activities.length);
   const [rhythmInsights, setRhythmInsights] = useState<{
     heroInsight: string; 
     whyThisMatters: string; 
@@ -1134,6 +1148,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     babyName={babyName}
                   />
                 </>
+              )}
+              
+              {/* AI-Generated Guidance - Personalized to your data */}
+              {hasMinimumData && (
+                <UnifiedInsightCard
+                  whyThisMatters={hasTier3Data ? rhythmInsights?.whyThisMatters : undefined}
+                  whatToKnow={guideSections?.what_to_know}
+                  whatToDo={guideSections?.what_to_do}
+                  whatsNext={guideSections?.whats_next}
+                  prepTip={guideSections?.prep_tip}
+                  loading={(guideSectionsLoading && !guideSections) || (hasTier3Data && (rhythmInsightsLoading || !rhythmInsights))}
+                />
               )}
             </>
           )}
