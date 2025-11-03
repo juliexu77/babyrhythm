@@ -226,6 +226,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const babyAgeInWeeks = household?.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
   
+  // Normalize activities for schedule predictor
+  const normalizedActivities = useMemo(() => {
+    return activities.map(a => ({
+      id: a.id,
+      type: a.type,
+      timestamp: a.logged_at,
+      logged_at: a.logged_at,
+      details: a.details ?? {}
+    }));
+  }, [activities]);
+  
   // Calculate tone frequencies for the last 7 days (safe even without household)
   const toneFrequencies = (() => {
     if (!household) return { frequency: {}, tones: [], currentStreak: 0, streakTone: "" };
@@ -360,12 +371,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const fallbackSchedule = useMemo(() => {
     if (!household?.baby_birthday || !hasMinimumData) return null;
     try {
-      return generatePredictedSchedule(activities, household.baby_birthday);
+      return generatePredictedSchedule(normalizedActivities, household.baby_birthday);
     } catch (error) {
       console.error('Failed to generate fallback schedule:', error);
       return null;
     }
-  }, [activities, household?.baby_birthday, hasMinimumData]);
+  }, [normalizedActivities, household?.baby_birthday, hasMinimumData]);
 
   // Use predicted schedule if available, otherwise use fallback
   const displaySchedule = predictedSchedule || fallbackSchedule;
@@ -702,7 +713,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
     try {
       // Always start with local prediction for instant results
-      const localSchedule = generatePredictedSchedule(activities, household.baby_birthday);
+      const localSchedule = generatePredictedSchedule(normalizedActivities, household.baby_birthday);
       
       // Enhance with AI insights if available (Tier 2+)
       if (aiPrediction && hasTier2Data) {
@@ -749,7 +760,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const isToday = prevUpdateDate.toDateString() === new Date().toDateString();
         
         if (isToday) {
-          const accuracy = calculatePredictionAccuracy(previousScheduleRef.current, activities);
+          const accuracy = calculatePredictionAccuracy(previousScheduleRef.current, normalizedActivities);
           localSchedule.accuracyScore = accuracy;
           console.log('📊 Prediction accuracy:', accuracy + '%');
         }
@@ -788,7 +799,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       console.error('Error generating hybrid schedule:', error);
       // Fallback to basic schedule
       try {
-        const fallbackSchedule = generatePredictedSchedule(activities, household.baby_birthday);
+        const fallbackSchedule = generatePredictedSchedule(normalizedActivities, household.baby_birthday);
         previousScheduleRef.current = fallbackSchedule;
         setPredictedSchedule(fallbackSchedule);
       } catch (fallbackError) {
@@ -796,7 +807,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         setPredictedSchedule(null);
       }
     }
-  }, [activities, household?.baby_birthday, hasMinimumData, aiPrediction, hasTier2Data]);
+  }, [normalizedActivities, household?.baby_birthday, hasMinimumData, aiPrediction, hasTier2Data]);
 
 
   // Load initial insight
