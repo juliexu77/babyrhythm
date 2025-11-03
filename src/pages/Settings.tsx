@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -18,7 +18,8 @@ import {
   Baby,
   Globe,
   Calendar,
-  Moon
+  Moon,
+  Bell
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +43,23 @@ export const Settings = () => {
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showBabyEdit, setShowBabyEdit] = useState(false);
+  const [remindersEnabled, setRemindersEnabled] = useState(() => {
+    const stored = localStorage.getItem('smartRemindersEnabled');
+    return stored !== null ? stored === 'true' : true; // Default enabled
+  });
+
+  // Sync reminder state with localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem('smartRemindersEnabled');
+      if (stored !== null) {
+        setRemindersEnabled(stored === 'true');
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -132,6 +150,19 @@ export const Settings = () => {
     }
   };
 
+  const handleReminderToggle = () => {
+    const newValue = !remindersEnabled;
+    setRemindersEnabled(newValue);
+    localStorage.setItem('smartRemindersEnabled', String(newValue));
+    
+    toast({
+      title: newValue ? "Smart reminders enabled" : "Smart reminders disabled",
+      description: newValue 
+        ? "You'll receive notifications before naps, feeds, and bedtime"
+        : "You won't receive schedule notifications",
+    });
+  };
+
   if (showCaregiverManagement) {
     return <CaregiverManagement onClose={() => setShowCaregiverManagement(false)} />;
   }
@@ -198,6 +229,17 @@ export const Settings = () => {
 
           {/* App Preferences Section */}
           <SettingsSection title={t('appPreferences')}>
+            <SettingsRow
+              icon={<Bell className="w-5 h-5" />}
+              title="Smart Reminders"
+              subtitle="Get notified before naps, feeds, and bedtime"
+              showChevron={false}
+            >
+              <Switch
+                checked={remindersEnabled}
+                onCheckedChange={handleReminderToggle}
+              />
+            </SettingsRow>
             <SettingsRow
               icon={<Globe className="w-5 h-5" />}
               title={t('language')}

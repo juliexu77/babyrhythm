@@ -9,7 +9,7 @@ import {
   Sprout, Send, Calendar, Activity, TrendingUp, 
   Sun, Moon, Target, Milk, CloudRain, 
   Clock, Timer, Bed, Lightbulb, CheckSquare, 
-  ArrowRight, Compass, ChevronDown, Bell
+  ArrowRight, Compass, ChevronDown
 } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -371,30 +371,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const displaySchedule = predictedSchedule || fallbackSchedule;
 
   // Enable smart reminders - only after schedule is ready
-  const { resetReminders } = useSmartReminders({ 
+  useSmartReminders({ 
     schedule: displaySchedule, 
     enabled: remindersEnabled && hasMinimumData && !!displaySchedule
   });
 
-  // Handle reminder toggle
-  const toggleReminders = () => {
-    const newValue = !remindersEnabled;
-    setRemindersEnabled(newValue);
-    localStorage.setItem('smartRemindersEnabled', String(newValue));
+  // Sync reminder state with localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const stored = localStorage.getItem('smartRemindersEnabled');
+      if (stored !== null) {
+        setRemindersEnabled(stored === 'true');
+      }
+    };
     
-    if (newValue) {
-      toast({
-        title: "Smart reminders enabled",
-        description: "You'll receive notifications before naps, feeds, and bedtime",
-      });
-    } else {
-      toast({
-        title: "Smart reminders disabled",
-        description: "You won't receive schedule notifications",
-      });
-      resetReminders();
-    }
-  };
+    // Listen for storage changes (for cross-tab sync)
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // ===== ALL EFFECTS =====
   // Debug logging
@@ -1123,25 +1117,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   loading={aiPredictionLoading}
                 />
               )}
-              
-              {/* Smart Reminders Toggle */}
-              <div className="flex items-center justify-between p-3 bg-accent/10 rounded-lg border border-accent/20">
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Smart Reminders</p>
-                    <p className="text-xs text-muted-foreground">Get notified before naps and feeds</p>
-                  </div>
-                </div>
-                <Button
-                  variant={remindersEnabled ? "default" : "outline"}
-                  size="sm"
-                  onClick={toggleReminders}
-                  className="min-w-[60px]"
-                >
-                  {remindersEnabled ? "On" : "Off"}
-                </Button>
-              </div>
               
               {displaySchedule && (
                 <ScheduleTimeline 
