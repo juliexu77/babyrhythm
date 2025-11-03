@@ -17,7 +17,7 @@ export const UnifiedInsightCard = ({
   whyThisMatters,
   loading
 }: UnifiedInsightCardProps) => {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['why']));
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -49,6 +49,29 @@ export const UnifiedInsightCard = ({
 
   return (
     <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
+      {/* Why This Matters - Collapsible */}
+      {whyThisMatters && (
+        <Collapsible open={expandedSections.has('why')}>
+          <CollapsibleTrigger 
+            onClick={() => toggleSection('why')}
+            className="flex items-center justify-between w-full group"
+          >
+            <div className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-amber-600" />
+              <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                Why This Matters
+              </h4>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('why') ? 'rotate-180' : ''}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pl-1 mt-3">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {whyThisMatters}
+            </p>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+
       {/* What To Do - Collapsible */}
       {whatToDo && whatToDo.length > 0 && (
         <Collapsible open={expandedSections.has('do')}>
@@ -104,29 +127,6 @@ export const UnifiedInsightCard = ({
                 </p>
               </div>
             )}
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-
-      {/* Why This Matters - Collapsible */}
-      {whyThisMatters && (
-        <Collapsible open={expandedSections.has('why')}>
-          <CollapsibleTrigger 
-            onClick={() => toggleSection('why')}
-            className="flex items-center justify-between w-full group"
-          >
-            <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-amber-600" />
-              <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                Why This Matters
-              </h4>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('why') ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pl-1 mt-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {whyThisMatters}
-            </p>
           </CollapsibleContent>
         </Collapsible>
       )}
