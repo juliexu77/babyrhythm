@@ -66,24 +66,17 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     const minutes = parseInt(match[2]);
     const period = match[3].toUpperCase();
     
-    // Round to nearest 15 minutes for range display
+    // Round to nearest 15 minutes for display
     const roundedMinutes = Math.round(minutes / 15) * 15;
     const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
     const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
     
-    // Create a ±15 minute range
-    const lowerBound = finalMinutes - 15 >= 0 ? finalMinutes - 15 : 60 + (finalMinutes - 15);
-    const upperBound = finalMinutes + 15 <= 59 ? finalMinutes + 15 : (finalMinutes + 15) - 60;
-    
-    const lowerHour = lowerBound < 0 ? (adjustedHours - 1 + 12) % 12 || 12 : adjustedHours;
-    const upperHour = upperBound < finalMinutes ? (adjustedHours + 1) % 12 || 12 : adjustedHours;
-    
-    // Format as "around X:XX" or "X:XX - X:XX" range
+    // Show as "time ± 15 min" for medium/low confidence
     if (schedule.confidence === 'high') {
-      return `around ${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
+      return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
     }
     
-    return `${lowerHour}:${Math.abs(lowerBound).toString().padStart(2, '0')} - ${upperHour}:${upperBound.toString().padStart(2, '0')} ${period}`;
+    return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period} ± 15 min`;
   };
 
   const toggleExpanded = (eventId: string) => {
@@ -266,12 +259,13 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
-                      <Clock className="w-3 h-3 text-primary animate-pulse" />
-                      <span className="text-xs font-medium text-primary">Now</span>
+                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-3">
+                    <div className="flex-1 h-8 bg-primary/20 rounded-lg border-l-4 border-primary flex items-center justify-end pr-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-primary animate-pulse" />
+                        <span className="text-xs font-semibold text-primary">Now</span>
+                      </div>
                     </div>
-                    <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
@@ -320,12 +314,13 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
-                      <Clock className="w-3 h-3 text-primary animate-pulse" />
-                      <span className="text-xs font-medium text-primary">Now</span>
+                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-3">
+                    <div className="flex-1 h-8 bg-primary/20 rounded-lg border-l-4 border-primary flex items-center justify-end pr-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-primary animate-pulse" />
+                        <span className="text-xs font-semibold text-primary">Now</span>
+                      </div>
                     </div>
-                    <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
@@ -379,12 +374,13 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
-                      <Clock className="w-3 h-3 text-primary animate-pulse" />
-                      <span className="text-xs font-medium text-primary">Now</span>
+                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-3">
+                    <div className="flex-1 h-8 bg-primary/20 rounded-lg border-l-4 border-primary flex items-center justify-end pr-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-primary animate-pulse" />
+                        <span className="text-xs font-semibold text-primary">Now</span>
+                      </div>
                     </div>
-                    <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
