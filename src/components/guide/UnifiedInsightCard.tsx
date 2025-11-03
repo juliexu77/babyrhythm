@@ -19,7 +19,7 @@ export const UnifiedInsightCard = ({
   prepTip,
   loading
 }: UnifiedInsightCardProps) => {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['know']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -45,7 +45,7 @@ export const UnifiedInsightCard = ({
   }
 
   // If we have nothing to show, don't render
-  if (!whyThisMatters && !whatToKnow?.length && !whatToDo?.length && !whatsNext) {
+  if (!whyThisMatters && !whatToDo?.length && !whatsNext) {
     return null;
   }
 
@@ -64,34 +64,6 @@ export const UnifiedInsightCard = ({
             {whyThisMatters}
           </p>
         </div>
-      )}
-
-      {/* What to Know - Collapsible */}
-      {whatToKnow && whatToKnow.length > 0 && (
-        <Collapsible open={expandedSections.has('know')}>
-          <CollapsibleTrigger 
-            onClick={() => toggleSection('know')}
-            className="flex items-center justify-between w-full group"
-          >
-            <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-primary" />
-              <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                What to Know
-              </h4>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('know') ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-2 pl-1 mt-3">
-            {whatToKnow.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {item}
-                </p>
-              </div>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
       )}
 
       {/* What To Do - Collapsible */}
