@@ -78,7 +78,8 @@ export const useHomeTabIntelligence = (
     const lastActivityTime = new Date(lastActivity.loggedAt);
     const duration = differenceInMinutes(new Date(), lastActivityTime);
 
-    if (lastActivity.type === 'feed' && duration < 30) {
+    // Check if last activity is an ongoing feed (no endTime = still feeding)
+    if (lastActivity.type === 'feed' && duration < 30 && !lastActivity.details?.endTime) {
       return {
         type: 'feeding',
         duration,
