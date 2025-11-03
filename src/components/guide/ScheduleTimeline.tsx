@@ -133,15 +133,36 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   return (
     <div className="space-y-4">
       {/* Header with confidence badge and accuracy */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
           {babyName}'s Predicted Schedule
         </h3>
         <div className="flex items-center gap-2">
           {schedule.accuracyScore !== undefined && schedule.accuracyScore > 0 && (
-            <Badge variant="outline" className="text-xs">
-              {schedule.accuracyScore}% accurate
-            </Badge>
+            <div className="relative">
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <button className="flex items-center gap-1 group">
+                    <Badge variant="outline" className="text-xs cursor-pointer hover:bg-accent">
+                      {schedule.accuracyScore}% accurate
+                    </Badge>
+                    <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-all group-data-[state=open]:rotate-180" />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="absolute right-0 top-full mt-2 z-10 w-72 p-3 bg-card border border-border rounded-lg shadow-lg text-xs text-muted-foreground space-y-2">
+                  <p className="font-medium text-foreground">How accuracy works:</p>
+                  <p>
+                    We compare predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
+                  </p>
+                  <p>
+                    As you log more activities, the schedule adapts in real-time using today&apos;s actual wake time and patterns, improving accuracy over time.
+                  </p>
+                  <p className="text-primary font-medium">
+                    {schedule.accuracyScore}% means predictions are still learning your baby&apos;s unique rhythm!
+                  </p>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
           )}
           <Badge variant={schedule.confidence === 'high' ? 'default' : 'secondary'}>
             {schedule.confidence} confidence
