@@ -616,29 +616,54 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     
     // Fetch fresh data every 4 hours starting at 6am (6am, 10am, 2pm, 6pm, 10pm, 2am)
     const napMismatch = hasNapCountMismatch();
-    const now = new Date();
-    const currentHour = now.getHours();
-    const validFetchHours = [6, 10, 14, 18, 22, 2];
-    const lastFetchDate = lastFetch ? new Date(lastFetch) : null;
-    const hoursSinceLastFetch = lastFetchDate ? (now.getTime() - lastFetchDate.getTime()) / (1000 * 60 * 60) : Infinity;
-    const lastFetchHour = lastFetchDate?.getHours();
     
-    // Fetch if: no cache, been 4+ hours, in valid fetch hour, or nap count mismatch
-    const shouldFetch = !lastFetch || 
-                        (hoursSinceLastFetch >= 4 && validFetchHours.includes(currentHour) && lastFetchHour !== currentHour) || 
-                        napMismatch;
+    // Only fetch if: no cache, or nap count mismatch (time-based refresh handled by separate effect)
+    const shouldFetch = !lastFetch || napMismatch;
     
     if (shouldFetch) {
       if (napMismatch) {
         console.log('🚀 Force refreshing insights due to nap count mismatch...');
       } else {
-        console.log('🚀 Fetching fresh rhythm insights...');
+        console.log('🚀 Fetching initial rhythm insights...');
       }
       fetchRhythmInsights();
     } else {
       setRhythmInsightsLoading(false);
     }
-  }, [hasTier3Data, household, activities.length, babyAgeInWeeks, aiPrediction]);
+  }, [hasTier3Data, household, babyAgeInWeeks, aiPrediction, rhythmInsights]);
+
+  // Separate effect to check time-based refresh every minute
+  useEffect(() => {
+    if (!hasTier3Data) return;
+    
+    const checkRefreshTime = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const validFetchHours = [6, 10, 14, 18, 22, 2];
+      const lastFetch = localStorage.getItem('rhythmInsightsLastFetch');
+      const lastFetchDate = lastFetch ? new Date(lastFetch) : null;
+      const hoursSinceLastFetch = lastFetchDate ? (now.getTime() - lastFetchDate.getTime()) / (1000 * 60 * 60) : Infinity;
+      const lastFetchHour = lastFetchDate?.getHours();
+      
+      // Only fetch at valid hours if 4+ hours have passed
+      const shouldFetch = !lastFetch || 
+                          (hoursSinceLastFetch >= 4 && validFetchHours.includes(currentHour) && lastFetchHour !== currentHour);
+      
+      if (shouldFetch) {
+        console.log('⏰ Time-based refresh triggered for rhythm insights');
+        // Trigger a fetch by clearing the cache
+        localStorage.removeItem('rhythmInsights');
+        setRhythmInsights(null);
+      }
+    };
+    
+    // Check immediately
+    checkRefreshTime();
+    
+    // Then check every minute for time-based refresh
+    const interval = setInterval(checkRefreshTime, 60000);
+    return () => clearInterval(interval);
+  }, [hasTier3Data]);
 
   // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {
