@@ -30,33 +30,50 @@ function doesTimeZoneObserveDST(timezone: string): boolean {
 
 /**
  * Gets the DST transition dates for the current year in the given timezone
+ * Returns dates in YYYY-MM-DD string format for reliable comparison
  */
-function getDSTTransitionDates(timezone: string, year: number): { spring: Date | null; fall: Date | null } {
+function getDSTTransitionDates(timezone: string, year: number): { spring: string | null; fall: string | null } {
   if (!doesTimeZoneObserveDST(timezone)) {
     return { spring: null, fall: null };
   }
   
   // Check each day of the year for offset changes
-  let springTransition: Date | null = null;
-  let fallTransition: Date | null = null;
+  let springTransition: string | null = null;
+  let fallTransition: string | null = null;
   
   let previousOffset: number | null = null;
   
   for (let month = 0; month < 12; month++) {
     for (let day = 1; day <= 31; day++) {
       try {
-        const date = new Date(year, month, day);
-        if (date.getMonth() !== month) break; // Invalid date
+        // Create date at noon to avoid midnight edge cases
+        const date = new Date(Date.UTC(year, month, day, 12, 0, 0));
+        if (date.getUTCMonth() !== month) break; // Invalid date
         
-        const offset = new Date(date.toLocaleString('en-US', { timeZone: timezone })).getTimezoneOffset();
+        // Get the offset for this date in the target timezone
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          hour12: false
+        });
+        
+        // Calculate offset by comparing UTC time with local time
+        const parts = formatter.formatToParts(date);
+        const localHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
+        const offset = 12 - localHour; // Difference from UTC noon
         
         if (previousOffset !== null && offset !== previousOffset) {
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          
           if (offset < previousOffset) {
-            // Spring forward (offset decreases)
-            springTransition = new Date(year, month, day);
+            // Spring forward (clocks move ahead, offset decreases)
+            springTransition = dateStr;
           } else {
-            // Fall back (offset increases)
-            fallTransition = new Date(year, month, day);
+            // Fall back (clocks move back, offset increases)
+            fallTransition = dateStr;
           }
         }
         
@@ -91,29 +108,32 @@ export function checkDSTTransition(timezone?: string): DSTTransition {
   }
   
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // Get today's date as YYYY-MM-DD string in local timezone
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  
+  // Get yesterday's date string
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
   
   const { spring, fall } = getDSTTransitionDates(tz, now.getFullYear());
   
   console.log('🕐 DST Detection - Transition dates:', {
-    spring: spring?.toDateString(),
-    fall: fall?.toDateString(),
-    today: today.toDateString(),
+    spring,
+    fall,
+    today: todayStr,
+    yesterday: yesterdayStr,
     timezone: tz
   });
   
   // Check if today is a DST transition day
-  const isSpringToday = spring && today.getTime() === spring.getTime();
-  const isFallToday = fall && today.getTime() === fall.getTime();
+  const isSpringToday = spring === todayStr;
+  const isFallToday = fall === todayStr;
   const isDSTToday = isSpringToday || isFallToday;
   
   // Check if yesterday was a DST transition day (extended adjustment period)
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const wasSpringYesterday = spring && yesterday.getTime() === spring.getTime();
-  const wasFallYesterday = fall && yesterday.getTime() === fall.getTime();
+  const wasSpringYesterday = spring === yesterdayStr;
+  const wasFallYesterday = fall === yesterdayStr;
   
   const isDSTTransitionPeriod = isDSTToday || wasSpringYesterday || wasFallYesterday;
   
