@@ -108,9 +108,13 @@ export function usePredictionEngine(activities: Activity[]) {
             ? `Nap likely around ${formatTime(timing.nextNapWindowStart)} — watch for sleepy cues`
             : `Watch for sleepy cues — nap window approaching`;
         case 'LET_SLEEP_CONTINUE':
+          // Check if there's an ongoing nap to determine sleep type
+          const ongoingNap = activities.find(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime);
+          const isNightSleep = ongoingNap?.details?.isNightSleep;
+          const sleepType = isNightSleep ? 'sleeping' : 'napping';
           return timing.nextWakeAt
             ? `Likely waking around ${formatTime(timing.nextWakeAt)}`
-            : `${name} is napping — let them rest`;
+            : `${name} is ${sleepType} — let them rest`;
         case 'INDEPENDENT_TIME':
           return `${name} is showing flexible patterns — that's okay`;
         default:

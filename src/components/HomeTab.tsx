@@ -350,6 +350,9 @@ const lastDiaper = displayActivities
           ? t('restingDeeply')
           : t('settlingIn');
       
+      const isNightSleep = ongoingNap.details?.isNightSleep;
+      const sleepVerb = isNightSleep ? 'sleeping' : 'napping';
+      
       return {
         main: `${babyName || t('baby')} ${t('hasBeenSleepingSince')} ${startTime}`,
         sub: `${babyName?.split(' ')[0] || t('baby')} ${t('hasBeenRestingFor')} ${durationText} — ${qualityText}.`
@@ -625,7 +628,11 @@ const lastDiaper = displayActivities
       const napHours = Math.floor(napDuration / 60);
       const napMins = napDuration % 60;
       
-      return `${babyName} is currently napping and has been asleep for ${napHours > 0 ? `${napHours}h ` : ''}${napMins}m. ${babyName} has had ${summary.napCount} nap${summary.napCount !== 1 ? 's' : ''} today, and babies at ${babyAgeMonths || 0} months typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day. Let them rest and they'll wake when ready.`;
+      const isNightSleep = ongoingNap.details?.isNightSleep;
+      const sleepType = isNightSleep ? 'sleeping' : 'napping';
+      const sleepNoun = isNightSleep ? 'sleep' : 'nap';
+      
+      return `${babyName} is currently ${sleepType} and has been asleep for ${napHours > 0 ? `${napHours}h ` : ''}${napMins}m. ${babyName} has had ${summary.napCount} ${sleepNoun}${summary.napCount !== 1 ? 's' : ''} today, and babies at ${babyAgeMonths || 0} months typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day. Let them rest and they'll wake when ready.`;
     } else if (prediction.intent === 'START_WIND_DOWN') {
       // Nap is coming soon
       const expectedWindow = babyAgeMonths !== null && babyAgeMonths < 3 ? 90 : 
@@ -1323,9 +1330,10 @@ const lastDiaper = displayActivities
           nextPrediction={nextPrediction}
           onWokeEarly={onEndNap}
           onStillAsleep={() => {
+            const sleepType = ongoingNap?.details?.isNightSleep ? 'sleeping' : 'napping';
             toast({
-              title: 'Still napping',
-              description: 'Nap timer continues',
+              title: `Still ${sleepType}`,
+              description: `${ongoingNap?.details?.isNightSleep ? 'Sleep' : 'Nap'} timer continues`,
             });
           }}
           onStartNap={() => {

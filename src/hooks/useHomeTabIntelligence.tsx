@@ -5,7 +5,7 @@ import { Activity } from '@/components/ActivityCard';
 import { usePredictionEngine } from '@/hooks/usePredictionEngine';
 
 interface CurrentActivityState {
-  type: 'napping' | 'awake' | 'feeding';
+  type: 'napping' | 'sleeping' | 'awake' | 'feeding';
   duration: number;
   statusText: string;
   startTime: string;
@@ -59,10 +59,14 @@ export const useHomeTabIntelligence = (
         isPastAnticipatedWake = new Date() > wakeTime;
       }
       
+      const isNightSleep = ongoingNap.details?.isNightSleep;
+      const sleepType = isNightSleep ? 'sleeping' : 'napping';
+      const sleepNoun = isNightSleep ? 'Sleep' : 'Nap';
+      
       return {
-        type: 'napping',
+        type: isNightSleep ? 'sleeping' : 'napping',
         duration,
-        statusText: `${babyName}'s napping — Nap in progress`,
+        statusText: `${babyName}'s ${sleepType} — ${sleepNoun} in progress`,
         startTime: startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
         isPastAnticipatedWake
       };
@@ -155,8 +159,8 @@ export const useHomeTabIntelligence = (
     const timing = prediction.timing;
     const intent = prediction.intent;
 
-    // Handle napping state - only if actually napping
-    if (currentActivity?.type === 'napping' && timing?.nextWakeAt) {
+    // Handle sleeping/napping state - only if actually asleep
+    if ((currentActivity?.type === 'napping' || currentActivity?.type === 'sleeping') && timing?.nextWakeAt) {
       const wakeTime = new Date(timing.nextWakeAt);
       const minutesUntil = Math.max(0, differenceInMinutes(wakeTime, now));
       
@@ -168,7 +172,7 @@ export const useHomeTabIntelligence = (
       };
     }
 
-    // If baby is awake (not napping), prioritize feed predictions first
+    // If baby is awake (not sleeping/napping), prioritize feed predictions first
     if (currentActivity?.type === 'awake') {
       // Check if feed is more imminent than nap
       const feedTime = timing?.nextFeedAt ? new Date(timing.nextFeedAt) : null;
