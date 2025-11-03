@@ -1341,10 +1341,38 @@ const lastDiaper = displayActivities
             }
           }}
           onEndFeed={() => {
-            toast({
-              title: 'Feed ended',
-              description: 'Logged successfully',
-            });
+            if (addActivity && currentActivity?.type === 'feeding') {
+              const now = new Date();
+              const startTime = currentActivity.startTime;
+              
+              // Calculate duration in minutes
+              let durationMinutes = 0;
+              if (startTime) {
+                const [time, period] = startTime.split(' ');
+                const [hours, minutes] = time.split(':').map(Number);
+                let startHours = hours;
+                if (period === 'PM' && hours !== 12) startHours += 12;
+                if (period === 'AM' && hours === 12) startHours = 0;
+                
+                const startDate = new Date(now);
+                startDate.setHours(startHours, minutes, 0, 0);
+                durationMinutes = differenceInMinutes(now, startDate);
+              }
+              
+              // Log the feed with duration
+              addActivity('feed', {
+                amount: 0, // User can edit later if needed
+                unit: 'ml',
+                startTime: startTime,
+                endTime: format(now, 'h:mm a'),
+                durationMinutes: Math.max(0, durationMinutes),
+              }, now);
+              
+              toast({
+                title: 'Feed ended',
+                description: 'Logged successfully',
+              });
+            }
           }}
           babyName={babyName || 'Baby'}
           babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
