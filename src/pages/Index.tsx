@@ -181,9 +181,11 @@ const parseLocalDateTime = (dateLocal: string, timeStr: string): Date => {
   return d;
 };
 
-// Show wake-up only for open naps that started today (ignore previous days to avoid stale entries)
+// Show wake-up only for open naps that started today OR yesterday if they're night sleeps
 const todayStart = new Date();
 todayStart.setHours(0, 0, 0, 0);
+const yesterdayStart = new Date(todayStart);
+yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 const now = new Date();
  
 const ongoingNap = (() => {
@@ -201,9 +203,18 @@ const ongoingNap = (() => {
       return `${yyyy}-${mm}-${dd}`;
     })();
     
-    // Only consider naps from today (based on local date) to avoid stale open naps
+    // Only consider naps from today OR yesterday if it's a night sleep
     const baseDateObj = new Date(baseLocalDate + 'T00:00:00');
-    return baseDateObj >= todayStart;
+    const isToday = baseDateObj >= todayStart;
+    const isYesterday = baseDateObj >= yesterdayStart && baseDateObj < todayStart;
+    
+    // If from yesterday, must be a night sleep (start time between 6 PM and 9 AM)
+    if (isYesterday) {
+      const isNightSleep = a.details?.isNightSleep;
+      return isNightSleep;
+    }
+    
+    return isToday;
   }).map(a => {
     const dateLocal = (a.details as any).date_local as string | undefined;
     const baseLocalDate = dateLocal ? dateLocal : (() => {
