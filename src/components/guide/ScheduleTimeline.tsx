@@ -223,14 +223,14 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   
   // Calculate day progress for countdown to bedtime
   const getDayProgress = () => {
-    if (groupedActivities.length === 0) return { percent: 0, timeUntilBedtime: '' };
+    if (groupedActivities.length === 0) return { percent: 0, timeUntilBedtime: '', minutesUntilBedtime: 0 };
     
     const firstEventTime = parseTime(groupedActivities[0].time);
     const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'bedtime');
     const lastEventTime = bedtimeActivity ? parseTime(bedtimeActivity.endTime || bedtimeActivity.time) : parseTime(groupedActivities[groupedActivities.length - 1].time);
     
     const dayDuration = lastEventTime - firstEventTime;
-    if (dayDuration <= 0) return { percent: 0, timeUntilBedtime: '' };
+    if (dayDuration <= 0) return { percent: 0, timeUntilBedtime: '', minutesUntilBedtime: 0 };
     
     const currentProgress = currentMinutes - firstEventTime;
     const progressPercent = Math.min(Math.max((currentProgress / dayDuration) * 100, 0), 100);
@@ -248,15 +248,15 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       }
     }
     
-    return { percent: progressPercent, timeUntilBedtime };
+    return { percent: progressPercent, timeUntilBedtime, minutesUntilBedtime };
   };
   
   const dayProgress = getDayProgress();
   
   return (
     <div className="space-y-4">
-      {/* Day Progress Bar - Countdown to Bedtime */}
-      {groupedActivities.length > 0 && dayProgress.percent < 100 && dayProgress.timeUntilBedtime && (
+      {/* Day Progress Bar - Countdown to Bedtime - Only show when less than 3 hours away */}
+      {groupedActivities.length > 0 && dayProgress.percent < 100 && dayProgress.timeUntilBedtime && dayProgress.minutesUntilBedtime < 180 && (
         <div className="space-y-2 p-3 bg-accent/20 rounded-lg border border-border/40">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Day Progress</span>
