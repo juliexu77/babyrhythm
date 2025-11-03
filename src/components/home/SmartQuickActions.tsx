@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Moon, Milk, Sun } from "lucide-react";
 
 export interface Activity {
   id: string;
@@ -85,7 +84,7 @@ export const SmartQuickActions = ({
             onClick={() => onOpenAddActivity?.('nap', prefillNap)}
             className="w-full"
           >
-            <Moon className="w-4 h-4 mr-2" />
+            <span className="mr-2">+</span>
             Log Sleep
           </Button>
           <Button
@@ -94,7 +93,7 @@ export const SmartQuickActions = ({
             onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
             className="w-full"
           >
-            <Milk className="w-4 h-4 mr-2" />
+            <span className="mr-2">+</span>
             Log Feed
           </Button>
         </div>
@@ -138,7 +137,7 @@ export const SmartQuickActions = ({
               onClick={() => onOpenAddActivity?.('nap', prefillNap)}
               className="w-full"
             >
-              <Moon className="w-4 h-4 mr-2" />
+              <span className="mr-2">+</span>
               Log Sleep
             </Button>
             <Button
@@ -147,7 +146,7 @@ export const SmartQuickActions = ({
               onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
               className="w-full"
             >
-              <Milk className="w-4 h-4 mr-2" />
+              <span className="mr-2">+</span>
               Log Feed
             </Button>
           </div>
