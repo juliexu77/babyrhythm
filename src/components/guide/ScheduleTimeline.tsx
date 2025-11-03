@@ -234,23 +234,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         </div>
       )}
       
-      {/* DST Transition Notice */}
-      {dstInfo.isDSTTransitionPeriod && (
-        <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-          <div className="flex items-start gap-2">
-            <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-medium text-amber-900 dark:text-amber-200 mb-1">
-                Daylight Saving Time Adjustment
-              </p>
-              <p className="text-xs text-amber-800 dark:text-amber-300">
-                {dstInfo.message}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Header with confidence badge and model state */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
@@ -456,6 +439,23 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           return null;
         })}
       </div>
+      
+      {/* DST Transition Notice - Below Schedule */}
+      {dstInfo.isDSTTransitionPeriod && (
+        <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20 mt-4">
+          <div className="flex items-start gap-2">
+            <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-medium text-amber-900 dark:text-amber-200 mb-1">
+                {dstInfo.transitionType === 'spring-forward' ? '🌸 Spring Forward' : '🍂 Fall Back'} - Daylight Saving Time
+              </p>
+              <p className="text-xs text-amber-800 dark:text-amber-300">
+                {dstInfo.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
