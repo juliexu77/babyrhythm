@@ -582,19 +582,30 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     }
     
-    // Check if cache is still valid (within 6 hours)
+    // Check if cache is still valid (within 4 hours, aligned to 6am start)
     if (rhythmInsights && lastFetch) {
-      const hoursSinceLastFetch = (Date.now() - new Date(lastFetch).getTime()) / (1000 * 60 * 60);
-      if (hoursSinceLastFetch < 6 && !hasNapCountMismatch()) {
+      const lastFetchDate = new Date(lastFetch);
+      const hoursSinceLastFetch = (Date.now() - lastFetchDate.getTime()) / (1000 * 60 * 60);
+      
+      if (hoursSinceLastFetch < 4 && !hasNapCountMismatch()) {
         setRhythmInsightsLoading(false);
         return; // Already have valid data
       }
     }
     
-    // Fetch fresh data if: more than 6 hours, no cache, or nap count mismatch
+    // Fetch fresh data every 4 hours starting at 6am (6am, 10am, 2pm, 6pm, 10pm, 2am)
     const napMismatch = hasNapCountMismatch();
-    const hoursSinceLastFetch = lastFetch ? (Date.now() - new Date(lastFetch).getTime()) / (1000 * 60 * 60) : Infinity;
-    const shouldFetch = !lastFetch || hoursSinceLastFetch >= 6 || napMismatch;
+    const now = new Date();
+    const currentHour = now.getHours();
+    const validFetchHours = [6, 10, 14, 18, 22, 2];
+    const lastFetchDate = lastFetch ? new Date(lastFetch) : null;
+    const hoursSinceLastFetch = lastFetchDate ? (now.getTime() - lastFetchDate.getTime()) / (1000 * 60 * 60) : Infinity;
+    const lastFetchHour = lastFetchDate?.getHours();
+    
+    // Fetch if: no cache, been 4+ hours, in valid fetch hour, or nap count mismatch
+    const shouldFetch = !lastFetch || 
+                        (hoursSinceLastFetch >= 4 && validFetchHours.includes(currentHour) && lastFetchHour !== currentHour) || 
+                        napMismatch;
     
     if (shouldFetch) {
       if (napMismatch) {
