@@ -77,8 +77,11 @@ function getDSTTransitionDates(timezone: string, year: number): { spring: Date |
 export function checkDSTTransition(timezone?: string): DSTTransition {
   const tz = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
   
+  console.log('🕐 DST Detection - Checking timezone:', tz);
+  
   // If timezone doesn't observe DST, return no transition
   if (!doesTimeZoneObserveDST(tz)) {
+    console.log('🕐 DST Detection - Timezone does not observe DST');
     return {
       isDSTToday: false,
       isDSTTransitionPeriod: false,
@@ -94,6 +97,13 @@ export function checkDSTTransition(timezone?: string): DSTTransition {
   
   const { spring, fall } = getDSTTransitionDates(tz, now.getFullYear());
   
+  console.log('🕐 DST Detection - Transition dates:', {
+    spring: spring?.toDateString(),
+    fall: fall?.toDateString(),
+    today: today.toDateString(),
+    timezone: tz
+  });
+  
   // Check if today is a DST transition day
   const isSpringToday = spring && today.getTime() === spring.getTime();
   const isFallToday = fall && today.getTime() === fall.getTime();
@@ -106,6 +116,15 @@ export function checkDSTTransition(timezone?: string): DSTTransition {
   const wasFallYesterday = fall && yesterday.getTime() === fall.getTime();
   
   const isDSTTransitionPeriod = isDSTToday || wasSpringYesterday || wasFallYesterday;
+  
+  console.log('🕐 DST Detection - Results:', {
+    isDSTToday,
+    isDSTTransitionPeriod,
+    isSpringToday,
+    isFallToday,
+    wasSpringYesterday,
+    wasFallYesterday
+  });
   
   let transitionType: 'spring-forward' | 'fall-back' | null = null;
   let message = '';

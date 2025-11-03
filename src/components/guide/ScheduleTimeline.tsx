@@ -44,7 +44,11 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   
   // Check for DST transition
-  const dstInfo = useMemo(() => checkDSTTransition(), []);
+  const dstInfo = useMemo(() => {
+    const result = checkDSTTransition();
+    console.log('📅 ScheduleTimeline - DST Info:', result);
+    return result;
+  }, []);
 
   // Get current time for progress indicator
   const now = new Date();
