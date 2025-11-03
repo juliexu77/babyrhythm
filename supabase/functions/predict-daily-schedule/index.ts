@@ -49,14 +49,23 @@ serve(async (req) => {
       return activityDate >= fourteenDaysAgo;
     });
 
-    // Group by day to see nap patterns
+    // Helper to detect night sleep (8pm to 6am)
+    const isNightTime = (date: Date): boolean => {
+      const hour = date.getHours();
+      return hour >= 20 || hour < 6;
+    };
+
+    // Group by day to see nap patterns (exclude night sleep)
     const dailyPatterns: { [key: string]: { naps: number; feeds: number; bedtime?: string } } = {};
     last14Days.forEach((activity: Activity) => {
       const date = new Date(activity.logged_at).toDateString();
       if (!dailyPatterns[date]) {
         dailyPatterns[date] = { naps: 0, feeds: 0 };
       }
-      if (activity.type === 'nap') dailyPatterns[date].naps++;
+      // Only count daytime naps (not night sleep)
+      if (activity.type === 'nap' && !isNightTime(new Date(activity.logged_at))) {
+        dailyPatterns[date].naps++;
+      }
       if (activity.type === 'feed') dailyPatterns[date].feeds++;
       if (activity.type === 'night_sleep' && activity.details?.end_time) {
         dailyPatterns[date].bedtime = new Date(activity.details.end_time).toLocaleTimeString('en-US', {
@@ -77,11 +86,13 @@ serve(async (req) => {
     const maxNapCount = last7NapCounts.length ? Math.max(...last7NapCounts) : 0;
     const minNapCount = last7NapCounts.length ? Math.min(...last7NapCounts) : 0;
 
-    // Today's activities summary
-    const todayNaps = (todayActivities || []).filter((a: Activity) => a.type === 'nap').length;
+    // Today's activities summary (exclude night sleep)
+    const todayNaps = (todayActivities || [])
+      .filter((a: Activity) => a.type === 'nap' && !isNightTime(new Date(a.logged_at)))
+      .length;
     const todayFeeds = (todayActivities || []).filter((a: Activity) => a.type === 'feed').length;
     const lastNap = (todayActivities || [])
-      .filter((a: Activity) => a.type === 'nap')
+      .filter((a: Activity) => a.type === 'nap' && !isNightTime(new Date(a.logged_at)))
       .sort((a: Activity, b: Activity) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())[0];
 
     // Robust last-nap duration in minutes
@@ -132,26 +143,29 @@ serve(async (req) => {
 
 Baby age: ${babyAgeMonths ? `${babyAgeMonths} months` : 'Unknown'}
 
-Recent 7-day pattern:
+Recent 7-day pattern (DAYTIME NAPS ONLY, excluding night sleep):
 ${patternSummary}
 
-Last 7 days nap counts: ${napCountsLine}
-Typical nap range (last 7): ${minNapCount}–${maxNapCount}
+Last 7 days DAYTIME nap counts: ${napCountsLine}
+Typical DAYTIME nap range (last 7): ${minNapCount}–${maxNapCount}
 
 Today so far (current time: ${currentTime}):
-- ${todayNaps} nap${todayNaps !== 1 ? 's' : ''} logged
+- ${todayNaps} DAYTIME nap${todayNaps !== 1 ? 's' : ''} logged (not including night sleep)
 - ${todayFeeds} feed${todayFeeds !== 1 ? 's' : ''} logged
 ${lastNap ? `- Last nap duration: ${lastNapDuration} minutes` : ''}
 
+CRITICAL: All nap counts refer to DAYTIME naps only (before 8pm, after 6am). Do NOT count night sleep as naps.
+
 Strict rules:
-- Do NOT mention a transition from 4 to 3 naps unless the last 7 days include a day with 4+ naps.
+- Only analyze DAYTIME naps (6am-8pm). Night sleep is tracked separately.
+- Do NOT mention a transition from 4 to 3 naps unless the last 7 days include a day with 4+ DAYTIME naps.
 - Align all claims with the provided nap counts; do not infer unseen nap numbers.
 - If nap counts vary between 2 and 3 without 4, describe it as stabilizing between 2–3 naps (not 4→3).
 
 Analyze:
-1. Is baby transitioning nap counts? (e.g., some days 3 naps, some days 2)
-2. Based on today's activities so far, how many MORE naps are expected?
-3. What's the total expected nap count for today?
+1. Is baby transitioning DAYTIME nap counts? (e.g., some days 3 naps, some days 2)
+2. Based on today's activities so far, how many MORE DAYTIME naps are expected?
+3. What's the total expected DAYTIME nap count for today?
 4. How many total feeds expected today?
 5. Predicted bedtime?
 6. Confidence level (high/medium/low) and why?
