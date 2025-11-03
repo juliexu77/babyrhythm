@@ -62,6 +62,36 @@ export function generatePredictedSchedule(
   // Calculate feed intervals
   const feedIntervals = calculateAverageFeedInterval(activities);
   
+  // Determine confidence FIRST based on data availability (Tiered system)
+  const totalActivities = activities.length;
+  const hasRecentData = activities.filter(a => {
+    const loggedDate = new Date(a.logged_at);
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    return loggedDate >= threeDaysAgo;
+  }).length >= 10;
+  
+  let confidence: 'high' | 'medium' | 'low' = 'low';
+  let basedOnText = '';
+  
+  if (totalActivities >= 10 && hasRecentData) {
+    // Tier 3: Personalized
+    confidence = 'high';
+    const daysOfData = Math.ceil(activities.length / 8);
+    basedOnText = `Based on ${activities.length} activities over ${daysOfData} days`;
+  } else if (totalActivities >= 4) {
+    // Tier 2: Pattern emerging
+    confidence = 'medium';
+    basedOnText = `Based on ${activities.length} activities and age patterns`;
+  } else {
+    // Tier 1: Age-based only
+    confidence = 'low';
+    const ageInMonths = babyBirthday 
+      ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+      : null;
+    basedOnText = `Based on age${ageInMonths ? ` (${ageInMonths} months)` : ''}`;
+  }
+  
   // Build the schedule
   const events: ScheduleEvent[] = [];
   let currentTime = wakeTime;
@@ -153,36 +183,6 @@ export function generatePredictedSchedule(
       ? `Based on ${nightSleeps.length} recent bedtimes averaging ${formatTime(bedTime)}`
       : 'Based on recommended bedtime for age'
   });
-  
-  // Determine confidence based on data availability (Tiered system)
-  const totalActivities = activities.length;
-  const hasRecentData = activities.filter(a => {
-    const loggedDate = new Date(a.logged_at);
-    const threeDaysAgo = new Date();
-    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-    return loggedDate >= threeDaysAgo;
-  }).length >= 10;
-  
-  let confidence: 'high' | 'medium' | 'low' = 'low';
-  let basedOnText = '';
-  
-  if (totalActivities >= 10 && hasRecentData) {
-    // Tier 3: Personalized
-    confidence = 'high';
-    const daysOfData = Math.ceil(activities.length / 8);
-    basedOnText = `Based on ${activities.length} activities over ${daysOfData} days`;
-  } else if (totalActivities >= 4) {
-    // Tier 2: Pattern emerging
-    confidence = 'medium';
-    basedOnText = `Based on ${activities.length} activities and age patterns`;
-  } else {
-    // Tier 1: Age-based only
-    confidence = 'low';
-    const ageInMonths = babyBirthday 
-      ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
-      : null;
-    basedOnText = `Based on age${ageInMonths ? ` (${ageInMonths} months)` : ''}`;
-  }
   
   return {
     events,
