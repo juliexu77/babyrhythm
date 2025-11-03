@@ -1,26 +1,38 @@
 import { Activity } from "@/components/ActivityCard";
 
 /**
- * Get today's date key in format YYYY-MM-DD
+ * Get today's date key in LOCAL timezone format YYYY-MM-DD
+ * Uses local date to ensure activities logged today appear under today
  */
 export const getTodayKey = (): string => {
   const today = new Date();
-  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  // Get local date components (not UTC)
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const day = today.getDate();
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 };
 
 /**
- * Get date key from a Date object in format YYYY-MM-DD
+ * Get date key from a Date object in LOCAL timezone format YYYY-MM-DD
  */
 export const getDateKey = (date: Date): string => {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  // Get local date components (not UTC)
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 };
 
 /**
- * Get date key from a loggedAt timestamp in format YYYY-MM-DD
+ * Get date key from a loggedAt timestamp in LOCAL timezone format YYYY-MM-DD
+ * Converts UTC timestamp to local date for proper day boundary handling
  */
 export const getDateKeyFromActivity = (activity: Activity): string | null => {
   if (!activity.loggedAt) return null;
+  // Parse UTC timestamp and convert to local date
   const activityDate = new Date(activity.loggedAt);
+  // Use getDateKey which extracts local date components
   return getDateKey(activityDate);
 };
 
