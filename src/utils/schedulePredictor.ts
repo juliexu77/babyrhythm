@@ -242,14 +242,39 @@ export function generatePredictedSchedule(
     }
   }
   
-  // Add bedtime feed
-  events.push({
-    time: formatTime(bedTime - 30),
-    type: 'feed',
-    notes: 'Bedtime feed',
-    confidence: eventConfidence('feed'),
-    reasoning: 'Full feed before bed supports longer sleep'
-  });
+  // Add remaining feeds between last event and bedtime
+  let postNapTime = currentTime;
+  while (postNapTime < bedTime - 60) { // Continue until 1 hour before bed
+    const timeSinceLastFeed = postNapTime - lastFeedTime;
+    
+    if (timeSinceLastFeed >= feedIntervals.typical * 0.85) {
+      events.push({
+        time: formatTime(postNapTime),
+        type: 'feed',
+        notes: 'Feed',
+        confidence: eventConfidence('feed'),
+        reasoning: feedIntervals.typical > 0
+          ? `Average feed interval: ${Math.floor(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m`
+          : 'Regular feeding pattern'
+      });
+      lastFeedTime = postNapTime;
+      postNapTime += feedIntervals.typical;
+    } else {
+      postNapTime += 30; // Increment by 30 min to check again
+    }
+  }
+  
+  // Add bedtime feed if enough time has passed since last feed
+  const timeSinceLastFeedAtBed = (bedTime - 30) - lastFeedTime;
+  if (timeSinceLastFeedAtBed >= feedIntervals.typical * 0.7) {
+    events.push({
+      time: formatTime(bedTime - 30),
+      type: 'feed',
+      notes: 'Bedtime feed',
+      confidence: eventConfidence('feed'),
+      reasoning: 'Full feed before bed supports longer sleep'
+    });
+  }
   
   // Add bedtime
   events.push({
