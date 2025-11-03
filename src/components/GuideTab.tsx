@@ -617,8 +617,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     // Fetch fresh data every 4 hours starting at 6am (6am, 10am, 2pm, 6pm, 10pm, 2am)
     const napMismatch = hasNapCountMismatch();
     
-    // Only fetch if: no cache, or nap count mismatch (time-based refresh handled by separate effect)
-    const shouldFetch = !lastFetch || napMismatch;
+    // Only fetch if: no cache OR (no lastFetch AND rhythmInsights not already loaded) OR nap mismatch
+    // If we have cached insights loaded in state, don't refetch just because lastFetch is missing
+    const shouldFetch = (!cached && !rhythmInsights) || (!rhythmInsights && !lastFetch) || napMismatch;
     
     if (shouldFetch) {
       if (napMismatch) {
@@ -628,6 +629,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
       fetchRhythmInsights();
     } else {
+      console.log('✅ Using cached insights, no fetch needed');
       setRhythmInsightsLoading(false);
     }
   }, [hasTier3Data, household, babyAgeInWeeks, aiPrediction]);
