@@ -10,6 +10,7 @@ interface RightNowStatusProps {
     duration: number; // minutes
     statusText: string;
     startTime: string;
+    isPastAnticipatedWake?: boolean;
   } | null;
   nextPrediction: {
     activity: string;
@@ -169,7 +170,7 @@ export const RightNowStatus = ({
               onClick={onWokeEarly}
               className="flex-1 text-xs"
             >
-              Woke up early
+              {currentActivity.isPastAnticipatedWake ? 'Mark as awake' : 'Woke up early'}
             </Button>
             <Button
               variant="outline"

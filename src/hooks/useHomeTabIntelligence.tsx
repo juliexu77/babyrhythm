@@ -9,6 +9,7 @@ interface CurrentActivityState {
   duration: number;
   statusText: string;
   startTime: string;
+  isPastAnticipatedWake?: boolean; // Whether we're past the expected wake time (for naps)
 }
 
 interface NextPrediction {
@@ -50,11 +51,20 @@ export const useHomeTabIntelligence = (
     if (ongoingNap) {
       const startTime = new Date(ongoingNap.loggedAt);
       const duration = differenceInMinutes(new Date(), startTime);
+      
+      // Check if we're past anticipated wake time (if prediction exists)
+      let isPastAnticipatedWake = false;
+      if (prediction?.timing?.nextWakeAt) {
+        const wakeTime = new Date(prediction.timing.nextWakeAt);
+        isPastAnticipatedWake = new Date() > wakeTime;
+      }
+      
       return {
         type: 'napping',
         duration,
         statusText: `${babyName}'s napping — Nap in progress`,
-        startTime: startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+        startTime: startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        isPastAnticipatedWake
       };
     }
 
@@ -134,7 +144,7 @@ export const useHomeTabIntelligence = (
       statusText: `${babyName} is awake`,
       startTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     };
-  }, [activities, ongoingNap, babyName]);
+  }, [activities, ongoingNap, babyName, prediction]);
 
   // Calculate next prediction using the prediction engine
   const nextPrediction = useMemo((): NextPrediction | null => {
