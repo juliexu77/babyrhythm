@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
-import { generatePredictedSchedule, calculatePredictionAccuracy, type ScheduleEvent, type PredictedSchedule } from "@/utils/schedulePredictor";
+import { generateAdaptiveSchedule, type AdaptiveSchedule } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
@@ -205,13 +205,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     transition_note?: string;
   } | null>(null);
   const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
-  const [predictedSchedule, setPredictedSchedule] = useState<PredictedSchedule | null>(null);
+  const [predictedSchedule, setPredictedSchedule] = useState<AdaptiveSchedule | null>(null);
   const [lastActivityCount, setLastActivityCount] = useState(0);
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
     const stored = localStorage.getItem('smartRemindersEnabled');
     return stored !== null ? stored === 'true' : true; // Default enabled
   });
-  const previousScheduleRef = useRef<PredictedSchedule | null>(null);
+  const previousScheduleRef = useRef<AdaptiveSchedule | null>(null);
   const [scheduleUpdatedRecently, setScheduleUpdatedRecently] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -391,38 +391,59 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   }, []);
 
-  // Memoized fallback schedule - always available as backup
-  const fallbackSchedule = useMemo(() => {
-    if (!hasMinimumData) {
-      console.log('🚫 No minimum data for schedule generation');
+  // Memoized adaptive schedule using prediction engine
+  const adaptiveSchedule = useMemo(() => {
+    // Require Tier 3 data for adaptive schedule (same as Home tab predictions)
+    if (!hasTier3Data || !household?.baby_birthday) {
+      console.log('🚫 Insufficient data for adaptive schedule:', { 
+        hasTier3Data, 
+        hasBirthday: !!household?.baby_birthday 
+      });
       return null;
     }
+    
     try {
-      console.log('🔄 Generating fallback schedule with', normalizedActivities.length, 'activities');
-      const schedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday, userTimezone);
-      console.log('✅ Fallback schedule generated:', schedule);
+      console.log('🔄 Generating adaptive schedule with prediction engine');
+      
+      // Convert enriched activities to the format expected by prediction engine
+      const activitiesForEngine = enrichedActivities.map(a => ({
+        id: a.id,
+        type: a.type as any,
+        time: a.details?.displayTime || new Date(a.logged_at).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        loggedAt: a.logged_at,
+        timezone: userTimezone,
+        details: a.details
+      }));
+      
+      const schedule = generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday);
+      console.log('✅ Adaptive schedule generated:', schedule);
       return schedule;
     } catch (error) {
-      console.error('❌ Failed to generate fallback schedule:', error);
+      console.error('❌ Failed to generate adaptive schedule:', error);
       return null;
     }
-  }, [normalizedActivities, household?.baby_birthday, hasMinimumData, userTimezone]);
+  }, [enrichedActivities, household?.baby_birthday, hasTier3Data, userTimezone]);
 
-  // Use predicted schedule if available, otherwise use fallback
-  const displaySchedule = predictedSchedule || fallbackSchedule;
+  // Use adaptive schedule (unified with Home tab prediction engine)
+  const displaySchedule = predictedSchedule || adaptiveSchedule;
   
   console.log('📅 Schedule Debug:', {
     hasMinimumData,
-    hasFallbackSchedule: !!fallbackSchedule,
+    hasTier3Data,
+    hasAdaptiveSchedule: !!adaptiveSchedule,
     hasPredictedSchedule: !!predictedSchedule,
     hasDisplaySchedule: !!displaySchedule,
-    normalizedActivitiesCount: normalizedActivities.length
+    enrichedActivitiesCount: enrichedActivities.length
   });
 
-  // Enable smart reminders - only after schedule is ready
+  // Enable smart reminders - only when we have adaptive schedule
   useSmartReminders({ 
-    schedule: displaySchedule, 
-    enabled: remindersEnabled && hasMinimumData && !!displaySchedule
+    schedule: displaySchedule as any, // Type compatibility with old interface
+    enabled: remindersEnabled && hasTier3Data && !!displaySchedule
   });
 
   // Sync reminder state with localStorage
@@ -698,153 +719,75 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [hasTier2Data, household, activities.length, aiPrediction]);
 
-  // Generate and update predicted schedule with HYBRID prediction (local + AI)
+  // Generate and update adaptive schedule using prediction engine
   useEffect(() => {
-    if (!hasMinimumData) {
-      console.log('⚠️ No minimum data for schedule, clearing schedule');
+    if (!hasTier3Data) {
+      console.log('⚠️ Insufficient data for adaptive schedule, clearing schedule');
       setPredictedSchedule(null);
       return;
     }
 
-    console.log('📅 Generating schedule with data:', {
-      hasMinimumData,
-      activitiesCount: normalizedActivities.length,
+    console.log('📅 Generating adaptive schedule with data:', {
+      hasTier3Data,
+      enrichedActivitiesCount: enrichedActivities.length,
       hasBirthday: !!household?.baby_birthday,
-      hasTier2: hasTier2Data,
-      hasAiPrediction: !!aiPrediction
+      lastActivityCount,
+      currentActivityCount: activities.length
     });
 
     try {
-      // Always start with local prediction for instant results
-      const localSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday, userTimezone);
+      // Generate adaptive schedule using prediction engine (same as Home tab)
+      const activitiesForEngine = enrichedActivities.map(a => ({
+        id: a.id,
+        type: a.type as any,
+        time: a.details?.displayTime || new Date(a.logged_at).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        loggedAt: a.logged_at,
+        timezone: userTimezone,
+        details: a.details
+      }));
       
-      if (!localSchedule) {
-        console.error('❌ Failed to generate local schedule - returned null');
+      const schedule = generateAdaptiveSchedule(activitiesForEngine, household?.baby_birthday);
+      
+      if (!schedule) {
+        console.error('❌ Failed to generate adaptive schedule - returned null');
         setPredictedSchedule(null);
         return;
       }
       
-      console.log('✅ Local schedule generated:', {
-        eventsCount: localSchedule.events.length,
-        confidence: localSchedule.confidence,
-        basedOn: localSchedule.basedOn
+      console.log('✅ Adaptive schedule generated:', {
+        eventsCount: schedule.events.length,
+        confidence: schedule.confidence,
+        basedOn: schedule.basedOn
       });
       
-      // Enhance with AI insights if available (Tier 2+)
-      if (aiPrediction && hasTier2Data) {
-        console.log('🤝 Creating hybrid prediction (local + AI)');
-        
-        // Use AI reasoning to enhance event descriptions
-        localSchedule.basedOn = `${localSchedule.basedOn} • Enhanced with AI pattern analysis`;
-        
-        // If AI detected transitions, add to adjustment note
-        if (aiPrediction.is_transitioning && aiPrediction.transition_note) {
-          localSchedule.adjustmentNote = aiPrediction.transition_note;
-        }
-        
-        // Enhance event reasoning with AI insights
-        localSchedule.events = localSchedule.events.map(event => {
-          if (event.type === 'nap' && aiPrediction.remaining_naps > 0) {
-            return {
-              ...event,
-              reasoning: event.reasoning 
-                ? `${event.reasoning} • AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
-                : `AI predicts ${aiPrediction.remaining_naps} more nap${aiPrediction.remaining_naps > 1 ? 's' : ''} today`
-            };
-          }
-          if (event.type === 'bed' && aiPrediction.predicted_bedtime) {
-            return {
-              ...event,
-              reasoning: event.reasoning
-                ? `${event.reasoning} • AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
-                : `AI suggests bedtime: ${aiPrediction.predicted_bedtime}`
-            };
-          }
-          return event;
-        });
-        
-        // Boost confidence if AI agrees
-        if (localSchedule.confidence === 'medium' && aiPrediction.confidence === 'high') {
-          localSchedule.confidence = 'high';
-        }
-      }
-      
-      // Calculate accuracy if we had a previous prediction from today
-      if (previousScheduleRef.current && previousScheduleRef.current.lastUpdated) {
-        const prevUpdateDate = new Date(previousScheduleRef.current.lastUpdated);
-        const isToday = prevUpdateDate.toDateString() === new Date().toDateString();
-        
-        if (isToday) {
-          const accuracy = calculatePredictionAccuracy(previousScheduleRef.current, normalizedActivities, userTimezone);
-          localSchedule.accuracyScore = accuracy;
-          console.log('📊 Prediction accuracy:', accuracy + '%');
-        }
-      }
-      
-      // Detect if schedule needs adjustment due to new activities
-      const activityCountChanged = activities.length !== lastActivityCount;
-      if (activityCountChanged && lastActivityCount > 0) {
-        // Get today's activities only
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayActivities = activities.filter(a => {
-          const actDate = new Date(a.logged_at);
-          return actDate >= today;
-        });
-        
-        // Check what type of activities were added
-        const recentActivity = activities[activities.length - 1];
-        if (recentActivity && todayActivities.length > 0) {
-          const activityType = recentActivity.type === 'nap' ? 'nap' : 
-                              recentActivity.type === 'feed' ? 'feed' : 'activity';
-          
-          // Only override adjustment note if AI didn't provide one
-          if (!localSchedule.adjustmentNote) {
-            localSchedule.adjustmentNote = `Schedule updated based on recent ${activityType}`;
-          }
-          console.log('🔄 Schedule adjusted:', localSchedule.adjustmentNote);
-          
-          // Show toast notification for schedule update
-          toast({
-            title: "Schedule Updated",
-            description: `Predictions adjusted based on recent ${activityType}`,
-            duration: 3000,
-          });
-        }
-      }
-      
       // Update refs and state
-      previousScheduleRef.current = localSchedule;
-      setPredictedSchedule(localSchedule);
+      previousScheduleRef.current = schedule;
+      setPredictedSchedule(schedule);
       setLastActivityCount(activities.length);
       
-      // Show adaptive feedback indicator
-      if (activityCountChanged && lastActivityCount > 0) {
+      // Show adaptive feedback indicator when schedule changes
+      const activityCountChanged = lastActivityCount > 0 && lastActivityCount !== activities.length;
+      if (activityCountChanged) {
         setScheduleUpdatedRecently(true);
-        setTimeout(() => setScheduleUpdatedRecently(false), 5000); // Clear after 5 seconds
+        setTimeout(() => setScheduleUpdatedRecently(false), 3000);
+        
+        // Show toast notification
+        toast({
+          title: "Schedule Updated",
+          description: "Predictions adjusted based on recent activity",
+          duration: 3000,
+        });
       }
       
-      console.log('✅ Schedule updated successfully');
     } catch (error) {
-      console.error('❌ Error generating hybrid schedule:', error);
-      // Fallback to basic schedule
-      try {
-        console.log('🔄 Attempting fallback schedule generation...');
-        const fallbackSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday, userTimezone);
-        if (fallbackSchedule) {
-          previousScheduleRef.current = fallbackSchedule;
-          setPredictedSchedule(fallbackSchedule);
-          console.log('✅ Fallback schedule generated');
-        } else {
-          console.error('❌ Fallback schedule returned null');
-          setPredictedSchedule(null);
-        }
-      } catch (fallbackError) {
-        console.error('❌ Fallback schedule generation failed:', fallbackError);
-        setPredictedSchedule(null);
-      }
+      console.error('❌ Error generating adaptive schedule:', error);
+      setPredictedSchedule(null);
     }
-  }, [normalizedActivities, household?.baby_birthday, hasMinimumData, aiPrediction, hasTier2Data]);
+  }, [enrichedActivities, household?.baby_birthday, hasTier3Data, activities.length, lastActivityCount, userTimezone, toast]);
 
 
   // Load initial insight
