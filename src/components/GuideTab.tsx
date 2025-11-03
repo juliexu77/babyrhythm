@@ -369,17 +369,31 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Memoized fallback schedule - always available as backup
   const fallbackSchedule = useMemo(() => {
-    if (!hasMinimumData) return null;
+    if (!hasMinimumData) {
+      console.log('🚫 No minimum data for schedule generation');
+      return null;
+    }
     try {
-      return generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
+      console.log('🔄 Generating fallback schedule with', normalizedActivities.length, 'activities');
+      const schedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
+      console.log('✅ Fallback schedule generated:', schedule);
+      return schedule;
     } catch (error) {
-      console.error('Failed to generate fallback schedule:', error);
+      console.error('❌ Failed to generate fallback schedule:', error);
       return null;
     }
   }, [normalizedActivities, household?.baby_birthday, hasMinimumData]);
 
   // Use predicted schedule if available, otherwise use fallback
   const displaySchedule = predictedSchedule || fallbackSchedule;
+  
+  console.log('📅 Schedule Debug:', {
+    hasMinimumData,
+    hasFallbackSchedule: !!fallbackSchedule,
+    hasPredictedSchedule: !!predictedSchedule,
+    hasDisplaySchedule: !!displaySchedule,
+    normalizedActivitiesCount: normalizedActivities.length
+  });
 
   // Enable smart reminders - only after schedule is ready
   useSmartReminders({ 
