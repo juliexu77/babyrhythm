@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -356,10 +356,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Show schedule at Tier 1, AI insights at Tier 3
   const hasMinimumData = hasTier1Data;
 
+  // Memoized fallback schedule - always available as backup
+  const fallbackSchedule = useMemo(() => {
+    if (!household?.baby_birthday || !hasMinimumData) return null;
+    try {
+      return generatePredictedSchedule(activities, household.baby_birthday);
+    } catch (error) {
+      console.error('Failed to generate fallback schedule:', error);
+      return null;
+    }
+  }, [activities, household?.baby_birthday, hasMinimumData]);
+
+  // Use predicted schedule if available, otherwise use fallback
+  const displaySchedule = predictedSchedule || fallbackSchedule;
+
   // Enable smart reminders - only after schedule is ready
   const { resetReminders } = useSmartReminders({ 
-    schedule: predictedSchedule, 
-    enabled: remindersEnabled && hasMinimumData && !!predictedSchedule
+    schedule: displaySchedule, 
+    enabled: remindersEnabled && hasMinimumData && !!displaySchedule
   });
 
   // Handle reminder toggle
@@ -1129,9 +1143,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 </Button>
               </div>
               
-              {predictedSchedule && (
+              {displaySchedule && (
                 <ScheduleTimeline 
-                  schedule={predictedSchedule} 
+                  schedule={displaySchedule} 
                   babyName={babyName}
                 />
               )}
