@@ -165,6 +165,17 @@ const Index = () => {
 
 const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
 
+// Clear justEndedNapId when the nap is confirmed to have an endTime in activities
+useEffect(() => {
+  if (justEndedNapId) {
+    const endedNap = activities.find(a => a.id === justEndedNapId);
+    if (endedNap?.details?.endTime) {
+      // The nap now has an endTime, safe to clear the flag
+      setJustEndedNapId(null);
+    }
+  }
+}, [activities, justEndedNapId]);
+
 // Helper: parse local date (YYYY-MM-DD) and 12h time (e.g., "7:15 PM") into a local Date
 const parseLocalDateTime = (dateLocal: string, timeStr: string): Date => {
   const [year, month, day] = dateLocal.split('-').map(Number);
@@ -540,9 +551,9 @@ const ongoingNap = (() => {
       }
       console.log('Successfully updated nap');
       toast({ title: "Saved", description: `${babyProfile?.name || 'Baby'} woke up at ${endStr}` });
-      refetchActivities();
-      // Clear the temporary hide after refresh
-      setTimeout(() => setJustEndedNapId(null), 1500);
+      
+      // Refetch activities - justEndedNapId will be cleared by useEffect when update is confirmed
+      await refetchActivities();
     } catch (e) {
       console.error('Error in markWakeUp:', e);
       setJustEndedNapId(null);
