@@ -182,54 +182,8 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
 
   const modelState = getModelStateDisplay();
   
-  // Calculate day progress for progress bar
-  const getDayProgress = () => {
-    if (groupedActivities.length === 0) return 0;
-    
-    const firstEventTime = parseTime(groupedActivities[0].time);
-    const lastEventTime = parseTime(groupedActivities[groupedActivities.length - 1].time);
-    const dayDuration = lastEventTime - firstEventTime;
-    
-    if (dayDuration <= 0) return 0;
-    
-    const currentProgress = currentMinutes - firstEventTime;
-    const progressPercent = Math.min(Math.max((currentProgress / dayDuration) * 100, 0), 100);
-    
-    return progressPercent;
-  };
-  
-  const dayProgress = getDayProgress();
-  const firstEvent = groupedActivities[0];
-  const lastEvent = groupedActivities[groupedActivities.length - 1];
-  
   return (
     <div className="space-y-4">
-      {/* Day Progress Bar */}
-      {groupedActivities.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{firstEvent?.time}</span>
-            <span className="text-primary font-medium">
-              {dayProgress < 100 ? `${Math.round(dayProgress)}% through the day` : 'Day complete'}
-            </span>
-            <span>{lastEvent?.time}</span>
-          </div>
-          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-            <div 
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary/80 to-primary transition-all duration-500 ease-out"
-              style={{ width: `${dayProgress}%` }}
-            />
-            {/* Current time indicator */}
-            {dayProgress > 0 && dayProgress < 100 && (
-              <div 
-                className="absolute top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-full shadow-lg animate-pulse"
-                style={{ left: `${dayProgress}%` }}
-              />
-            )}
-          </div>
-        </div>
-      )}
-      
       {/* Header with confidence badge and model state */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
@@ -312,9 +266,12 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in z-10">
-                    <Clock className="w-4 h-4 text-primary animate-pulse" />
-                    <div className="h-0.5 w-[calc(100%+2rem)] bg-gradient-to-r from-primary via-primary/80 to-transparent animate-pulse" />
+                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
+                      <Clock className="w-3 h-3 text-primary animate-pulse" />
+                      <span className="text-xs font-medium text-primary">Now</span>
+                    </div>
+                    <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
@@ -363,9 +320,12 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in z-10">
-                    <Clock className="w-4 h-4 text-primary animate-pulse" />
-                    <div className="h-0.5 w-[calc(100%+2rem)] bg-gradient-to-r from-primary via-primary/80 to-transparent animate-pulse" />
+                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
+                      <Clock className="w-3 h-3 text-primary animate-pulse" />
+                      <span className="text-xs font-medium text-primary">Now</span>
+                    </div>
+                    <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
@@ -419,9 +379,12 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
-                  <div className="absolute -left-4 top-0 flex items-center gap-2 animate-fade-in z-10">
-                    <Clock className="w-4 h-4 text-primary animate-pulse" />
-                    <div className="h-0.5 w-[calc(100%+2rem)] bg-gradient-to-r from-primary via-primary/80 to-transparent animate-pulse" />
+                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
+                      <Clock className="w-3 h-3 text-primary animate-pulse" />
+                      <span className="text-xs font-medium text-primary">Now</span>
+                    </div>
+                    <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-primary/60 to-transparent rounded-full" />
                   </div>
                 )}
                 <div className="flex items-start gap-3 group">
