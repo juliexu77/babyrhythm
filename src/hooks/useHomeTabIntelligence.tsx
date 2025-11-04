@@ -282,6 +282,21 @@ export const useHomeTabIntelligence = (
   // Calculate smart suggestions
   const smartSuggestions = useMemo((): SmartSuggestion[] => {
     const suggestions: SmartSuggestion[] = [];
+    
+    // Debug all feeds to understand sorting
+    const allFeeds = activities.filter(a => a.type === 'feed');
+    console.log('🍼 All Feeds Analysis:', {
+      totalFeeds: allFeeds.length,
+      feeds: allFeeds.map(f => ({
+        id: f.id?.slice(0, 8),
+        loggedAt: f.loggedAt,
+        loggedAtUTC: f.loggedAt,
+        loggedAtParsed: new Date(f.loggedAt),
+        loggedAtLocal: new Date(f.loggedAt).toLocaleString(),
+        timezoneInActivity: f.timezone,
+        timestampMs: new Date(f.loggedAt).getTime()
+      })).sort((a, b) => b.timestampMs - a.timestampMs).slice(0, 5)
+    });
 
     // Suggest nap if awake for > 2 hours
     if (currentActivity?.type === 'awake' && currentActivity.duration > 120) {
