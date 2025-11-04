@@ -3,26 +3,24 @@
  */
 export const clearAppCache = () => {
   try {
-    // Clear all session storage items that start with specific prefixes
-    const keys = Object.keys(sessionStorage);
-    keys.forEach(key => {
-      if (
-        key.startsWith('status-tip-') ||
-        key.startsWith('guide-') ||
-        key.startsWith('insight-')
-      ) {
-        sessionStorage.removeItem(key);
-      }
-    });
+    console.log('🧹 Starting cache clear...');
     
-    // Clear localStorage caches as well
+    // Clear ALL session storage
+    sessionStorage.clear();
+    console.log('✅ Cleared all sessionStorage');
+    
+    // Clear localStorage caches
     const localStorageCaches = [
       'rhythmInsights',
       'rhythmInsightsLastFetch',
       'aiPrediction',
       'aiPredictionLastFetch',
       'homeInsights',
-      'homeInsightsLastFetch'
+      'homeInsightsLastFetch',
+      'guideData',
+      'guideDataTimestamp',
+      'scheduleData',
+      'scheduleTimestamp'
     ];
     
     localStorageCaches.forEach(key => {
@@ -30,7 +28,16 @@ export const clearAppCache = () => {
       console.log(`🗑️ Cleared localStorage: ${key}`);
     });
     
-    console.log('✅ App cache cleared - refresh to see changes');
+    // Clear any React Query cache keys
+    const allLocalStorageKeys = Object.keys(localStorage);
+    allLocalStorageKeys.forEach(key => {
+      if (key.includes('REACT_QUERY') || key.includes('supabase') || key.includes('cache')) {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Cleared localStorage: ${key}`);
+      }
+    });
+    
+    console.log('✅ App cache cleared successfully - data will refresh');
     return true;
   } catch (error) {
     console.error('❌ Failed to clear app cache:', error);
