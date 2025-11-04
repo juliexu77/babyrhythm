@@ -90,6 +90,36 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
   };
 
+  // Calculate end time from start time and duration
+  const calculateEndTime = (startTime: string, duration: string): string => {
+    const startMinutes = parseTime(startTime);
+    const durationMatch = duration.match(/(\d+)h?\s*(\d+)?m?/);
+    if (!durationMatch) return startTime;
+    
+    const hours = parseInt(durationMatch[1]) || 0;
+    const mins = parseInt(durationMatch[2]) || 0;
+    const durationMinutes = hours * 60 + mins;
+    
+    const endMinutes = startMinutes + durationMinutes;
+    const endHours = Math.floor(endMinutes / 60) % 24;
+    const endMins = endMinutes % 60;
+    const period = endHours >= 12 ? 'PM' : 'AM';
+    const displayHours = endHours > 12 ? endHours - 12 : (endHours === 0 ? 12 : endHours);
+    
+    return `${displayHours}:${endMins.toString().padStart(2, '0')} ${period}`;
+  };
+
+  // Get time block for an activity
+  const getTimeBlock = (timeStr: string): 'morning' | 'midday' | 'afternoon' | 'evening' => {
+    const minutes = parseTime(timeStr);
+    const hours = minutes / 60;
+    
+    if (hours >= 6 && hours < 11) return 'morning';
+    if (hours >= 11 && hours < 14) return 'midday';
+    if (hours >= 14 && hours < 18) return 'afternoon';
+    return 'evening';
+  };
+
   const toggleExpanded = (eventId: string) => {
     setExpandedEvents(prev => {
       const next = new Set(prev);
@@ -333,135 +363,124 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         )}
       </div>
       
-      {/* Timeline view */}
-      <div className="space-y-3 relative">
-        {groupedActivities.map((activity, idx) => {
-          // Find matching event for confidence/reasoning
-          const matchingEvent = schedule.events.find(e => e.time === activity.time);
-          const eventTime = parseTime(activity.time);
-          const isPast = eventTime < currentMinutes;
-          const isCurrent = !isPast && idx === groupedActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
+      {/* Timeline view with time blocks */}
+      <div className="space-y-1 relative">
+        {(() => {
+          // Filter to only show wake, naps, and bedtime
+          const essentialActivities = groupedActivities.filter(a => 
+            (a.type === 'morning' && !a.feedTime) || // Wake up only (not feeds)
+            a.type === 'nap-block' || 
+            a.type === 'bedtime'
+          );
           
-          // Confidence styling
-          const confidenceOpacity = matchingEvent?.confidence === 'high' ? 'opacity-100' : 
-                                     matchingEvent?.confidence === 'medium' ? 'opacity-80' : 'opacity-60';
+          // Group by time blocks
+          let currentBlock: string | null = null;
           
-          if (activity.type === 'morning') {
-            // Check if this is a standalone feed (feedTime === time)
-            const isStandaloneFeed = activity.feedTime && activity.feedTime === activity.time;
+          return essentialActivities.map((activity, idx) => {
+            // Determine time block for visual grouping
+            const timeBlock = getTimeBlock(activity.time);
+            const showBlockDivider = currentBlock !== null && currentBlock !== timeBlock;
+            currentBlock = timeBlock;
+            
+            // Find matching event for confidence/reasoning
+            const matchingEvent = schedule.events.find(e => e.time === activity.time);
+            const eventTime = parseTime(activity.time);
+            const isPast = eventTime < currentMinutes;
+            const isCurrent = !isPast && idx === essentialActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
+            
+            // Confidence styling
+            const confidenceOpacity = matchingEvent?.confidence === 'high' ? 'opacity-100' : 
+                                       matchingEvent?.confidence === 'medium' ? 'opacity-80' : 'opacity-60';
+            
+            // Time block background colors
+            const blockBgColor = timeBlock === 'morning' ? 'bg-amber-50/50 dark:bg-amber-950/20' :
+                                timeBlock === 'midday' ? 'bg-orange-50/50 dark:bg-orange-950/20' :
+                                timeBlock === 'afternoon' ? 'bg-blue-50/50 dark:bg-blue-950/20' :
+                                'bg-purple-50/50 dark:bg-purple-950/20';
             
             return (
-              <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
-                <div className="flex items-start gap-3 group">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full ${
-                      isStandaloneFeed 
-                        ? (isPast ? 'bg-green-500/20' : 'bg-green-500/10')
-                        : (isPast ? 'bg-amber-500/20' : 'bg-amber-500/10')
-                    } flex items-center justify-center flex-shrink-0`}>
-                      {isStandaloneFeed ? (
-                        <Milk className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <Sun className="w-4 h-4 text-amber-600" />
-                      )}
-                    </div>
-                    <div className="w-0.5 h-4 bg-border/40" />
-                  </div>
-                  <div className="flex-1 pb-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-foreground">
-                        {formatTime(activity.time)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {isStandaloneFeed ? 'Feed' : activity.title}
-                      </span>
-                    </div>
-                    {activity.feedTime && !isStandaloneFeed && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                        <Milk className="w-3 h-3" />
-                        <span>Feed at {formatTime(activity.feedTime)}</span>
+              <>
+                {/* Time block divider */}
+                {showBlockDivider && (
+                  <div className="h-px bg-border/60 my-3" />
+                )}
+                
+                {activity.type === 'morning' && (
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
+                    <div className="flex items-start gap-3 group">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-amber-500/20' : 'bg-amber-500/10'} flex items-center justify-center flex-shrink-0`}>
+                          <Sun className="w-4 h-4 text-amber-600" />
+                        </div>
                       </div>
-                    )}
+                      <div className="flex-1 pb-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-semibold text-foreground">
+                            {formatTime(activity.time)}
+                          </span>
+                          <span className="text-xs font-medium text-muted-foreground">
+                            Wake up
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                )}
+                
+                {activity.type === 'nap-block' && (
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
+                    <div className="flex items-start gap-3 group">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-blue-500/20' : 'bg-blue-500/10'} flex items-center justify-center flex-shrink-0`}>
+                          <Moon className="w-4 h-4 text-blue-600" />
+                        </div>
+                      </div>
+                      <div className="flex-1 pb-1">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground">
+                              {formatTime(activity.time)} - {calculateEndTime(activity.time, activity.napDuration || '1h 30m')}
+                            </span>
+                            <span className="text-xs font-medium text-foreground">
+                              {activity.title}
+                            </span>
+                            {matchingEvent?.notes && (
+                              <span className="text-xs text-amber-600 font-medium">
+                                {matchingEvent.notes}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {activity.type === 'bedtime' && (
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
+                    <div className="flex items-start gap-3 group">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-purple-500/20' : 'bg-purple-500/10'} flex items-center justify-center flex-shrink-0`}>
+                          <Bed className="w-4 h-4 text-purple-600" />
+                        </div>
+                      </div>
+                      <div className="flex-1 pb-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-semibold text-foreground">
+                            {formatTime(activity.time)}
+                          </span>
+                          <span className="text-xs font-medium text-muted-foreground">
+                            Bedtime
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             );
-          }
-          
-          if (activity.type === 'nap-block') {
-            return (
-              <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
-                <div className="flex items-start gap-3 group">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-blue-500/20' : 'bg-blue-500/10'} flex items-center justify-center flex-shrink-0`}>
-                      <Moon className="w-4 h-4 text-blue-600" />
-                    </div>
-                    {activity.id !== groupedActivities[groupedActivities.length - 1].id && (
-                      <div className="w-0.5 h-8 bg-border/40" />
-                    )}
-                  </div>
-                  <div className="flex-1 pb-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-bold text-foreground">
-                        {formatTime(activity.time)}
-                      </span>
-                      <span className="text-xs font-medium text-foreground">
-                        {activity.title}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        ({activity.napDuration})
-                      </span>
-                    </div>
-                    {activity.feedTime && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                        <Milk className="w-3 h-3" />
-                        <span>Feed at {formatTime(activity.feedTime)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          }
-          
-          if (activity.type === 'bedtime') {
-            return (
-              <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
-                <div className="flex items-start gap-3 group">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-purple-500/20' : 'bg-purple-500/10'} flex items-center justify-center flex-shrink-0`}>
-                      <Bed className="w-4 h-4 text-purple-600" />
-                    </div>
-                  </div>
-                  <div className="flex-1 pb-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold text-foreground">
-                        {formatTime(activity.time)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {activity.title}
-                      </span>
-                    </div>
-                    {activity.feedTime && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                        <Milk className="w-3 h-3" />
-                        <span>Bedtime feed</span>
-                      </div>
-                    )}
-                    {activity.endTime && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                        <Bed className="w-3 h-3" />
-                        <span>Sleep by {formatTime(activity.endTime)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          }
-          
-          return null;
-        })}
+          });
+        })()}
       </div>
       
       {/* DST Transition Notice - Below Schedule */}
