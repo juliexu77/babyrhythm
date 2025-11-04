@@ -415,6 +415,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const maxFeedValue = Math.max(1, ...feedData.map(d => d.value));
   const maxNapValue = Math.max(1, ...napData.map(d => d.value));
   const avgFeedLine = (feedSummary.avgVolume / maxFeedValue) * 100;
+  const avgNapLine = (napSummary.avgDuration / maxNapValue) * 100;
 
   return (
     <div className="space-y-6">
@@ -635,7 +636,18 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
             </Button>
           </div>
         
-          <div className="grid grid-cols-7 gap-3 h-44">
+          <div className="relative">
+            {/* Average line */}
+            {napSummary.avgDuration > 0 && (
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-dashed border-muted-foreground/30 z-10"
+                style={{ bottom: `${avgNapLine}%` }}
+              >
+                <span className="absolute -left-1 -top-3 text-xs text-muted-foreground/60 font-medium">Avg</span>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-7 gap-3 h-44">
             {napData.map((day, index) => (
               <div key={index} className="flex flex-col items-center gap-2.5 relative">
                 <div className="flex-1 flex flex-col justify-end w-full">
@@ -668,6 +680,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                 )}
               </div>
             ))}
+            </div>
           </div>
         </div>
       </div>
