@@ -237,10 +237,18 @@ export function generateAdaptiveSchedule(
     const avgTotalMinutes = Math.round(bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length);
     bedtimeHour = Math.floor(avgTotalMinutes / 60);
     bedtimeMinute = avgTotalMinutes % 60;
+    console.log('🛏️ Bedtime calculation:', {
+      bedtimeCount: bedtimes.length,
+      bedtimeValues: bedtimes,
+      avgTotalMinutes,
+      calculatedBedtime: `${bedtimeHour}:${bedtimeMinute.toString().padStart(2, '0')}`
+    });
   }
   
   const bedtimeRoutine = new Date(scheduleStartTime);
   bedtimeRoutine.setHours(bedtimeHour, bedtimeMinute, 0, 0);
+  
+  console.log('🛏️ Final bedtime:', formatTime(bedtimeRoutine));
   
   events.push({
     time: formatTime(bedtimeRoutine),
