@@ -192,35 +192,78 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
       // PostgreSQL timestamp with time zone is stored as UTC
       const utcTimestamp = activity.loggedAt ? new Date(activity.loggedAt) : new Date();
       
-      // For activity times (stored as local wall time strings like "6:45 PM"),
-      // we need to convert them to Date objects on the same calendar day as the activity
-      const dateStr = utcTimestamp.toDateString();
-
+      // CRITICAL: Use UTC timestamp directly for all calculations
+      // The loggedAt field already contains the correct UTC time when the activity occurred
+      // We should NOT re-parse display times as they can cause timezone drift
+      
       // Parse the actual activity time (e.g., "6:45 PM" for feeds)
+      // Use loggedAt as canonical timestamp - it's already correct in UTC
       let activityTimestamp = utcTimestamp;
-      if (activity.time) {
-        activityTimestamp = new Date(`${dateStr} ${activity.time}`);
-      } else if (activity.details?.displayTime) {
-        activityTimestamp = new Date(`${dateStr} ${activity.details.displayTime}`);
-      }
-
+      
+      // For naps with start/end times, calculate based on logged_at date
       let startTime: Date | undefined = undefined;
       let endTime: Date | undefined = undefined;
-      if (activity.details?.startTime) {
-        startTime = new Date(`${dateStr} ${activity.details.startTime}`);
-      }
-      if (activity.details?.endTime) {
-        endTime = new Date(`${dateStr} ${activity.details.endTime}`);
-        // Handle naps that cross midnight
-        if (startTime && endTime < startTime) {
-          endTime = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
+      
+      if (activity.type === 'nap' && activity.details?.startTime) {
+        // Use UTC date from loggedAt for consistency
+        const loggedDate = new Date(utcTimestamp);
+        const hours = loggedDate.getUTCHours();
+        const minutes = loggedDate.getUTCMinutes();
+        const seconds = loggedDate.getUTCSeconds();
+        const ms = loggedDate.getUTCMilliseconds();
+        
+        // Parse start time
+        const startMatch = activity.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (startMatch) {
+          let startHours = parseInt(startMatch[1]);
+          const startMinutes = parseInt(startMatch[2]);
+          const startPeriod = startMatch[3].toUpperCase();
+          if (startPeriod === 'PM' && startHours !== 12) startHours += 12;
+          if (startPeriod === 'AM' && startHours === 12) startHours = 0;
+          
+          startTime = new Date(Date.UTC(
+            loggedDate.getUTCFullYear(),
+            loggedDate.getUTCMonth(),
+            loggedDate.getUTCDate(),
+            startHours,
+            startMinutes,
+            0,
+            0
+          ));
+        }
+        
+        // Parse end time
+        if (activity.details.endTime) {
+          const endMatch = activity.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (endMatch) {
+            let endHours = parseInt(endMatch[1]);
+            const endMinutes = parseInt(endMatch[2]);
+            const endPeriod = endMatch[3].toUpperCase();
+            if (endPeriod === 'PM' && endHours !== 12) endHours += 12;
+            if (endPeriod === 'AM' && endHours === 12) endHours = 0;
+            
+            endTime = new Date(Date.UTC(
+              loggedDate.getUTCFullYear(),
+              loggedDate.getUTCMonth(),
+              loggedDate.getUTCDate(),
+              endHours,
+              endMinutes,
+              0,
+              0
+            ));
+            
+            // Handle naps that cross midnight
+            if (startTime && endTime < startTime) {
+              endTime = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
+            }
+          }
         }
       }
 
       return {
         id: activity.id,
         type: activity.type,
-        timestamp: activityTimestamp,  // Use actual activity time for calculations
+        timestamp: activityTimestamp,  // Use loggedAt timestamp - already correct in UTC
         startTime,
         endTime,
         details: activity.details
@@ -241,10 +284,11 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
       timestampUTC: e.timestamp.toISOString(),
       minutesInFuture: Math.round((e.timestamp.getTime() - now.getTime()) / 60000)
     })),
-    feedEvents: filtered.filter(e => e.type === 'feed').slice(0, 3).map(e => ({
+    feedEvents: filtered.filter(e => e.type === 'feed').slice(0, 5).map(e => ({
       id: e.id,
       timestampUTC: e.timestamp.toISOString(),
-      minutesAgo: Math.round((now.getTime() - e.timestamp.getTime()) / 60000)
+      minutesAgo: Math.round((now.getTime() - e.timestamp.getTime()) / 60000),
+      details: e.details
     }))
   });
   
