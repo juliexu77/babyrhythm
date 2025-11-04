@@ -210,9 +210,16 @@ export function generateAdaptiveSchedule(
   events.push(...napSchedule);
   
   // Calculate bedtime - use same logic as edge function (from nap activities that start in evening)
+  // Use the same 7-day window as the edge function
+  const sevenDaysAgo = new Date(scheduleStartTime);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
   const napsForBedtime = activities
-    .filter(a => a.type === 'nap' && a.details?.startTime)
-    .slice(0, 50);
+    .filter(a => {
+      if (a.type !== 'nap' || !a.details?.startTime) return false;
+      const napDate = new Date(a.loggedAt);
+      return napDate >= sevenDaysAgo;
+    });
   
   let bedtimeHour = 19;
   let bedtimeMinute = 0;
