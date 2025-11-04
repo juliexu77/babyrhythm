@@ -385,13 +385,22 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             a.type === 'bedtime'
           );
           
-          const currentActivityIndex = essentialActivities.findIndex(a => {
+          // Deduplicate bedtimes for pulse calculation
+          const deduplicatedActivities = essentialActivities.filter((activity, idx, arr) => {
+            if (activity.type === 'bedtime') {
+              const lastBedtimeIdx = arr.map(a => a.type).lastIndexOf('bedtime');
+              return idx === lastBedtimeIdx;
+            }
+            return true;
+          });
+          
+          const currentActivityIndex = deduplicatedActivities.findIndex(a => {
             const eventTime = parseTime(a.time);
             return eventTime >= currentMinutes;
           });
           
-          if (currentActivityIndex >= 0) {
-            const progress = (currentActivityIndex / Math.max(essentialActivities.length - 1, 1)) * 100;
+            if (currentActivityIndex >= 0) {
+              const progress = (currentActivityIndex / Math.max(deduplicatedActivities.length - 1, 1)) * 100;
             return (
               <>
                 {/* Gradient that moves down */}
@@ -428,7 +437,17 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           // Group by time blocks
           let currentBlock: string | null = null;
           
-          return essentialActivities.map((activity, idx) => {
+          // Keep only the last bedtime entry to avoid duplicates
+          const deduplicatedActivities = essentialActivities.filter((activity, idx, arr) => {
+            if (activity.type === 'bedtime') {
+              // Find the last bedtime index
+              const lastBedtimeIdx = arr.map(a => a.type).lastIndexOf('bedtime');
+              return idx === lastBedtimeIdx; // Only keep the last one
+            }
+            return true; // Keep all non-bedtime activities
+          });
+          
+          return deduplicatedActivities.map((activity, idx) => {
             // Determine time block for visual grouping
             const timeBlock = getTimeBlock(activity.time);
             const showBlockDivider = currentBlock !== null && currentBlock !== timeBlock;
@@ -438,7 +457,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             const matchingEvent = schedule.events.find(e => e.time === activity.time);
             const eventTime = parseTime(activity.time);
             const isPast = eventTime < currentMinutes;
-            const isCurrent = !isPast && idx === essentialActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
+            const isCurrent = !isPast && idx === deduplicatedActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
             
             // Confidence styling
             const confidenceOpacity = matchingEvent?.confidence === 'high' ? 'opacity-100' : 
@@ -496,11 +515,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                             <span className="text-xs font-medium text-foreground">
                               {activity.title}
                             </span>
-                            {matchingEvent?.notes && (
-                              <span className="text-xs text-amber-600 font-medium">
-                                {matchingEvent.notes}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>
