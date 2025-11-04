@@ -364,7 +364,50 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       </div>
       
       {/* Timeline view with time blocks */}
-      <div className="space-y-1 relative">
+      <div className="space-y-1 relative pl-6">
+        {/* Vertical timeline line - heartbeat motif */}
+        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary/20 via-primary/40 to-primary/20" />
+        
+        {/* Animated pulse indicator showing current time */}
+        {(() => {
+          const essentialActivities = groupedActivities.filter(a => 
+            (a.type === 'morning' && !a.feedTime) ||
+            a.type === 'nap-block' || 
+            a.type === 'bedtime'
+          );
+          
+          const currentActivityIndex = essentialActivities.findIndex(a => {
+            const eventTime = parseTime(a.time);
+            return eventTime >= currentMinutes;
+          });
+          
+          if (currentActivityIndex >= 0) {
+            const progress = (currentActivityIndex / Math.max(essentialActivities.length - 1, 1)) * 100;
+            return (
+              <>
+                {/* Gradient that moves down */}
+                <div 
+                  className="absolute left-[14px] top-0 w-1 h-full bg-gradient-to-b from-transparent via-primary to-transparent opacity-60 transition-all duration-1000"
+                  style={{ 
+                    transform: `translateY(${progress}%)`,
+                    height: '120px',
+                    filter: 'blur(2px)'
+                  }}
+                />
+                {/* Pulsing dot at current position */}
+                <div 
+                  className="absolute left-[11px] w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg"
+                  style={{ 
+                    top: `${progress}%`,
+                    boxShadow: '0 0 12px hsl(var(--primary))'
+                  }}
+                />
+              </>
+            );
+          }
+          return null;
+        })()}
+        
         {(() => {
           // Filter to only show wake, naps, and bedtime
           const essentialActivities = groupedActivities.filter(a => 
@@ -409,7 +452,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
                     <div className="flex items-start gap-3 group">
                       <div className="flex flex-col items-center">
-                        <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-amber-500/20' : 'bg-amber-500/10'} flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-amber-500/20 border-2 border-amber-500/40' : 'bg-amber-500/10 border-2 border-amber-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                           <Sun className="w-4 h-4 text-amber-600" />
                         </div>
                       </div>
@@ -431,7 +474,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
                     <div className="flex items-start gap-3 group">
                       <div className="flex flex-col items-center">
-                        <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-blue-500/20' : 'bg-blue-500/10'} flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-blue-500/20 border-2 border-blue-500/40' : 'bg-blue-500/10 border-2 border-blue-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                           <Moon className="w-4 h-4 text-blue-600" />
                         </div>
                       </div>
@@ -460,7 +503,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
                     <div className="flex items-start gap-3 group">
                       <div className="flex flex-col items-center">
-                        <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-purple-500/20' : 'bg-purple-500/10'} flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-purple-500/20 border-2 border-purple-500/40' : 'bg-purple-500/10 border-2 border-purple-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                           <Bed className="w-4 h-4 text-purple-600" />
                         </div>
                       </div>

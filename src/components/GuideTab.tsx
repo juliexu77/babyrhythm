@@ -309,15 +309,26 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
   
-  // Get emoji for each pattern
-  const getPatternEmoji = (pattern: string): string => {
-    if (pattern === "Smooth Flow") return "☀️";
-    if (pattern === "Building Rhythm") return "🌿";
-    if (pattern === "In Sync") return "🎯";
-    if (pattern === "Extra Sleepy") return "🌙";
-    if (pattern === "Active Feeding") return "🍼";
-    if (pattern === "Off Rhythm") return "🌧";
-    return "🌿";
+  // Get icon component for each pattern
+  const getPatternIcon = (pattern: string) => {
+    if (pattern === "Smooth Flow") return Sun;
+    if (pattern === "Building Rhythm") return Sprout;
+    if (pattern === "In Sync") return Target;
+    if (pattern === "Extra Sleepy") return Moon;
+    if (pattern === "Active Feeding") return Milk;
+    if (pattern === "Off Rhythm") return CloudRain;
+    return Sprout;
+  };
+  
+  // Get icon color for each pattern
+  const getPatternColor = (pattern: string): string => {
+    if (pattern === "Smooth Flow") return "text-amber-600";
+    if (pattern === "Building Rhythm") return "text-green-600";
+    if (pattern === "In Sync") return "text-primary";
+    if (pattern === "Extra Sleepy") return "text-blue-600";
+    if (pattern === "Active Feeding") return "text-purple-600";
+    if (pattern === "Off Rhythm") return "text-slate-600";
+    return "text-green-600";
   };
 
   // Calculate last month's data for progress comparison (safe even without household)
@@ -1155,7 +1166,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 className="text-left"
               >
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                  <span className="text-sm">{getPatternEmoji(toneFrequencies.streakTone)}</span>
+                  {(() => {
+                    const PatternIcon = getPatternIcon(toneFrequencies.streakTone);
+                    const iconColor = getPatternColor(toneFrequencies.streakTone);
+                    return <PatternIcon className={`w-4 h-4 ${iconColor}`} />;
+                  })()}
                   <span className="text-sm font-medium text-accent-foreground">{toneFrequencies.streakTone}</span>
                 </div>
               </button>
