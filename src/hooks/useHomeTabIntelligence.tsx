@@ -312,42 +312,39 @@ export const useHomeTabIntelligence = (
     }
 
     // Suggest feed if > 2.5 hours since last feed
-    const lastFeed = [...activities]
-      .filter(a => a.type === 'feed')
-      .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())[0];
+    // Get all feeds and sort by actual logged timestamp (UTC)
+    const feedActivities = activities.filter(a => a.type === 'feed' && a.loggedAt);
     
-    if (lastFeed) {
-      const now = new Date();
-      const lastFeedTime = new Date(lastFeed.loggedAt);
-      const minutesSinceFeed = differenceInMinutes(now, lastFeedTime);
-      
-      // Debug logging for timezone investigation
-      console.log('🍼 Feed Time Calculation:', {
-        now: now.toISOString(),
-        nowLocal: now.toLocaleString(),
-        lastFeedLoggedAt: lastFeed.loggedAt,
-        lastFeedParsed: lastFeedTime.toISOString(),
-        lastFeedLocal: lastFeedTime.toLocaleString(),
-        minutesSinceFeed,
-        hoursSinceFeed: Math.floor(minutesSinceFeed / 60),
-        allFeedsCount: activities.filter(a => a.type === 'feed').length,
-        lastThreeFeeds: activities
-          .filter(a => a.type === 'feed')
-          .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())
-          .slice(0, 3)
-          .map(f => ({
-            id: f.id?.slice(0, 8),
-            loggedAt: f.loggedAt,
-            parsedLocal: new Date(f.loggedAt).toLocaleString()
-          }))
+    if (feedActivities.length > 0) {
+      // Sort by loggedAt timestamp (stored as UTC in database)
+      const sortedFeeds = [...feedActivities].sort((a, b) => {
+        const timeA = new Date(a.loggedAt!).getTime();
+        const timeB = new Date(b.loggedAt!).getTime();
+        return timeB - timeA; // Most recent first
       });
       
-      if (minutesSinceFeed > 150) {
+      const lastFeed = sortedFeeds[0];
+      const now = new Date();
+      const lastFeedTime = new Date(lastFeed.loggedAt!);
+      
+      // Validate timestamp is reasonable (within last week)
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      if (lastFeedTime < oneWeekAgo) {
+        console.warn('⚠️ Last feed timestamp seems too old:', lastFeedTime.toISOString());
+      }
+      
+      const minutesSinceFeed = differenceInMinutes(now, lastFeedTime);
+      
+      // Only suggest if more than 2.5 hours and less than 24 hours (sanity check)
+      if (minutesSinceFeed > 150 && minutesSinceFeed < 1440) {
+        const hours = Math.floor(minutesSinceFeed / 60);
+        const mins = minutesSinceFeed % 60;
+        
         suggestions.push({
           id: 'feed-due',
           type: 'feed',
           title: 'Feed due soon',
-          subtitle: `Last feed: ${Math.floor(minutesSinceFeed / 60)}h ${minutesSinceFeed % 60}m ago`,
+          subtitle: `Last feed: ${hours}h ${mins}m ago`,
           priority: 90,
           icon: <Milk className="w-4 h-4 text-primary" />,
           onClick: () => onAddActivity?.('feed')
