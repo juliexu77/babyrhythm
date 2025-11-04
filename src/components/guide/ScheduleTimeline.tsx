@@ -467,7 +467,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                               {formatTime(activity.time)} - {calculateEndTime(activity.time, activity.napDuration || '1h 30m')}
                             </span>
                             <span className="text-xs font-medium text-foreground">
-                              {activity.title}
+                              {activity.title} ({activity.napDuration?.replace('h', 'h ')?.replace('m', 'min') || '1h 30min'})
                             </span>
                           </div>
                         </div>
