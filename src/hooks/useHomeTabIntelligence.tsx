@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { differenceInMinutes, format, addMinutes } from 'date-fns';
-import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 import { Moon, Milk, Sun } from 'lucide-react';
 import { Activity } from '@/components/ActivityCard';
 import { usePredictionEngine } from '@/hooks/usePredictionEngine';
@@ -310,24 +310,19 @@ export const useHomeTabIntelligence = (
       
       const lastFeed = sortedFeeds[0];
       
-      // Get user's timezone (use feed's timezone if available, otherwise local)
-      const userTimezone = lastFeed.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-      
-      // Convert both timestamps to the same timezone for accurate comparison
+      // Simply use loggedAt as-is - it's already in UTC and will be converted correctly
+      const lastFeedTime = new Date(lastFeed.loggedAt!);
       const now = new Date();
-      const lastFeedTimeUTC = new Date(lastFeed.loggedAt!);
-      const lastFeedTimeLocal = toZonedTime(lastFeedTimeUTC, userTimezone);
-      const nowLocal = toZonedTime(now, userTimezone);
+      const minutesSinceFeed = differenceInMinutes(now, lastFeedTime);
       
-      const minutesSinceFeed = differenceInMinutes(nowLocal, lastFeedTimeLocal);
-      
-      console.log('🍼 Feed time calculation (timezone-aware):', {
-        lastFeedUTC: lastFeedTimeUTC.toISOString(),
-        lastFeedLocal: lastFeedTimeLocal.toLocaleString(),
-        nowUTC: now.toISOString(),
-        nowLocal: nowLocal.toLocaleString(),
-        timezone: userTimezone,
-        minutesSinceFeed
+      console.log('🍼 Feed time calculation:', {
+        lastFeedId: lastFeed.id?.slice(0, 8),
+        lastFeedLoggedAt: lastFeed.loggedAt,
+        lastFeedParsed: lastFeedTime.toLocaleString(),
+        now: now.toLocaleString(),
+        minutesSinceFeed,
+        hours: Math.floor(minutesSinceFeed / 60),
+        mins: minutesSinceFeed % 60
       });
       
       // Only suggest if more than 2.5 hours and less than 24 hours (sanity check)

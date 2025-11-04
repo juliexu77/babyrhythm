@@ -279,17 +279,20 @@ export function generateAdaptiveSchedule(
   });
   
   if (bedtimes.length > 0) {
-    // Calculate exact average without rounding
+    // Calculate exact average - don't round, let the UI handle display
     const avgTotalMinutes = bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length;
-    // Round to nearest 5 minutes for display
-    const roundedToNearest5 = Math.round(avgTotalMinutes / 5) * 5;
-    bedtimeHour = Math.floor(roundedToNearest5 / 60);
-    bedtimeMinute = roundedToNearest5 % 60;
+    // Round to nearest minute only
+    const roundedMinutes = Math.round(avgTotalMinutes);
+    bedtimeHour = Math.floor(roundedMinutes / 60);
+    bedtimeMinute = roundedMinutes % 60;
     console.log('🛏️ Bedtime calculation:', {
       bedtimeCount: bedtimes.length,
-      bedtimeValues: bedtimes,
+      bedtimeValues: bedtimes.map(m => {
+        const h = Math.floor(m / 60);
+        const min = m % 60;
+        return `${h}:${min.toString().padStart(2, '0')}`;
+      }),
       exactAvgMinutes: avgTotalMinutes,
-      roundedToNearest5Minutes: roundedToNearest5,
       calculatedBedtime: `${bedtimeHour}:${bedtimeMinute.toString().padStart(2, '0')}`
     });
   }
