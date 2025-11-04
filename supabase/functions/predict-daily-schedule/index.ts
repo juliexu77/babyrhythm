@@ -67,25 +67,14 @@ serve(async (req) => {
         dailyPatterns[date].naps++;
       }
       if (activity.type === 'feed') dailyPatterns[date].feeds++;
-      // Extract bedtime from naps that start in evening (7 PM or later)
-      if (activity.type === 'nap' && activity.details?.startTime) {
-        const startTime = activity.details.startTime;
-        const hour = parseInt(startTime.match(/(\d{1,2})/)?.[1] || '0');
-        const isPM = startTime.toUpperCase().includes('PM');
-        const hour24 = isPM && hour !== 12 ? hour + 12 : (hour === 12 && !isPM ? 0 : hour);
-        
-        // Consider naps starting between 7 PM and 11 PM as bedtime
-        if (hour24 >= 19 && hour24 <= 23) {
-          dailyPatterns[date].bedtime = startTime;
-        }
-      }
+      // Note: Bedtime calculation removed - handled by adaptive schedule generator on client
     });
 
     const dayEntries = Object.entries(dailyPatterns)
       .sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
     const last7 = dayEntries.slice(-7);
     const patternSummary = last7
-      .map(([date, data]) => `${date}: ${data.naps} naps, ${data.feeds} feeds${data.bedtime ? `, bed at ${data.bedtime}` : ''}`)
+      .map(([date, data]) => `${date}: ${data.naps} naps, ${data.feeds} feeds`)
       .join('\n');
     const last7NapCounts = last7.map(([, data]) => data.naps);
     const napCountsLine = last7NapCounts.join(', ');
@@ -167,14 +156,16 @@ Strict rules:
 - Do NOT mention a transition from 4 to 3 naps unless the last 7 days include a day with 4+ DAYTIME naps.
 - Align all claims with the provided nap counts; do not infer unseen nap numbers.
 - If nap counts vary between 2 and 3 without 4, describe it as stabilizing between 2–3 naps (not 4→3).
+- Do NOT calculate bedtime - it is calculated separately on the client side.
 
 Analyze:
 1. Is baby transitioning DAYTIME nap counts? (e.g., some days 3 naps, some days 2)
 2. Based on today's activities so far, how many MORE DAYTIME naps are expected?
 3. What's the total expected DAYTIME nap count for today?
 4. How many total feeds expected today?
-5. Predicted bedtime?
-6. Confidence level (high/medium/low) and why?
+5. Confidence level (high/medium/low) and why?
+
+Note: For bedtime prediction, return "Calculated on client" - the adaptive schedule generator handles this.
 
 Provide a prediction for the REST OF TODAY based on what's already logged.`;
 
@@ -221,7 +212,7 @@ Provide a prediction for the REST OF TODAY based on what's already logged.`;
                   },
                   predicted_bedtime: {
                     type: 'string',
-                    description: 'Predicted bedtime in format like "7:30 PM"'
+                    description: 'Return "Calculated on client" - bedtime is handled by adaptive schedule'
                   },
                   confidence: {
                     type: 'string',

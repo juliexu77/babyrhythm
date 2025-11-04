@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { differenceInMinutes, format, addMinutes } from 'date-fns';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { Moon, Milk, Sun } from 'lucide-react';
 import { Activity } from '@/components/ActivityCard';
 import { usePredictionEngine } from '@/hooks/usePredictionEngine';
@@ -282,21 +283,6 @@ export const useHomeTabIntelligence = (
   // Calculate smart suggestions
   const smartSuggestions = useMemo((): SmartSuggestion[] => {
     const suggestions: SmartSuggestion[] = [];
-    
-    // Debug all feeds to understand sorting
-    const allFeeds = activities.filter(a => a.type === 'feed');
-    console.log('🍼 All Feeds Analysis:', {
-      totalFeeds: allFeeds.length,
-      feeds: allFeeds.map(f => ({
-        id: f.id?.slice(0, 8),
-        loggedAt: f.loggedAt,
-        loggedAtUTC: f.loggedAt,
-        loggedAtParsed: new Date(f.loggedAt),
-        loggedAtLocal: new Date(f.loggedAt).toLocaleString(),
-        timezoneInActivity: f.timezone,
-        timestampMs: new Date(f.loggedAt).getTime()
-      })).sort((a, b) => b.timestampMs - a.timestampMs).slice(0, 5)
-    });
 
     // Suggest nap if awake for > 2 hours
     if (currentActivity?.type === 'awake' && currentActivity.duration > 120) {
@@ -312,11 +298,10 @@ export const useHomeTabIntelligence = (
     }
 
     // Suggest feed if > 2.5 hours since last feed
-    // Get all feeds and sort by actual logged timestamp (UTC)
     const feedActivities = activities.filter(a => a.type === 'feed' && a.loggedAt);
     
     if (feedActivities.length > 0) {
-      // Sort by loggedAt timestamp (stored as UTC in database)
+      // Sort by loggedAt timestamp (UTC stored in DB)
       const sortedFeeds = [...feedActivities].sort((a, b) => {
         const timeA = new Date(a.loggedAt!).getTime();
         const timeB = new Date(b.loggedAt!).getTime();
@@ -324,16 +309,26 @@ export const useHomeTabIntelligence = (
       });
       
       const lastFeed = sortedFeeds[0];
+      
+      // Get user's timezone (use feed's timezone if available, otherwise local)
+      const userTimezone = lastFeed.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Convert both timestamps to the same timezone for accurate comparison
       const now = new Date();
-      const lastFeedTime = new Date(lastFeed.loggedAt!);
+      const lastFeedTimeUTC = new Date(lastFeed.loggedAt!);
+      const lastFeedTimeLocal = toZonedTime(lastFeedTimeUTC, userTimezone);
+      const nowLocal = toZonedTime(now, userTimezone);
       
-      // Validate timestamp is reasonable (within last week)
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      if (lastFeedTime < oneWeekAgo) {
-        console.warn('⚠️ Last feed timestamp seems too old:', lastFeedTime.toISOString());
-      }
+      const minutesSinceFeed = differenceInMinutes(nowLocal, lastFeedTimeLocal);
       
-      const minutesSinceFeed = differenceInMinutes(now, lastFeedTime);
+      console.log('🍼 Feed time calculation (timezone-aware):', {
+        lastFeedUTC: lastFeedTimeUTC.toISOString(),
+        lastFeedLocal: lastFeedTimeLocal.toLocaleString(),
+        nowUTC: now.toISOString(),
+        nowLocal: nowLocal.toLocaleString(),
+        timezone: userTimezone,
+        minutesSinceFeed
+      });
       
       // Only suggest if more than 2.5 hours and less than 24 hours (sanity check)
       if (minutesSinceFeed > 150 && minutesSinceFeed < 1440) {
