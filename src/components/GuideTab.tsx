@@ -431,7 +431,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, [enrichedActivities, household?.baby_birthday, hasTier3Data, userTimezone, aiPrediction]);
 
   // Use adaptive schedule (unified with Home tab prediction engine)
-  const displaySchedule = predictedSchedule || adaptiveSchedule;
+  const displaySchedule = adaptiveSchedule || predictedSchedule;
   
   console.log('📅 Schedule Debug:', {
     hasMinimumData,

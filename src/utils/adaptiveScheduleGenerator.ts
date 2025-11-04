@@ -285,22 +285,28 @@ export function generateAdaptiveSchedule(
     const roundedMinutes = Math.round(avgTotalMinutes);
     bedtimeHour = Math.floor(roundedMinutes / 60);
     bedtimeMinute = roundedMinutes % 60;
-    console.log('🛏️ Bedtime calculation:', {
-      bedtimeCount: bedtimes.length,
-      bedtimeValues: bedtimes.map(m => {
-        const h = Math.floor(m / 60);
-        const min = m % 60;
-        return `${h}:${min.toString().padStart(2, '0')}`;
-      }),
-      exactAvgMinutes: avgTotalMinutes,
-      calculatedBedtime: `${bedtimeHour}:${bedtimeMinute.toString().padStart(2, '0')}`
-    });
+  console.log('🛏️ Bedtime calculation:', {
+    bedtimeCount: bedtimes.length,
+    bedtimeValues: bedtimes.map(m => {
+      const h = Math.floor(m / 60);
+      const min = m % 60;
+      return `${h}:${min.toString().padStart(2, '0')}`;
+    }),
+    exactAvgMinutes: avgTotalMinutes,
+    roundedMinutes: Math.round(avgTotalMinutes),
+    calculatedBedtime: `${bedtimeHour}:${bedtimeMinute.toString().padStart(2, '0')}`
+  });
   }
   
   const bedtimeRoutine = new Date(scheduleStartTime);
   bedtimeRoutine.setHours(bedtimeHour, bedtimeMinute, 0, 0);
   
   console.log('🛏️ Final bedtime:', formatTime(bedtimeRoutine));
+  console.log('🛏️ Bedtime event being added:', {
+    time: formatTime(bedtimeRoutine),
+    type: 'bed',
+    notes: 'Bedtime routine'
+  });
   
   events.push({
     time: formatTime(bedtimeRoutine),
