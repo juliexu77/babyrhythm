@@ -452,29 +452,61 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   </div>
                 )}
                 
-                {activity.type === 'nap-block' && (
-                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
-                    <div className="flex items-start gap-3 group">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-blue-500/20 border-2 border-blue-500/40' : 'bg-blue-500/10 border-2 border-blue-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
-                          <Moon className="w-4 h-4 text-blue-600" />
+                {activity.type === 'nap-block' && (() => {
+                  // Calculate wake window from previous activity
+                  const prevActivity = deduplicatedActivities[idx - 1];
+                  let wakeWindowText = '';
+                  if (prevActivity) {
+                    let prevEndTime: string | undefined;
+                    if (prevActivity.type === 'nap-block') {
+                      prevEndTime = calculateEndTime(prevActivity.time, prevActivity.napDuration || '1h 30m');
+                    } else if (prevActivity.type === 'morning') {
+                      prevEndTime = prevActivity.time;
+                    } else if (prevActivity.type === 'bedtime' && prevActivity.endTime) {
+                      prevEndTime = prevActivity.endTime;
+                    }
+                    
+                    if (prevEndTime) {
+                      const prevMinutes = parseTime(prevEndTime);
+                      const currentMinutes = parseTime(activity.time);
+                      const wakeWindowMinutes = currentMinutes - prevMinutes;
+                      if (wakeWindowMinutes > 0) {
+                        const hours = Math.floor(wakeWindowMinutes / 60);
+                        const mins = wakeWindowMinutes % 60;
+                        wakeWindowText = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;
+                      }
+                    }
+                  }
+                  
+                  return (
+                    <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
+                      <div className="flex items-start gap-3 group">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-blue-500/20 border-2 border-blue-500/40' : 'bg-blue-500/10 border-2 border-blue-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
+                            <Moon className="w-4 h-4 text-blue-600" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex-1 pb-1">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-foreground">
-                              {formatTime(activity.time)} - {calculateEndTime(activity.time, activity.napDuration || '1h 30m')}
-                            </span>
-                            <span className="text-xs font-medium text-foreground">
-                              {activity.title} ({activity.napDuration?.replace('h', 'h ')?.replace('m', 'min') || '1h 30min'})
-                            </span>
+                        <div className="flex-1 pb-1">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-foreground">
+                                {formatTime(activity.time)} - {calculateEndTime(activity.time, activity.napDuration || '1h 30m')}
+                              </span>
+                              <span className="text-xs font-medium text-foreground">
+                                {activity.title} ({activity.napDuration?.replace('h', 'h ')?.replace('m', 'min') || '1h 30min'})
+                              </span>
+                            </div>
+                            {wakeWindowText && (
+                              <span className="text-xs text-muted-foreground">
+                                Wake window: {wakeWindowText}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
                 
                 {activity.type === 'bedtime' && (
                   <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
