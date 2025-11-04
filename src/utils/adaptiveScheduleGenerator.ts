@@ -241,13 +241,17 @@ export function generateAdaptiveSchedule(
   });
   
   if (bedtimes.length > 0) {
-    const avgTotalMinutes = Math.round(bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length);
-    bedtimeHour = Math.floor(avgTotalMinutes / 60);
-    bedtimeMinute = avgTotalMinutes % 60;
+    // Calculate exact average without rounding
+    const avgTotalMinutes = bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length;
+    // Round to nearest 5 minutes for display
+    const roundedToNearest5 = Math.round(avgTotalMinutes / 5) * 5;
+    bedtimeHour = Math.floor(roundedToNearest5 / 60);
+    bedtimeMinute = roundedToNearest5 % 60;
     console.log('🛏️ Bedtime calculation:', {
       bedtimeCount: bedtimes.length,
       bedtimeValues: bedtimes,
-      avgTotalMinutes,
+      exactAvgMinutes: avgTotalMinutes,
+      roundedToNearest5Minutes: roundedToNearest5,
       calculatedBedtime: `${bedtimeHour}:${bedtimeMinute.toString().padStart(2, '0')}`
     });
   }
