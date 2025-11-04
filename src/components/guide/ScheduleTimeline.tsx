@@ -73,8 +73,8 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     return hours * 60 + minutes;
   };
   
-  // Format time without ranges
-  const formatTime = (timeStr: string): string => {
+  // Format time - don't round for bedtime/wake predictions
+  const formatTime = (timeStr: string, skipRounding: boolean = false): string => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) return timeStr;
     
@@ -82,16 +82,17 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     const minutes = parseInt(match[2]);
     const period = match[3].toUpperCase();
     
-    console.log(`⏰ formatTime input: ${timeStr} (${hours}:${minutes} ${period})`);
+    // Skip rounding for wake/bedtime predictions - show exact times
+    if (skipRounding) {
+      return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    }
     
-    // Round to nearest 15 minutes for display
+    // Round to nearest 15 minutes for nap times
     const roundedMinutes = Math.round(minutes / 15) * 15;
     const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
     const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
     
-    const result = `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
-    console.log(`⏰ formatTime output: ${result}`);
-    return result;
+    return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
   };
 
   // Calculate end time from start time and duration
@@ -440,7 +441,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                       <div className="flex-1 pb-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-foreground">
-                            {formatTime(activity.time)}
+                            {formatTime(activity.time, true)}
                           </span>
                           <span className="text-xs font-medium text-muted-foreground">
                             Wake up
@@ -486,7 +487,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                       <div className="flex-1 pb-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-foreground">
-                            {formatTime(activity.time)}
+                            {formatTime(activity.time, true)}
                           </span>
                           <span className="text-xs font-medium text-muted-foreground">
                             Bedtime
