@@ -61,24 +61,24 @@ export const UnifiedInsightCard = ({
           <Collapsible open={isExpanded}>
             <CollapsibleTrigger 
               onClick={() => toggleSection('why')}
-              className="flex items-start justify-between w-full group cursor-pointer"
+              className="flex items-center justify-between w-full group"
             >
-              <div className="flex items-start gap-2 flex-1">
-                <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-primary" />
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-medium text-foreground tracking-wide mb-1">
+                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
                     Understanding {babyName}'s Rhythm
                   </h4>
                   {!isExpanded && (
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1">
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
                       {firstSentence}
                     </p>
                   )}
                 </div>
               </div>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 mt-0.5 ${isExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="pl-6 mt-2">
+            <CollapsibleContent className="pl-1 mt-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {whyThisMatters}
               </p>
