@@ -82,7 +82,7 @@ export const UnifiedInsightCard = ({
                 </div>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
+              <CollapsibleContent className="space-y-2.5 pl-6 mt-3">
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {whyThisMatters}
                 </p>
@@ -116,7 +116,7 @@ export const UnifiedInsightCard = ({
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
+            <CollapsibleContent className="space-y-2.5 pl-6 mt-3">
               {whatToDo.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
@@ -155,7 +155,7 @@ export const UnifiedInsightCard = ({
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="pl-1 mt-3 space-y-3">
+            <CollapsibleContent className="pl-6 mt-3 space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {whatsNext}
               </p>
