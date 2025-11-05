@@ -111,7 +111,7 @@ export const SmartQuickActions = ({
               onClick={() => setIsChatOpen(true)}
               className="w-full mt-3 text-center group"
             >
-              <span className="text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
+              <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
                 Ask Me Anything →
               </span>
             </button>
