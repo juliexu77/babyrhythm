@@ -1400,23 +1400,8 @@ const lastDiaper = displayActivities
           activities={activities}
         />
 
-        {/* Zone 2: Today's Pulse */}
-        {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
-          <TodaysPulse
-            deviations={todaysPulse.deviations}
-            biggestDeviation={todaysPulse.biggestDeviation}
-            onAdjustSchedule={() => {
-              // Navigate to Rhythm tab
-              const rhythmTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-              rhythmTab?.click();
-            }}
-            babyName={babyName || 'Baby'}
-            babyAge={babyAgeInWeeks}
-            activities={activities}
-          />
-        )}
 
-        {/* Zone 3: Smart Quick Actions */}
+        {/* Zone 2: Smart Quick Actions */}
         <SmartQuickActions
           suggestions={smartSuggestions}
           onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
@@ -1438,6 +1423,23 @@ const lastDiaper = displayActivities
             />
           }
         />
+
+        {/* Zone 3: Today's Pulse (at the bottom) */}
+        {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
+          <TodaysPulse
+            deviations={todaysPulse.deviations}
+            biggestDeviation={todaysPulse.biggestDeviation}
+            onAdjustSchedule={() => {
+              // Navigate to Rhythm tab
+              const rhythmTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+              rhythmTab?.click();
+            }}
+            babyName={babyName || 'Baby'}
+            babyAge={babyAgeInWeeks}
+            activities={activities}
+          />
+        )}
+
 
       </div>
     </div>
