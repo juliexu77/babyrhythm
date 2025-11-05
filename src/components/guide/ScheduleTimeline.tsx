@@ -377,10 +377,11 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       <div className="space-y-1">
         
         {(() => {
-          // Filter to only show wake and naps (hide bedtime on this tab)
+          // Filter to only show wake, naps, and bedtime
           const essentialActivities = groupedActivities.filter(a => 
             (a.type === 'morning' && !a.feedTime) || // Wake up only (not feeds)
-            a.type === 'nap-block'
+            a.type === 'nap-block' || 
+            a.type === 'bedtime'
           );
           
           // Group by time blocks
