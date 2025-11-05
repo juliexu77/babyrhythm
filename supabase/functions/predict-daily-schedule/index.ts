@@ -208,7 +208,7 @@ Rules:
                   },
                   transition_note: {
                     type: 'string',
-                    description: 'If transitioning, brief explanation (e.g., "Moving from 3 to 2 naps")'
+                    description: 'If transitioning, brief concise note (max 2 rows). Use baby name from context, e.g., "Emma is moving from 3 to 2 naps."'
                   },
                   reasoning: {
                     type: 'string',

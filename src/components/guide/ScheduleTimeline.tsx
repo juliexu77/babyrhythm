@@ -367,8 +367,8 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       {schedule.adjustmentNote && (
         <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary/20 rounded-lg animate-fade-in mb-2">
           <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-          <p className="text-xs text-primary font-semibold">
-            {schedule.adjustmentNote}
+          <p className="text-xs text-primary font-semibold line-clamp-2">
+            {schedule.adjustmentNote.replace(/The baby/gi, babyName)}
           </p>
         </div>
       )}

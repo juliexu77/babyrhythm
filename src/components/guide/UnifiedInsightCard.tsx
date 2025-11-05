@@ -50,42 +50,24 @@ export const UnifiedInsightCard = ({
   }
 
   return (
-    <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
-      {/* Understanding Baby's Rhythm - Collapsible with preview */}
-      {whyThisMatters && (() => {
-        // Extract first sentence as preview
-        const firstSentence = whyThisMatters.split(/[.!?]/)[0] + (whyThisMatters.includes('.') ? '.' : '');
-        const isExpanded = expandedSections.has('why');
-        
-        return (
-          <Collapsible open={isExpanded}>
-            <CollapsibleTrigger 
-              onClick={() => toggleSection('why')}
-              className="flex items-center justify-between w-full group"
-            >
-              <div className="flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-primary" />
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                    Understanding {babyName}'s Rhythm
-                  </h4>
-                  {!isExpanded && (
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
-                      {firstSentence}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pl-1 mt-3">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {whyThisMatters}
-              </p>
-            </CollapsibleContent>
-          </Collapsible>
-        );
-      })()}
+    <div className="space-y-4">
+      {/* Section Title - Matching Schedule Timeline Style */}
+      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+        Understanding {babyName}&apos;s Rhythm
+      </h3>
+      
+      <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
+        {/* What to Know - Sub-header */}
+        {whyThisMatters && (
+          <div>
+            <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-3">
+              What to Know
+            </h4>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {whyThisMatters}
+            </p>
+          </div>
+        )}
 
       {/* What To Do - Collapsible */}
       {whatToDo && whatToDo.length > 0 && (
@@ -145,6 +127,7 @@ export const UnifiedInsightCard = ({
           </CollapsibleContent>
         </Collapsible>
       )}
+      </div>
     </div>
   );
 };
