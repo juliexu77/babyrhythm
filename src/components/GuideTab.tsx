@@ -1150,34 +1150,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </>
           )}
 
-          {/* Streak Chip - Only for Tier 3 */}
-          {!needsBirthdaySetup && hasTier3Data && toneFrequencies.currentStreak >= 2 && (
-            <div className="space-y-3">
-              <button 
-                onClick={() => setShowStreakInsight(!showStreakInsight)}
-                className="text-left"
-              >
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                  {(() => {
-                    const PatternIcon = getPatternIcon(toneFrequencies.streakTone);
-                    const iconColor = getPatternColor(toneFrequencies.streakTone);
-                    return <PatternIcon className={`w-4 h-4 ${iconColor}`} />;
-                  })()}
-                  <span className="text-sm font-medium text-accent-foreground">{toneFrequencies.streakTone}</span>
-                </div>
-              </button>
-              
-              {showStreakInsight && (
-                <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                  {getPatternTooltip(toneFrequencies.streakTone)}
-                </p>
-              )}
-
-              <p className="text-sm text-muted-foreground leading-relaxed italic">
-                {toneFrequencies.currentStreak}-day &apos;{toneFrequencies.streakTone}&apos; streak — typically appears during steady growth or after routines stabilize.
-              </p>
-            </div>
-          )}
 
 
         </div>
