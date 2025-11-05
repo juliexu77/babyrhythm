@@ -363,19 +363,14 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       </div>
       
       
-      <div className="space-y-2">
-        <p className="text-xs text-muted-foreground">
-          {schedule.basedOn}
-        </p>
-        {schedule.adjustmentNote && (
-          <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary/20 rounded-lg animate-fade-in">
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <p className="text-xs text-primary font-semibold">
-              {schedule.adjustmentNote}
-            </p>
-          </div>
-        )}
-      </div>
+      {schedule.adjustmentNote && (
+        <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary/20 rounded-lg animate-fade-in mb-2">
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+          <p className="text-xs text-primary font-semibold">
+            {schedule.adjustmentNote}
+          </p>
+        </div>
+      )}
       
       {/* Timeline view with time blocks */}
       <div className="space-y-1">
