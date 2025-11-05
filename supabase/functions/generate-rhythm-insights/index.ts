@@ -254,6 +254,19 @@ Deno.serve(async (req) => {
       ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
       : null;
 
+    // Get current hour in user's timezone
+    const getCurrentHourInTZ = (): number => {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        hour: 'numeric',
+        hour12: false
+      });
+      const parts = formatter.formatToParts(nowLocal);
+      const hour = parts.find(p => p.type === 'hour')?.value;
+      return hour ? parseInt(hour) : 0;
+    };
+    const currentHour = getCurrentHourInTZ();
+    
     // Get ACTUAL nap count for TODAY (not prediction) using user's timezone
     const actualNapsToday = activities.filter((a: Activity) => {
       if (a.type !== 'nap' || a.details?.isNightSleep) return false;
@@ -261,7 +274,29 @@ Deno.serve(async (req) => {
       return ds === todayDateStr;
     }).length;
 
-    console.log(`📊 Today's ACTUAL naps: ${actualNapsToday}, AI predicted: ${aiPrediction?.total_naps_today || 'none'}`);
+    console.log(`📊 Today's ACTUAL naps: ${actualNapsToday}, AI predicted: ${aiPrediction?.total_naps_today || 'none'}, Current hour: ${currentHour}`);
+    
+    // Check if it's too early to make conclusions about today
+    // Don't generate insights if it's before 10am and no naps logged yet
+    const isTooEarlyForInsights = currentHour < 10 && actualNapsToday === 0;
+    
+    if (isTooEarlyForInsights) {
+      console.log('⏰ Too early to generate insights - showing forward-looking content instead');
+      return new Response(
+        JSON.stringify({
+          insight: `🌅 Good morning! Based on recent patterns, ${babyName} typically has ${napsPerDayThisWeek} naps today. First nap usually around ${aiPrediction?.predicted_bedtime ? 'mid-morning' : '9-10am'}.`,
+          confidence: 'Looking ahead',
+          whyThisMatters: `Right now is about following ${babyName}'s natural rhythm. Watch for sleepy cues like eye rubbing, yawning, or fussiness as morning wake time builds.`,
+          prepTip: `Start winding down 15 minutes before the first nap. Dim lights, quiet play, and consistent pre-nap routine help ${babyName} transition smoothly to sleep.`,
+          whatToDo: [
+            `Watch for ${babyName}'s sleepy cues as the first wake window approaches`,
+            `Keep the morning calm and predictable to set up success for today's naps`,
+            `Have ${babyName}'s nap space ready with comfortable temperature and low light`
+          ]
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     // VALIDATE transition claim against actual data
     // Only allow transition claims that match the observed nap counts
