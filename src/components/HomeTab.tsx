@@ -1405,138 +1405,23 @@ const lastDiaper = displayActivities
           suggestions={smartSuggestions}
           onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
           activities={activities}
+          chatComponent={
+            <ParentingChat
+              activities={activities.map(a => ({
+                id: a.id,
+                type: a.type,
+                logged_at: a.loggedAt || "",
+                details: a.details
+              }))}
+              babyName={babyName}
+              babyAgeInWeeks={babyAgeInWeeks}
+              babySex={household?.baby_sex || undefined}
+              userName={userName}
+              predictionIntent={prediction?.intent}
+              predictionConfidence={prediction?.confidence}
+            />
+          }
         />
-
-        {/* Zone 3: Today's Pulse (replaces Daily Summary) */}
-        <TodaysPulse
-          deviations={todaysPulse.deviations}
-          biggestDeviation={todaysPulse.biggestDeviation}
-          onAdjustSchedule={() => {
-            toast({
-              title: 'Schedule adjusted',
-              description: 'Predictions updated for today',
-            });
-          }}
-          babyName={babyName || 'Baby'}
-          babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
-          activities={activities}
-        />
-
-        {/* Educational Content for New Users */}
-        {showEducationalContent && displayActivities.length > 0 && (
-          <div className="space-y-6 pt-4 border-t border-border/40">
-            {/* Trends Tab Info */}
-            {!visitedTabs.has('trends') && (
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      After a few days of tracking, you'll see {babyName ? `${babyName}'s` : 'your baby\'s'} sleep, feeding, and mood patterns emerge on the Trends section.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => {
-                    const trendsTab = document.querySelector('[data-tab="trends"]') as HTMLElement;
-                    trendsTab?.click();
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  View Trends
-                </Button>
-              </div>
-            )}
-
-            {/* Rhythm Tab Info */}
-            {!visitedTabs.has('guide') && (
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <ActivityIcon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Rhythm shows your baby's daily patterns and helps you understand their unique schedule.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => {
-                    const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-                    guideTab?.click();
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  View Rhythm
-                </Button>
-              </div>
-            )}
-
-            {/* Log Tab Info */}
-            {!visitedTabs.has('log') && (
-              <div className="space-y-2">
-                <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Export and share your data with partners or pediatricians anytime from your Log.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => {
-                    const logTab = document.querySelector('[data-tab="log"]') as HTMLElement;
-                    logTab?.click();
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  View Log
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Total moments counter */}
-        {activities.length > 0 && (
-          <div className="text-center pt-8 pb-4 space-y-1">
-            <p className="text-sm text-muted-foreground">
-              {"You've logged "}
-              <span className="font-medium text-foreground">{activities.length}</span>
-              {" moments together so far 🌿"}
-            </p>
-            {showBadge && percentile !== null && (
-              <p className="text-xs text-muted-foreground/80">
-                {"You're in the top "}
-                <span className="font-medium text-primary">{percentile}%</span>
-                {" of users"}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* AI Chat Section */}
-        <div className="h-[500px]">
-          <ParentingChat
-            activities={activities.map(a => ({
-              id: a.id,
-              type: a.type,
-              logged_at: a.loggedAt || "",
-              details: a.details
-            }))}
-            babyName={babyName}
-            babyAgeInWeeks={babyAgeInWeeks}
-            babySex={household?.baby_sex || undefined}
-            userName={userName}
-            predictionIntent={prediction?.intent}
-            predictionConfidence={prediction?.confidence}
-          />
-        </div>
 
       </div>
     </div>

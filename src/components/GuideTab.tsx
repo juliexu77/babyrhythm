@@ -439,7 +439,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     hasAdaptiveSchedule: !!adaptiveSchedule,
     hasPredictedSchedule: !!predictedSchedule,
     hasDisplaySchedule: !!displaySchedule,
-    enrichedActivitiesCount: enrichedActivities.length
+    enrichedActivitiesCount: enrichedActivities.length,
+    accuracyScore: displaySchedule?.accuracyScore
   });
 
   // Enable smart reminders - only when we have adaptive schedule
