@@ -57,17 +57,51 @@ export const UnifiedInsightCard = ({
       </h3>
       
       <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
-        {/* What to Know - Sub-header */}
-        {whyThisMatters && (
-          <div>
-            <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-3">
-              What to Know
-            </h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {whyThisMatters}
-            </p>
-          </div>
-        )}
+        {/* What to Know - Collapsible with preview */}
+        {whyThisMatters && (() => {
+          // Split into sentences/bullet points
+          const bullets = whyThisMatters
+            .split(/[.!?]+/)
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
+          
+          const firstBullet = bullets[0] || '';
+          const isExpanded = expandedSections.has('know');
+          
+          return (
+            <Collapsible open={isExpanded}>
+              <CollapsibleTrigger 
+                onClick={() => toggleSection('know')}
+                className="flex items-center justify-between w-full group"
+              >
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                      What to Know
+                    </h4>
+                    {!isExpanded && firstBullet && (
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
+                        {firstBullet}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
+                {bullets.map((bullet, idx) => (
+                  <div key={idx} className="flex items-start gap-2.5">
+                    <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {bullet}
+                    </p>
+                  </div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        })()}
 
       {/* What To Do - Collapsible */}
       {whatToDo && whatToDo.length > 0 && (
