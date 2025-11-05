@@ -133,6 +133,8 @@ serve(async (req) => {
       }
     }
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const currentHour = new Date().getHours();
+    const isEarlyMorning = currentHour < 12;
 
     const prompt = `You are a baby sleep pattern analyst. Your job is HIGH-LEVEL pattern recognition only.
 The detailed schedule timing will be calculated separately by the adaptive schedule generator.
@@ -149,6 +151,7 @@ Today so far (${currentTime}):
 - ${todayNaps} nap${todayNaps !== 1 ? 's' : ''} logged
 - ${todayFeeds} feed${todayFeeds !== 1 ? 's' : ''} logged
 ${lastNap ? `- Last nap: ${lastNapDuration} min` : ''}
+${isEarlyMorning ? '\nNote: It is still early in the day - more naps are expected later.' : ''}
 
 CRITICAL PREDICTION RULES:
 1. Predict the MOST COMMON nap count from the last 7 days as today's expected total
@@ -169,7 +172,7 @@ Rules:
 - Do NOT infer transitions from 4→3 naps unless you see 4+ nap days in the data.
 - If naps vary 2-3, call it "stabilizing between 2-3" not "transitioning from 4."
 - Do NOT calculate specific times—that's handled by the schedule generator.
-- ALWAYS predict the most common nap count unless there's sustained evidence of change.`;
+- ALWAYS predict the most common nap count unless there's sustained evidence of change.
 
     console.log('Calling Lovable AI for schedule prediction...');
 
@@ -215,7 +218,7 @@ Rules:
                   },
                   transition_note: {
                     type: 'string',
-                    description: 'If transitioning, write ONE warm, encouraging sentence (max 12 words) about the transition. Use baby name. Examples: "Caleb is beautifully moving toward 2 naps—this is perfect for his age" or "Emma is naturally consolidating to 2 naps, which is developmentally right on track"'
+                    description: `If transitioning, write ONE warm, encouraging sentence (max 12 words) about the PATTERN TRANSITION (e.g., from 3→2 naps), NOT about today's current nap count. ${isEarlyMorning ? 'Since it is early in the day, focus only on the multi-day pattern change, not today\'s progress.' : ''} Use baby name. Examples: "Caleb is beautifully moving toward 2 naps—this is perfect" or "Emma is naturally consolidating to 2 naps, right on track"`
                   },
                   reasoning: {
                     type: 'string',
