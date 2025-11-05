@@ -292,7 +292,8 @@ Deno.serve(async (req) => {
             `Watch for ${babyName}'s sleepy cues as the first wake window approaches`,
             `Keep the morning calm and predictable to set up success for today's naps`,
             `Have ${babyName}'s nap space ready with comfortable temperature and low light`
-          ]
+          ],
+          whatsNext: `First nap window typically opens around mid-morning. ${babyName} will show you when they're ready!`
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
