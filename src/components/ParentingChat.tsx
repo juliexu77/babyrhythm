@@ -552,6 +552,88 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
       {/* Conversation History */}
       <ScrollArea className="flex-1 p-4">
         <div ref={scrollRef} className="space-y-4 pb-4">
+          {/* Conversation Starters - show when no messages yet */}
+          {messages.length === 0 && hasInitialized && !isLoading && (
+            <div className="space-y-4 pt-8">
+              <div className="text-center space-y-2 mb-6">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                  <Leaf className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">Ask Me Anything</h3>
+                <p className="text-sm text-muted-foreground">
+                  I can help with sleep, feeding, development, and parenting questions
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+                  Popular Questions
+                </p>
+                <div className="grid gap-2">
+                  <button
+                    onClick={() => {
+                      setInput("Why is my baby waking up more at night?");
+                      setTimeout(() => handleSend(), 100);
+                    }}
+                    className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
+                  >
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                      Why is my baby waking up more at night?
+                    </p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setInput("How do I know if my baby is getting enough milk?");
+                      setTimeout(() => handleSend(), 100);
+                    }}
+                    className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
+                  >
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                      How do I know if my baby is getting enough milk?
+                    </p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setInput("What should my baby's sleep schedule look like?");
+                      setTimeout(() => handleSend(), 100);
+                    }}
+                    className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
+                  >
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                      What should my baby's sleep schedule look like?
+                    </p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setInput("How can I establish better nap routines?");
+                      setTimeout(() => handleSend(), 100);
+                    }}
+                    className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
+                  >
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                      How can I establish better nap routines?
+                    </p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setInput("Is cluster feeding normal?");
+                      setTimeout(() => handleSend(), 100);
+                    }}
+                    className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
+                  >
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                      Is cluster feeding normal?
+                    </p>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Earlier History (Collapsible) */}
           {sessionStartIndex > 0 && (
             <Collapsible open={!historyCollapsed} onOpenChange={() => setHistoryCollapsed(!historyCollapsed)}>
