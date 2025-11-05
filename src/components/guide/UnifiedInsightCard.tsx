@@ -59,11 +59,6 @@ export const UnifiedInsightCard = ({
       <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
         {/* What to Know - Collapsible with preview */}
         {whyThisMatters && (() => {
-          // Enforce 100 character limit to ensure max 2 rows
-          const truncatedText = whyThisMatters.length > 100 
-            ? whyThisMatters.substring(0, 97) + '...' 
-            : whyThisMatters;
-          
           const isExpanded = expandedSections.has('know');
           
           return (
@@ -80,7 +75,7 @@ export const UnifiedInsightCard = ({
                     </h4>
                     {!isExpanded && (
                       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-1">
-                        {truncatedText}
+                        {whyThisMatters}
                       </p>
                     )}
                   </div>
