@@ -150,6 +150,12 @@ Today so far (${currentTime}):
 - ${todayFeeds} feed${todayFeeds !== 1 ? 's' : ''} logged
 ${lastNap ? `- Last nap: ${lastNapDuration} min` : ''}
 
+CRITICAL PREDICTION RULES:
+1. Predict the MOST COMMON nap count from the last 7 days as today's expected total
+2. Only predict a different count if there's a CLEAR sustained transition (3+ consecutive days of new pattern)
+3. If 6 out of 7 days show 3 naps, predict 3 naps (not 2)
+4. Do NOT predict developmental "should be" patterns - predict what the DATA shows
+
 Your task: Analyze ONLY the high-level pattern. Do NOT calculate times, wake windows, or bedtimes.
 
 Answer these questions:
@@ -162,7 +168,8 @@ Rules:
 - Only analyze DAYTIME naps (6am-8pm). Night sleep tracked separately.
 - Do NOT infer transitions from 4→3 naps unless you see 4+ nap days in the data.
 - If naps vary 2-3, call it "stabilizing between 2-3" not "transitioning from 4."
-- Do NOT calculate specific times—that's handled by the schedule generator.`;
+- Do NOT calculate specific times—that's handled by the schedule generator.
+- ALWAYS predict the most common nap count unless there's sustained evidence of change.`;
 
     console.log('Calling Lovable AI for schedule prediction...');
 
