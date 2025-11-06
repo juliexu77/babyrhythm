@@ -400,11 +400,11 @@ export const ScheduleTimeline = ({
         </p>
       </div>
       
-      {/* Transition insight row - burgundy banner - simple label only, no verbose AI text */}
+      {/* Transition insight row - burgundy banner matching reference design */}
       {transitionWindow && (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-[#f3e8e8] dark:bg-[#4a2c2c] border border-[#e6d0d0] dark:border-[#6b3e3e] rounded-full mb-3">
-          <span className="text-burgundy-600 dark:text-burgundy-400 text-sm">●</span>
-          <p className="text-sm text-burgundy-700 dark:text-burgundy-300 font-medium">
+        <div className="flex items-center gap-2.5 px-5 py-3 bg-[#e8d5e0] dark:bg-[#4a2c2c] rounded-3xl mb-3">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#7d3c6f] dark:bg-burgundy-400 flex-shrink-0"></span>
+          <p className="text-base text-[#7d3c6f] dark:text-burgundy-300 font-medium">
             Transitioning between {transitionWindow.from} and {transitionWindow.to} naps
           </p>
         </div>
