@@ -493,6 +493,36 @@ function generateNapSchedule(
 ): ScheduleEvent[] {
   const naps: ScheduleEvent[] = [];
   
+  // Calculate predicted bedtime first to use as cutoff for naps
+  const sevenDaysAgo = new Date(wakeTime);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const nightStarts: number[] = historicalDaySleepData 
+    ? Array.from(historicalDaySleepData.values())
+        .map(day => {
+          // Find the last nap of the day which is likely bedtime
+          if (day.naps.length === 0) return null;
+          const lastNap = day.naps[day.naps.length - 1];
+          return lastNap.time.getHours() * 60 + lastNap.time.getMinutes();
+        })
+        .filter((t): t is number => t !== null && t >= 18 * 60) // Only evening times (after 6 PM)
+    : [];
+
+  // Calculate average bedtime from historical data
+  let bedtimeCutoffHour = 19; // Default 7 PM
+  if (nightStarts.length > 0) {
+    const avgMinutes = Math.round(nightStarts.reduce((a,b)=>a+b,0)/nightStarts.length);
+    bedtimeCutoffHour = Math.floor(avgMinutes / 60);
+  }
+  
+  // Use bedtime minus 1 hour as the latest nap start time
+  const napCutoffHour = Math.max(16, bedtimeCutoffHour - 1); // Minimum 4 PM, typically 1 hour before bed
+  
+  console.log('⏰ Nap cutoff calculation:', {
+    bedtimeHour: bedtimeCutoffHour,
+    napCutoffHour,
+    nightSleepSamples: nightStarts.length
+  });
+  
   // Determine nap timings based on historical data or defaults
   let napStartTimes: number[] = []; // Minutes from wake
   
@@ -532,9 +562,9 @@ function generateNapSchedule(
   napStartTimes.forEach((minutesFromWake, index) => {
     const napTime = new Date(wakeTime.getTime() + minutesFromWake * 60000);
     
-    // Skip naps after 5 PM to avoid bedtime interference
-    if (napTime.getHours() >= 17) {
-      console.log(`⏭️ Skipping nap ${index + 1} scheduled at ${formatTime(napTime)} (after 5 PM cutoff)`);
+    // Skip naps that would interfere with bedtime (dynamic cutoff based on historical bedtime)
+    if (napTime.getHours() >= napCutoffHour) {
+      console.log(`⏭️ Skipping nap ${index + 1} scheduled at ${formatTime(napTime)} (after ${napCutoffHour}:00 cutoff, bedtime typically at ${bedtimeCutoffHour}:00)`);
       return;
     }
     
