@@ -271,6 +271,21 @@ export const ScheduleTimeline = ({
   
   const dayProgress = getDayProgress();
   
+  // Helper to round time to nearest 5 minutes
+  const roundToNearest5Min = (minutes: number): number => {
+    return Math.round(minutes / 5) * 5;
+  };
+
+  // Helper to format minutes to time string
+  const formatMinutesToTime = (totalMinutes: number): string => {
+    const roundedMinutes = roundToNearest5Min(totalMinutes);
+    const hours = Math.floor(roundedMinutes / 60) % 24;
+    const mins = roundedMinutes % 60;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+    return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+  };
+
   // Calculate planning windows (free time between events)
   const planningWindows = useMemo(() => {
     const windows: Array<{ start: string; end: string; duration: number; label: string }> = [];
@@ -300,19 +315,13 @@ export const ScheduleTimeline = ({
       
       // Only show windows >= 60 minutes
       if (windowDuration >= 60) {
-        const endHours = Math.floor(currentEnd / 60) % 24;
-        const endMins = currentEnd % 60;
-        const endPeriod = endHours >= 12 ? 'PM' : 'AM';
-        const endDisplayHours = endHours > 12 ? endHours - 12 : (endHours === 0 ? 12 : endHours);
-        const endTime = `${endDisplayHours}:${endMins.toString().padStart(2, '0')} ${endPeriod}`;
-        
-        const hours = Math.floor(windowDuration / 60);
-        const mins = windowDuration % 60;
-        const durationText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+        // Round both start and end times to nearest 5 minutes
+        const endTime = formatMinutesToTime(currentEnd);
+        const nextTimeRounded = formatMinutesToTime(nextStart);
         
         windows.push({
           start: endTime,
-          end: next.time,
+          end: nextTimeRounded,
           duration: windowDuration,
           label: windowDuration >= 120 ? 'Best time for errands' : 'Free time'
         });
@@ -405,41 +414,28 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Transition toggle - shows during AI detection OR age-based windows */}
+      {/* Transition toggle - compact and functional */}
       {isTransitioning && transitionNapCounts && (
-        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-2">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-amber-600" />
-              <span className="text-xs font-medium text-foreground">
-                {transitionWindow 
-                  ? `${babyName} is in the typical ${transitionWindow.label} window` 
-                  : `${babyName} is transitioning between nap schedules`}
-              </span>
-            </div>
+        <div className="flex items-center justify-between px-3 py-2 bg-amber-500/5 border border-amber-500/10 rounded-lg mb-2">
+          <div className="flex items-center gap-2">
+            <Info className="w-3 h-3 text-amber-600" />
+            <span className="text-[11px] font-medium text-muted-foreground">
+              {transitionNapCounts.current} → {transitionNapCounts.transitioning} nap schedule
+            </span>
           </div>
-          <p className="text-[10px] text-muted-foreground mb-2">
-            {transitionWindow 
-              ? "Try both schedules to see which fits better right now"
-              : "We're seeing inconsistent patterns — experiment with both"}
-          </p>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground">{transitionNapCounts.current}</span>
             <Button
-              variant={!showAlternate ? "default" : "outline"}
+              variant="ghost"
               size="sm"
-              className="flex-1"
-              onClick={() => onToggleAlternate?.(false)}
+              className="h-5 w-9 p-0 relative rounded-full bg-muted hover:bg-muted"
+              onClick={() => onToggleAlternate?.(!showAlternate)}
             >
-              {transitionNapCounts.current} naps
+              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-primary transition-all ${
+                showAlternate ? 'left-4' : 'left-0.5'
+              }`} />
             </Button>
-            <Button
-              variant={showAlternate ? "default" : "outline"}
-              size="sm"
-              className="flex-1"
-              onClick={() => onToggleAlternate?.(true)}
-            >
-              {transitionNapCounts.transitioning} naps
-            </Button>
+            <span className="text-[10px] text-muted-foreground">{transitionNapCounts.transitioning}</span>
           </div>
         </div>
       )}
@@ -703,7 +699,7 @@ export const ScheduleTimeline = ({
           disabled={isAdjusting}
         >
           <Clock className="w-3 h-3 mr-2" />
-          Adjust rest of day
+          Update prediction
         </Button>
       )}
     </div>
