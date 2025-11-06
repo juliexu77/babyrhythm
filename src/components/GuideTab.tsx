@@ -205,6 +205,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const previousScheduleRef = useRef<AdaptiveSchedule | null>(null);
   const [scheduleUpdatedRecently, setScheduleUpdatedRecently] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [patternMilestones, setPatternMilestones] = useState<Set<string>>(() => {
+    const stored = localStorage.getItem('patternMilestones');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
+  const previousAccuracyRef = useRef<number | undefined>();
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
   const babyName = household?.baby_name || 'Baby';
@@ -820,6 +825,87 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [enrichedActivities, household?.baby_birthday, hasTier3Data, activities.length, lastActivityCount, userTimezone, toast]);
 
+  // 🎉 Celebrate accuracy improvements
+  useEffect(() => {
+    const currentAccuracy = adaptiveSchedule?.accuracyScore;
+    
+    if (currentAccuracy !== undefined && previousAccuracyRef.current !== undefined) {
+      const improvement = currentAccuracy - previousAccuracyRef.current;
+      
+      // Celebrate 10%+ improvement
+      if (improvement >= 10) {
+        toast({
+          title: "🎯 Prediction Accuracy Improved!",
+          description: `Schedule is now ${currentAccuracy}% accurate — AI is learning ${babyName}'s rhythm!`,
+          duration: 5000,
+        });
+      }
+      
+      // Special celebration at 80%+ accuracy milestone
+      if (currentAccuracy >= 80 && previousAccuracyRef.current < 80 && !patternMilestones.has('accuracy_80')) {
+        const newMilestones = new Set(patternMilestones);
+        newMilestones.add('accuracy_80');
+        setPatternMilestones(newMilestones);
+        localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
+        
+        toast({
+          title: "🎉 Milestone Unlocked!",
+          description: `${babyName}'s schedule is now highly predictable (${currentAccuracy}% accurate)!`,
+          duration: 6000,
+        });
+      }
+    }
+    
+    previousAccuracyRef.current = currentAccuracy;
+  }, [adaptiveSchedule?.accuracyScore, babyName, toast, patternMilestones]);
+
+  // 🏆 Celebrate pattern milestones
+  useEffect(() => {
+    if (!currentTone) return;
+    
+    // First pattern detected
+    if (toneFrequencies.tones.length >= 1 && !patternMilestones.has('first_pattern')) {
+      const newMilestones = new Set(patternMilestones);
+      newMilestones.add('first_pattern');
+      setPatternMilestones(newMilestones);
+      localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
+      
+      toast({
+        title: "🌟 First Pattern Detected!",
+        description: `${babyName} is showing a "${currentTone.text}" pattern today`,
+        duration: 5000,
+      });
+    }
+    
+    // 3-day consistency streak
+    if (toneFrequencies.currentStreak >= 3 && !patternMilestones.has('streak_3')) {
+      const newMilestones = new Set(patternMilestones);
+      newMilestones.add('streak_3');
+      setPatternMilestones(newMilestones);
+      localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
+      
+      toast({
+        title: "🔥 3-Day Streak!",
+        description: `${babyName} has shown consistent "${toneFrequencies.streakTone}" patterns`,
+        duration: 5000,
+      });
+    }
+    
+    // Week-long consistency (7 days)
+    if (toneFrequencies.currentStreak >= 7 && !patternMilestones.has('streak_7')) {
+      const newMilestones = new Set(patternMilestones);
+      newMilestones.add('streak_7');
+      setPatternMilestones(newMilestones);
+      localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
+      
+      toast({
+        title: "🏆 Week-Long Consistency!",
+        description: `Amazing! ${babyName} has maintained a steady rhythm for 7 days`,
+        duration: 6000,
+      });
+    }
+  }, [currentTone, toneFrequencies.currentStreak, toneFrequencies.streakTone, toneFrequencies.tones.length, babyName, toast, patternMilestones]);
+
 
   // Load initial insight
   useEffect(() => {
@@ -1103,11 +1189,39 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <div ref={scrollRef} className="px-4 pt-4 space-y-6">
           {/* Hero Insight Card - Only for Tier 3 */}
           {!needsBirthdaySetup && hasTier3Data && (
-            <HeroInsightCard 
-              insight={rhythmInsights?.heroInsight || ''}
-              confidence={rhythmInsights?.confidenceScore || 'High confidence'}
-              loading={rhythmInsightsLoading || !rhythmInsights}
-            />
+            <>
+              <HeroInsightCard 
+                insight={rhythmInsights?.heroInsight || ''}
+                confidence={rhythmInsights?.confidenceScore || 'High confidence'}
+                loading={rhythmInsightsLoading || !rhythmInsights}
+              />
+              
+              {/* Pattern Milestones Badges */}
+              {patternMilestones.size > 0 && (
+                <div className="flex flex-wrap gap-2 animate-fade-in">
+                  {patternMilestones.has('first_pattern') && (
+                    <Badge variant="outline" className="text-xs px-3 py-1 bg-primary/5">
+                      🌟 First Pattern
+                    </Badge>
+                  )}
+                  {patternMilestones.has('streak_3') && (
+                    <Badge variant="outline" className="text-xs px-3 py-1 bg-amber-500/10">
+                      🔥 3-Day Streak
+                    </Badge>
+                  )}
+                  {patternMilestones.has('streak_7') && (
+                    <Badge variant="outline" className="text-xs px-3 py-1 bg-green-500/10">
+                      🏆 Week Consistency
+                    </Badge>
+                  )}
+                  {patternMilestones.has('accuracy_80') && (
+                    <Badge variant="outline" className="text-xs px-3 py-1 bg-blue-500/10">
+                      🎯 80% Accurate
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </>
           )}
           
           {/* Tier 1 & 2: Simple confidence message */}

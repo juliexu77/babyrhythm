@@ -1,4 +1,4 @@
-import { Moon, Sun, Milk, Bed, Clock, ChevronDown } from "lucide-react";
+import { Moon, Sun, Milk, Bed, Clock, ChevronDown, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState, useMemo } from "react";
@@ -42,6 +42,7 @@ interface GroupedActivity {
 
 export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
+  const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   
   // Debug: Log schedule events to verify feeds are included
   console.log('📋 ScheduleTimeline - Events:', schedule.events.map(e => ({ 
@@ -135,6 +136,24 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       }
       return next;
     });
+  };
+
+  const handleEventClick = (eventId: string) => {
+    setSelectedEvent(prev => prev === eventId ? null : eventId);
+  };
+
+  // Get confidence color and indicator
+  const getConfidenceIndicator = (confidence?: 'high' | 'medium' | 'low') => {
+    switch (confidence) {
+      case 'high':
+        return { color: 'bg-green-500', dot: '●', label: 'High confidence' };
+      case 'medium':
+        return { color: 'bg-amber-500', dot: '●', label: 'Medium confidence' };
+      case 'low':
+        return { color: 'bg-gray-400', dot: '●', label: 'Low confidence' };
+      default:
+        return { color: 'bg-primary', dot: '●', label: 'Predicted' };
+    }
   };
 
   // Group related activities
@@ -421,14 +440,20 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                 )}
                 
                 {activity.type === 'morning' && (
-                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
-                    <div className="flex items-start gap-3 group">
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${isCurrent ? 'ring-2 ring-primary/50 animate-pulse' : ''}`}>
+                    <button 
+                      onClick={() => handleEventClick(activity.id)}
+                      className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
+                    >
                       <div className="flex flex-col items-center">
                         <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-amber-500/20 border-2 border-amber-500/40' : 'bg-amber-500/10 border-2 border-amber-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                           <Sun className="w-4 h-4 text-amber-600" />
+                          {matchingEvent && (
+                            <span className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${getConfidenceIndicator(matchingEvent.confidence).color} border border-background`} />
+                          )}
                         </div>
                       </div>
-                      <div className="flex-1 pb-1">
+                      <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-foreground">
                             {formatTime(activity.time, true)}
@@ -436,9 +461,25 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                           <span className="text-xs font-medium text-muted-foreground">
                             Wake up
                           </span>
+                          {isCurrent && (
+                            <Badge variant="default" className="text-[10px] px-1.5 py-0 animate-fade-in">Now</Badge>
+                          )}
                         </div>
                       </div>
-                    </div>
+                    </button>
+                    {selectedEvent === activity.id && matchingEvent && (
+                      <div className="mt-3 pt-3 border-t border-border/40 animate-fade-in">
+                        <div className="flex items-start gap-2 text-xs">
+                          <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="text-muted-foreground">
+                              <span className="font-medium text-foreground">{getConfidenceIndicator(matchingEvent.confidence).label}</span>
+                              {matchingEvent.reasoning && ` — ${matchingEvent.reasoning}`}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -469,14 +510,20 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   }
                   
                   return (
-                    <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
-                      <div className="flex items-start gap-3 group">
+                    <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${isCurrent ? 'ring-2 ring-primary/50 animate-pulse' : ''}`}>
+                      <button 
+                        onClick={() => handleEventClick(activity.id)}
+                        className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
+                      >
                         <div className="flex flex-col items-center">
                           <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-blue-500/20 border-2 border-blue-500/40' : 'bg-blue-500/10 border-2 border-blue-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                             <Moon className="w-4 h-4 text-blue-600" />
+                            {matchingEvent && (
+                              <span className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${getConfidenceIndicator(matchingEvent.confidence).color} border border-background`} />
+                            )}
                           </div>
                         </div>
-                        <div className="flex-1 pb-1">
+                        <div className="flex-1 pb-1 text-left">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-bold text-foreground">
@@ -485,6 +532,9 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                               <span className="text-xs font-medium text-foreground">
                                 {activity.title} ({activity.napDuration?.replace('h', 'h ')?.replace('m', 'min') || '1h 30min'})
                               </span>
+                              {isCurrent && (
+                                <Badge variant="default" className="text-[10px] px-1.5 py-0 animate-fade-in">Now</Badge>
+                              )}
                             </div>
                             {wakeWindowText && (
                               <span className="text-xs text-muted-foreground">
@@ -493,20 +543,39 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                             )}
                           </div>
                         </div>
-                      </div>
+                      </button>
+                      {selectedEvent === activity.id && matchingEvent && (
+                        <div className="mt-3 pt-3 border-t border-border/40 animate-fade-in">
+                          <div className="flex items-start gap-2 text-xs">
+                            <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                            <div className="space-y-1">
+                              <p className="text-muted-foreground">
+                                <span className="font-medium text-foreground">{getConfidenceIndicator(matchingEvent.confidence).label}</span>
+                                {matchingEvent.reasoning && ` — ${matchingEvent.reasoning}`}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
                 
                 {activity.type === 'bedtime' && (
-                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity rounded-lg p-3 ${blockBgColor}`}>
-                    <div className="flex items-start gap-3 group">
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${isCurrent ? 'ring-2 ring-primary/50 animate-pulse' : ''}`}>
+                    <button 
+                      onClick={() => handleEventClick(activity.id)}
+                      className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
+                    >
                       <div className="flex flex-col items-center">
                         <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-purple-500/20 border-2 border-purple-500/40' : 'bg-purple-500/10 border-2 border-purple-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                           <Bed className="w-4 h-4 text-purple-600" />
+                          {matchingEvent && (
+                            <span className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${getConfidenceIndicator(matchingEvent.confidence).color} border border-background`} />
+                          )}
                         </div>
                       </div>
-                      <div className="flex-1 pb-1">
+                      <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-foreground">
                             {formatTime(activity.time, true)}
@@ -514,9 +583,25 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                           <span className="text-xs font-medium text-muted-foreground">
                             Bedtime
                           </span>
+                          {isCurrent && (
+                            <Badge variant="default" className="text-[10px] px-1.5 py-0 animate-fade-in">Now</Badge>
+                          )}
                         </div>
                       </div>
-                    </div>
+                    </button>
+                    {selectedEvent === activity.id && matchingEvent && (
+                      <div className="mt-3 pt-3 border-t border-border/40 animate-fade-in">
+                        <div className="flex items-start gap-2 text-xs">
+                          <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="text-muted-foreground">
+                              <span className="font-medium text-foreground">{getConfidenceIndicator(matchingEvent.confidence).label}</span>
+                              {matchingEvent.reasoning && ` — ${matchingEvent.reasoning}`}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </>

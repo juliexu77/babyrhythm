@@ -138,7 +138,7 @@ export const TodaysPulse = ({
               </div>
             ))}
 
-            {/* Adjust Schedule Button */}
+            {/* View Rhythm Button */}
             {deviations.some(d => d.category === 'schedule' && d.hasDeviation) && (
               <Button
                 variant="outline"
@@ -146,7 +146,7 @@ export const TodaysPulse = ({
                 onClick={onAdjustSchedule}
                 className="w-full text-xs"
               >
-                Adjust predictions for today
+                View today's rhythm
               </Button>
             )}
 
