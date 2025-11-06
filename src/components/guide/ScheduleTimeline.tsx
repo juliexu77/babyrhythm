@@ -405,20 +405,6 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Recalculate button - for midday adjustments */}
-      {onRecalculate && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRecalculate}
-          className="w-full text-xs mb-2"
-          disabled={isAdjusting}
-        >
-          <Clock className="w-3 h-3 mr-2" />
-          Adjust rest of day
-        </Button>
-      )}
-      
       {/* Transition toggle - shows during AI detection OR age-based windows */}
       {isTransitioning && transitionNapCounts && (
         <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-2">
@@ -468,18 +454,15 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Planning windows */}
+      {/* Planning windows - lightweight banner */}
       {longestWindow && (
-        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg mb-2">
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-green-600" />
-            <span className="text-xs font-semibold text-green-700 dark:text-green-400">
-              {longestWindow.label}
+        <div className="px-3 py-2 bg-muted/50 border-l-2 border-green-500/40 rounded mb-3">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3 h-3 text-green-600" />
+            <span className="text-[11px] font-medium text-muted-foreground">
+              Best for errands: {longestWindow.start} - {longestWindow.end}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {longestWindow.start} - {longestWindow.end} ({Math.floor(longestWindow.duration / 60)}h {longestWindow.duration % 60}m)
-          </p>
         </div>
       )}
       
@@ -708,6 +691,20 @@ export const ScheduleTimeline = ({
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Recalculate button - moved to bottom for better flow */}
+      {onRecalculate && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRecalculate}
+          className="w-full text-xs mt-4 text-muted-foreground hover:text-foreground"
+          disabled={isAdjusting}
+        >
+          <Clock className="w-3 h-3 mr-2" />
+          Adjust rest of day
+        </Button>
       )}
     </div>
   );
