@@ -1,5 +1,5 @@
 import { Activity } from "./ActivityCard";
-import { ArrowUp, ArrowDown, Share, ChevronLeft, ChevronRight, Milk, Moon, Activity as ActivityIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Share, ChevronLeft, ChevronRight, Milk, Moon, Activity as ActivityIcon } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { toZonedTime } from "date-fns-tz";
 import { useState, useRef } from "react";
@@ -485,9 +485,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               {prevFeedSummary.avgVolume > 0 && (
                 <div className="flex items-center gap-1.5">
                   {feedVolumeChange > 0 ? (
-                    <ArrowUp className="w-3 h-3 text-muted-foreground" />
+                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
                   ) : feedVolumeChange < 0 ? (
-                    <ArrowDown className="w-3 h-3 text-muted-foreground" />
+                    <TrendingDown className="w-3 h-3 text-muted-foreground" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
                     {feedVolumeChange > 0 ? '+' : ''}{feedVolumeChange.toFixed(1)}% vs last week
@@ -512,9 +512,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               {prevFeedSummary.avgFeedsPerDay > 0 && (
                 <div className="flex items-center gap-1.5">
                   {feedCountChange > 0 ? (
-                    <ArrowUp className="w-3 h-3 text-muted-foreground" />
+                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
                   ) : feedCountChange < 0 ? (
-                    <ArrowDown className="w-3 h-3 text-muted-foreground" />
+                    <TrendingDown className="w-3 h-3 text-muted-foreground" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
                     {feedCountChange > 0 ? '+' : ''}{feedCountChange.toFixed(1)} vs last week
@@ -622,9 +622,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               {prevNapSummary.avgDuration > 0 && (
                 <div className="flex items-center gap-1.5">
                   {napDurationChange > 0 ? (
-                    <ArrowUp className="w-3 h-3 text-muted-foreground" />
+                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
                   ) : napDurationChange < 0 ? (
-                    <ArrowDown className="w-3 h-3 text-muted-foreground" />
+                    <TrendingDown className="w-3 h-3 text-muted-foreground" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
                     {napDurationChange > 0 ? '+' : ''}{napDurationChange.toFixed(1)}% vs last week
@@ -648,9 +648,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               </div>
               <div className="flex items-center gap-1.5">
                 {napCountChange > 0 ? (
-                  <ArrowUp className="w-3 h-3 text-muted-foreground" />
+                  <TrendingUp className="w-3 h-3 text-muted-foreground" />
                 ) : napCountChange < 0 ? (
-                  <ArrowDown className="w-3 h-3 text-muted-foreground" />
+                  <TrendingDown className="w-3 h-3 text-muted-foreground" />
                 ) : null}
                 <p className="text-xs text-muted-foreground">
                   {napCountChange > 0 ? '+' : ''}{napCountChange.toFixed(1)} vs last week
