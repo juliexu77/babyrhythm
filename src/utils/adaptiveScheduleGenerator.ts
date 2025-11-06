@@ -169,41 +169,26 @@ export function generateAdaptiveSchedule(
     }
   });
   
-  // Sort naps within each day by time, then extract durations by position
-  const napDurationsByPosition = new Map<number, number[]>();
-  
-  napsByDay.forEach((naps, dateKey) => {
-    // Sort naps by time within the day
+  // Sort naps within each day by time
+  napsByDay.forEach((naps) => {
     naps.sort((a, b) => a.time.getTime() - b.time.getTime());
-    
-    // Track duration for each position (1st nap, 2nd nap, 3rd nap, etc.)
-    naps.forEach((nap, position) => {
-      if (!napDurationsByPosition.has(position)) {
-        napDurationsByPosition.set(position, []);
-      }
-      napDurationsByPosition.get(position)!.push(nap.duration);
-    });
   });
   
-  console.log('🔍 Nap durations by position:', {
+  console.log('🔍 All nap data by day:', {
     totalDays: napsByDay.size,
-    totalNaps: recentNaps.length,
+    napCountDistribution: Array.from(napsByDay.values()).reduce((acc, naps) => {
+      const count = naps.length;
+      acc[count] = (acc[count] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>),
     sampleDays: Array.from(napsByDay.entries()).slice(0, 5).map(([date, naps]) => ({
       date,
       napCount: naps.length,
       durations: naps.map(n => Math.round(n.duration))
-    })),
-    positionData: Array.from(napDurationsByPosition.entries()).map(([pos, durs]) => ({
-      position: pos + 1,
-      samples: durs.length,
-      avgMinutes: Math.round(durs.reduce((a,b)=>a+b,0)/durs.length),
-      min: Math.round(Math.min(...durs)),
-      max: Math.round(Math.max(...durs)),
-      allSamples: durs.map(d => Math.round(d))
     }))
   });
   
-  // Calculate nap timings from wake for scheduling (only for days with wake data)
+  // Calculate nap timings from wake (only for days with wake data)
   let napTimingsMinutesFromWake: number[] = [];
   const daysWithWakeAndNaps = new Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>();
   
@@ -271,6 +256,31 @@ export function generateAdaptiveSchedule(
     ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
     : null;
   
+  // Extract nap durations by position - ONLY from days matching the requested nap count
+  const napDurationsByPosition = new Map<number, number[]>();
+  napsByDay.forEach((naps) => {
+    // CRITICAL: Only use days that have the SAME nap count as requested
+    if (naps.length === napCount) {
+      naps.forEach((nap, position) => {
+        if (!napDurationsByPosition.has(position)) {
+          napDurationsByPosition.set(position, []);
+        }
+        napDurationsByPosition.get(position)!.push(nap.duration);
+      });
+    }
+  });
+  
+  console.log(`🎯 Nap position data for ${napCount}-nap days ONLY:`, {
+    requestedNapCount: napCount,
+    daysMatchingCount: Array.from(napsByDay.values()).filter(n => n.length === napCount).length,
+    totalDaysInData: napsByDay.size,
+    positionData: Array.from(napDurationsByPosition.entries()).map(([pos, durs]) => ({
+      position: pos + 1,
+      samples: durs.length,
+      avgMinutes: Math.round(durs.reduce((a,b)=>a+b,0)/durs.length)
+    }))
+  });
+  
   // Generate nap schedule with AI-predicted nap count and historical data
   const napSchedule = generateNapSchedule(
     scheduleStartTime,
@@ -280,7 +290,8 @@ export function generateAdaptiveSchedule(
     isInTransition,
     transitioningToCount,
     babyAgeMonths,
-    napsByDay // Use all nap data for accurate duration calculations
+    napsByDay, // Use all nap data for accurate duration calculations
+    daysWithWakeAndNaps // Days with wake times for timing calculations
   );
   
   events.push(...napSchedule);
@@ -518,7 +529,8 @@ function generateNapSchedule(
   isInTransition: boolean,
   transitioningToCount: number | null,
   babyAgeMonths: number | null,
-  napsByDay: Map<string, Array<{ time: Date, duration: number }>>
+  napsByDay: Map<string, Array<{ time: Date, duration: number }>>,
+  daysWithWakeAndNaps: Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>
 ): ScheduleEvent[] {
   const naps: ScheduleEvent[] = [];
   
@@ -560,9 +572,29 @@ function generateNapSchedule(
   // Determine nap timings based on historical data or defaults
   let napStartTimes: number[] = []; // Minutes from wake
   
-  if (timingsFromWake.length >= napCount) {
-    // Use historical data - sort and cluster into nap groups
-    const sorted = [...timingsFromWake].sort((a, b) => a - b);
+  // CRITICAL: Only use timing data from days with matching nap count
+  const matchingNapCountDays = Array.from(daysWithWakeAndNaps.values()).filter(day => day.naps.length === napCount);
+  const timingsFromMatchingDays: number[] = [];
+  
+  matchingNapCountDays.forEach(day => {
+    day.naps.forEach(nap => {
+      const minutesFromWake = (nap.time.getTime() - day.wakeTime.getTime()) / 60000;
+      if (minutesFromWake > 0 && minutesFromWake < 720) {
+        timingsFromMatchingDays.push(minutesFromWake);
+      }
+    });
+  });
+  
+  console.log(`⏱️ Nap timing data for ${napCount}-nap days:`, {
+    requestedNapCount: napCount,
+    matchingDays: matchingNapCountDays.length,
+    timingSamples: timingsFromMatchingDays.length,
+    minRequired: napCount * 2 // Need at least 2 days of data
+  });
+  
+  if (timingsFromMatchingDays.length >= napCount * 2) {
+    // Have enough data from matching nap count days - use real timings
+    const sorted = [...timingsFromMatchingDays].sort((a, b) => a - b);
     
     // Simple clustering: divide the day into nap periods
     if (napCount === 1) {
@@ -580,15 +612,41 @@ function generateNapSchedule(
         median(sorted.slice(third, third * 2)),
         median(sorted.slice(third * 2))
       ];
+    } else if (napCount === 4) {
+      const quarter = Math.floor(sorted.length / 4);
+      napStartTimes = [
+        median(sorted.slice(0, quarter)),
+        median(sorted.slice(quarter, quarter * 2)),
+        median(sorted.slice(quarter * 2, quarter * 3)),
+        median(sorted.slice(quarter * 3))
+      ];
     }
+    console.log(`✅ Using historical timings from ${matchingNapCountDays.length} matching days`);
   } else {
-    // Use age-appropriate defaults
+    // Not enough matching data - use age-appropriate defaults based on wake windows
+    console.log(`⚠️ Insufficient ${napCount}-nap day data (${matchingNapCountDays.length} days), using age-based defaults`);
+    
+    // Age-appropriate wake windows (in minutes)
+    const getAgeWakeWindow = (months: number | null): number => {
+      if (months === null) return 120; // 2 hours default
+      if (months <= 2) return 60;   // 1 hour
+      if (months <= 4) return 90;   // 1.5 hours
+      if (months <= 6) return 120;  // 2 hours
+      if (months <= 9) return 150;  // 2.5 hours
+      if (months <= 12) return 180; // 3 hours
+      return 210; // 3.5 hours for 12+ months
+    };
+    
+    const wakeWindow = getAgeWakeWindow(babyAgeMonths);
+    
     if (napCount === 1) {
-      napStartTimes = [150]; // 2.5 hours after wake
+      napStartTimes = [wakeWindow * 2]; // Single nap in middle of day
     } else if (napCount === 2) {
-      napStartTimes = [150, 360]; // 2.5h and 6h after wake
+      napStartTimes = [wakeWindow, wakeWindow * 3]; // Morning and afternoon
     } else if (napCount === 3) {
-      napStartTimes = [120, 240, 360]; // 2h, 4h, 6h after wake (adjusted to fit before 5 PM)
+      napStartTimes = [wakeWindow, wakeWindow * 2, wakeWindow * 3]; // Evenly spaced
+    } else if (napCount === 4) {
+      napStartTimes = [wakeWindow, wakeWindow * 1.75, wakeWindow * 2.5, wakeWindow * 3.25];
     }
   }
   
