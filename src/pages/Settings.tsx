@@ -269,11 +269,15 @@ export const Settings = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString()}>
-                          {i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`}
-                        </SelectItem>
-                      ))}
+                      {/* Only show logical evening hours: 6 PM to 11 PM */}
+                      {Array.from({ length: 6 }, (_, i) => {
+                        const hour = i + 18; // 18-23 (6 PM - 11 PM)
+                        return (
+                          <SelectItem key={hour} value={hour.toString()}>
+                            {hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </SettingsRow>
@@ -297,11 +301,15 @@ export const Settings = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <SelectItem key={i} value={i.toString()}>
-                          {i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`}
-                        </SelectItem>
-                      ))}
+                      {/* Only show logical morning hours: 5 AM to 10 AM */}
+                      {Array.from({ length: 6 }, (_, i) => {
+                        const hour = i + 5; // 5-10 (5 AM - 10 AM)
+                        return (
+                          <SelectItem key={hour} value={hour.toString()}>
+                            {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </SettingsRow>
