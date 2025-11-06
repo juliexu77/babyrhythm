@@ -329,11 +329,15 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const prevWeekFeedData = generatePreviousWeekFeedData();
   const prevWeekNapData = generatePreviousWeekNapData();
   
-  // Calculate summary metrics
+  // For summary calculations, exclude today (last item) when viewing current week
+  const feedDataForSummary = daysOffset === 0 ? feedData.slice(0, -1) : feedData;
+  const napDataForSummary = daysOffset === 0 ? napData.slice(0, -1) : napData;
+  
+  // Calculate summary metrics (excluding today if viewing current week)
   const feedSummary = {
-    avgVolume: feedData.reduce((sum, d) => sum + d.value, 0) / feedData.filter(d => d.value > 0).length || 0,
-    totalFeeds: feedData.reduce((sum, d) => sum + d.feedCount, 0),
-    avgFeedsPerDay: feedData.reduce((sum, d) => sum + d.feedCount, 0) / feedData.filter(d => d.feedCount > 0).length || 0,
+    avgVolume: feedDataForSummary.reduce((sum, d) => sum + d.value, 0) / feedDataForSummary.filter(d => d.value > 0).length || 0,
+    totalFeeds: feedDataForSummary.reduce((sum, d) => sum + d.feedCount, 0),
+    avgFeedsPerDay: feedDataForSummary.reduce((sum, d) => sum + d.feedCount, 0) / feedDataForSummary.filter(d => d.feedCount > 0).length || 0,
   };
   
   const prevFeedSummary = {
@@ -342,10 +346,10 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   };
   
   const napSummary = {
-    avgDuration: Math.max(0, napData.reduce((sum, d) => sum + d.value, 0) / napData.filter(d => d.value > 0).length || 0),
-    totalNaps: napData.reduce((sum, d) => sum + d.napCount, 0),
-    avgNapsPerDay: napData.reduce((sum, d) => sum + d.napCount, 0) / napData.filter(d => d.napCount > 0).length || 0,
-    avgDaytimeNapsPerDay: napData.reduce((sum, d) => sum + d.daytimeNapCount, 0) / napData.filter(d => d.daytimeNapCount > 0).length || 0,
+    avgDuration: Math.max(0, napDataForSummary.reduce((sum, d) => sum + d.value, 0) / napDataForSummary.filter(d => d.value > 0).length || 0),
+    totalNaps: napDataForSummary.reduce((sum, d) => sum + d.napCount, 0),
+    avgNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.napCount, 0) / napDataForSummary.filter(d => d.napCount > 0).length || 0,
+    avgDaytimeNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.daytimeNapCount, 0) / napDataForSummary.filter(d => d.daytimeNapCount > 0).length || 0,
   };
   
   const prevNapSummary = {
