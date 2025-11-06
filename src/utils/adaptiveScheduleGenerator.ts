@@ -524,7 +524,7 @@ function generateNapSchedule(
     } else if (napCount === 2) {
       napStartTimes = [150, 360]; // 2.5h and 6h after wake
     } else if (napCount === 3) {
-      napStartTimes = [120, 270, 420]; // 2h, 4.5h, 7h after wake
+      napStartTimes = [120, 240, 360]; // 2h, 4h, 6h after wake (adjusted to fit before 5 PM)
     }
   }
   
@@ -532,8 +532,11 @@ function generateNapSchedule(
   napStartTimes.forEach((minutesFromWake, index) => {
     const napTime = new Date(wakeTime.getTime() + minutesFromWake * 60000);
     
-    // Skip naps after 5 PM
-    if (napTime.getHours() >= 17) return;
+    // Skip naps after 5 PM to avoid bedtime interference
+    if (napTime.getHours() >= 17) {
+      console.log(`⏭️ Skipping nap ${index + 1} scheduled at ${formatTime(napTime)} (after 5 PM cutoff)`);
+      return;
+    }
     
     const napNumber = index + 1;
     
