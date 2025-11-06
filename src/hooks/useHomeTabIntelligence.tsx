@@ -51,8 +51,31 @@ export const useHomeTabIntelligence = (
   // Calculate current activity state
   const currentActivity = useMemo((): CurrentActivityState | null => {
     if (ongoingNap) {
-      const startTime = new Date(ongoingNap.loggedAt);
-      const duration = differenceInMinutes(new Date(), startTime);
+      // For naps, use the actual startTime from details if available (user may log retroactively)
+      // Otherwise fall back to loggedAt
+      let napStartTime: Date;
+      if (ongoingNap.details?.startTime) {
+        // Parse the startTime string (e.g., "6:35 PM") into a Date object
+        // Use loggedAt date but replace time with startTime
+        const loggedDate = new Date(ongoingNap.loggedAt);
+        const match = ongoingNap.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (match) {
+          let hours = parseInt(match[1]);
+          const minutes = parseInt(match[2]);
+          const period = match[3].toUpperCase();
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          
+          napStartTime = new Date(loggedDate);
+          napStartTime.setHours(hours, minutes, 0, 0);
+        } else {
+          napStartTime = new Date(ongoingNap.loggedAt);
+        }
+      } else {
+        napStartTime = new Date(ongoingNap.loggedAt);
+      }
+      
+      const duration = differenceInMinutes(new Date(), napStartTime);
       
       // Check if we're past anticipated wake time (if prediction exists)
       let isPastAnticipatedWake = false;
@@ -69,7 +92,7 @@ export const useHomeTabIntelligence = (
         type: isNightSleep ? 'sleeping' : 'napping',
         duration,
         statusText: `${babyName}'s ${sleepType} — ${sleepNoun} in progress`,
-        startTime: startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        startTime: napStartTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
         isPastAnticipatedWake
       };
     }
