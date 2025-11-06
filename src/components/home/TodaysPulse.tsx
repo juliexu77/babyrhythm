@@ -100,17 +100,9 @@ export const TodaysPulse = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className={`border rounded-xl overflow-hidden transition-all ${
-        needsAttention 
-          ? 'border-amber-500/50 bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.15)]' 
-          : 'border-border'
-      }`}>
+      <div className="border border-border rounded-xl overflow-hidden">
         {/* Header */}
-        <CollapsibleTrigger className={`w-full p-4 transition-colors ${
-          needsAttention 
-            ? 'bg-amber-500/10 hover:bg-amber-500/15' 
-            : 'bg-accent/20 hover:bg-accent/30'
-        }`}>
+        <CollapsibleTrigger className="w-full p-4 bg-accent/20 hover:bg-accent/30 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" />
@@ -120,12 +112,9 @@ export const TodaysPulse = ({
             </div>
             <div className="flex items-center gap-2">
               {needsAttention && (
-                <>
-                  <Badge variant="destructive" className="text-[10px] px-2 py-0 animate-pulse">
-                    Review
-                  </Badge>
-                  <AlertCircle className="w-4 h-4 text-amber-600 animate-bounce" />
-                </>
+                <Badge variant="destructive" className="text-[10px] px-2 py-0 animate-pulse">
+                  Review
+                </Badge>
               )}
               {hasDeviations && !needsAttention && (
                 <Badge variant="default" className="text-[10px] px-2 py-0">
