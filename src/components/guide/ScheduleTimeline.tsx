@@ -394,58 +394,59 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Header with confidence badge and model state */}
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-          {babyName}'s Predicted Schedule
-        </h3>
-        <div className="flex items-center gap-2">
-          {schedule.accuracyScore !== undefined ? (
-            <div className="px-2.5 py-1 rounded-md bg-[#9b2c2c]/10 border border-[#9b2c2c]/20">
-              <span className="text-[11px] font-medium text-[#9b2c2c]">
-                {schedule.accuracyScore}% prediction accuracy
+      {/* Header with accuracy and confidence */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+            {babyName}&apos;s Predicted Schedule
+          </h3>
+          <div className="flex items-center gap-2">
+            {schedule.accuracyScore !== undefined ? (
+              <span className="text-xs text-muted-foreground">
+                {schedule.accuracyScore}% accurate
               </span>
-            </div>
-          ) : (
-            <div className="px-2.5 py-1 rounded-md bg-muted/50 border border-border/50">
-              <span className="text-[11px] font-medium text-muted-foreground/70">
+            ) : (
+              <span className="text-xs text-muted-foreground/70">
                 Calculating...
               </span>
-            </div>
-          )}
-          {modelState && (
-            <div className="relative">
-              <Collapsible>
-                <CollapsibleTrigger asChild>
-                  <button className="flex items-center gap-1 group">
-                    <Badge variant={modelState.variant} className="text-xs cursor-pointer hover:bg-accent">
-                      {modelState.text}
-                    </Badge>
-                    {modelState.showTooltip && (
-                      <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-all group-data-[state=open]:rotate-180" />
-                    )}
-                  </button>
-                </CollapsibleTrigger>
-                {modelState.showTooltip && (
-                  <CollapsibleContent className="absolute right-0 top-full mt-2 z-10 w-72 p-3 bg-card border border-border rounded-lg shadow-lg text-xs text-muted-foreground space-y-2">
-                    <p className="font-medium text-foreground">How this works:</p>
-                    <p>
-                      This schedule is generated once per day at 5am based on your baby's recent patterns. It stays fixed throughout the day so you can plan ahead.
-                    </p>
-                    <p>
-                      We track accuracy by comparing predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
-                    </p>
-                    {schedule.accuracyScore !== undefined && schedule.accuracyScore < 80 && (
-                      <p className="text-primary font-medium">
-                        The model is learning {babyName}&apos;s unique patterns. Accuracy improves with consistent logging!
+            )}
+            {modelState && (
+              <div className="relative">
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <button className="flex items-center gap-1 group">
+                      <Badge variant={modelState.variant} className="text-xs cursor-pointer hover:bg-accent">
+                        {modelState.text}
+                      </Badge>
+                      {modelState.showTooltip && (
+                        <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-all group-data-[state=open]:rotate-180" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  {modelState.showTooltip && (
+                    <CollapsibleContent className="absolute right-0 top-full mt-2 z-10 w-72 p-3 bg-card border border-border rounded-lg shadow-lg text-xs text-muted-foreground space-y-2">
+                      <p className="font-medium text-foreground">How this works:</p>
+                      <p>
+                        This schedule is generated once per day at 5am based on your baby&apos;s recent patterns. It stays fixed throughout the day so you can plan ahead.
                       </p>
-                    )}
-                  </CollapsibleContent>
-                )}
-              </Collapsible>
-            </div>
-          )}
+                      <p>
+                        We track accuracy by comparing predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
+                      </p>
+                      {schedule.accuracyScore !== undefined && schedule.accuracyScore < 80 && (
+                        <p className="text-primary font-medium">
+                          The model is learning {babyName}&apos;s unique patterns. Accuracy improves with consistent logging!
+                        </p>
+                      )}
+                    </CollapsibleContent>
+                  )}
+                </Collapsible>
+              </div>
+            )}
+          </div>
         </div>
+        <p className="text-xs text-muted-foreground">
+          {schedule.basedOn} • Enhanced with AI pattern analysis
+        </p>
       </div>
       
       
