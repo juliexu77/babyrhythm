@@ -440,26 +440,37 @@ export const ScheduleTimeline = ({
       {isTransitioning && transitionNapCounts && (
         <div className="flex items-start mb-3">
           <div className="inline-flex rounded-lg border border-border/50 overflow-hidden">
-            <button
-              onClick={() => onToggleAlternate?.(false)}
-              className={`px-4 py-2 text-xs font-medium transition-all border-r border-border/50 ${
-                !showAlternate 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              {transitionNapCounts.current}-nap day
-            </button>
-            <button
-              onClick={() => onToggleAlternate?.(true)}
-              className={`px-4 py-2 text-xs font-medium transition-all ${
-                showAlternate 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              {transitionNapCounts.transitioning}-nap day
-            </button>
+            {(() => {
+              // Always show lower nap count on the left
+              const lowerCount = Math.min(transitionNapCounts.current, transitionNapCounts.transitioning);
+              const higherCount = Math.max(transitionNapCounts.current, transitionNapCounts.transitioning);
+              const isLowerCurrent = lowerCount === transitionNapCounts.current;
+              
+              return (
+                <>
+                  <button
+                    onClick={() => onToggleAlternate?.(isLowerCurrent ? false : true)}
+                    className={`px-4 py-2 text-xs font-medium transition-all border-r border-border/50 ${
+                      (isLowerCurrent && !showAlternate) || (!isLowerCurrent && showAlternate)
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    {lowerCount}-nap day
+                  </button>
+                  <button
+                    onClick={() => onToggleAlternate?.(isLowerCurrent ? true : false)}
+                    className={`px-4 py-2 text-xs font-medium transition-all ${
+                      (isLowerCurrent && showAlternate) || (!isLowerCurrent && !showAlternate)
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    {higherCount}-nap day
+                  </button>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -578,26 +589,26 @@ export const ScheduleTimeline = ({
                 )}
                 
                 {activity.type === 'nap-block' && (() => {
-                  // Calculate wake window from previous activity
-                  const prevActivity = displayActivities[idx - 1];
+                  // Calculate wake window AFTER this nap (from nap end to next sleep start)
+                  const nextActivity = displayActivities[idx + 1];
                   let wakeWindowText = '';
-                  if (prevActivity) {
-                    let prevEndTime: string | undefined;
-                    if (prevActivity.type === 'nap-block') {
-                      const { endTime } = calculateEndTimeAndDuration(prevActivity.time, prevActivity.napDuration || '1h 30m');
-                      prevEndTime = endTime;
-                    } else if (prevActivity.type === 'morning') {
-                      prevEndTime = formatTime(prevActivity.time); // Use rounded time
-                    } else if (prevActivity.type === 'bedtime' && prevActivity.endTime) {
-                      prevEndTime = formatTime(prevActivity.endTime); // Use rounded time
+                  if (nextActivity) {
+                    // Get end time of current nap
+                    const { endTime: currentNapEnd } = calculateEndTimeAndDuration(activity.time, activity.napDuration || '1h 30m');
+                    const currentEndMinutes = parseTime(currentNapEnd);
+                    
+                    // Get start time of next activity
+                    let nextStartTime: string;
+                    if (nextActivity.type === 'nap-block' || nextActivity.type === 'bedtime') {
+                      nextStartTime = formatTime(nextActivity.time);
+                    } else {
+                      // Skip if next is not a sleep event
+                      nextStartTime = '';
                     }
                     
-                    if (prevEndTime) {
-                      const prevMinutes = parseTime(prevEndTime);
-                      // Use rounded start time for consistency
-                      const currentStartRounded = formatTime(activity.time);
-                      const currentMinutes = parseTime(currentStartRounded);
-                      const wakeWindowMinutes = currentMinutes - prevMinutes;
+                    if (nextStartTime) {
+                      const nextStartMinutes = parseTime(nextStartTime);
+                      const wakeWindowMinutes = nextStartMinutes - currentEndMinutes;
                       if (wakeWindowMinutes > 0) {
                         const hours = Math.floor(wakeWindowMinutes / 60);
                         const mins = wakeWindowMinutes % 60;
@@ -685,27 +696,6 @@ export const ScheduleTimeline = ({
                             <Badge variant="default" className="text-[10px] px-1.5 py-0 animate-fade-in">Now</Badge>
                           )}
                         </div>
-                        {(() => {
-                          // Show final wake window from last nap end to bedtime
-                          const prevActivity = displayActivities[idx - 1];
-                          if (prevActivity && prevActivity.type === 'nap-block') {
-                            const { endTime } = calculateEndTimeAndDuration(prevActivity.time, prevActivity.napDuration || '1h 30m');
-                            const prevEndMinutes = parseTime(endTime);
-                            const bedtimeRounded = formatTime(activity.time);
-                            const bedtimeMinutes = parseTime(bedtimeRounded);
-                            const diff = bedtimeMinutes - prevEndMinutes;
-                            if (diff > 0) {
-                              const h = Math.floor(diff / 60);
-                              const m = diff % 60;
-                              return (
-                                <div className="text-xs text-muted-foreground">
-                                  Final wake window: {h > 0 ? `${h}h ${m}min` : `${m}min`}
-                                </div>
-                              );
-                            }
-                          }
-                          return null;
-                        })()}
                       </div>
                     </button>
                     {selectedEvent === activity.id && matchingEvent && (
