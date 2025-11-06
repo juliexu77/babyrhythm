@@ -473,7 +473,7 @@ export function generateAdaptiveSchedule(
     confidence: overallConfidence,
     basedOn,
     adjustmentNote,
-    accuracyScore: accuracyScore > 0 ? accuracyScore : undefined,
+    accuracyScore: accuracyScore >= 0 ? accuracyScore : undefined,
     predictedBedtime: predictedBedtimeStr,
     bedtimeConfidence
   };

@@ -400,9 +400,13 @@ export const ScheduleTimeline = ({
           {babyName}'s Predicted Schedule
         </h3>
         <div className="flex items-center gap-2">
-          {schedule.accuracyScore !== undefined && schedule.accuracyScore > 0 && (
+          {schedule.accuracyScore !== undefined ? (
             <span className="text-xs text-muted-foreground">
               {schedule.accuracyScore}% accurate
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground/70">
+              Calculating...
             </span>
           )}
           {modelState && (
