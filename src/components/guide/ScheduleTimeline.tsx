@@ -34,6 +34,9 @@ interface ScheduleTimelineProps {
   transitionNapCounts?: { current: number; transitioning: number };
   showAlternate?: boolean;
   onToggleAlternate?: (show: boolean) => void;
+  isAdjusting?: boolean;
+  adjustmentContext?: string;
+  transitionWindow?: { from: number; to: number; label: string } | null;
 }
 
 interface GroupedActivity {
@@ -54,7 +57,10 @@ export const ScheduleTimeline = ({
   isTransitioning,
   transitionNapCounts,
   showAlternate,
-  onToggleAlternate
+  onToggleAlternate,
+  isAdjusting,
+  adjustmentContext,
+  transitionWindow
 }: ScheduleTimelineProps) => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
@@ -387,6 +393,18 @@ export const ScheduleTimeline = ({
       </div>
       
       
+      {/* Adjustment animation with context-aware message */}
+      {isAdjusting && adjustmentContext && (
+        <div className="mb-3 p-3 bg-primary/5 border border-primary/20 rounded-lg animate-pulse">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-1 rounded-full bg-primary animate-ping" />
+            <p className="text-xs font-medium text-primary">
+              {adjustmentContext}
+            </p>
+          </div>
+        </div>
+      )}
+      
       {/* Recalculate button - for midday adjustments */}
       {onRecalculate && (
         <Button
@@ -394,23 +412,31 @@ export const ScheduleTimeline = ({
           size="sm"
           onClick={onRecalculate}
           className="w-full text-xs mb-2"
+          disabled={isAdjusting}
         >
           <Clock className="w-3 h-3 mr-2" />
           Adjust rest of day
         </Button>
       )}
       
-      {/* Transition toggle */}
+      {/* Transition toggle - shows during AI detection OR age-based windows */}
       {isTransitioning && transitionNapCounts && (
         <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-2">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Info className="w-4 h-4 text-amber-600" />
               <span className="text-xs font-medium text-foreground">
-                {babyName} is transitioning between nap schedules
+                {transitionWindow 
+                  ? `${babyName} is in the typical ${transitionWindow.label} window` 
+                  : `${babyName} is transitioning between nap schedules`}
               </span>
             </div>
           </div>
+          <p className="text-[10px] text-muted-foreground mb-2">
+            {transitionWindow 
+              ? "Try both schedules to see which fits better right now"
+              : "We're seeing inconsistent patterns — experiment with both"}
+          </p>
           <div className="flex items-center gap-2 text-xs">
             <Button
               variant={!showAlternate ? "default" : "outline"}
@@ -457,8 +483,10 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Timeline view with time blocks */}
-      <div className="space-y-1">
+      {/* Timeline view with time blocks - shimmer during adjustment */}
+      <div className={`space-y-1 transition-all duration-300 ${
+        isAdjusting ? 'opacity-60' : 'opacity-100'
+      }`}>
         
         {(() => {
           // Filter to only show wake, naps, and bedtime

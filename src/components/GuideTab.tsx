@@ -199,6 +199,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
   const [predictedSchedule, setPredictedSchedule] = useState<AdaptiveSchedule | null>(null);
   const [lastActivityCount, setLastActivityCount] = useState(0);
+  const [isAdjusting, setIsAdjusting] = useState(false);
+  const [adjustmentContext, setAdjustmentContext] = useState<string>("");
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
     const stored = localStorage.getItem('smartRemindersEnabled');
     return stored !== null ? stored === 'true' : true; // Default enabled
@@ -448,6 +450,38 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Use adaptive schedule (unified with Home tab prediction engine)
   const displaySchedule = adaptiveSchedule || predictedSchedule;
   
+  // Calculate baby age for anticipatory transition windows
+  const babyAgeInDays = useMemo(() => {
+    if (!household?.baby_birthday) return null;
+    const birthDate = new Date(household.baby_birthday);
+    const today = new Date();
+    return Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24));
+  }, [household?.baby_birthday]);
+
+  // Age-based transition window detection (anticipatory)
+  const transitionWindow = useMemo(() => {
+    if (!babyAgeInDays) return null;
+    
+    if (babyAgeInDays >= 90 && babyAgeInDays <= 120) {
+      return { from: 4, to: 3, label: "3-4 month transition" };
+    }
+    if (babyAgeInDays >= 180 && babyAgeInDays <= 270) {
+      return { from: 3, to: 2, label: "6-9 month transition" };
+    }
+    if (babyAgeInDays >= 365 && babyAgeInDays <= 547) {
+      return { from: 2, to: 1, label: "12-18 month transition" };
+    }
+    return null;
+  }, [babyAgeInDays]);
+
+  // Combined transition detection: AI reactive OR age-based anticipatory
+  const shouldShowTransition = aiPrediction?.is_transitioning || transitionWindow !== null;
+  const effectiveTransitionCounts = transitionWindow 
+    ? { current: transitionWindow.from, transitioning: transitionWindow.to }
+    : (aiPrediction?.is_transitioning 
+        ? { current: aiPrediction.total_naps_today, transitioning: aiPrediction.total_naps_today - 1 }
+        : undefined);
+  
   // Auto-recalculate schedule when morning wake is logged
   useEffect(() => {
     if (!hasTier3Data) return;
@@ -486,9 +520,85 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [enrichedActivities, hasTier3Data]);
   
+  // Listen for activity logs and trigger context-aware adjustments
+  useEffect(() => {
+    const handleActivityLogged = () => {
+      if (!hasTier3Data) return;
+      
+      // Get the most recent activity
+      const recentActivity = enrichedActivities[0];
+      if (!recentActivity) return;
+      
+      // Check if this activity was just logged (within last 5 seconds)
+      const activityTime = new Date(recentActivity.logged_at);
+      const now = new Date();
+      const timeDiff = now.getTime() - activityTime.getTime();
+      if (timeDiff > 5000) return; // Only react to very recent activities
+      
+      setIsAdjusting(true);
+      
+      // Context-aware messages based on activity type and details
+      if (recentActivity.type === 'nap' && recentActivity.details?.endTime) {
+        // Nap ended
+        const startTime = new Date(recentActivity.logged_at);
+        const endTimeStr = recentActivity.details.endTime;
+        const endMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        
+        if (endMatch) {
+          let endHour = parseInt(endMatch[1]);
+          const endMinute = parseInt(endMatch[2]);
+          const period = endMatch[3].toUpperCase();
+          if (period === 'PM' && endHour !== 12) endHour += 12;
+          if (period === 'AM' && endHour === 12) endHour = 0;
+          
+          const duration = (endHour * 60 + endMinute - (startTime.getHours() * 60 + startTime.getMinutes()));
+          
+          if (duration < 30) {
+            setAdjustmentContext("Short nap detected — adjusting afternoon nap window.");
+          } else if (endHour >= 16) { // After 4 PM
+            setAdjustmentContext("Late nap means bedtime might shift a bit later tonight.");
+          } else if (recentActivity.details?.isNightSleep) {
+            if (endHour >= 4 && endHour < 7) {
+              setAdjustmentContext("Early wake — adjusting nap times for the day.");
+            } else if (endHour >= 8) {
+              setAdjustmentContext("Recalculated based on a later start to the day.");
+            } else {
+              setAdjustmentContext("Adjusting today's rhythm…");
+            }
+          } else {
+            setAdjustmentContext("Adjusting today's rhythm…");
+          }
+        }
+      } else if (recentActivity.type === 'nap' && !recentActivity.details?.endTime) {
+        // Nap started
+        setAdjustmentContext("Nap started — updating rest of day schedule.");
+      } else if (recentActivity.type === 'feed') {
+        setAdjustmentContext("Feed logged — refining today's timeline.");
+      } else {
+        setAdjustmentContext("Adjusting today's rhythm…");
+      }
+      
+      // Auto-clear after 1.8 seconds
+      setTimeout(() => {
+        setIsAdjusting(false);
+        setAdjustmentContext("");
+      }, 1800);
+    };
+    
+    // Only trigger on activities change when we have tier 3 data
+    if (enrichedActivities.length > 0 && hasTier3Data) {
+      handleActivityLogged();
+    }
+  }, [enrichedActivities.length, hasTier3Data]); // Trigger when activities array length changes
+  
   // Recalculate schedule function - for manual midday adjustments
   const handleRecalculateSchedule = () => {
     console.log('🔄 Manually recalculating schedule for midday adjustment...');
+    
+    // Trigger adjustment animation
+    setIsAdjusting(true);
+    setAdjustmentContext("Adjusting today's rhythm…");
+    
     localStorage.removeItem('aiPrediction');
     localStorage.removeItem('aiPredictionLastFetch');
     toast({
@@ -497,24 +607,45 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     });
     setAiPrediction(null);
     setAiPredictionLoading(true);
+    
+    // Clear adjustment animation after 1.8 seconds
+    setTimeout(() => {
+      setIsAdjusting(false);
+      setAdjustmentContext("");
+    }, 1800);
   };
   
-  // Detect nap transition and get nap counts
+  // Detect nap transition and get nap counts - combine AI reactive and age-based anticipatory
   const transitionInfo = useMemo(() => {
-    if (!aiPrediction || !aiPrediction.is_transitioning) return null;
+    // Check if AI detects transition OR baby is in age-based window
+    const aiTransition = aiPrediction?.is_transitioning;
+    const ageBasedWindow = transitionWindow !== null;
     
-    // Get current and transitioning nap counts from AI prediction
-    const currentCount = aiPrediction.total_naps_today;
-    const transitioningCount = currentCount > 2 ? currentCount - 1 : currentCount + 1;
+    if (!aiTransition && !ageBasedWindow) return null;
     
+    // If both exist, prioritize AI prediction for nap counts
+    if (aiTransition) {
+      const currentCount = aiPrediction!.total_naps_today;
+      const transitioningCount = currentCount > 2 ? currentCount - 1 : currentCount + 1;
+      
+      return {
+        isTransitioning: true,
+        napCounts: {
+          current: currentCount,
+          transitioning: transitioningCount
+        }
+      };
+    }
+    
+    // Otherwise use age-based window
     return {
       isTransitioning: true,
       napCounts: {
-        current: currentCount,
-        transitioning: transitioningCount
+        current: transitionWindow!.from,
+        transitioning: transitionWindow!.to
       }
     };
-  }, [aiPrediction]);
+  }, [aiPrediction, transitionWindow]);
   
   // Generate alternate schedule for transitions
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
@@ -1454,6 +1585,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     transitionNapCounts={transitionInfo?.napCounts}
                     showAlternate={showAlternateSchedule}
                     onToggleAlternate={setShowAlternateSchedule}
+                    isAdjusting={isAdjusting}
+                    adjustmentContext={adjustmentContext}
+                    transitionWindow={transitionWindow}
                   />
                 </>
               )}
