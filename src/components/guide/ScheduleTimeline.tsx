@@ -320,56 +320,7 @@ export const ScheduleTimeline = ({
     return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
   };
 
-  // Calculate planning windows (free time between events)
-  const planningWindows = useMemo(() => {
-    const windows: Array<{ start: string; end: string; duration: number; label: string }> = [];
-    
-    for (let i = 0; i < groupedActivities.length - 1; i++) {
-      const current = groupedActivities[i];
-      const next = groupedActivities[i + 1];
-      
-      // Calculate end of current event
-      let currentEnd: number;
-      if (current.type === 'nap-block' && current.napDuration) {
-        const startMinutes = parseTime(current.time);
-        const durationMatch = current.napDuration.match(/(\d+)h?\s*(\d+)?m?/);
-        if (durationMatch) {
-          const hours = parseInt(durationMatch[1]) || 0;
-          const mins = parseInt(durationMatch[2]) || 0;
-          currentEnd = startMinutes + (hours * 60 + mins);
-        } else {
-          currentEnd = parseTime(current.time);
-        }
-      } else {
-        currentEnd = parseTime(current.time) + 15; // Assume 15 min for wake/bed events
-      }
-      
-      const nextStart = parseTime(next.time);
-      const windowDuration = nextStart - currentEnd;
-      
-      // Only show windows >= 60 minutes
-      if (windowDuration >= 60) {
-        // Round both start and end times to nearest 10 minutes
-        const endTime = formatMinutesToTime(currentEnd);
-        const nextTimeRounded = formatMinutesToTime(nextStart);
-        
-        windows.push({
-          start: endTime,
-          end: nextTimeRounded,
-          duration: windowDuration,
-          label: windowDuration >= 120 ? 'Best time for errands' : 'Free time'
-        });
-      }
-    }
-    
-    return windows;
-  }, [groupedActivities]);
-  
-  const longestWindow = planningWindows.reduce((longest, w) => 
-    w.duration > (longest?.duration || 0) ? w : longest, 
-    null as typeof planningWindows[0] | null
-  );
-  
+
   return (
     <div className="space-y-4">
       {/* Day Progress Bar - Countdown to Bedtime - Only show when less than 3 hours away */}
@@ -505,18 +456,6 @@ export const ScheduleTimeline = ({
               .replace(/The baby/g, babyName)
               .replace(/the baby/g, babyName)}
           </p>
-        </div>
-      )}
-      
-      {/* Planning windows - lightweight banner */}
-      {longestWindow && (
-        <div className="px-3 py-2 bg-muted/50 border-l-2 border-green-500/40 rounded mb-3">
-          <div className="flex items-center gap-2">
-            <Clock className="w-3 h-3 text-green-600" />
-            <span className="text-[11px] font-medium text-muted-foreground">
-              Best for errands: {longestWindow.start} - {longestWindow.end}
-            </span>
-          </div>
         </div>
       )}
       
