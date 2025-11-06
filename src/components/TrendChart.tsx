@@ -485,9 +485,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               {prevFeedSummary.avgVolume > 0 && (
                 <div className="flex items-center gap-1.5">
                   {feedVolumeChange > 0 ? (
-                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                    <TrendingUp className="w-3 h-3 text-primary" />
                   ) : feedVolumeChange < 0 ? (
-                    <TrendingDown className="w-3 h-3 text-muted-foreground" />
+                    <TrendingDown className="w-3 h-3 text-secondary" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
                     {feedVolumeChange > 0 ? '+' : ''}{feedVolumeChange.toFixed(1)}% vs last week
@@ -512,9 +512,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               {prevFeedSummary.avgFeedsPerDay > 0 && (
                 <div className="flex items-center gap-1.5">
                   {feedCountChange > 0 ? (
-                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                    <TrendingUp className="w-3 h-3 text-primary" />
                   ) : feedCountChange < 0 ? (
-                    <TrendingDown className="w-3 h-3 text-muted-foreground" />
+                    <TrendingDown className="w-3 h-3 text-secondary" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
                     {feedCountChange > 0 ? '+' : ''}{feedCountChange.toFixed(1)} vs last week
@@ -622,9 +622,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               {prevNapSummary.avgDuration > 0 && (
                 <div className="flex items-center gap-1.5">
                   {napDurationChange > 0 ? (
-                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                    <TrendingUp className="w-3 h-3 text-primary" />
                   ) : napDurationChange < 0 ? (
-                    <TrendingDown className="w-3 h-3 text-muted-foreground" />
+                    <TrendingDown className="w-3 h-3 text-secondary" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
                     {napDurationChange > 0 ? '+' : ''}{napDurationChange.toFixed(1)}% vs last week
@@ -648,9 +648,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               </div>
               <div className="flex items-center gap-1.5">
                 {napCountChange > 0 ? (
-                  <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                  <TrendingUp className="w-3 h-3 text-primary" />
                 ) : napCountChange < 0 ? (
-                  <TrendingDown className="w-3 h-3 text-muted-foreground" />
+                  <TrendingDown className="w-3 h-3 text-secondary" />
                 ) : null}
                 <p className="text-xs text-muted-foreground">
                   {napCountChange > 0 ? '+' : ''}{napCountChange.toFixed(1)} vs last week
