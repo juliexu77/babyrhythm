@@ -87,8 +87,8 @@ export const ScheduleTimeline = ({
     return hours * 60 + minutes;
   };
   
-  // Format time - don't round for bedtime/wake predictions
-  const formatTime = (timeStr: string, skipRounding: boolean = false): string => {
+  // Format time - round all times to nearest 10 minutes
+  const formatTime = (timeStr: string): string => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) return timeStr;
     
@@ -96,13 +96,8 @@ export const ScheduleTimeline = ({
     const minutes = parseInt(match[2]);
     const period = match[3].toUpperCase();
     
-    // Skip rounding for wake/bedtime predictions - show exact times
-    if (skipRounding) {
-      return `${hours}:${minutes.toString().padStart(2, '0')} ${period}`;
-    }
-    
-    // Round to nearest 15 minutes for nap times
-    const roundedMinutes = Math.round(minutes / 15) * 15;
+    // Round to nearest 10 minutes for all times
+    const roundedMinutes = Math.round(minutes / 10) * 10;
     const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
     const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
     
@@ -271,14 +266,14 @@ export const ScheduleTimeline = ({
   
   const dayProgress = getDayProgress();
   
-  // Helper to round time to nearest 5 minutes
-  const roundToNearest5Min = (minutes: number): number => {
-    return Math.round(minutes / 5) * 5;
+  // Helper to round time to nearest 10 minutes
+  const roundToNearest10Min = (minutes: number): number => {
+    return Math.round(minutes / 10) * 10;
   };
 
   // Helper to format minutes to time string
   const formatMinutesToTime = (totalMinutes: number): string => {
-    const roundedMinutes = roundToNearest5Min(totalMinutes);
+    const roundedMinutes = roundToNearest10Min(totalMinutes);
     const hours = Math.floor(roundedMinutes / 60) % 24;
     const mins = roundedMinutes % 60;
     const period = hours >= 12 ? 'PM' : 'AM';
@@ -315,7 +310,7 @@ export const ScheduleTimeline = ({
       
       // Only show windows >= 60 minutes
       if (windowDuration >= 60) {
-        // Round both start and end times to nearest 5 minutes
+        // Round both start and end times to nearest 10 minutes
         const endTime = formatMinutesToTime(currentEnd);
         const nextTimeRounded = formatMinutesToTime(nextStart);
         
@@ -524,7 +519,7 @@ export const ScheduleTimeline = ({
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-foreground">
-                            {formatTime(activity.time, true)}
+                            {formatTime(activity.time)}
                           </span>
                           <span className="text-xs font-medium text-muted-foreground">
                             Wake up
@@ -640,7 +635,7 @@ export const ScheduleTimeline = ({
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-semibold text-foreground">
-                            {formatTime(activity.time, true)}
+                            {formatTime(activity.time)}
                           </span>
                           <span className="text-xs font-medium text-muted-foreground">
                             Bedtime
