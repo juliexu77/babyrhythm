@@ -44,11 +44,11 @@ const leftTabs = [
                 }`}
               >
                 <Icon 
-                  className="w-5 h-5" 
+                  className="w-5.5 h-5.5" 
                   fill={isActive && tab.id === 'home' ? 'currentColor' : 'none'}
                   strokeWidth={isActive && tab.id === 'home' ? 0 : 2}
                 />
-                <span className="text-[10px] font-medium">{tab.label}</span>
+                <span className="text-[11px] font-medium">{tab.label}</span>
               </button>
             );
           })}
@@ -83,8 +83,8 @@ const leftTabs = [
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{tab.label}</span>
+                <Icon className="w-5.5 h-5.5" />
+                <span className="text-[11px] font-medium">{tab.label}</span>
               </button>
             );
           })}
