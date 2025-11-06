@@ -633,7 +633,7 @@ const ongoingNap = (() => {
         />;
       case "trends":
         return (
-          <div className="px-4 pt-4 pb-6 space-y-6">
+          <div className="px-4 py-2.5 space-y-6">
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />
           </div>
@@ -661,7 +661,7 @@ const ongoingNap = (() => {
         return (
           <>
             {/* Log Header */}
-            <div className="px-4 pt-6 pb-4 border-b border-border">
+            <div className="px-4 py-2.5 border-b border-border">
               <div className="flex items-center gap-6">
                 <DropdownMenu open={showFilterDropdown} onOpenChange={setShowFilterDropdown}>
                   <DropdownMenuTrigger asChild>
