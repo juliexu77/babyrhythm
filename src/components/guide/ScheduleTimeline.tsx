@@ -127,17 +127,21 @@ export const ScheduleTimeline = ({
     const roundedStartMinutes = Math.round(startMinutes / 10) * 10;
     console.log('  roundedStartMinutes:', roundedStartMinutes);
     
-    // Parse duration
-    const durationMatch = duration.match(/(\d+)h?\s*(\d+)?m?/);
-    if (!durationMatch) {
+    // Parse duration safely
+    const m = duration.trim().match(/^(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)?$/i);
+    if (!m) {
       console.log('  ❌ Duration match failed');
       return { endTime: startTime, adjustedDuration: duration };
     }
     
-    const durationHours = parseInt(durationMatch[1]) || 0;
-    const durationMins = parseInt(durationMatch[2]) || 0;
-    const totalDurationMinutes = durationHours * 60 + durationMins;
-    console.log('  duration parsed:', { durationHours, durationMins, totalDurationMinutes });
+    const hoursPart = m[1] ? parseInt(m[1], 10) : 0;
+    const minutesPart = m[2] ? parseInt(m[2], 10) : 0;
+    let totalDurationMinutes = hoursPart * 60 + minutesPart;
+    
+    // Sanity clamp naps between 15 and 240 minutes
+    if (totalDurationMinutes < 15) totalDurationMinutes = 15;
+    if (totalDurationMinutes > 240) totalDurationMinutes = 240;
+    console.log('  duration parsed:', { hoursPart, minutesPart, totalDurationMinutes });
     
     // Calculate end time from rounded start + duration
     const rawEndMinutes = roundedStartMinutes + totalDurationMinutes;
