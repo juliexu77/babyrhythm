@@ -235,6 +235,32 @@ yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 const now = new Date();
  
 const ongoingNap = (() => {
+  // Helper to check if time is in night window
+  const nightStart = nightSleepStartHour ?? 19; // Default 7 PM
+  const nightEnd = nightSleepEndHour ?? 7; // Default 7 AM
+  
+  const checkIsNightTime = (timeStr: string): boolean => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return false;
+    
+    let hours = parseInt(match[1], 10);
+    const period = match[3].toUpperCase();
+    
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    const startMinutes = nightStart * 60;
+    const endMinutes = nightEnd * 60;
+    const timeMinutes = hours * 60 + parseInt(match[2], 10);
+    
+    // Handle overnight window (e.g., 19:00 to 07:00)
+    if (startMinutes > endMinutes) {
+      return timeMinutes >= startMinutes || timeMinutes < endMinutes;
+    }
+    // Handle same-day window
+    return timeMinutes >= startMinutes && timeMinutes < endMinutes;
+  };
+  
   const candidates = activities.filter(a => {
     if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId) {
       return false;
@@ -261,6 +287,23 @@ const ongoingNap = (() => {
     }
     
     return isToday;
+  }).map(a => {
+    // Runtime check: ensure isNightSleep is set if start time is in night window
+    const startTime = a.details?.startTime;
+    let isNightSleep = a.details?.isNightSleep || false;
+    
+    // If not already marked as night sleep, check the start time
+    if (!isNightSleep && startTime) {
+      isNightSleep = checkIsNightTime(startTime);
+    }
+    
+    return {
+      ...a,
+      details: {
+        ...a.details,
+        isNightSleep
+      }
+    };
   }).map(a => {
     const dateLocal = (a.details as any).date_local as string | undefined;
     const baseLocalDate = dateLocal ? dateLocal : (() => {

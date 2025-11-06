@@ -508,7 +508,7 @@ export const ScheduleTimeline = ({
                 )}
                 
                 {activity.type === 'morning' && (
-                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 py-2 ${
                     isAdjusting ? 'animate-pulse' : ''
                   }`}>
                     <button
@@ -580,7 +580,7 @@ export const ScheduleTimeline = ({
                   }
                   
                   return (
-                    <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${
+                    <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 py-2 ${
                       isAdjusting ? 'animate-pulse' : ''
                     }`}>
                       <button
@@ -634,7 +634,7 @@ export const ScheduleTimeline = ({
                 })()}
                 
                 {activity.type === 'bedtime' && (
-                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 py-2 ${
                     isAdjusting ? 'animate-pulse' : ''
                   }`}>
                     <button
