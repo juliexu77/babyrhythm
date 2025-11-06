@@ -368,9 +368,10 @@ const lastDiaper = displayActivities
       
       const isNightSleep = ongoingNap.details?.isNightSleep;
       const sleepVerb = isNightSleep ? 'sleeping' : 'napping';
+      const sleepingSince = isNightSleep ? 'has been sleeping since' : 'has been napping since';
       
       return {
-        main: `${babyName || t('baby')} ${t('hasBeenSleepingSince')} ${startTime}`,
+        main: `${babyName || t('baby')} ${sleepingSince} ${startTime}`,
         sub: `${babyName?.split(' ')[0] || t('baby')} ${t('hasBeenRestingFor')} ${durationText} — ${qualityText}.`
       };
     }
