@@ -588,10 +588,10 @@ export const ScheduleTimeline = ({
                         <div className="flex-1 pb-1 text-left">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-foreground">
+                              <span className="text-sm font-semibold text-foreground">
                                 {formatTime(activity.time)} - {calculateEndTime(activity.time, activity.napDuration || '1h 30m')}
                               </span>
-                              <span className="text-xs font-medium text-foreground">
+                              <span className="text-xs font-medium text-muted-foreground">
                                 {activity.title} ({activity.napDuration?.replace('h', 'h ')?.replace('m', 'min') || '1h 30min'})
                               </span>
                               {isCurrent && (
@@ -686,18 +686,39 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Recalculate button - moved to bottom for better flow */}
+      {/* Update prediction button - animated and alive */}
       {onRecalculate && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onRecalculate}
-          className="w-full text-xs mt-4 text-muted-foreground hover:text-foreground"
-          disabled={isAdjusting}
-        >
-          <Clock className="w-3 h-3 mr-2" />
-          Update prediction
-        </Button>
+        <div className="mt-4 space-y-2">
+          {schedule.lastUpdated && !isAdjusting && (
+            <p className="text-[10px] text-center text-muted-foreground">
+              Last updated {new Date(schedule.lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+            </p>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRecalculate}
+            className={`w-full text-xs group relative overflow-hidden ${
+              isAdjusting 
+                ? 'bg-primary/5 border-primary/20' 
+                : 'hover:bg-primary/5 hover:border-primary/30 hover:scale-[1.02] transition-all'
+            }`}
+            disabled={isAdjusting}
+          >
+            {isAdjusting ? (
+              <>
+                <div className="w-3 h-3 mr-2 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <Clock className="w-3 h-3 mr-2 group-hover:rotate-12 transition-transform" />
+                Update prediction
+                <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-primary/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+              </>
+            )}
+          </Button>
+        </div>
       )}
     </div>
   );
