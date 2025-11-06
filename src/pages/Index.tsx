@@ -178,14 +178,15 @@ const Index = () => {
   // Calculate activity percentile
   const { percentile, showBadge } = useActivityPercentile(household?.id, activities.length);
 
-// Clear optimistic end times when activities update with actual end times
+// Clear optimistic end times when activities update with actual end times from DB
 useEffect(() => {
   if (Object.keys(optimisticNapEndTimes).length > 0) {
     const stillNeeded: Record<string, string> = {};
     Object.entries(optimisticNapEndTimes).forEach(([id, endTime]) => {
-      const activity = activities.find(a => a.id === id);
-      // Keep optimistic time if activity doesn't have endTime yet
-      if (activity && !activity.details?.endTime) {
+      // Check RAW activities from DB, not enriched activities (which already have optimistic endTime)
+      const rawActivity = rawActivities.find(a => a.id === id);
+      // Keep optimistic time if DB activity doesn't have endTime yet
+      if (rawActivity && !rawActivity.details?.endTime) {
         stillNeeded[id] = endTime;
       }
     });
@@ -193,7 +194,7 @@ useEffect(() => {
       setOptimisticNapEndTimes(stillNeeded);
     }
   }
-}, [activities, optimisticNapEndTimes]);
+}, [rawActivities, optimisticNapEndTimes]);
 
 // Helper: parse local date (YYYY-MM-DD) and 12h time (e.g., "7:15 PM") into a local Date
 const parseLocalDateTime = (dateLocal: string, timeStr: string): Date => {
