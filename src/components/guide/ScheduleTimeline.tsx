@@ -396,13 +396,13 @@ export const ScheduleTimeline = ({
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          {schedule.basedOn} • Enhanced with AI pattern analysis
+          {schedule.basedOn}
         </p>
       </div>
       
       {/* Transition insight row - burgundy banner - simple label only, no verbose AI text */}
       {transitionWindow && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-[#f3e8e8] dark:bg-[#4a2c2c] border border-[#e6d0d0] dark:border-[#6b3e3e] rounded-lg mb-3">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-[#f3e8e8] dark:bg-[#4a2c2c] border border-[#e6d0d0] dark:border-[#6b3e3e] rounded-full mb-3">
           <span className="text-burgundy-600 dark:text-burgundy-400 text-sm">●</span>
           <p className="text-sm text-burgundy-700 dark:text-burgundy-300 font-medium">
             Transitioning between {transitionWindow.from} and {transitionWindow.to} naps
