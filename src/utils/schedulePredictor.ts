@@ -171,30 +171,14 @@ export function generatePredictedSchedule(
           : 'Based on typical wake time for age')
   });
   
-  // Add first feed (usually within 30-60 min of waking)
-  currentTime += 30;
-  events.push({
-    time: formatTime(currentTime),
-    type: 'feed',
-    notes: 'Morning feed',
-    confidence: eventConfidence('feed'),
-    reasoning: feedIntervals.typical > 0
-      ? `Typically fed ${Math.round(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m after waking`
-      : 'Based on typical feeding pattern for age'
-  });
-  
-  // Generate naps and feeds throughout the day
+  // Generate naps throughout the day (no feed predictions)
   let napCount = 0;
   const targetNaps = getExpectedNaps(babyBirthday);
-  let lastFeedTime = currentTime; // Track last feed to determine next feed time
+  currentTime = wakeTime; // Reset to wake time
   
   while (currentTime < bedTime - 120) { // Stop 2 hours before bed
     // Add wake window
     currentTime += wakeWindows.typical;
-    
-    // Check if it's time for a feed (based on feed interval)
-    const timeSinceLastFeed = currentTime - lastFeedTime;
-    const shouldAddFeed = timeSinceLastFeed >= feedIntervals.typical && currentTime < bedTime - 90;
     
     // Add nap if we haven't hit the target
     if (napCount < targetNaps) {
@@ -211,69 +195,9 @@ export function generatePredictedSchedule(
       });
       currentTime += napDuration;
       napCount++;
-      
-      // Add feed after nap if enough time has passed since last feed
-      const timeSinceLastFeedAfterNap = currentTime - lastFeedTime;
-      if (timeSinceLastFeedAfterNap >= feedIntervals.typical * 0.8 && currentTime < bedTime - 90) {
-        currentTime += 20;
-        events.push({
-          time: formatTime(currentTime),
-          type: 'feed',
-          notes: 'Post-nap feed',
-          confidence: eventConfidence('feed'),
-          reasoning: feedIntervals.typical > 0
-            ? `Average feed interval: ${Math.floor(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m`
-            : 'Post-nap feeds help establish routine'
-        });
-        lastFeedTime = currentTime;
-      }
-    } else if (shouldAddFeed) {
-      // Add feed even without nap if interval has passed
-      events.push({
-        time: formatTime(currentTime),
-        type: 'feed',
-        notes: 'Feed',
-        confidence: eventConfidence('feed'),
-        reasoning: feedIntervals.typical > 0
-          ? `Average feed interval: ${Math.floor(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m`
-          : 'Regular feeding pattern'
-      });
-      lastFeedTime = currentTime;
-    }
-  }
-  
-  // Add remaining feeds between last event and bedtime
-  let postNapTime = currentTime;
-  while (postNapTime < bedTime - 60) { // Continue until 1 hour before bed
-    const timeSinceLastFeed = postNapTime - lastFeedTime;
-    
-    if (timeSinceLastFeed >= feedIntervals.typical * 0.85) {
-      events.push({
-        time: formatTime(postNapTime),
-        type: 'feed',
-        notes: 'Feed',
-        confidence: eventConfidence('feed'),
-        reasoning: feedIntervals.typical > 0
-          ? `Average feed interval: ${Math.floor(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m`
-          : 'Regular feeding pattern'
-      });
-      lastFeedTime = postNapTime;
-      postNapTime += feedIntervals.typical;
     } else {
-      postNapTime += 30; // Increment by 30 min to check again
+      break;
     }
-  }
-  
-  // Add bedtime feed if enough time has passed since last feed
-  const timeSinceLastFeedAtBed = (bedTime - 30) - lastFeedTime;
-  if (timeSinceLastFeedAtBed >= feedIntervals.typical * 0.7) {
-    events.push({
-      time: formatTime(bedTime - 30),
-      type: 'feed',
-      notes: 'Bedtime feed',
-      confidence: eventConfidence('feed'),
-      reasoning: 'Full feed before bed supports longer sleep'
-    });
   }
   
   // Add bedtime

@@ -448,6 +448,77 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Use adaptive schedule (unified with Home tab prediction engine)
   const displaySchedule = adaptiveSchedule || predictedSchedule;
   
+  // Recalculate schedule function
+  const handleRecalculateSchedule = () => {
+    console.log('🔄 Manually recalculating schedule...');
+    // Clear cache and force regeneration
+    localStorage.removeItem('aiPrediction');
+    localStorage.removeItem('aiPredictionLastFetch');
+    toast({
+      title: "Recalculating schedule",
+      description: "Schedule will update based on today's activities",
+    });
+    // Trigger re-render by clearing state
+    setAiPrediction(null);
+    setAiPredictionLoading(true);
+  };
+  
+  // Detect nap transition and get nap counts
+  const transitionInfo = useMemo(() => {
+    if (!aiPrediction || !aiPrediction.is_transitioning) return null;
+    
+    // Get current and transitioning nap counts from AI prediction
+    const currentCount = aiPrediction.total_naps_today;
+    const transitioningCount = currentCount > 2 ? currentCount - 1 : currentCount + 1;
+    
+    return {
+      isTransitioning: true,
+      napCounts: {
+        current: currentCount,
+        transitioning: transitioningCount
+      }
+    };
+  }, [aiPrediction]);
+  
+  // Generate alternate schedule for transitions
+  const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
+  
+  const alternateSchedule = useMemo(() => {
+    if (!transitionInfo || !hasTier3Data || !household?.baby_birthday) return null;
+    
+    try {
+      // Create a modified AI prediction with alternate nap count
+      const alternateAIPrediction: AISchedulePrediction = {
+        ...aiPrediction!,
+        total_naps_today: transitionInfo.napCounts.transitioning,
+        reasoning: `Alternative ${transitionInfo.napCounts.transitioning}-nap schedule`
+      };
+      
+      const activitiesForEngine = enrichedActivities.map(a => ({
+        id: a.id,
+        type: a.type as any,
+        time: a.details?.displayTime || new Date(a.logged_at).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        loggedAt: a.logged_at,
+        timezone: userTimezone,
+        details: a.details
+      }));
+      
+      return generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday, alternateAIPrediction);
+    } catch (error) {
+      console.error('Failed to generate alternate schedule:', error);
+      return null;
+    }
+  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, enrichedActivities, userTimezone]);
+  
+  // Use alternate schedule when toggled during transitions
+  const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
+    ? alternateSchedule 
+    : displaySchedule;
+  
   console.log('📅 Schedule Debug:', {
     hasMinimumData,
     hasTier3Data,
@@ -1340,8 +1411,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     </div>
                   )}
                   <ScheduleTimeline 
-                    schedule={displaySchedule} 
+                    schedule={activeDisplaySchedule} 
                     babyName={babyName}
+                    onRecalculate={handleRecalculateSchedule}
+                    isTransitioning={transitionInfo?.isTransitioning}
+                    transitionNapCounts={transitionInfo?.napCounts}
+                    showAlternate={showAlternateSchedule}
+                    onToggleAlternate={setShowAlternateSchedule}
                   />
                 </>
               )}

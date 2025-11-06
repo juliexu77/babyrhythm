@@ -1,5 +1,6 @@
 import { Moon, Sun, Milk, Bed, Clock, ChevronDown, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, useMemo } from "react";
@@ -28,6 +29,11 @@ interface PredictedSchedule {
 interface ScheduleTimelineProps {
   schedule: PredictedSchedule;
   babyName: string;
+  onRecalculate?: () => void;
+  isTransitioning?: boolean;
+  transitionNapCounts?: { current: number; transitioning: number };
+  showAlternate?: boolean;
+  onToggleAlternate?: (show: boolean) => void;
 }
 
 interface GroupedActivity {
@@ -41,17 +47,17 @@ interface GroupedActivity {
   title: string;
 }
 
-export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) => {
+export const ScheduleTimeline = ({ 
+  schedule, 
+  babyName,
+  onRecalculate,
+  isTransitioning,
+  transitionNapCounts,
+  showAlternate,
+  onToggleAlternate
+}: ScheduleTimelineProps) => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
-  
-  // Debug: Log schedule events to verify feeds are included
-  console.log('📋 ScheduleTimeline - Events:', schedule.events.map(e => ({ 
-    time: e.time, 
-    type: e.type, 
-    notes: e.notes 
-  })));
-  console.log('📋 Feed count in schedule:', schedule.events.filter(e => e.type === 'feed').length);
   
   // Check for DST transition
   const dstInfo = useMemo(() => {
@@ -157,35 +163,27 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     }
   };
 
-  // Group related activities
+  // Group activities - no feeds to group anymore
   const groupedActivities: GroupedActivity[] = [];
-  
-  console.log('🔄 Starting to group activities...');
   
   let napCounter = 0;
   for (let i = 0; i < schedule.events.length; i++) {
     const event = schedule.events[i];
     const nextEvent = schedule.events[i + 1];
     
-    // Morning routine (wake + morning feed)
-    if (event.type === 'wake' && nextEvent?.type === 'feed' && nextEvent.notes?.includes('Morning')) {
+    if (event.type === 'wake') {
       groupedActivities.push({
-        id: `morning-${i}`,
+        id: `wake-${i}`,
         type: 'morning',
         time: event.time,
-        feedTime: nextEvent.time,
-        title: 'Morning routine'
+        title: 'Wake up'
       });
-      i++; // Skip the next feed since we grouped it
     }
-    // Nap block (nap + post-nap feed)
     else if (event.type === 'nap') {
       const minutes = parseTime(event.time);
-      const isNightWindow = minutes >= 20 * 60 || minutes < 8 * 60; // 8:00 PM - 8:00 AM
+      const isNightWindow = minutes >= 20 * 60 || minutes < 8 * 60;
 
       if (isNightWindow) {
-        // Reclassify naps in the night window as night sleep so they are not counted as day naps
-        console.log('🌙 Reclassifying nap as night sleep in ScheduleTimeline:', { time: event.time, notes: event.notes });
         const endIsWake = nextEvent?.type === 'wake';
         groupedActivities.push({
           id: `night-${i}`,
@@ -194,37 +192,18 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           endTime: endIsWake ? nextEvent!.time : undefined,
           title: 'Night sleep'
         });
-        // Do not increment napCounter for night sleep
-        // Do not skip next event so morning routines still group correctly
       } else {
         napCounter++;
-        // Look ahead for any feed (not just post-nap feed with specific notes)
-        const upcomingFeed = nextEvent?.type === 'feed' ? nextEvent : null;
         groupedActivities.push({
           id: `nap-${i}`,
           type: 'nap-block',
           time: event.time,
           napDuration: event.duration || '1h 30m',
-          feedTime: upcomingFeed?.time,
           napNumber: napCounter,
           title: `Nap ${napCounter}`
         });
-        if (upcomingFeed) i++; // Skip the feed since we grouped it
       }
     }
-    // Bedtime routine (bedtime feed + bed)
-    else if (event.type === 'feed' && event.notes?.includes('Bedtime') && nextEvent?.type === 'bed') {
-      groupedActivities.push({
-        id: `bedtime-${i}`,
-        type: 'bedtime',
-        time: event.time,
-        endTime: nextEvent.time,
-        feedTime: event.time, // Include feed time so it displays
-        title: 'Bedtime routine'
-      });
-      i++; // Skip the bed event since we grouped it
-    }
-    // Standalone bed event (bedtime without preceding feed)
     else if (event.type === 'bed') {
       groupedActivities.push({
         id: `bedtime-${i}`,
@@ -233,41 +212,9 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         title: 'Bedtime'
       });
     }
-    // Standalone wake or feed events
-    else if (event.type === 'wake') {
-      groupedActivities.push({
-        id: `wake-${i}`,
-        type: 'morning',
-        time: event.time,
-        title: 'Wake up'
-      });
-    }
-    else if (event.type === 'feed') {
-      // Show feed with proper icon
-      groupedActivities.push({
-        id: `feed-${i}`,
-        type: 'morning',
-        time: event.time,
-        feedTime: event.time, // Mark as a feed-only event
-        title: event.notes || 'Feed'
-      });
-    }
   }
   
-  console.log('✅ Grouped activities:', groupedActivities.map(a => ({ 
-    id: a.id, 
-    type: a.type, 
-    time: a.time, 
-    title: a.title,
-    feedTime: a.feedTime 
-  })));
-  console.log('🍼 Total feed events in grouped activities:', 
-    groupedActivities.filter(a => a.feedTime).length);
-  
-  // Calculate summary - track expected vs actual feeds
   const napCount = groupedActivities.filter(a => a.type === 'nap-block').length;
-  const expectedFeedCount = schedule.events.filter(e => e.type === 'feed').length;
-  const actualFeedCount = groupedActivities.filter(a => a.feedTime).length;
   const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'bedtime');
   
   // Determine model state display
@@ -317,6 +264,62 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   };
   
   const dayProgress = getDayProgress();
+  
+  // Calculate planning windows (free time between events)
+  const planningWindows = useMemo(() => {
+    const windows: Array<{ start: string; end: string; duration: number; label: string }> = [];
+    
+    for (let i = 0; i < groupedActivities.length - 1; i++) {
+      const current = groupedActivities[i];
+      const next = groupedActivities[i + 1];
+      
+      // Calculate end of current event
+      let currentEnd: number;
+      if (current.type === 'nap-block' && current.napDuration) {
+        const startMinutes = parseTime(current.time);
+        const durationMatch = current.napDuration.match(/(\d+)h?\s*(\d+)?m?/);
+        if (durationMatch) {
+          const hours = parseInt(durationMatch[1]) || 0;
+          const mins = parseInt(durationMatch[2]) || 0;
+          currentEnd = startMinutes + (hours * 60 + mins);
+        } else {
+          currentEnd = parseTime(current.time);
+        }
+      } else {
+        currentEnd = parseTime(current.time) + 15; // Assume 15 min for wake/bed events
+      }
+      
+      const nextStart = parseTime(next.time);
+      const windowDuration = nextStart - currentEnd;
+      
+      // Only show windows >= 60 minutes
+      if (windowDuration >= 60) {
+        const endHours = Math.floor(currentEnd / 60) % 24;
+        const endMins = currentEnd % 60;
+        const endPeriod = endHours >= 12 ? 'PM' : 'AM';
+        const endDisplayHours = endHours > 12 ? endHours - 12 : (endHours === 0 ? 12 : endHours);
+        const endTime = `${endDisplayHours}:${endMins.toString().padStart(2, '0')} ${endPeriod}`;
+        
+        const hours = Math.floor(windowDuration / 60);
+        const mins = windowDuration % 60;
+        const durationText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+        
+        windows.push({
+          start: endTime,
+          end: next.time,
+          duration: windowDuration,
+          label: windowDuration >= 120 ? 'Best time for errands' : 'Free time'
+        });
+      }
+    }
+    
+    return windows;
+  }, [groupedActivities]);
+  
+  const longestWindow = planningWindows.reduce((longest, w) => 
+    w.duration > (longest?.duration || 0) ? w : longest, 
+    null as typeof planningWindows[0] | null
+  );
   
   return (
     <div className="space-y-4">
@@ -384,12 +387,72 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       </div>
       
       
-      {schedule.adjustmentNote && (
+      {/* Recalculate button */}
+      {onRecalculate && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRecalculate}
+          className="w-full text-xs mb-2"
+        >
+          <Clock className="w-3 h-3 mr-2" />
+          Recalculate Schedule
+        </Button>
+      )}
+      
+      {/* Transition toggle */}
+      {isTransitioning && transitionNapCounts && (
+        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-2">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4 text-amber-600" />
+              <span className="text-xs font-medium text-foreground">
+                {babyName} is transitioning between nap schedules
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <Button
+              variant={!showAlternate ? "default" : "outline"}
+              size="sm"
+              className="flex-1"
+              onClick={() => onToggleAlternate?.(false)}
+            >
+              {transitionNapCounts.current} naps
+            </Button>
+            <Button
+              variant={showAlternate ? "default" : "outline"}
+              size="sm"
+              className="flex-1"
+              onClick={() => onToggleAlternate?.(true)}
+            >
+              {transitionNapCounts.transitioning} naps
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {schedule.adjustmentNote && !isTransitioning && (
         <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary/20 rounded-lg animate-fade-in mb-2">
           <p className="text-xs text-primary font-semibold line-clamp-2">
             {schedule.adjustmentNote
               .replace(/The baby/g, babyName)
               .replace(/the baby/g, babyName)}
+          </p>
+        </div>
+      )}
+      
+      {/* Planning windows */}
+      {longestWindow && (
+        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg mb-2">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className="w-4 h-4 text-green-600" />
+            <span className="text-xs font-semibold text-green-700 dark:text-green-400">
+              {longestWindow.label}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {longestWindow.start} - {longestWindow.end} ({Math.floor(longestWindow.duration / 60)}h {longestWindow.duration % 60}m)
           </p>
         </div>
       )}
