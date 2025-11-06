@@ -23,9 +23,9 @@ const leftTabs = [
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
-      <div className="max-w-md mx-auto px-4 py-2">
-        <div className="grid grid-cols-5 gap-2 items-center">
+    <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t border-border/50 z-50">
+      <div className="max-w-md mx-auto px-4 py-1.5">
+        <div className="grid grid-cols-5 gap-1 items-center">
           {/* Left tabs */}
           {leftTabs.map((tab) => {
             const Icon = tab.icon;
@@ -43,8 +43,12 @@ const leftTabs = [
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-[22px] h-[22px]" />
-                <span className="text-label font-medium">{tab.label}</span>
+                <Icon 
+                  className="w-5 h-5" 
+                  fill={isActive && tab.id === 'home' ? 'currentColor' : 'none'}
+                  strokeWidth={isActive && tab.id === 'home' ? 0 : 2}
+                />
+                <span className="text-[10px] font-medium">{tab.label}</span>
               </button>
             );
           })}
@@ -54,11 +58,11 @@ const leftTabs = [
             <button
               ref={addButtonRef}
               onClick={onAddActivity}
-              className="w-12 h-12 bg-primary rounded-full 
+              className="w-11 h-11 bg-primary rounded-full 
                        flex items-center justify-center shadow-lg
                        hover:scale-105 transition-transform duration-200"
             >
-              <Plus className="w-5 h-5 text-primary-foreground" />
+              <Plus className="w-[18px] h-[18px] text-primary-foreground" />
             </button>
           </div>
 
@@ -79,8 +83,8 @@ const leftTabs = [
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-[22px] h-[22px]" />
-                <span className="text-label font-medium">{tab.label}</span>
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium">{tab.label}</span>
               </button>
             );
           })}
