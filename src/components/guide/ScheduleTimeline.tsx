@@ -396,7 +396,20 @@ export const ScheduleTimeline = ({
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          {schedule.basedOn}
+          Based on {(() => {
+            // Extract activity count and days from basedOn string
+            const match = schedule.basedOn.match(/(\d+) activities over (\d+) days/);
+            if (match) {
+              return `${match[1]} activities over ${match[2]} days`;
+            }
+            // Fallback: try to extract just the numbers if format is different
+            const nums = schedule.basedOn.match(/\d+/g);
+            if (nums && nums.length >= 2) {
+              return `${nums[0]} activities over ${nums[1]} days`;
+            }
+            // Final fallback
+            return schedule.basedOn;
+          })()}
         </p>
       </div>
       
