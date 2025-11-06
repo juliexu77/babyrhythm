@@ -87,7 +87,7 @@ export const ScheduleTimeline = ({
     return hours * 60 + minutes;
   };
   
-  // Format time - round all times to nearest 10 minutes
+  // Format time - round all times to nearest 10 minutes (12-hour display)
   const formatTime = (timeStr: string): string => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) return timeStr;
@@ -98,10 +98,21 @@ export const ScheduleTimeline = ({
     
     // Round to nearest 10 minutes for all times
     const roundedMinutes = Math.round(minutes / 10) * 10;
-    const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
+    if (roundedMinutes === 60) {
+      hours += 1;
+    }
     const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
+
+    // Normalize hours into 12-hour format for display
+    let normalized24h = hours;
+    if (period === 'AM') {
+      if (hours === 12) normalized24h = 0; // 12:xx AM => 00:xx
+    } else { // PM
+      if (hours !== 12) normalized24h = hours + 12; // 1-11 PM => 13-23
+    }
+    const displayHour = normalized24h === 0 ? 12 : (normalized24h > 12 ? normalized24h - 12 : normalized24h);
     
-    return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
+    return `${displayHour}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
   };
 
   // Calculate end time and recalculate duration to match rounded times
@@ -674,6 +685,27 @@ export const ScheduleTimeline = ({
                             <Badge variant="default" className="text-[10px] px-1.5 py-0 animate-fade-in">Now</Badge>
                           )}
                         </div>
+                        {(() => {
+                          // Show final wake window from last nap end to bedtime
+                          const prevActivity = displayActivities[idx - 1];
+                          if (prevActivity && prevActivity.type === 'nap-block') {
+                            const { endTime } = calculateEndTimeAndDuration(prevActivity.time, prevActivity.napDuration || '1h 30m');
+                            const prevEndMinutes = parseTime(endTime);
+                            const bedtimeRounded = formatTime(activity.time);
+                            const bedtimeMinutes = parseTime(bedtimeRounded);
+                            const diff = bedtimeMinutes - prevEndMinutes;
+                            if (diff > 0) {
+                              const h = Math.floor(diff / 60);
+                              const m = diff % 60;
+                              return (
+                                <div className="text-xs text-muted-foreground">
+                                  Final wake window: {h > 0 ? `${h}h ${m}min` : `${m}min`}
+                                </div>
+                              );
+                            }
+                          }
+                          return null;
+                        })()}
                       </div>
                     </button>
                     {selectedEvent === activity.id && matchingEvent && (
