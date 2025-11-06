@@ -23,7 +23,6 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
-import { useCaregiverNames } from "@/hooks/useCaregiverNames";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,7 +63,6 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { trackCreate, trackUpdate, trackDelete, undo, canUndo, undoCount } = useActivityUndo();
-  const { getCaregiverName } = useCaregiverNames();
   const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
   const [hasEverBeenCollaborator, setHasEverBeenCollaborator] = useState<boolean | null>(null);
@@ -985,16 +983,11 @@ const ongoingNap = (() => {
                                     
                                     return (
                                       <>
-                                        {dayActivities.map((activity) => {
-                                          const createdByUserId = dbActivities.find(a => a.id === activity.id)?.created_by;
-                                          const caregiverName = createdByUserId ? getCaregiverName(createdByUserId) : undefined;
-                                          
-                                          return (
+                                        {dayActivities.map((activity) => (
                                           <ActivityCard
                                             key={activity.id}
                                             activity={activity}
                                             babyName={babyProfile?.name}
-                                            caregiverName={caregiverName}
                                             onEdit={(clickedActivity) => {
                                               console.log('Clicked activity:', clickedActivity);
                                               setEditingActivity(clickedActivity);
@@ -1026,8 +1019,7 @@ const ongoingNap = (() => {
                                               }
                                             }}
                                           />
-                                        );
-                                        })}
+                                        ))}
                                         
                                         {/* Wake-up indicator - show in the date section where the wake-up happened */}
                                         {showWakeUpHere && nightSleep && wakeTime && (
