@@ -516,7 +516,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Fetch rhythm insights once daily at midnight (only for Tier 3)
   useEffect(() => {
-    if (!hasTier3Data || !household || !aiPrediction) {
+    if (!hasTier3Data || !household) {
       setRhythmInsightsLoading(false);
       return;
     }
@@ -531,10 +531,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             babyName: household.baby_name,
             babyAge: babyAgeInWeeks,
             babyBirthday: household.baby_birthday,
-            aiPrediction: {
-              ...aiPrediction,
-              predicted_bedtime: predictedSchedule?.predictedBedtime // Add bedtime from adaptive schedule
-            },
+            aiPrediction: aiPrediction || undefined, // Optional now
             timezone: userTimezone
           }
         });
@@ -576,7 +573,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     
     // Detect nap count mismatch between cached insights and AI prediction
     const hasNapCountMismatch = () => {
-      if (!cached) return false;
+      if (!cached || !aiPrediction) return false;
       
       try {
         const parsed = JSON.parse(cached);
@@ -652,22 +649,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     }
     
-    // Fetch if we don't have cached data from today or if there's a nap mismatch
-    const napMismatch = hasNapCountMismatch();
-    const shouldFetch = !cached || !rhythmInsights || napMismatch;
+    // Fetch if we don't have cached data from today
+    const shouldFetch = !cached || !rhythmInsights;
     
     if (shouldFetch) {
-      if (napMismatch) {
-        console.log('🚀 Force refreshing insights due to nap count mismatch...');
-      } else {
-        console.log('🚀 Fetching daily rhythm insights...');
-      }
+      console.log('🚀 Fetching daily rhythm insights...');
       fetchRhythmInsights();
     } else {
       console.log('✅ Using cached insights from today, no fetch needed');
       setRhythmInsightsLoading(false);
     }
-  }, [hasTier3Data, household, babyAgeInWeeks, aiPrediction]);
+  }, [hasTier3Data, household, babyAgeInWeeks, enrichedActivities.length, userTimezone]);
 
   // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {
