@@ -21,6 +21,8 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
 import { useHousehold } from "@/hooks/useHousehold";
+import { TodaysStory } from "@/components/home/TodaysStory";
+import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -61,6 +63,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showSleepStatusInsight, setShowSleepStatusInsight] = useState(false);
   const [showDailyInsight, setShowDailyInsight] = useState(false);
   const [showRhythmUnlocked, setShowRhythmUnlocked] = useState(false);
+  const [showTodaysStory, setShowTodaysStory] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
   
   // New home tab intelligence hook
@@ -1307,17 +1310,51 @@ const lastDiaper = displayActivities
           {getGreetingLine()}
         </h2>
 
-        {/* Tone Card */}
+        {/* Tone Card & Today's Story */}
         <div className="space-y-3">
-          <button 
-            onClick={() => setShowToneInsight(!showToneInsight)}
-            className="w-full text-left"
-          >
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-              <span className="text-sm">{sentiment.emoji}</span>
-              <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-            </div>
-          </button>
+          <div className="flex items-center justify-between gap-3">
+            <button 
+              onClick={() => setShowToneInsight(!showToneInsight)}
+              className="text-left"
+            >
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                <span className="text-sm">{sentiment.emoji}</span>
+                <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+              </div>
+            </button>
+
+            {/* Today's Story - appears at 5pm */}
+            {(() => {
+              const currentHour = currentTime.getHours();
+              const isAfter5PM = currentHour >= 17;
+              
+              // Check if night sleep has ended
+              const lastNightSleep = activities
+                .filter(a => a.type === "nap" && a.details?.isNightSleep)
+                .sort((a, b) => {
+                  const aTime = new Date(a.loggedAt || a.time).getTime();
+                  const bTime = new Date(b.loggedAt || b.time).getTime();
+                  return bTime - aTime;
+                })[0];
+
+              let nightSleepEnded = false;
+              if (lastNightSleep && lastNightSleep.details?.endTime) {
+                const today = new Date();
+                const sleepDate = new Date(lastNightSleep.loggedAt || lastNightSleep.time);
+                const isSleepToday = sleepDate.toDateString() === today.toDateString();
+                
+                if (isSleepToday && currentHour >= nightSleepEndHour) {
+                  nightSleepEnded = true;
+                }
+              }
+
+              const showStory = isAfter5PM && !nightSleepEnded;
+
+              return showStory ? (
+                <TodaysStory onClick={() => setShowTodaysStory(true)} />
+              ) : null;
+            })()}
+          </div>
           
           {showToneInsight && (
             <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
@@ -1325,6 +1362,14 @@ const lastDiaper = displayActivities
             </p>
           )}
         </div>
+
+        {/* Today's Story Modal */}
+        <TodaysStoryModal
+          isOpen={showTodaysStory}
+          onClose={() => setShowTodaysStory(false)}
+          activities={activities}
+          babyName={babyName}
+        />
 
         {/* Learning Progress Chip */}
         {!isRhythmUnlocked && activities.length > 0 && (
