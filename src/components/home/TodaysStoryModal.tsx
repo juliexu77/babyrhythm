@@ -65,6 +65,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     return activityDate.getTime() === today.getTime();
   });
 
+  const todayDate = format(today, "MMM d");
+
   // Get photos with notes
   const photosWithNotes = todayActivities.filter(a => 
     a.type === "photo" && (a.details.photoUrl || a.details.note)
@@ -192,13 +194,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   const balanceMetrics = getBalanceMetrics();
 
-  // Generate Stoic-style emotionally human reflection
+  // Generate Stoic-style emotionally human reflection (with line break option)
   const getReflectionLine = () => {
     const feedDiff = feedCount - avgFeedsPerDay;
     const napDiff = napCount - avgNapsPerDay;
     
     if (feedDiff >= 2) {
-      return `${babyName || "Your baby"} is growing fast, and you're right in sync.`;
+      return `${babyName || "Your baby"} is growing fast — and you're right in sync.`;
     }
     
     if (napDiff <= -1) {
@@ -214,7 +216,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     }
     
     if (todayActivities.length > 12) {
-      return "Full days like this build the foundation. You're doing beautifully.";
+      return "Full days like this build the foundation — you're doing beautifully.";
     }
     
     return "Steady rhythms, quiet confidence — exactly where you should be.";
@@ -222,11 +224,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden p-0 gap-0 bg-background">
-        {/* Minimal header */}
-        <div className="relative px-6 pt-8 pb-3">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden p-0 gap-0 bg-[hsl(var(--background))]">
+        {/* Minimal header - removed duplicate title */}
+        <div className="relative px-6 pt-6 pb-2">
           <DialogHeader>
-            <DialogTitle className="text-sm font-light tracking-widest uppercase text-muted-foreground/60">
+            <DialogTitle className="text-sm font-light tracking-widest uppercase text-muted-foreground/50">
               {babyName ? `${babyName}'s Day` : "Today's Story"}
             </DialogTitle>
           </DialogHeader>
@@ -245,22 +247,32 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 {/* Soft gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                 
+                {/* Date subtitle */}
+                <div className="absolute top-6 left-6">
+                  <p className="text-xs font-light text-white/70 uppercase tracking-widest animate-story-text-reveal">
+                    Daily rhythm summary — {todayDate}
+                  </p>
+                </div>
+                
                 {/* Headline Signal overlaid on photo */}
                 <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <p className="text-2xl font-light text-white leading-relaxed tracking-tight animate-story-headline-slide drop-shadow-lg" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  <p className="text-[22px] font-semibold text-white leading-relaxed tracking-tight animate-story-headline-slide drop-shadow-lg" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                     {getHeadlineSignal()}
                   </p>
                   {heroMoment.details.note && (
-                    <p className="text-sm text-white/80 font-light tracking-wide drop-shadow-md mt-3 animate-story-text-reveal" style={{ animationDelay: '0.5s' }}>
+                    <p className="text-[15px] text-white/70 font-normal tracking-normal drop-shadow-md mt-3 animate-story-text-reveal" style={{ animationDelay: '0.5s' }}>
                       {heroMoment.details.note}
                     </p>
                   )}
                 </div>
               </div>
             ) : (
-              // No photo: headline stands alone
-              <div className="px-8 pt-6 animate-story-headline-slide">
-                <p className="text-2xl font-light text-foreground leading-relaxed tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+              // No photo: headline with date subtitle
+              <div className="px-8 pt-4 space-y-2 animate-story-headline-slide">
+                <p className="text-xs font-light text-muted-foreground/50 uppercase tracking-widest">
+                  Daily rhythm summary — {todayDate}
+                </p>
+                <p className="text-[22px] font-semibold text-foreground leading-relaxed tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                   {getHeadlineSignal()}
                 </p>
               </div>
@@ -275,17 +287,20 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                   </div>
                   <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-story-ring-pulse" />
                 </div>
-                <span className="text-sm font-light text-muted-foreground tracking-wide">Rhythm Balanced</span>
+                <span className="text-[13px] font-semibold text-foreground tracking-wide uppercase">Rhythm Balanced</span>
               </div>
             )}
 
-            {/* 3. OURA-STYLE BALANCE BARS */}
-            <div className="px-8 space-y-5 animate-story-stats-enter" style={{ animationDelay: '1s' }}>
+            {/* 3. OURA-STYLE BALANCE BARS with elevated cards */}
+            <div className="px-8 space-y-4 animate-story-stats-enter" style={{ animationDelay: '1s' }}>
               {/* Feeds */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-light text-muted-foreground">Feeds</span>
-                  <span className="text-xs font-light text-muted-foreground/70">{balanceMetrics.feeds.comparison}</span>
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-card/50 to-card/30 backdrop-blur-sm border border-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <Baby className="w-4 h-4 text-[hsl(var(--pp-terracotta))]" strokeWidth={2} />
+                    <span className="text-[13px] font-semibold text-foreground uppercase tracking-wide">Feeds</span>
+                  </div>
+                  <span className="text-xs font-normal text-muted-foreground/70 italic">{balanceMetrics.feeds.comparison}</span>
                 </div>
                 <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
@@ -300,10 +315,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
 
               {/* Sleep */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-light text-muted-foreground">Sleep</span>
-                  <span className="text-xs font-light text-muted-foreground/70">{balanceMetrics.sleep.comparison}</span>
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-card/50 to-card/30 backdrop-blur-sm border border-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <Moon className="w-4 h-4 text-[hsl(var(--pp-lavender))]" strokeWidth={2} />
+                    <span className="text-[13px] font-semibold text-foreground uppercase tracking-wide">Sleep</span>
+                  </div>
+                  <span className="text-xs font-normal text-muted-foreground/70 italic">{balanceMetrics.sleep.comparison}</span>
                 </div>
                 <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
@@ -318,10 +336,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
 
               {/* Awake periods */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-light text-muted-foreground">Awake</span>
-                  <span className="text-xs font-light text-muted-foreground/70">{balanceMetrics.awake.comparison}</span>
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-card/50 to-card/30 backdrop-blur-sm border border-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <Clock className="w-4 h-4 text-[hsl(var(--accent-1))]" strokeWidth={2} />
+                    <span className="text-[13px] font-semibold text-foreground uppercase tracking-wide">Awake</span>
+                  </div>
+                  <span className="text-xs font-normal text-muted-foreground/70 italic">{balanceMetrics.awake.comparison}</span>
                 </div>
                 <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
@@ -398,20 +419,20 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                         animationDelay: `${1.5 + index * 0.2}s`
                       }}
                     >
-                      <div className="p-5 bg-muted/20 border-l-2 border-muted-foreground/20 hover:border-muted-foreground/40 transition-all duration-300">
+                      <div className="p-5 rounded-xl bg-gradient-to-b from-card/40 to-card/20 backdrop-blur-sm border border-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:border-border/40 transition-all duration-300">
                         <div className="flex items-start gap-4">
                           <div className="mt-0.5 text-muted-foreground/60">
                             {getActivityIcon(iconType)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-light text-muted-foreground/70 uppercase tracking-wider mb-1.5">
+                            <p className="text-xs font-light text-muted-foreground/60 uppercase tracking-widest mb-2">
                               {activity.time}
                             </p>
-                            <p className="text-base font-normal text-foreground leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                            <p className="text-[16px] font-normal text-foreground leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                               {getActivityLabel(activity)}
                             </p>
                             {getMemoryNote(activity) && (
-                              <p className="text-sm text-muted-foreground mt-2 font-light leading-relaxed italic">
+                              <p className="text-[15px] text-muted-foreground/70 mt-2.5 font-light leading-relaxed">
                                 {getMemoryNote(activity)}
                               </p>
                             )}
@@ -424,15 +445,28 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
             )}
 
-            {/* 5. STOIC REFLECTION - Emotionally human closing */}
-            <div className="px-8 pt-8 pb-4 animate-story-reflection-fade" style={{ animationDelay: `${2.0 + highlights.length * 0.2}s` }}>
-              <div className="relative py-10 overflow-hidden">
+            {/* 5. STOIC REFLECTION - Ceremonial closing with line breaks */}
+            <div className="px-8 pt-10 pb-6 animate-story-reflection-fade" style={{ animationDelay: `${2.0 + highlights.length * 0.2}s` }}>
+              <div className="relative py-12 overflow-hidden rounded-2xl">
                 {/* Day fade to night gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/10 to-muted/30 opacity-60 animate-story-dusk-fade" style={{ animationDelay: `${2.0 + highlights.length * 0.2}s` }} />
+                <div className="absolute inset-0 bg-gradient-to-b from-muted/20 via-muted/30 to-muted/40 opacity-60 animate-story-dusk-fade" style={{ animationDelay: `${2.0 + highlights.length * 0.2}s` }} />
                 
-                <p className="relative text-lg text-foreground/90 leading-relaxed text-center font-light tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  {getReflectionLine()}
-                </p>
+                {/* Split reflection into two lines for ceremonial pacing */}
+                <div className="relative space-y-2 text-center">
+                  <p className="text-[16px] text-foreground/90 leading-relaxed font-normal tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    {getReflectionLine().split('—')[0].trim()}
+                  </p>
+                  {getReflectionLine().includes('—') && (
+                    <p className="text-[16px] text-foreground/70 leading-relaxed font-light tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                      {getReflectionLine().split('—')[1]?.trim() || ''}
+                    </p>
+                  )}
+                  
+                  {/* Small moon icon for bedtime ritual feel */}
+                  <div className="pt-4 flex justify-center">
+                    <Moon className="w-4 h-4 text-muted-foreground/40" strokeWidth={1.5} />
+                  </div>
+                </div>
               </div>
             </div>
 
