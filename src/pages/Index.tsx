@@ -720,97 +720,7 @@ const ongoingNap = (() => {
           <>
             {/* Log Header */}
             <div className="px-4 py-2.5 border-b border-border">
-              <div className="flex items-center gap-6">
-                <DropdownMenu open={showFilterDropdown} onOpenChange={setShowFilterDropdown}>
-                  <DropdownMenuTrigger asChild>
-                    <button className="text-sm text-foreground underline hover:text-primary transition-colors">
-                      Filter
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48 bg-background">
-                    <div className="p-2 space-y-1">
-                      <DropdownMenuCheckboxItem
-                        checked={selectedActivityTypes.includes('feed')}
-                        onCheckedChange={(checked) => {
-                          setSelectedActivityTypes(prev => 
-                            checked ? [...prev, 'feed'] : prev.filter(t => t !== 'feed')
-                          );
-                        }}
-                      >
-                        Feed
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={selectedActivityTypes.includes('diaper')}
-                        onCheckedChange={(checked) => {
-                          setSelectedActivityTypes(prev => 
-                            checked ? [...prev, 'diaper'] : prev.filter(t => t !== 'diaper')
-                          );
-                        }}
-                      >
-                        Diaper
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={selectedActivityTypes.includes('nap')}
-                        onCheckedChange={(checked) => {
-                          setSelectedActivityTypes(prev => 
-                            checked ? [...prev, 'nap'] : prev.filter(t => t !== 'nap')
-                          );
-                        }}
-                      >
-                        Nap
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={selectedActivityTypes.includes('note')}
-                        onCheckedChange={(checked) => {
-                          setSelectedActivityTypes(prev => 
-                            checked ? [...prev, 'note'] : prev.filter(t => t !== 'note')
-                          );
-                        }}
-                      >
-                        Note
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={selectedActivityTypes.includes('measure')}
-                        onCheckedChange={(checked) => {
-                          setSelectedActivityTypes(prev => 
-                            checked ? [...prev, 'measure'] : prev.filter(t => t !== 'measure')
-                          );
-                        }}
-                      >
-                        Measure
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={selectedActivityTypes.includes('photo')}
-                        onCheckedChange={(checked) => {
-                          setSelectedActivityTypes(prev => 
-                            checked ? [...prev, 'photo'] : prev.filter(t => t !== 'photo')
-                          );
-                        }}
-                      >
-                        Photo
-                      </DropdownMenuCheckboxItem>
-                    </div>
-                    
-                    <div className="border-t border-border mt-2 pt-2 px-2 pb-2 flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => setSelectedActivityTypes([])}
-                      >
-                        Clear
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => setSelectedActivityTypes(['feed', 'diaper', 'nap', 'note', 'measure', 'photo'])}
-                      >
-                        All
-                      </Button>
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                
+              <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setShowReportConfig(true)}
                   className="text-sm text-foreground underline hover:text-primary transition-colors"
@@ -948,10 +858,109 @@ const ongoingNap = (() => {
                           return (
                             <div key={dateKey}>
                               <div className="space-y-2">
-                                {/* Date Header */}
-                                <h3 className="text-base font-sans font-medium text-foreground border-b border-border pb-1 mb-2 dark:font-bold">
-                                  {displayDate}
-                                </h3>
+                                {/* Date Header with Filter */}
+                                <div className="flex items-center justify-between border-b border-border pb-1 mb-2">
+                                  <h3 className="text-base font-sans font-medium text-foreground dark:font-bold">
+                                    {displayDate}
+                                  </h3>
+                                  
+                                  {/* Filter Button - Only show on first date (today) */}
+                                  {index === 0 && (
+                                    <DropdownMenu open={showFilterDropdown} onOpenChange={setShowFilterDropdown}>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                        >
+                                          <Filter className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-48 bg-background z-50">
+                                        <div className="p-2 space-y-1">
+                                          <DropdownMenuCheckboxItem
+                                            checked={selectedActivityTypes.includes('feed')}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedActivityTypes(prev => 
+                                                checked ? [...prev, 'feed'] : prev.filter(t => t !== 'feed')
+                                              );
+                                            }}
+                                          >
+                                            Feed
+                                          </DropdownMenuCheckboxItem>
+                                          <DropdownMenuCheckboxItem
+                                            checked={selectedActivityTypes.includes('diaper')}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedActivityTypes(prev => 
+                                                checked ? [...prev, 'diaper'] : prev.filter(t => t !== 'diaper')
+                                              );
+                                            }}
+                                          >
+                                            Diaper
+                                          </DropdownMenuCheckboxItem>
+                                          <DropdownMenuCheckboxItem
+                                            checked={selectedActivityTypes.includes('nap')}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedActivityTypes(prev => 
+                                                checked ? [...prev, 'nap'] : prev.filter(t => t !== 'nap')
+                                              );
+                                            }}
+                                          >
+                                            Nap
+                                          </DropdownMenuCheckboxItem>
+                                          <DropdownMenuCheckboxItem
+                                            checked={selectedActivityTypes.includes('note')}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedActivityTypes(prev => 
+                                                checked ? [...prev, 'note'] : prev.filter(t => t !== 'note')
+                                              );
+                                            }}
+                                          >
+                                            Note
+                                          </DropdownMenuCheckboxItem>
+                                          <DropdownMenuCheckboxItem
+                                            checked={selectedActivityTypes.includes('measure')}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedActivityTypes(prev => 
+                                                checked ? [...prev, 'measure'] : prev.filter(t => t !== 'measure')
+                                              );
+                                            }}
+                                          >
+                                            Measure
+                                          </DropdownMenuCheckboxItem>
+                                          <DropdownMenuCheckboxItem
+                                            checked={selectedActivityTypes.includes('photo')}
+                                            onCheckedChange={(checked) => {
+                                              setSelectedActivityTypes(prev => 
+                                                checked ? [...prev, 'photo'] : prev.filter(t => t !== 'photo')
+                                              );
+                                            }}
+                                          >
+                                            Photo
+                                          </DropdownMenuCheckboxItem>
+                                        </div>
+                                        
+                                        <div className="border-t border-border mt-2 pt-2 px-2 pb-2 flex gap-2">
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="flex-1"
+                                            onClick={() => setSelectedActivityTypes([])}
+                                          >
+                                            Clear
+                                          </Button>
+                                          <Button 
+                                            size="sm" 
+                                            className="flex-1"
+                                            onClick={() => setSelectedActivityTypes(['feed', 'diaper', 'nap', 'note', 'measure', 'photo'])}
+                                          >
+                                            All
+                                          </Button>
+                                        </div>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  )}
+                                </div>
                                 
                                 {/* Activities for this date */}
                                 <div className="space-y-1">
