@@ -414,15 +414,9 @@ export function generateAdaptiveSchedule(
   
   // Calculate accuracy score by comparing with today's activities
   let accuracyScore: number | undefined = undefined;
-  if (hasActualWake && todayActivities.length >= 1) { // Changed from >= 3 to >= 1 for faster feedback
+  if (todayActivities.length >= 1) {
     let accurateCount = 0;
-    let totalPredictions = 0;
-    
-    // Check wake accuracy (already logged)
-    if (hasActualWake) {
-      accurateCount++;
-      totalPredictions++;
-    }
+    let totalComparisons = 0;
     
     // Check nap accuracies
     const todayNaps = todayActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
@@ -450,11 +444,11 @@ export function generateAdaptiveSchedule(
       if (closestPredicted && closestPredicted.diff <= 30) {
         accurateCount++;
       }
-      totalPredictions++;
+      totalComparisons++;
     });
     
-    if (totalPredictions > 0) {
-      accuracyScore = Math.round((accurateCount / totalPredictions) * 100);
+    if (totalComparisons > 0) {
+      accuracyScore = Math.round((accurateCount / totalComparisons) * 100);
     }
   }
   
