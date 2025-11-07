@@ -1,8 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity } from "@/components/ActivityCard";
 import { format } from "date-fns";
-import { Camera, StickyNote, Baby, Moon, Droplet, Ruler, Clock, Check } from "lucide-react";
+import { Camera, StickyNote, Baby, Moon, Droplet, Ruler, Clock, Check, Share2, Heart } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import confetti from "canvas-confetti";
 
 interface TodaysStoryModalProps {
   isOpen: boolean;
@@ -54,6 +57,9 @@ const getActivityLabel = (activity: Activity): string => {
 };
 
 export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: TodaysStoryModalProps) {
+  const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  
   // Filter today's activities
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -90,7 +96,6 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   const napCount = todayActivities.filter(a => a.type === "nap" && !a.details.isNightSleep).length;
   const diaperCount = todayActivities.filter(a => a.type === "diaper").length;
 
-  // Generate summary sentence based on the day
   // Calculate daily averages for comparison
   const avgFeedsPerDay = 6;
   const avgNapsPerDay = 3;
@@ -111,6 +116,48 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   const isRhythmBalanced = Math.abs(feedCount - avgFeedsPerDay) <= 1 && 
                            Math.abs(napCount - avgNapsPerDay) <= 1 && 
                            Math.abs(parseFloat(totalSleepHours) - avgSleepHours) <= 1;
+  
+  // Get baby age from first activity (simplified)
+  const getBabyAge = () => {
+    // This would ideally come from baby profile
+    return 4; // months - placeholder
+  };
+  
+  // Get season
+  const getSeason = () => {
+    const month = today.getMonth();
+    if (month >= 2 && month <= 4) return "spring";
+    if (month >= 5 && month <= 7) return "summer";
+    if (month >= 8 && month <= 10) return "autumn";
+    return "winter";
+  };
+  
+  // Detect fatigue indicators
+  const hasFatigueIndicators = () => {
+    const nightActivities = todayActivities.filter(a => {
+      if (!a.loggedAt) return false;
+      const hour = new Date(a.loggedAt).getHours();
+      return hour >= 0 && hour <= 5;
+    });
+    return nightActivities.length >= 3; // Multiple night wakings
+  };
+  
+  // Calculate consecutive balanced days (simplified - would need historical data)
+  const [consecutiveBalancedDays, setConsecutiveBalancedDays] = useState(0);
+  
+  // Trigger confetti on balanced rhythm
+  useEffect(() => {
+    if (isOpen && isRhythmBalanced && !isFavorite) {
+      setTimeout(() => {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#A08DC5', '#54AF7D', '#D89B82']
+        });
+      }, 2000);
+    }
+  }, [isOpen, isRhythmBalanced]);
 
   // Detect day tone with theme
   const getDayTone = () => {
@@ -194,11 +241,46 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   const balanceMetrics = getBalanceMetrics();
 
-  // Generate Stoic-style emotionally human reflection (with line break option)
+  // Generate Stoic-style emotionally human reflection with seasonal/age/fatigue context
   const getReflectionLine = () => {
     const feedDiff = feedCount - avgFeedsPerDay;
     const napDiff = napCount - avgNapsPerDay;
+    const season = getSeason();
+    const age = getBabyAge();
+    const isFatigued = hasFatigueIndicators();
     
+    // Fatigue empathy
+    if (isFatigued && napDiff >= 1) {
+      return "Rough night, but they're catching up on rest — you both needed this recovery day.";
+    }
+    
+    if (isFatigued) {
+      return "A challenging night behind you — you showed up anyway. That's the real strength.";
+    }
+    
+    // Seasonal touches
+    if (feedDiff >= 2 && season === "winter") {
+      return "Growing fast even in the quiet of winter — and you're keeping pace beautifully.";
+    }
+    
+    if (season === "spring" && allHighlights.some(a => a.details.feedType === "solid")) {
+      return "First tastes of spring together — new foods, new growth, new season.";
+    }
+    
+    if (season === "autumn") {
+      return `First autumn days together — ${babyName || "they're"} changing as fast as the leaves.`;
+    }
+    
+    // Age-based milestones
+    if (age === 4 && napCount >= 3) {
+      return "At 4 months, these nap patterns are exactly right — you're reading their cues perfectly.";
+    }
+    
+    if (age <= 3 && feedCount >= 7) {
+      return "In these early months, frequent feeding is growth — you're giving them everything they need.";
+    }
+    
+    // Original reflections
     if (feedDiff >= 2) {
       return `${babyName || "Your baby"} is growing fast — and you're right in sync.`;
     }
@@ -221,31 +303,82 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     
     return "Steady rhythms, quiet confidence — exactly where you should be.";
   };
+  
+  // Handle share
+  const handleShare = async () => {
+    const shareText = `${babyName ? `${babyName}'s Day` : "Today's Story"}\n${getHeadlineSignal()}\n\nFeeds: ${feedCount} | Sleep: ${totalSleepHours}h | Awake periods: ${napCount}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${babyName ? `${babyName}'s Day` : "Today's Story"}`,
+          text: shareText
+        });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(shareText);
+      // You could show a toast here
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden p-0 gap-0 bg-[hsl(var(--background))]">
-        {/* Minimal header - removed duplicate title */}
-        <div className="relative px-6 pt-6 pb-2">
+        {/* Minimal header with action buttons */}
+        <div className="relative px-6 pt-6 pb-2 flex items-center justify-between">
           <DialogHeader>
             <DialogTitle className="text-sm font-light tracking-widest uppercase text-muted-foreground/50">
               {babyName ? `${babyName}'s Day` : "Today's Story"}
             </DialogTitle>
           </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsFavorite(!isFavorite)}
+              className="h-8 w-8 p-0"
+            >
+              <Heart 
+                className={`w-4 h-4 ${isFavorite ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
+                strokeWidth={2}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleShare}
+              className="h-8 w-8 p-0"
+            >
+              <Share2 className="w-4 h-4 text-muted-foreground" strokeWidth={2} />
+            </Button>
+          </div>
         </div>
 
         <div className="overflow-y-auto max-h-[calc(90vh-80px)] pb-8">
           <div className="space-y-10">
             {/* 1. HERO MOMENT with overlaid headline */}
             {heroMoment && heroMoment.details.photoUrl ? (
-              <div className="relative w-full aspect-[4/3] overflow-hidden">
+              <div 
+                className="relative w-full aspect-[4/3] overflow-hidden cursor-pointer group"
+                onClick={() => setExpandedPhoto(heroMoment.details.photoUrl || null)}
+              >
                 <img 
                   src={heroMoment.details.photoUrl} 
                   alt="Today's moment" 
-                  className="w-full h-full object-cover animate-story-photo-focus"
+                  className="w-full h-full object-cover animate-story-photo-focus group-hover:scale-105 transition-transform duration-300"
                 />
                 {/* Soft gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                
+                {/* Expand hint on hover */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <Camera className="w-4 h-4 text-white" />
+                  </div>
+                </div>
                 
                 {/* Date subtitle */}
                 <div className="absolute top-6 left-6">
@@ -278,16 +411,23 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
             )}
 
-            {/* 2. RHYTHM BALANCE INDICATOR */}
+            {/* 2. RHYTHM BALANCE INDICATOR with streak */}
             {isRhythmBalanced && (
-              <div className="px-8 flex items-center justify-center gap-3 animate-story-balance-glow" style={{ animationDelay: '0.8s' }}>
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full border-2 border-primary/40 flex items-center justify-center bg-primary/10">
-                    <Check className="w-4 h-4 text-primary" strokeWidth={2.5} />
+              <div className="px-8 animate-story-balance-glow" style={{ animationDelay: '0.8s' }}>
+                <div className="flex items-center justify-center gap-3 py-4 px-6 rounded-2xl bg-gradient-to-b from-primary/10 to-primary/5 border border-primary/20">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full border-2 border-primary/40 flex items-center justify-center bg-primary/10">
+                      <Check className="w-4 h-4 text-primary" strokeWidth={2.5} />
+                    </div>
+                    <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-story-ring-pulse" />
                   </div>
-                  <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-story-ring-pulse" />
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-semibold text-foreground tracking-wide uppercase">Rhythm Balanced</span>
+                    {consecutiveBalancedDays > 1 && (
+                      <span className="text-xs text-muted-foreground font-light">{consecutiveBalancedDays} days in a row</span>
+                    )}
+                  </div>
                 </div>
-                <span className="text-[13px] font-semibold text-foreground tracking-wide uppercase">Rhythm Balanced</span>
               </div>
             )}
 
@@ -487,6 +627,29 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
           </div>
         </div>
       </DialogContent>
+      
+      {/* Expanded Photo Modal */}
+      {expandedPhoto && (
+        <Dialog open={!!expandedPhoto} onOpenChange={() => setExpandedPhoto(null)}>
+          <DialogContent className="max-w-4xl p-0 border-0 bg-black/95">
+            <div className="relative w-full h-[90vh] flex items-center justify-center">
+              <img 
+                src={expandedPhoto} 
+                alt="Expanded moment" 
+                className="max-w-full max-h-full object-contain"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setExpandedPhoto(null)}
+                className="absolute top-4 right-4 text-white hover:bg-white/20"
+              >
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   );
 }
