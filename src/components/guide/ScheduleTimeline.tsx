@@ -37,6 +37,7 @@ interface ScheduleTimelineProps {
   isAdjusting?: boolean;
   adjustmentContext?: string;
   transitionWindow?: { from: number; to: number; label: string } | null;
+  todayActualNapCount?: number;
 }
 
 interface GroupedActivity {
@@ -60,7 +61,8 @@ export const ScheduleTimeline = ({
   onToggleAlternate,
   isAdjusting,
   adjustmentContext,
-  transitionWindow
+  transitionWindow,
+  todayActualNapCount
 }: ScheduleTimelineProps) => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
@@ -273,9 +275,12 @@ export const ScheduleTimeline = ({
   const napCount = groupedActivities.filter(a => a.type === 'nap-block').length;
   const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'bedtime');
   
+  // Only show accuracy if schedule's nap count matches today's actual naps
+  const shouldShowAccuracy = todayActualNapCount === undefined || todayActualNapCount === 0 || todayActualNapCount === napCount;
+  
   // Determine model state display
   const getModelStateDisplay = () => {
-    if (schedule.accuracyScore === undefined || schedule.accuracyScore === 0) {
+    if (!shouldShowAccuracy || schedule.accuracyScore === undefined || schedule.accuracyScore === 0) {
       return null;
     }
     
@@ -368,15 +373,6 @@ export const ScheduleTimeline = ({
             {babyName}&apos;s Predicted Schedule
           </h3>
           <div className="flex items-center gap-2">
-            {schedule.accuracyScore !== undefined ? (
-              <span className="text-xs text-muted-foreground">
-                {schedule.accuracyScore}% accurate
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground/70">
-                Calculating...
-              </span>
-            )}
             {modelState && (
               <div className="relative">
                 <Collapsible>

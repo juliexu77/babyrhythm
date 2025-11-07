@@ -647,6 +647,34 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Generate alternate schedule for transitions
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
   
+  // Calculate today's actual nap count
+  const todayActualNapCount = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayNaps = normalizedActivities.filter(a => {
+      const actDate = new Date(a.logged_at);
+      return actDate >= today && a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime;
+    });
+    return todayNaps.length;
+  }, [normalizedActivities]);
+  
+  // Auto-set showAlternate based on today's actual naps matching alternate count
+  useEffect(() => {
+    if (!transitionInfo || !aiPrediction) return;
+    
+    const alternateNapCount = transitionInfo.napCounts.transitioning;
+    const currentNapCount = aiPrediction.total_naps_today;
+    
+    // If today's actual naps match alternate, show alternate by default
+    if (todayActualNapCount > 0) {
+      if (todayActualNapCount === alternateNapCount && todayActualNapCount !== currentNapCount) {
+        setShowAlternateSchedule(true);
+      } else if (todayActualNapCount === currentNapCount) {
+        setShowAlternateSchedule(false);
+      }
+    }
+  }, [todayActualNapCount, transitionInfo, aiPrediction]);
+  
   const alternateSchedule = useMemo(() => {
     if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !aiPrediction) return null;
     
@@ -1444,6 +1472,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     isAdjusting={isAdjusting}
                     adjustmentContext={adjustmentContext}
                     transitionWindow={transitionWindow}
+                    todayActualNapCount={todayActualNapCount}
                   />
                 </>
               )}
