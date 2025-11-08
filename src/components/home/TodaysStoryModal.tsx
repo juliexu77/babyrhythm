@@ -258,8 +258,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 blur-3xl animate-story-glow-corners" />
                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 blur-3xl animate-story-glow-corners" style={{ animationDelay: '1s' }} />
                 
-                {/* Gradient overlay for readability */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+                {/* Gradient overlay for readability - warm dusk fade on top 40% */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent via-40% to-black/60" />
                 
                 {/* Date subtitle (top) */}
                 <div className="absolute top-8 left-6 right-6">
@@ -269,8 +269,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 </div>
                 
                 {/* Headline (bottom) */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 pb-12">
-                  <h1 className="text-[28px] leading-[1.3] font-light tracking-tight text-white animate-story-headline-type">
+                <div className="absolute bottom-0 left-0 right-0 p-8 pb-16">
+                  <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type">
                     {headline}
                   </h1>
                   
@@ -296,83 +296,98 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
             )}
           </div>
 
-          {/* ACT 2: Reveal - Metric cards overlaid on bottom */}
+          {/* ACT 2: Reveal - Metric cards overlaid on bottom - lowered 80px */}
           {animationPhase !== 'act1' && (
-            <div className="absolute bottom-0 left-0 right-0 p-6 space-y-3">
+            <div className="absolute bottom-4 left-0 right-0 px-6 space-y-5">
               {/* Feeds - Peach with pulse */}
               <div 
-                className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
+                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
                 style={{ animationDelay: '0s' }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2.5">
                     <Baby className="w-4 h-4 text-[hsl(var(--pp-terracotta))]" strokeWidth={1.5} />
-                    <span className="text-sm text-muted-foreground">Feeds</span>
+                    <span className="text-[14px] font-medium text-foreground">Feeds</span>
                   </div>
-                  <span className="text-sm font-medium">{feedCount}</span>
+                  <span className="text-[14px] font-medium">{feedCount}</span>
                 </div>
-                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                <div className="h-1 bg-muted/30 rounded-full overflow-hidden relative">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-terracotta))] to-[hsl(var(--pp-coral))] animate-story-bar-feed"
+                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-terracotta))]/60 to-[hsl(var(--pp-coral))]/60 rounded-full animate-story-bar-feed"
                     style={{ 
                       width: `${Math.min(100, (feedCount / avgFeeds) * 100)}%`,
                       animationDelay: '0.1s'
                     }}
                   />
+                  {/* Shimmer sweep on completion */}
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-story-shimmer-sweep"
+                    style={{ animationDelay: '0.8s' }}
+                  />
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">
+                <div className="mt-1 text-[12px] text-muted-foreground/60">
                   avg {avgFeeds}
                 </div>
               </div>
 
               {/* Naps - Lavender smooth */}
               <div 
-                className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
+                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
                 style={{ animationDelay: '0.5s' }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2.5">
                     <Moon className="w-4 h-4 text-[hsl(var(--pp-lavender))]" strokeWidth={1.5} />
-                    <span className="text-sm text-muted-foreground">Naps</span>
+                    <span className="text-[14px] font-medium text-foreground">Naps</span>
                   </div>
-                  <span className="text-sm font-medium">{napCount}</span>
+                  <span className="text-[14px] font-medium">{napCount}</span>
                 </div>
-                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                <div className="h-1 bg-muted/30 rounded-full overflow-hidden relative">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-lavender))] to-[hsl(264_40%_75%)] animate-story-bar-nap"
+                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-lavender))]/60 to-[hsl(264_40%_75%)]/60 rounded-full animate-story-bar-nap"
                     style={{ 
                       width: `${Math.min(100, (napCount / avgNaps) * 100)}%`,
                       animationDelay: '0.6s'
                     }}
                   />
+                  {/* Shimmer sweep on completion */}
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-story-shimmer-sweep"
+                    style={{ animationDelay: '1.3s' }}
+                  />
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">
+                <div className="mt-1 text-[12px] text-muted-foreground/60">
                   avg {avgNaps}
                 </div>
               </div>
 
               {/* Nap time - Mint with glint sweep */}
               <div 
-                className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
+                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
                 style={{ animationDelay: '1.0s' }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2.5">
                     <Clock className="w-4 h-4 text-[hsl(var(--pp-mint))]" strokeWidth={1.5} />
-                    <span className="text-sm text-muted-foreground">Nap time</span>
+                    <span className="text-[14px] font-medium text-foreground">Nap time</span>
                   </div>
-                  <span className="text-sm font-medium">{totalNapHours}h {totalNapMins}m</span>
+                  <span className="text-[14px] font-medium">{totalNapHours}h {totalNapMins}m</span>
                 </div>
-                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden relative">
+                <div className="h-1 bg-muted/30 rounded-full overflow-hidden relative">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-mint))] to-[hsl(153_45%_65%)] animate-story-bar-naptime"
+                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-mint))]/60 to-[hsl(153_45%_65%)]/60 rounded-full animate-story-bar-naptime"
                     style={{ 
                       width: `${Math.min(100, (totalNapMinutes / avgNapMinutes) * 100)}%`,
                       animationDelay: '1.1s'
                     }}
                   />
+                  {/* Shimmer sweep on completion */}
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-story-shimmer-sweep"
+                    style={{ animationDelay: '1.8s' }}
+                  />
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">
+                <div className="mt-1 text-[12px] text-muted-foreground/60">
                   avg {Math.floor(avgNapMinutes / 60)}h {avgNapMinutes % 60}m
                 </div>
               </div>
@@ -380,16 +395,16 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {/* Longest wake window - Sand with pulse highlight */}
               {longestWakeWindow && (
                 <div 
-                  className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
+                  className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
                   style={{ animationDelay: '1.5s' }}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       <Sparkles className="w-4 h-4 text-accent" strokeWidth={1.5} />
-                      <span className="text-sm text-muted-foreground">Longest wake window</span>
+                      <span className="text-[14px] font-medium text-foreground">Longest wake window</span>
                     </div>
                   </div>
-                  <div className="mt-1 text-sm font-medium animate-story-window-pulse" style={{ animationDelay: '1.6s' }}>
+                  <div className="mt-1 text-[14px] font-medium animate-story-window-pulse" style={{ animationDelay: '1.6s' }}>
                     {longestWakeWindow}
                   </div>
                 </div>
@@ -397,17 +412,29 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
             </div>
           )}
 
-          {/* ACT 3: Closure - Reassuring message with sparkle sweep */}
+          {/* ACT 3: Closure - Reassuring message with sparkles rising */}
           {animationPhase === 'act3' && (
             <>
               {/* Dusk gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary/10 animate-story-dusk-overlay pointer-events-none" />
               
-              {/* Sparkle sweep effect */}
-              <div className="absolute top-1/4 left-0 pointer-events-none">
+              {/* Multiple sparkles rising effect */}
+              <div className="absolute top-1/4 left-1/4 pointer-events-none">
                 <Sparkles 
-                  className="w-6 h-6 text-primary/40 animate-story-sparkle-sweep" 
+                  className="w-5 h-5 text-primary/30 animate-story-sparkle-rise" 
                   style={{ animationDelay: '0.5s' }}
+                />
+              </div>
+              <div className="absolute top-1/3 right-1/3 pointer-events-none">
+                <Sparkles 
+                  className="w-4 h-4 text-primary/25 animate-story-sparkle-rise" 
+                  style={{ animationDelay: '0.7s' }}
+                />
+              </div>
+              <div className="absolute top-1/2 left-1/3 pointer-events-none">
+                <Sparkles 
+                  className="w-6 h-6 text-primary/35 animate-story-sparkle-rise" 
+                  style={{ animationDelay: '0.9s' }}
                 />
               </div>
               

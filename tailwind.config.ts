@@ -164,6 +164,140 @@ export default {
             transform: "scale(1.02)",
             boxShadow: "0 0 15px rgba(76, 175, 125, 0.4)"
           }
+        },
+        // Today's Story Modal Animations
+        "story-photo-blur-in": {
+          "0%": {
+            filter: "blur(20px)",
+            opacity: "0"
+          },
+          "100%": {
+            filter: "blur(0px)",
+            opacity: "1"
+          }
+        },
+        "story-glow-corners": {
+          "0%": {
+            opacity: "0"
+          },
+          "100%": {
+            opacity: "1"
+          }
+        },
+        "story-headline-fade-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(8px)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)"
+          }
+        },
+        "story-card-slide-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)"
+          }
+        },
+        "story-bar-feed": {
+          "0%": {
+            transform: "scaleX(0)",
+            transformOrigin: "left"
+          },
+          "80%": {
+            transform: "scaleX(1.05)"
+          },
+          "100%": {
+            transform: "scaleX(1)"
+          }
+        },
+        "story-bar-nap": {
+          "0%": {
+            transform: "scaleX(0)",
+            transformOrigin: "left"
+          },
+          "100%": {
+            transform: "scaleX(1)"
+          }
+        },
+        "story-bar-naptime": {
+          "0%": {
+            transform: "scaleX(0)",
+            transformOrigin: "left"
+          },
+          "80%": {
+            transform: "scaleX(1.03)"
+          },
+          "100%": {
+            transform: "scaleX(1)"
+          }
+        },
+        "story-window-pulse": {
+          "0%, 100%": {
+            opacity: "1"
+          },
+          "50%": {
+            opacity: "0.7"
+          }
+        },
+        "story-shimmer-sweep": {
+          "0%": {
+            transform: "translateX(-100%)",
+            opacity: "0"
+          },
+          "50%": {
+            opacity: "1"
+          },
+          "100%": {
+            transform: "translateX(100%)",
+            opacity: "0"
+          }
+        },
+        "story-sparkle-sweep": {
+          "0%": {
+            transform: "translateX(0) translateY(0)",
+            opacity: "0"
+          },
+          "20%": {
+            opacity: "0.4"
+          },
+          "100%": {
+            transform: "translateX(100vw) translateY(-20vh)",
+            opacity: "0"
+          }
+        },
+        "story-sparkle-rise": {
+          "0%": {
+            transform: "translateY(0) scale(1)",
+            opacity: "0.6"
+          },
+          "100%": {
+            transform: "translateY(-80px) scale(0.5)",
+            opacity: "0"
+          }
+        },
+        "story-closure-fade": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)"
+          }
+        },
+        "story-dusk-overlay": {
+          "0%": {
+            opacity: "0"
+          },
+          "100%": {
+            opacity: "1"
+          }
         }
       },
       animation: {
@@ -176,6 +310,21 @@ export default {
         "glow": "glow 1s ease-in-out infinite",
         "breathe": "breathe 2s ease-in-out infinite",
         "breathe-dark": "breathe-dark 1.8s ease-out infinite",
+        // Today's Story Modal Animations
+        "story-photo-blur-in": "story-photo-blur-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "story-glow-corners": "story-glow-corners 2s ease-out forwards",
+        "story-headline-type": "story-headline-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards",
+        "story-headline-fade-up": "story-headline-fade-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "story-card-slide-up": "story-card-slide-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+        "story-bar-feed": "story-bar-feed 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+        "story-bar-nap": "story-bar-nap 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "story-bar-naptime": "story-bar-naptime 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+        "story-window-pulse": "story-window-pulse 2s ease-in-out infinite",
+        "story-shimmer-sweep": "story-shimmer-sweep 1s ease-out forwards",
+        "story-sparkle-sweep": "story-sparkle-sweep 2s ease-out",
+        "story-sparkle-rise": "story-sparkle-rise 1s ease-out forwards",
+        "story-closure-fade": "story-closure-fade 1s ease-out forwards",
+        "story-dusk-overlay": "story-dusk-overlay 1s ease-out forwards",
       },
     },
   },
