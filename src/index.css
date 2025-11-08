@@ -537,6 +537,90 @@
     }
   }
 
+  /* Act 1: Arrival animations */
+  @keyframes story-photo-blur-in {
+    from { 
+      filter: blur(20px) brightness(1.2);
+      opacity: 0;
+      transform: scale(1.05);
+    }
+    to { 
+      filter: blur(0px) brightness(1);
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes story-glow-corners {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+
+  @keyframes story-headline-fade-up {
+    from { 
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Act 2: Metric card animations */
+  @keyframes story-card-slide-up {
+    from { 
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes story-bar-scale-fill {
+    from { 
+      transform: scaleX(0);
+      opacity: 0.5;
+    }
+    to { 
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+
+  /* Act 3: Closure animations */
+  @keyframes story-sparkle-sweep {
+    0% { 
+      transform: translate(-100%, -100%) rotate(0deg);
+      opacity: 0;
+    }
+    50% { 
+      opacity: 1;
+    }
+    100% { 
+      transform: translate(100%, 100%) rotate(45deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes story-closure-fade {
+    from { 
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes story-dusk-overlay {
+    0% { opacity: 0; }
+    100% { opacity: 0.15; }
+  }
+
   .animate-story-shimmer {
     animation: story-shimmer 3s ease-in-out infinite;
   }
@@ -603,6 +687,45 @@
 
   .animate-story-outro-enter {
     animation: story-outro-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  
+  /* Act 1 animations */
+  .animate-story-photo-blur-in {
+    animation: story-photo-blur-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-story-glow-corners {
+    animation: story-glow-corners 2s ease-in-out infinite;
+  }
+
+  .animate-story-headline-fade-up {
+    animation: story-headline-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+    opacity: 0;
+  }
+
+  /* Act 2 animations */
+  .animate-story-card-slide-up {
+    animation: story-card-slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-story-bar-scale-fill {
+    animation: story-bar-scale-fill 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-origin: left;
+  }
+
+  /* Act 3 animations */
+  .animate-story-sparkle-sweep {
+    animation: story-sparkle-sweep 1.5s ease-out forwards;
+  }
+
+  .animate-story-closure-fade {
+    animation: story-closure-fade 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-story-dusk-overlay {
+    animation: story-dusk-overlay 1s ease-out forwards;
   }
   
   /* Component utilities */
