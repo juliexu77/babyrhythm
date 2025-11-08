@@ -128,56 +128,34 @@ export const TimePickerDrawer = ({
     };
   }, [isOpen]);
 
-  // Scroll to staged values - force scroll all columns to their exact staged positions
+  // Scroll to staged values
   const scrollToStaged = () => {
+    if (!isProgrammaticScroll.current) return;
+    
     if (hourRef.current) {
       const index = hours.indexOf(stagedHour);
-      if (index >= 0) {
-        const targetTop = SPACER + index * ITEM_HEIGHT;
-        hourRef.current.scrollTop = targetTop;
-        console.log('📍 Scrolling Hour to:', { stagedHour, index, targetTop, actualScrollTop: hourRef.current.scrollTop });
-      }
+      if (index >= 0) hourRef.current.scrollTop = SPACER + index * ITEM_HEIGHT;
     }
     if (minuteRef.current) {
       const index = minutes.indexOf(stagedMinute);
-      if (index >= 0) {
-        const targetTop = SPACER + index * ITEM_HEIGHT;
-        minuteRef.current.scrollTop = targetTop;
-        console.log('📍 Scrolling Minute to:', { stagedMinute, index, targetTop, actualScrollTop: minuteRef.current.scrollTop });
-      }
+      if (index >= 0) minuteRef.current.scrollTop = SPACER + index * ITEM_HEIGHT;
     }
     if (dateRef.current) {
-      const targetTop = SPACER + stagedDateIndex * ITEM_HEIGHT;
-      dateRef.current.scrollTop = targetTop;
-      console.log('📍 Scrolling Date to:', { stagedDateIndex, targetTop, actualScrollTop: dateRef.current.scrollTop });
+      dateRef.current.scrollTop = SPACER + stagedDateIndex * ITEM_HEIGHT;
     }
   };
 
-  // Initial scroll on mount - multiple attempts to ensure it sticks on iOS
   useEffect(() => {
     if (isOpen) {
       isProgrammaticScroll.current = true;
-      
-      // First attempt: immediate
-      scrollToStaged();
-      
-      // Second attempt: next frame
       requestAnimationFrame(() => {
         scrollToStaged();
-        
-        // Third attempt: after layout
         requestAnimationFrame(() => {
-          scrollToStaged();
-          
-          // Finally allow user scrolling after 150ms
-          setTimeout(() => {
-            isProgrammaticScroll.current = false;
-            console.log('✅ Initial scroll complete, user scrolling enabled');
-          }, 150);
+          isProgrammaticScroll.current = false;
         });
       });
     }
-  }, [isOpen]);
+  }, [isOpen, stagedHour, stagedMinute, stagedDateIndex]);
 
   // Handle wheel scroll
   const handleScroll = (
@@ -201,15 +179,15 @@ export const TimePickerDrawer = ({
     // Debounced snap-to-row normalization to avoid fractional offsets on iOS
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     timeoutRef.current = window.setTimeout(() => {
-      if (!ref.current || isProgrammaticScroll.current) return; // Don't snap during programmatic scroll
+      if (!ref.current) return;
+      isProgrammaticScroll.current = true;
       const snapIndex = Math.max(0, Math.min(Math.round((ref.current.scrollTop - SPACER) / ITEM_HEIGHT), items.length - 1));
       const targetTop = SPACER + snapIndex * ITEM_HEIGHT;
-      
-      // Only snap if we're off by more than 2px (avoid infinite loops)
-      if (Math.abs(ref.current.scrollTop - targetTop) > 2) {
-        ref.current.scrollTo({ top: targetTop, behavior: 'smooth' });
-      }
-    }, 150);
+      ref.current.scrollTo({ top: targetTop, behavior: 'smooth' });
+      window.setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 60);
+    }, 100);
   };
 
   // Format date label
@@ -463,15 +441,15 @@ export const TimePickerDrawer = ({
                       // Debounced snap-to-row normalization
                       if (dateSnapTimeout.current) window.clearTimeout(dateSnapTimeout.current);
                       dateSnapTimeout.current = window.setTimeout(() => {
-                        if (!dateRef.current || isProgrammaticScroll.current) return; // Don't snap during programmatic scroll
+                        if (!dateRef.current) return;
+                        isProgrammaticScroll.current = true;
                         const snapped = Math.max(0, Math.min(Math.round((dateRef.current.scrollTop - SPACER) / ITEM_HEIGHT), dates.length - 1));
                         const targetTop = SPACER + snapped * ITEM_HEIGHT;
-                        
-                        // Only snap if we're off by more than 2px
-                        if (Math.abs(dateRef.current.scrollTop - targetTop) > 2) {
-                          dateRef.current.scrollTo({ top: targetTop, behavior: 'smooth' });
-                        }
-                      }, 150);
+                        dateRef.current.scrollTo({ top: targetTop, behavior: 'smooth' });
+                        window.setTimeout(() => {
+                          isProgrammaticScroll.current = false;
+                        }, 60);
+                      }, 100);
                     }}
                   >
                     <div className="flex flex-col">
