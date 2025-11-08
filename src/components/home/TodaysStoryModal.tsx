@@ -298,7 +298,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
           {/* ACT 2: Reveal - Metric cards at bottom, compact spacing */}
           {animationPhase !== 'act1' && (
-            <div className="absolute bottom-6 left-0 right-0 px-6 space-y-2.5">
+            <div className="absolute left-0 right-0 px-6 space-y-2.5" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
               {/* Feeds - Peach with pulse */}
               <div 
                 className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
@@ -449,7 +449,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
               
               {/* Hold still for 1s before dismiss */}
-              <div className="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-none">
+              <div className="absolute left-0 right-0 flex justify-center pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
                 <div 
                   className="text-xs text-muted-foreground/40 uppercase tracking-widest animate-story-closure-fade"
                   style={{ animationDelay: '1s' }}
