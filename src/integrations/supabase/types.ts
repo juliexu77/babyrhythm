@@ -96,6 +96,75 @@ export type Database = {
           },
         ]
       }
+      cohort_statistics: {
+        Row: {
+          active_baby_count: number
+          avg_feed_volume: number | null
+          avg_feed_volume_change: number | null
+          cohort_label: string
+          cohort_month: string
+          created_at: string | null
+          fallback_tier: string | null
+          feed_count_change: number | null
+          feed_count_per_day: number | null
+          id: string
+          insight_text: string | null
+          metric_coverage: Json | null
+          naps_per_day: number | null
+          naps_per_day_change: number | null
+          night_sleep_change: number | null
+          night_sleep_hours: number | null
+          solids_started_pct: number | null
+          updated_at: string | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          active_baby_count?: number
+          avg_feed_volume?: number | null
+          avg_feed_volume_change?: number | null
+          cohort_label: string
+          cohort_month: string
+          created_at?: string | null
+          fallback_tier?: string | null
+          feed_count_change?: number | null
+          feed_count_per_day?: number | null
+          id?: string
+          insight_text?: string | null
+          metric_coverage?: Json | null
+          naps_per_day?: number | null
+          naps_per_day_change?: number | null
+          night_sleep_change?: number | null
+          night_sleep_hours?: number | null
+          solids_started_pct?: number | null
+          updated_at?: string | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          active_baby_count?: number
+          avg_feed_volume?: number | null
+          avg_feed_volume_change?: number | null
+          cohort_label?: string
+          cohort_month?: string
+          created_at?: string | null
+          fallback_tier?: string | null
+          feed_count_change?: number | null
+          feed_count_per_day?: number | null
+          id?: string
+          insight_text?: string | null
+          metric_coverage?: Json | null
+          naps_per_day?: number | null
+          naps_per_day_change?: number | null
+          night_sleep_change?: number | null
+          night_sleep_hours?: number | null
+          solids_started_pct?: number | null
+          updated_at?: string | null
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
       collaborators: {
         Row: {
           created_at: string

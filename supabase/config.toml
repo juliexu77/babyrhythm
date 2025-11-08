@@ -29,3 +29,6 @@ verify_jwt = true
 
 [functions.predict-daily-schedule]
 verify_jwt = true
+
+[functions.compute-cohort-stats]
+verify_jwt = false
