@@ -39,21 +39,65 @@ interface CohortStats {
   fallback_tier: string | null;
 }
 
-// Seed baseline data by age in months (from reputable norms)
+// BabyRhythm Baseline Data (0-18 months)
+// Based on aggregated developmental norms and app data patterns
 const SEED_BASELINES: Record<number, any> = {
-  0: { night_sleep_hours: 8.5, naps_per_day: 4.5, feed_count_per_day: 10 },
-  1: { night_sleep_hours: 9.0, naps_per_day: 4.0, feed_count_per_day: 9 },
-  2: { night_sleep_hours: 9.5, naps_per_day: 4.0, feed_count_per_day: 8 },
-  3: { night_sleep_hours: 10.0, naps_per_day: 3.5, feed_count_per_day: 7 },
-  4: { night_sleep_hours: 10.5, naps_per_day: 3.0, feed_count_per_day: 6 },
+  // Month 0 (weeks 0-4): Newborn phase
+  0: { night_sleep_hours: 8.5, naps_per_day: 6.0, feed_count_per_day: 10 },
+  
+  // Month 1 (weeks 5-8): Early infant
+  1: { night_sleep_hours: 9.0, naps_per_day: 5.0, feed_count_per_day: 9 },
+  
+  // Month 2 (weeks 9-12): Developing patterns
+  2: { night_sleep_hours: 9.5, naps_per_day: 4.5, feed_count_per_day: 8 },
+  
+  // Month 3 (weeks 13-16): 4-month regression period
+  3: { night_sleep_hours: 10.0, naps_per_day: 4.0, feed_count_per_day: 7 },
+  
+  // Month 4 (weeks 17-20): Post-regression stabilization
+  4: { night_sleep_hours: 10.2, naps_per_day: 3.5, feed_count_per_day: 6 },
+  
+  // Month 5 (weeks 21-24): 3 naps established
   5: { night_sleep_hours: 10.5, naps_per_day: 3.0, feed_count_per_day: 6 },
-  6: { night_sleep_hours: 11.0, naps_per_day: 2.5, feed_count_per_day: 5 },
-  7: { night_sleep_hours: 11.0, naps_per_day: 2.5, feed_count_per_day: 5 },
-  8: { night_sleep_hours: 11.0, naps_per_day: 2.0, feed_count_per_day: 5 },
-  9: { night_sleep_hours: 11.0, naps_per_day: 2.0, feed_count_per_day: 5 },
-  10: { night_sleep_hours: 11.0, naps_per_day: 2.0, feed_count_per_day: 4 },
-  11: { night_sleep_hours: 11.0, naps_per_day: 2.0, feed_count_per_day: 4 },
-  12: { night_sleep_hours: 11.0, naps_per_day: 1.5, feed_count_per_day: 4 },
+  
+  // Month 6 (weeks 25-28): Solids introduction
+  6: { night_sleep_hours: 10.8, naps_per_day: 3.0, feed_count_per_day: 5 },
+  
+  // Month 7 (weeks 29-32): Active phase
+  7: { night_sleep_hours: 10.8, naps_per_day: 2.5, feed_count_per_day: 5 },
+  
+  // Month 8 (weeks 33-36): 8-month regression
+  8: { night_sleep_hours: 10.7, naps_per_day: 2.5, feed_count_per_day: 5 },
+  
+  // Month 9 (weeks 37-40): Post-regression
+  9: { night_sleep_hours: 10.6, naps_per_day: 2.0, feed_count_per_day: 4 },
+  
+  // Month 10 (weeks 41-44): 2 naps standard
+  10: { night_sleep_hours: 10.5, naps_per_day: 2.0, feed_count_per_day: 4 },
+  
+  // Month 11 (weeks 45-48): Pre-12 month
+  11: { night_sleep_hours: 10.5, naps_per_day: 2.0, feed_count_per_day: 4 },
+  
+  // Month 12 (weeks 49-52): 1 year milestone
+  12: { night_sleep_hours: 10.4, naps_per_day: 2.0, feed_count_per_day: 4 },
+  
+  // Month 13: Early toddler
+  13: { night_sleep_hours: 10.4, naps_per_day: 1.5, feed_count_per_day: 3 },
+  
+  // Month 14: 2→1 nap transition beginning
+  14: { night_sleep_hours: 10.2, naps_per_day: 1.5, feed_count_per_day: 3 },
+  
+  // Month 15: Mid-transition
+  15: { night_sleep_hours: 10.2, naps_per_day: 1.5, feed_count_per_day: 3 },
+  
+  // Month 16: 2→1 nap transition peak
+  16: { night_sleep_hours: 10.1, naps_per_day: 1.0, feed_count_per_day: 3 },
+  
+  // Month 17: Transitioning to 1 nap
+  17: { night_sleep_hours: 10.0, naps_per_day: 1.0, feed_count_per_day: 3 },
+  
+  // Month 18: 1 nap established
+  18: { night_sleep_hours: 9.9, naps_per_day: 1.0, feed_count_per_day: 3 },
 };
 
 Deno.serve(async (req) => {
@@ -429,7 +473,7 @@ function applyFallback(
   coverage: Record<string, number>
 ): { metrics: CohortMetrics; tier: string } {
   
-  const baseline = SEED_BASELINES[Math.min(ageInMonths, 12)] || SEED_BASELINES[12];
+  const baseline = SEED_BASELINES[Math.min(ageInMonths, 18)] || SEED_BASELINES[18];
   
   // Always return at least seed baseline data
   // Tier 4: Minimal is removed - we always show seed data at minimum
