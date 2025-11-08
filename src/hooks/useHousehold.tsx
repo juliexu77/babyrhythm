@@ -512,6 +512,44 @@ export const useHousehold = () => {
     await fetchCollaborators();
   };
 
+  const switchHousehold = async (householdId: string) => {
+    try {
+      localStorage.setItem('active_household_id', householdId);
+      await fetchHousehold();
+    } catch (error) {
+      console.error('Error switching household:', error);
+      throw error;
+    }
+  };
+
+  const getUserHouseholds = async (): Promise<Household[]> => {
+    if (!user) return [];
+    
+    try {
+      const { data: collabs, error: collabError } = await supabase
+        .from('collaborators')
+        .select('household_id')
+        .eq('user_id', user.id);
+
+      if (collabError) throw collabError;
+      if (!collabs || collabs.length === 0) return [];
+
+      const householdIds = collabs.map(c => c.household_id);
+      
+      const { data: households, error: householdError } = await supabase
+        .from('households')
+        .select('*')
+        .in('id', householdIds)
+        .order('created_at', { ascending: true });
+
+      if (householdError) throw householdError;
+      return households || [];
+    } catch (error) {
+      console.error('Error fetching user households:', error);
+      return [];
+    }
+  };
+
   return {
     household,
     collaborators,
@@ -524,6 +562,8 @@ export const useHousehold = () => {
     removeCollaborator,
     updateCollaboratorRole,
     refetch,
+    switchHousehold,
+    getUserHouseholds,
   };
 };
 

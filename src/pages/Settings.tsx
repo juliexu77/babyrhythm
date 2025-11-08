@@ -32,7 +32,7 @@ import { SettingsSection } from "@/components/settings/SettingsSection";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { household, generateInviteLink } = useHousehold();
+  const { household, generateInviteLink, switchHousehold, getUserHouseholds } = useHousehold();
   const { userProfile, updateUserProfile } = useUserProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -43,10 +43,17 @@ export const Settings = () => {
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showBabyEdit, setShowBabyEdit] = useState(false);
+  const [userHouseholds, setUserHouseholds] = useState<any[]>([]);
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
     const stored = localStorage.getItem('smartRemindersEnabled');
     return stored !== null ? stored === 'true' : true; // Default enabled
   });
+
+  useEffect(() => {
+    if (user) {
+      getUserHouseholds().then(setUserHouseholds);
+    }
+  }, [user, household]);
 
   // Sync reminder state with localStorage changes
   useEffect(() => {
@@ -208,6 +215,43 @@ export const Settings = () => {
               subtitle={getBabyAge()}
               onClick={() => setShowBabyEdit(true)}
             />
+            {user && userHouseholds.length > 1 && (
+              <SettingsRow
+                icon={<Users className="w-5 h-5" />}
+                title="Switch Household"
+                subtitle={`${userHouseholds.length} households available`}
+                showChevron={false}
+              >
+                <Select
+                  value={household?.id}
+                  onValueChange={async (value) => {
+                    try {
+                      await switchHousehold(value);
+                      toast({
+                        title: "Household switched",
+                        description: "You're now viewing a different household",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Error switching household",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userHouseholds.map((h) => (
+                      <SelectItem key={h.id} value={h.id}>
+                        {h.baby_name || h.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </SettingsRow>
+            )}
           </SettingsSection>
 
           {/* Caregivers Section */}
