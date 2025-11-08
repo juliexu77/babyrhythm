@@ -246,12 +246,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </Button>
         </DrawerHeader>
         
-        <div className="flex gap-2 items-center justify-center py-8 px-4">
+        {/* Selection indicator overlay */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 pointer-events-none">
+          <div className="h-full mx-4 border-y-2 border-primary/20 bg-primary/5" />
+        </div>
+
+        <div className="relative flex gap-1 items-center justify-center py-8 px-4">
           {/* Date picker */}
-          <div className="flex flex-col items-center flex-1">
+          <div className="flex flex-col items-center flex-1 relative">
             <div 
               ref={dateRef}
-              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               onScroll={() => {
                 if (isProgrammaticDateScroll.current) return;
                 if (dateRef.current) {
@@ -271,10 +276,10 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 {dates.map((date, index) => (
                   <div
                     key={index}
-                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                    className={`h-12 flex items-center justify-center text-lg cursor-pointer transition-all duration-200 snap-center whitespace-nowrap ${
                       selectedDateIndex === index 
-                        ? 'text-foreground font-bold' 
-                        : 'text-muted-foreground'
+                        ? 'text-foreground font-bold scale-110' 
+                        : 'text-muted-foreground/50 font-normal scale-95'
                     }`}
                   >
                     {formatDateLabel(date)}
@@ -282,13 +287,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 ))}
               </div>
             </div>
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent to-background" />
           </div>
 
+          {/* Divider */}
+          <div className="h-48 w-px bg-border/30" />
+
           {/* Hour picker */}
-          <div className="flex flex-col items-center flex-1">
+          <div className="flex flex-col items-center flex-1 relative">
             <div 
               ref={hourRef}
-              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
               onMouseDown={() => setHasUserInteracted(true)}
               onTouchStart={() => setHasUserInteracted(true)}
@@ -298,10 +307,10 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 {hours.map((hour, index) => (
                   <div
                     key={`hour-${index}`}
-                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
+                    className={`h-12 flex items-center justify-center text-lg cursor-pointer transition-all duration-200 snap-center ${
                       selectedHour === hour 
-                        ? 'text-foreground font-bold' 
-                        : 'text-muted-foreground'
+                        ? 'text-foreground font-bold scale-110' 
+                        : 'text-muted-foreground/50 font-normal scale-95'
                     }`}
                   >
                     {hour}
@@ -309,13 +318,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 ))}
               </div>
             </div>
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent to-background" />
           </div>
 
+          {/* Divider */}
+          <div className="h-48 w-px bg-border/30" />
+
           {/* Minute picker */}
-          <div className="flex flex-col items-center flex-1">
+          <div className="flex flex-col items-center flex-1 relative">
             <div 
               ref={minuteRef}
-              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
               onMouseDown={() => setHasUserInteracted(true)}
               onTouchStart={() => setHasUserInteracted(true)}
@@ -325,10 +338,10 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 {minutes.map((minute, index) => (
                   <div
                     key={`minute-${index}`}
-                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
+                    className={`h-12 flex items-center justify-center text-lg cursor-pointer transition-all duration-200 snap-center ${
                       selectedMinute === minute 
-                        ? 'text-foreground font-bold' 
-                        : 'text-muted-foreground'
+                        ? 'text-foreground font-bold scale-110' 
+                        : 'text-muted-foreground/50 font-normal scale-95'
                     }`}
                   >
                     {minute.toString().padStart(2, '0')}
@@ -336,22 +349,26 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 ))}
               </div>
             </div>
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent to-background" />
           </div>
 
+          {/* Divider */}
+          <div className="h-48 w-px bg-border/30" />
+
           {/* AM/PM picker */}
-          <div className="flex flex-col items-center flex-1">
+          <div className="flex flex-col items-center flex-1 relative">
             <div 
-              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               <div className="flex flex-col">
                 {periods.map((period, index) => (
                   <div
                     key={`period-${index}`}
-                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
+                    className={`h-12 flex items-center justify-center text-lg cursor-pointer transition-all duration-200 snap-center ${
                       selectedPeriod === period 
-                        ? 'text-foreground font-bold' 
-                        : 'text-muted-foreground'
+                        ? 'text-foreground font-bold scale-110' 
+                        : 'text-muted-foreground/50 font-normal scale-95'
                     }`}
                     onClick={() => {
                       setHasUserInteracted(true);
@@ -366,6 +383,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 ))}
               </div>
             </div>
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent to-background" />
           </div>
         </div>
 
