@@ -246,17 +246,6 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     return null;
   };
 
-  // Get closure message (Act 3)
-  const getClosureMessage = (): string => {
-    const currentHour = new Date().getHours();
-    const isEvening = currentHour >= 18;
-
-    if (isEvening) {
-      return "Goodnight. Rhythm saved.";
-    }
-    return "Everything's in sync.";
-  };
-
   // Animation sequence timing - 4 second total
   useEffect(() => {
     if (!isOpen) {
