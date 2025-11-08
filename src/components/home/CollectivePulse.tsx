@@ -4,6 +4,7 @@ import { format, subDays, startOfDay } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 interface CollectivePulseProps {
   babyBirthday?: string;
@@ -12,6 +13,7 @@ interface CollectivePulseProps {
 export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
+  const { isNightTime } = useNightSleepWindow();
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
@@ -33,28 +35,38 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
-      // Calculate night sleep hours (avg per night over 7 days)
-      const sleepActivities = activities?.filter(a => a.type === 'sleep') || [];
+      // Calculate night sleep hours (only sleep activities during night window)
       const nightSleepByDate: Record<string, number> = {};
       
-      sleepActivities.forEach(activity => {
-        const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
-        const details = activity.details as any;
-        const duration = details?.duration || 0;
-        nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
+      activities?.forEach(activity => {
+        const timestamp = new Date(activity.logged_at);
+        const isNight = isNightTime(timestamp);
+        
+        // Only count sleep type activities that occur during night hours
+        if (activity.type === 'sleep' && isNight) {
+          const date = format(timestamp, 'yyyy-MM-dd');
+          const details = activity.details as any;
+          const duration = details?.duration || 0;
+          nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
+        }
       });
 
       const nightSleepDays = Object.keys(nightSleepByDate).length;
       const totalNightSleep = Object.values(nightSleepByDate).reduce((sum, hours) => sum + hours, 0);
       const avgNightSleep = nightSleepDays > 0 ? totalNightSleep / nightSleepDays : null;
 
-      // Calculate naps per day
-      const napActivities = activities?.filter(a => a.type === 'nap') || [];
+      // Calculate naps per day (nap type activities outside night window)
       const napsByDate: Record<string, number> = {};
       
-      napActivities.forEach(activity => {
-        const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
-        napsByDate[date] = (napsByDate[date] || 0) + 1;
+      activities?.forEach(activity => {
+        const timestamp = new Date(activity.logged_at);
+        const isNight = isNightTime(timestamp);
+        
+        // Count nap type activities that occur outside night hours
+        if (activity.type === 'nap' && !isNight) {
+          const date = format(timestamp, 'yyyy-MM-dd');
+          napsByDate[date] = (napsByDate[date] || 0) + 1;
+        }
       });
 
       const napDays = Object.keys(napsByDate).length;
