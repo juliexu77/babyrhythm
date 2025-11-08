@@ -1,6 +1,9 @@
 import { Globe, TrendingUp, TrendingDown } from "lucide-react";
 import { useCollectivePulse } from "@/hooks/useCollectivePulse";
-import { format } from "date-fns";
+import { format, subDays, startOfDay } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useHousehold } from "@/hooks/useHousehold";
 
 interface CollectivePulseProps {
   babyBirthday?: string;
@@ -8,6 +11,64 @@ interface CollectivePulseProps {
 
 export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
+  const { household } = useHousehold();
+
+  // Fetch baby's recent activities for comparison
+  const { data: babyMetrics } = useQuery({
+    queryKey: ['baby-metrics', household?.id],
+    queryFn: async () => {
+      if (!household?.id) return null;
+
+      const sevenDaysAgo = subDays(startOfDay(new Date()), 7);
+      
+      const { data: activities, error } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('household_id', household.id)
+        .gte('logged_at', sevenDaysAgo.toISOString())
+        .in('type', ['nap', 'sleep']);
+
+      if (error) {
+        console.error('Error fetching baby metrics:', error);
+        return null;
+      }
+
+      // Calculate night sleep hours (avg per night over 7 days)
+      const sleepActivities = activities?.filter(a => a.type === 'sleep') || [];
+      const nightSleepByDate: Record<string, number> = {};
+      
+      sleepActivities.forEach(activity => {
+        const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
+        const details = activity.details as any;
+        const duration = details?.duration || 0;
+        nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
+      });
+
+      const nightSleepDays = Object.keys(nightSleepByDate).length;
+      const totalNightSleep = Object.values(nightSleepByDate).reduce((sum, hours) => sum + hours, 0);
+      const avgNightSleep = nightSleepDays > 0 ? totalNightSleep / nightSleepDays : null;
+
+      // Calculate naps per day
+      const napActivities = activities?.filter(a => a.type === 'nap') || [];
+      const napsByDate: Record<string, number> = {};
+      
+      napActivities.forEach(activity => {
+        const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
+        napsByDate[date] = (napsByDate[date] || 0) + 1;
+      });
+
+      const napDays = Object.keys(napsByDate).length;
+      const totalNaps = Object.values(napsByDate).reduce((sum, count) => sum + count, 0);
+      const avgNaps = napDays > 0 ? totalNaps / napDays : null;
+
+      return {
+        nightSleepHours: avgNightSleep,
+        napsPerDay: avgNaps
+      };
+    },
+    enabled: !!household?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
   if (isLoading) {
     return (
@@ -102,6 +163,11 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
               </div>
               {renderChange(cohortStats.night_sleep_change)}
             </div>
+            {babyMetrics?.nightSleepHours !== null && babyMetrics?.nightSleepHours !== undefined && (
+              <div className="text-[11px] text-muted-foreground/80 italic mt-1.5">
+                Your baby: {babyMetrics.nightSleepHours.toFixed(1)}h
+              </div>
+            )}
           </div>
           <div className="bg-card rounded-lg p-3 border border-border">
             <div className="text-xs text-muted-foreground mb-1">Avg Naps/Day</div>
@@ -111,6 +177,11 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
               </div>
               {renderChange(cohortStats.naps_per_day_change)}
             </div>
+            {babyMetrics?.napsPerDay !== null && babyMetrics?.napsPerDay !== undefined && (
+              <div className="text-[11px] text-muted-foreground/80 italic mt-1.5">
+                Your baby: {babyMetrics.napsPerDay.toFixed(1)}
+              </div>
+            )}
           </div>
         </div>
 
