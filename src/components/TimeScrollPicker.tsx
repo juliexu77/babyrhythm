@@ -42,11 +42,14 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
 
   // Generate dates array (past 90 days, today, next 3 days)
   const generateDates = () => {
-    const dates = [];
+    const dates: Date[] = [];
     const today = new Date();
+    // Use noon to avoid DST/midnight timezone shifts when adding days
+    today.setHours(12, 0, 0, 0);
     for (let i = -90; i <= 3; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
+      date.setHours(12, 0, 0, 0);
       dates.push(date);
     }
     return dates;
@@ -97,19 +100,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   const dateRef = useRef<HTMLDivElement>(null);
   const isProgrammaticHourScroll = useRef(false);
   const isProgrammaticMinuteScroll = useRef(false);
+  const isProgrammaticPeriodScroll = useRef(false);
   const isProgrammaticDateScroll = useRef(false);
 
-  // Create extended arrays for infinite scrolling
-  const hours = [
-    ...Array.from({ length: 12 }, (_, i) => i + 1), // Original 1-12
-    ...Array.from({ length: 12 }, (_, i) => i + 1), // Duplicate for continuity
-    ...Array.from({ length: 12 }, (_, i) => i + 1)  // Another duplicate
-  ];
-  const minutes = [
-    ...Array.from({ length: 60 }, (_, i) => i), // Original 0-59
-    ...Array.from({ length: 60 }, (_, i) => i), // Duplicate for continuity  
-    ...Array.from({ length: 60 }, (_, i) => i)  // Another duplicate
-  ];
+  // Constants for consistent wheel behavior
+  const ITEM_HEIGHT = 40; // must match h-10
+  const VIEWPORT_HEIGHT = 176; // h-44 = 11rem = 176px
+  const SPACER = (VIEWPORT_HEIGHT - ITEM_HEIGHT) / 2; // 68px
+
+  // Simple finite lists with proper snapping
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
   const periods = ["AM", "PM"];
 
   // Call onChange once on mount with initial values
@@ -144,34 +145,26 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     value: number,
     items: any[],
     programmaticRef?: React.MutableRefObject<boolean>,
-    baseSectionSize?: number
   ) => {
-    if (ref.current) {
-      const itemHeight = 40;
-      const sectionSize = baseSectionSize || (items.length / 3);
-      const valueIndex = items.slice(0, sectionSize).indexOf(value);
-      if (valueIndex >= 0) {
-        const middleIndex = sectionSize + valueIndex;
-        if (programmaticRef) programmaticRef.current = true;
-        ref.current.scrollTop = middleIndex * itemHeight;
-        // Allow scroll event to fire, then clear programmatic flag
-        requestAnimationFrame(() => {
-          if (programmaticRef) programmaticRef.current = false;
-        });
-      }
-    }
+    if (!ref.current) return;
+    const index = items.indexOf(value);
+    if (index < 0) return;
+    if (programmaticRef) programmaticRef.current = true;
+    ref.current.scrollTop = SPACER + index * ITEM_HEIGHT;
+    requestAnimationFrame(() => {
+      if (programmaticRef) programmaticRef.current = false;
+    });
   };
 
   useEffect(() => {
     // Scroll to selected values whenever they change (programmatic)
-    scrollToValue(hourRef, selectedHour, hours, isProgrammaticHourScroll, 12);
-    scrollToValue(minuteRef, selectedMinute, minutes, isProgrammaticMinuteScroll, 60);
+    scrollToValue(hourRef, selectedHour, hours, isProgrammaticHourScroll);
+    scrollToValue(minuteRef, selectedMinute, minutes, isProgrammaticMinuteScroll);
     
     // Scroll to selected date (programmatic)
     if (dateRef.current) {
-      const itemHeight = 40;
       isProgrammaticDateScroll.current = true;
-      dateRef.current.scrollTop = selectedDateIndex * itemHeight;
+      dateRef.current.scrollTop = SPACER + selectedDateIndex * ITEM_HEIGHT;
       requestAnimationFrame(() => {
         isProgrammaticDateScroll.current = false;
       });
@@ -185,29 +178,15 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     programmaticRef?: React.MutableRefObject<boolean>
   ) => {
     if (programmaticRef?.current) return;
-    if (ref.current) {
-      const itemHeight = 40;
-      const scrollTop = ref.current.scrollTop;
-      const index = Math.round(scrollTop / itemHeight);
-      const totalItems = items.length;
-      const sectionSize = totalItems / 3; // Each section has 12 items
-      
-      // Handle infinite scrolling by wrapping around
-      if (index < sectionSize * 0.5) {
-        // Near top, jump to middle section
-        ref.current.scrollTop = (index + sectionSize) * itemHeight;
-        return;
-      } else if (index >= sectionSize * 2.5) {
-        // Near bottom, jump to middle section
-        ref.current.scrollTop = (index - sectionSize) * itemHeight;
-        return;
-      }
-      
-      const clampedIndex = Math.max(0, Math.min(index, totalItems - 1));
-      const actualValue = items[clampedIndex % sectionSize];
-      setHasUserInteracted(true);
-      setter(actualValue);
-    }
+    if (!ref.current) return;
+
+    const scrollTop = ref.current.scrollTop;
+    const rawIndex = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
+    const clampedIndex = Math.max(0, Math.min(rawIndex, items.length - 1));
+    const actualValue = items[clampedIndex];
+
+    setHasUserInteracted(true);
+    setter(actualValue);
   };
 
   const { t } = useLanguage();
@@ -250,9 +229,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               onScroll={() => {
                 if (isProgrammaticDateScroll.current) return;
                 if (dateRef.current) {
-                  const itemHeight = 40;
                   const scrollTop = dateRef.current.scrollTop;
-                  const index = Math.round(scrollTop / itemHeight);
+                  const index = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
                   const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
                   setHasUserInteracted(true);
                   setSelectedDateIndex(clampedIndex);
@@ -262,7 +240,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               onTouchStart={() => setHasUserInteracted(true)}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex flex-col py-20">
+              <div className="flex flex-col">
+                <div style={{ height: `${SPACER}px` }} aria-hidden />
                 {dates.map((date, index) => (
                   <div
                     key={index}
@@ -275,6 +254,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                     {formatDateLabel(date)}
                   </div>
                 ))}
+                <div style={{ height: `${SPACER}px` }} aria-hidden />
               </div>
             </div>
             <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent via-40% to-background to-100%" />
