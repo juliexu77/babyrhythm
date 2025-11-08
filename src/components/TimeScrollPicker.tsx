@@ -309,20 +309,6 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               <ChevronDown className="h-4 w-4 text-muted-foreground mt-1" />
             </div>
 
-            {/* AM/PM toggle */}
-            <button
-              className="px-3 py-2 rounded text-sm font-medium cursor-pointer transition-colors text-foreground font-bold bg-muted hover:bg-muted/80 border border-muted-foreground/30"
-              onClick={() => {
-                const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
-                setHasUserInteracted(true);
-                setSelectedPeriod(newPeriod);
-                try { 
-                  localStorage.setItem('lastUsedPeriod', newPeriod); 
-                } catch (e) {}
-              }}
-            >
-              {selectedPeriod}
-            </button>
           </div>
         </div>
       </DialogContent>
