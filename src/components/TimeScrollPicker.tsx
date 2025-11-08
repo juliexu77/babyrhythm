@@ -247,6 +247,43 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         </DrawerHeader>
         
         <div className="flex gap-2 items-center justify-center py-8 px-4">
+          {/* Date picker */}
+          <div className="flex flex-col items-center flex-1">
+            <div 
+              ref={dateRef}
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              onScroll={() => {
+                if (isProgrammaticDateScroll.current) return;
+                if (dateRef.current) {
+                  const itemHeight = 48;
+                  const scrollTop = dateRef.current.scrollTop;
+                  const index = Math.round(scrollTop / itemHeight);
+                  const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
+                  setHasUserInteracted(true);
+                  setSelectedDateIndex(clampedIndex);
+                }
+              }}
+              onMouseDown={() => setHasUserInteracted(true)}
+              onTouchStart={() => setHasUserInteracted(true)}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <div className="flex flex-col">
+                {dates.map((date, index) => (
+                  <div
+                    key={index}
+                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                      selectedDateIndex === index 
+                        ? 'text-foreground font-bold' 
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {formatDateLabel(date)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Hour picker */}
           <div className="flex flex-col items-center flex-1">
             <div 
