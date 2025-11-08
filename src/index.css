@@ -538,33 +538,44 @@
   }
 
   /* Act 1: Arrival animations */
+  /* Breathing photo animation - 8s cycle */
   @keyframes story-photo-blur-in {
     from { 
-      filter: blur(20px) brightness(1.2);
-      opacity: 0;
-      transform: scale(1.05);
+      filter: blur(8px) brightness(0.9) contrast(0.95);
+      opacity: 0.7;
+      transform: scale(1);
     }
     to { 
-      filter: blur(0px) brightness(1);
+      filter: blur(0) brightness(0.9) contrast(0.95);
       opacity: 1;
+      transform: scale(1.02);
+    }
+  }
+  
+  @keyframes story-photo-breathe {
+    0%, 100% { 
+      transform: scale(1.02);
+    }
+    50% { 
       transform: scale(1);
     }
   }
 
   @keyframes story-glow-corners {
-    0%, 100% { opacity: 0.2; transform: scale(0.95); }
-    50% { opacity: 0.4; transform: scale(1.05); }
+    0%, 100% { opacity: 0.15; transform: scale(0.98); }
+    50% { opacity: 0.25; transform: scale(1.02); }
   }
 
+  /* Word-by-word reveal, not typing */
   @keyframes story-headline-type {
     from { 
       opacity: 0;
-      transform: translateY(25px) scale(0.98);
-      filter: blur(3px);
+      transform: translateY(20px);
+      filter: blur(4px);
     }
     to { 
-      opacity: 1;
-      transform: translateY(0) scale(1);
+      opacity: 0.8;
+      transform: translateY(0);
       filter: blur(0);
     }
   }
@@ -572,35 +583,38 @@
   @keyframes story-headline-fade-up {
     from { 
       opacity: 0;
-      transform: translateY(20px);
-      filter: blur(2px);
+      transform: translateY(15px);
+      filter: blur(3px);
     }
     to { 
-      opacity: 1;
+      opacity: 0.7;
       transform: translateY(0);
       filter: blur(0);
     }
   }
 
-  /* Act 2: Metric card animations */
+  /* Act 2: Metric card animations - soft like paper light */
   @keyframes story-card-slide-up {
     from { 
       opacity: 0;
-      transform: translateY(40px) scale(0.96);
-      filter: blur(4px);
+      transform: translateY(30px) scale(0.98);
+      filter: blur(12px);
     }
     to { 
-      opacity: 1;
+      opacity: 0.92;
       transform: translateY(0) scale(1);
       filter: blur(0);
     }
   }
 
-  /* Feed bar - gentle organic growth */
+  /* Bar animations - slow fill with fade */
   @keyframes story-bar-feed {
     0% { 
       transform: scaleX(0);
-      opacity: 0.5;
+      opacity: 0;
+    }
+    60% { 
+      opacity: 1;
     }
     100% { 
       transform: scaleX(1);
@@ -608,27 +622,43 @@
     }
   }
 
-  /* Nap bar - dreamy float */
   @keyframes story-bar-nap {
-    from { 
-      transform: scaleX(0) translateY(2px);
-      opacity: 0.3;
+    0% { 
+      transform: scaleX(0);
+      opacity: 0;
     }
-    to { 
-      transform: scaleX(1) translateY(0);
+    60% { 
+      opacity: 1;
+    }
+    100% { 
+      transform: scaleX(1);
       opacity: 1;
     }
   }
 
-  /* Nap time bar - soft wave */
   @keyframes story-bar-naptime {
     0% { 
-      transform: scaleX(0) translateY(1px);
-      opacity: 0.4;
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    60% { 
+      opacity: 1;
     }
     100% { 
-      transform: scaleX(1) translateY(0);
+      transform: scaleX(1);
       opacity: 1;
+    }
+  }
+  
+  /* Exhale glow pulse - happens once at 4s mark */
+  @keyframes story-bar-glow {
+    0%, 100% { 
+      filter: brightness(1);
+      box-shadow: none;
+    }
+    50% { 
+      filter: brightness(1.1);
+      box-shadow: 0 0 12px currentColor;
     }
   }
 
@@ -743,63 +773,67 @@
     animation: story-outro-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   
-  /* Act 1 animations */
+  /* Inhale (0-4s): Drawing closer */
   .animate-story-photo-blur-in {
-    animation: story-photo-blur-in 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: story-photo-blur-in 4s cubic-bezier(0.4, 0, 0.6, 1) forwards,
+               story-photo-breathe 8s cubic-bezier(0.4, 0, 0.6, 1) 4s infinite;
   }
 
   .animate-story-glow-corners {
-    animation: story-glow-corners 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: story-glow-corners 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   .animate-story-headline-type {
-    animation: story-headline-type 1.4s cubic-bezier(0.25, 0.1, 0.25, 1) 0.8s forwards;
+    animation: story-headline-type 2.5s cubic-bezier(0.4, 0, 0.6, 1) 1s forwards;
     opacity: 0;
   }
 
   .animate-story-headline-fade-up {
-    animation: story-headline-fade-up 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: story-headline-fade-up 2s cubic-bezier(0.4, 0, 0.6, 1) 0.5s forwards;
     opacity: 0;
   }
 
-  /* Act 2 animations */
+  /* Cards appear during inhale */
   .animate-story-card-slide-up {
-    animation: story-card-slide-up 1.2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: story-card-slide-up 2s cubic-bezier(0.4, 0, 0.6, 1) forwards;
     opacity: 0;
   }
 
-  /* Bar animations with unique personalities */
+  /* Bar animations - slow fill during inhale, glow during exhale */
   .animate-story-bar-feed {
-    animation: story-bar-feed 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: story-bar-feed 3s cubic-bezier(0.4, 0, 0.6, 1) forwards,
+               story-bar-glow 1s cubic-bezier(0.4, 0, 0.6, 1) 4s;
     transform-origin: left;
   }
 
   .animate-story-bar-nap {
-    animation: story-bar-nap 1.6s cubic-bezier(0.33, 0, 0.2, 1) forwards;
+    animation: story-bar-nap 3s cubic-bezier(0.4, 0, 0.6, 1) forwards,
+               story-bar-glow 1s cubic-bezier(0.4, 0, 0.6, 1) 4.2s;
     transform-origin: left;
   }
 
   .animate-story-bar-naptime {
-    animation: story-bar-naptime 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: story-bar-naptime 3s cubic-bezier(0.4, 0, 0.6, 1) forwards,
+               story-bar-glow 1s cubic-bezier(0.4, 0, 0.6, 1) 4.4s;
     transform-origin: left;
   }
 
   .animate-story-window-pulse {
-    animation: story-window-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: story-window-pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  /* Act 3 animations */
+  /* Exhale (4-8s): Settling */
   .animate-story-sparkle-sweep {
-    animation: story-sparkle-sweep 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: story-sparkle-sweep 3s cubic-bezier(0.4, 0, 0.6, 1) 5s forwards;
   }
 
   .animate-story-closure-fade {
-    animation: story-closure-fade 1.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: story-closure-fade 2.5s cubic-bezier(0.4, 0, 0.6, 1) 5s forwards;
     opacity: 0;
   }
 
   .animate-story-dusk-overlay {
-    animation: story-dusk-overlay 2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation: story-dusk-overlay 3s cubic-bezier(0.4, 0, 0.6, 1) forwards;
   }
   
   /* Component utilities */
