@@ -18,11 +18,38 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
+  console.log('📖 Story Modal - Filtering Debug:', {
+    totalActivitiesReceived: activities.length,
+    todayDateMidnight: today.toISOString(),
+    allActivities: activities.map(a => ({
+      type: a.type,
+      loggedAt: a.loggedAt,
+      loggedAtParsed: a.loggedAt ? new Date(a.loggedAt).toISOString() : 'null',
+      details: a.details
+    }))
+  });
+  
   const todayActivities = activities.filter(activity => {
-    if (!activity.loggedAt) return false;
+    if (!activity.loggedAt) {
+      console.log('❌ Activity missing loggedAt:', activity);
+      return false;
+    }
     const activityDate = new Date(activity.loggedAt);
-    activityDate.setHours(0, 0, 0, 0);
-    return activityDate.getTime() === today.getTime();
+    const activityDateMidnight = new Date(activityDate);
+    activityDateMidnight.setHours(0, 0, 0, 0);
+    
+    const isToday = activityDateMidnight.getTime() === today.getTime();
+    
+    if (!isToday && activity.type === 'nap') {
+      console.log('❌ Nap not matching today:', {
+        activity: activity,
+        activityDateMidnight: activityDateMidnight.toISOString(),
+        todayMidnight: today.toISOString(),
+        match: isToday
+      });
+    }
+    
+    return isToday;
   });
 
   console.log('📖 Story Modal Debug:', {
