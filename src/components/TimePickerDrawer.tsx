@@ -63,9 +63,9 @@ export const TimePickerDrawer = ({
   const minuteSnapTimeout = useRef<number | null>(null);
   const dateSnapTimeout = useRef<number | null>(null);
 
-  // Constants
-  const ITEM_HEIGHT = 44;
-  const VIEWPORT_HEIGHT = 220; // 5 items visible
+  // Constants (use integer px to avoid sub-pixel rounding on iOS)
+  const ITEM_HEIGHT = 48; // px (was 44)
+  const VIEWPORT_HEIGHT = 240; // 5 items visible (5 * 48)
   const SPACER = (VIEWPORT_HEIGHT - ITEM_HEIGHT) / 2;
   const MINUTE_STEP = 1; // Can be changed to 5 for 5-minute intervals
 
@@ -411,7 +411,7 @@ export const TimePickerDrawer = ({
         className={`fixed left-0 right-0 bottom-0 z-50 bg-background rounded-t-2xl shadow-2xl transition-all duration-300 ease-out animate-slide-in-bottom ${
           drawerHeight === 'medium' ? 'h-[60vh]' : 'h-[90vh]'
         }`}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)', animation: 'none' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -442,12 +442,12 @@ export const TimePickerDrawer = ({
           {!showKeypad ? (
             <>
               {/* Picker wheels */}
-              <div className="relative flex gap-2 items-center justify-center py-6 px-4">
+              <div className="relative flex gap-2 items-center justify-center py-6 px-4" style={{ WebkitTextSizeAdjust: '100%' }}>
                 {/* Date picker */}
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={dateRef}
-                    className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => {
                       if (!dateRef.current || isProgrammaticScroll.current) return;
@@ -496,7 +496,7 @@ export const TimePickerDrawer = ({
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={hourRef}
-                    className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => handleScroll(hourRef, hours, setStagedHour, 'Hour', hourSnapTimeout)}
                   >
@@ -522,7 +522,7 @@ export const TimePickerDrawer = ({
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={minuteRef}
-                    className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => handleScroll(minuteRef, minutes, setStagedMinute, 'Minute', minuteSnapTimeout)}
                   >
@@ -569,7 +569,7 @@ export const TimePickerDrawer = ({
 
                 {/* Selection indicator - DEBUG MODE */}
                  <div
-                   className="pointer-events-none absolute inset-x-0"
+                   className="pointer-events-none absolute inset-x-0 z-10"
                    style={{ top: `${24 + (VIEWPORT_HEIGHT / 2)}px`, transform: 'translateY(-50%)', height: `${ITEM_HEIGHT}px` }}
                  >
                    <div className="mx-4 h-full rounded-lg border-2 border-primary bg-primary/10" />
