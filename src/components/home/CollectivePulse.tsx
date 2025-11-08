@@ -13,11 +13,11 @@ interface CollectivePulseProps {
 export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
-  const { isNightTime } = useNightSleepWindow();
+  const { nightSleepStartHour, nightSleepStartMinute } = useNightSleepWindow();
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
-    queryKey: ['baby-metrics', household?.id],
+    queryKey: ['baby-metrics', household?.id, nightSleepStartHour, nightSleepStartMinute],
     queryFn: async () => {
       if (!household?.id) return null;
 
@@ -35,36 +35,35 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
-      // Calculate night sleep hours (only sleep activities during night window)
-      const nightSleepByDate: Record<string, number> = {};
-      
-      activities?.forEach(activity => {
-        const timestamp = new Date(activity.logged_at);
-        const isNight = isNightTime(timestamp);
+      // Calculate night sleep hours (sleep activities that start after night sleep start time)
+      const nightSleepActivities = activities?.filter(activity => {
+        if (activity.type !== 'sleep') return false;
         
-        // Only count sleep type activities that occur during night hours
-        if (activity.type === 'sleep' && isNight) {
-          const date = format(timestamp, 'yyyy-MM-dd');
-          const details = activity.details as any;
-          const duration = details?.duration || 0;
-          nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
-        }
-      });
+        const timestamp = new Date(activity.logged_at);
+        const activityHour = timestamp.getHours();
+        const activityMinute = timestamp.getMinutes();
+        const activityTotalMinutes = activityHour * 60 + activityMinute;
+        const nightStartTotalMinutes = nightSleepStartHour * 60 + nightSleepStartMinute;
+        
+        // Check if activity starts after night sleep start time
+        return activityTotalMinutes >= nightStartTotalMinutes;
+      }) || [];
 
-      const nightSleepDays = Object.keys(nightSleepByDate).length;
-      const totalNightSleep = Object.values(nightSleepByDate).reduce((sum, hours) => sum + hours, 0);
-      const avgNightSleep = nightSleepDays > 0 ? totalNightSleep / nightSleepDays : null;
+      const totalNightSleepHours = nightSleepActivities.reduce((sum, activity) => {
+        const details = activity.details as any;
+        return sum + (details?.duration || 0);
+      }, 0);
 
-      // Calculate naps per day (nap type activities outside night window)
+      const avgNightSleep = nightSleepActivities.length > 0 
+        ? totalNightSleepHours / nightSleepActivities.length 
+        : null;
+
+      // Calculate naps per day (nap type activities)
       const napsByDate: Record<string, number> = {};
       
       activities?.forEach(activity => {
-        const timestamp = new Date(activity.logged_at);
-        const isNight = isNightTime(timestamp);
-        
-        // Count nap type activities that occur outside night hours
-        if (activity.type === 'nap' && !isNight) {
-          const date = format(timestamp, 'yyyy-MM-dd');
+        if (activity.type === 'nap') {
+          const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
           napsByDate[date] = (napsByDate[date] || 0) + 1;
         }
       });
