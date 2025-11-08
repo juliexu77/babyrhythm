@@ -255,7 +255,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
           {/* Fixed photo background layer */}
           <div className="fixed inset-0 w-full h-full pointer-events-none">
             {heroMoment?.details.photoUrl ? (
-              <div className="relative w-full min-h-[60vh] flex-1">
+              <div className="relative w-full h-full">
                 {/* Hero photo with blur-in animation */}
                 <img 
                   src={heroMoment.details.photoUrl} 
