@@ -58,6 +58,11 @@ export const TimePickerDrawer = ({
   const startY = useRef(0);
   const currentY = useRef(0);
 
+  // Snap timers for scroll normalization
+  const hourSnapTimeout = useRef<number | null>(null);
+  const minuteSnapTimeout = useRef<number | null>(null);
+  const dateSnapTimeout = useRef<number | null>(null);
+
   // Constants
   const ITEM_HEIGHT = 44;
   const VIEWPORT_HEIGHT = 220; // 5 items visible
@@ -157,18 +162,32 @@ export const TimePickerDrawer = ({
     ref: React.RefObject<HTMLDivElement>,
     items: number[],
     setter: (val: number) => void,
-    label: string
+    label: string,
+    timeoutRef: React.MutableRefObject<number | null>
   ) => {
     if (!ref.current || isProgrammaticScroll.current) return;
     const scrollTop = ref.current.scrollTop;
     const rawIndex = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
     const index = Math.max(0, Math.min(rawIndex, items.length - 1));
     const value = items[index];
-    
+
     console.log(`🎯 ${label} scroll:`, { scrollTop, SPACER, ITEM_HEIGHT, rawIndex, index, value, itemsLength: items.length });
-    
+
     setter(value);
     triggerHaptic('light');
+
+    // Debounced snap-to-row normalization to avoid fractional offsets on iOS
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(() => {
+      if (!ref.current) return;
+      isProgrammaticScroll.current = true;
+      const snapIndex = Math.max(0, Math.min(Math.round((ref.current.scrollTop - SPACER) / ITEM_HEIGHT), items.length - 1));
+      const targetTop = SPACER + snapIndex * ITEM_HEIGHT;
+      ref.current.scrollTo({ top: targetTop, behavior: 'smooth' });
+      window.setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 60);
+    }, 100);
   };
 
   // Format date label
@@ -407,7 +426,7 @@ export const TimePickerDrawer = ({
                   <div
                     ref={dateRef}
                     className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => {
                       if (!dateRef.current || isProgrammaticScroll.current) return;
                       const scrollTop = dateRef.current.scrollTop;
@@ -418,6 +437,19 @@ export const TimePickerDrawer = ({
                       
                       setStagedDateIndex(clamped);
                       triggerHaptic('light');
+
+                      // Debounced snap-to-row normalization
+                      if (dateSnapTimeout.current) window.clearTimeout(dateSnapTimeout.current);
+                      dateSnapTimeout.current = window.setTimeout(() => {
+                        if (!dateRef.current) return;
+                        isProgrammaticScroll.current = true;
+                        const snapped = Math.max(0, Math.min(Math.round((dateRef.current.scrollTop - SPACER) / ITEM_HEIGHT), dates.length - 1));
+                        const targetTop = SPACER + snapped * ITEM_HEIGHT;
+                        dateRef.current.scrollTo({ top: targetTop, behavior: 'smooth' });
+                        window.setTimeout(() => {
+                          isProgrammaticScroll.current = false;
+                        }, 60);
+                      }, 100);
                     }}
                   >
                     <div className="flex flex-col">
@@ -425,7 +457,7 @@ export const TimePickerDrawer = ({
                       {dates.map((date, i) => (
                         <div
                           key={i}
-                          className={`h-11 flex items-center justify-center text-base transition-all ${
+                          className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
                             stagedDateIndex === i ? 'text-foreground font-medium' : 'text-muted-foreground/40'
                           }`}
                         >
@@ -443,15 +475,15 @@ export const TimePickerDrawer = ({
                   <div
                     ref={hourRef}
                     className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    onScroll={() => handleScroll(hourRef, hours, setStagedHour, 'Hour')}
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+                    onScroll={() => handleScroll(hourRef, hours, setStagedHour, 'Hour', hourSnapTimeout)}
                   >
                     <div className="flex flex-col">
                       <div style={{ height: `${SPACER}px` }} />
                       {hours.map((h, i) => (
                         <div
                           key={i}
-                          className={`h-11 flex items-center justify-center text-base transition-all ${
+                          className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
                             stagedHour === h ? 'text-foreground font-medium' : 'text-muted-foreground/40'
                           }`}
                         >
@@ -469,15 +501,15 @@ export const TimePickerDrawer = ({
                   <div
                     ref={minuteRef}
                     className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    onScroll={() => handleScroll(minuteRef, minutes, setStagedMinute, 'Minute')}
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+                    onScroll={() => handleScroll(minuteRef, minutes, setStagedMinute, 'Minute', minuteSnapTimeout)}
                   >
                     <div className="flex flex-col">
                       <div style={{ height: `${SPACER}px` }} />
                       {minutes.map((m, i) => (
                         <div
                           key={i}
-                          className={`h-11 flex items-center justify-center text-base transition-all ${
+                          className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
                             stagedMinute === m ? 'text-foreground font-medium' : 'text-muted-foreground/40'
                           }`}
                         >
@@ -498,9 +530,9 @@ export const TimePickerDrawer = ({
                         <button
                           key={period}
                           type="button"
-                          className={`h-11 flex items-center justify-center text-base transition-all ${
-                            stagedPeriod === period ? 'text-foreground font-medium' : 'text-muted-foreground/40'
-                          }`}
+                           className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
+                             stagedPeriod === period ? 'text-foreground font-medium' : 'text-muted-foreground/40'
+                           }`}
                           onClick={() => {
                             setStagedPeriod(period as 'AM' | 'PM');
                             triggerHaptic('light');
@@ -514,20 +546,12 @@ export const TimePickerDrawer = ({
                 )}
 
                 {/* Selection indicator - DEBUG MODE */}
-                <div className="absolute left-4 right-4 pointer-events-none" style={{ top: `${24 + (VIEWPORT_HEIGHT / 2)}px`, transform: 'translateY(-50%)', height: `${ITEM_HEIGHT}px` }}>
-                  <div className="h-full rounded-lg bg-primary/20 border-2 border-primary" />
-                  {/* Debug crosshair */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-full h-0.5 bg-red-500" />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-full w-0.5 bg-red-500" />
-                  </div>
-                  {/* Debug label */}
-                  <div className="absolute -top-6 left-0 text-xs font-mono text-red-500">
-                    Expected: {stagedDateIndex} | {stagedHour}:{stagedMinute.toString().padStart(2, '0')}
-                  </div>
-                </div>
+                 <div
+                   className="pointer-events-none absolute inset-x-0"
+                   style={{ top: `${24 + (VIEWPORT_HEIGHT / 2)}px`, transform: 'translateY(-50%)', height: `${ITEM_HEIGHT}px` }}
+                 >
+                   <div className="mx-4 h-full rounded-lg border-2 border-primary bg-primary/10" />
+                 </div>
               </div>
             </>
           ) : (
