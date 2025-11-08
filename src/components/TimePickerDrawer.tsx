@@ -51,10 +51,13 @@ export const TimePickerDrawer = ({
 
   // Refs
   const drawerRef = useRef<HTMLDivElement>(null);
+  const handleRef = useRef<HTMLDivElement>(null);
   const hourRef = useRef<HTMLDivElement>(null);
   const minuteRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLDivElement>(null);
+  const periodRef = useRef<HTMLDivElement>(null);
   const isProgrammaticScroll = useRef(false);
+  const isAnyWheelScrolling = useRef(false);
   const startY = useRef(0);
   const currentY = useRef(0);
 
@@ -62,10 +65,11 @@ export const TimePickerDrawer = ({
   const hourSnapTimeout = useRef<number | null>(null);
   const minuteSnapTimeout = useRef<number | null>(null);
   const dateSnapTimeout = useRef<number | null>(null);
+  const periodSnapTimeout = useRef<number | null>(null);
 
   // Constants
-  const ITEM_HEIGHT = 44;
-  const VIEWPORT_HEIGHT = 220; // 5 items visible
+  const ITEM_HEIGHT = 48;
+  const VIEWPORT_HEIGHT = 240; // 5 items visible
   const SPACER = (VIEWPORT_HEIGHT - ITEM_HEIGHT) / 2;
   const MINUTE_STEP = 1; // Can be changed to 5 for 5-minute intervals
 
@@ -131,7 +135,6 @@ export const TimePickerDrawer = ({
   // Scroll to staged values
   const scrollToStaged = () => {
     if (!isProgrammaticScroll.current) return;
-    
     if (hourRef.current) {
       const index = hours.indexOf(stagedHour);
       if (index >= 0) hourRef.current.scrollTop = SPACER + index * ITEM_HEIGHT;
@@ -142,6 +145,10 @@ export const TimePickerDrawer = ({
     }
     if (dateRef.current) {
       dateRef.current.scrollTop = SPACER + stagedDateIndex * ITEM_HEIGHT;
+    }
+    if (periodRef.current && !use24Hour) {
+      const pIndex = stagedPeriod === 'AM' ? 0 : 1;
+      periodRef.current.scrollTop = SPACER + pIndex * ITEM_HEIGHT;
     }
   };
 
@@ -157,7 +164,6 @@ export const TimePickerDrawer = ({
     }
   }, [isOpen, stagedHour, stagedMinute, stagedDateIndex]);
 
-  // Handle wheel scroll
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement>,
     items: number[],
@@ -166,6 +172,7 @@ export const TimePickerDrawer = ({
     timeoutRef: React.MutableRefObject<number | null>
   ) => {
     if (!ref.current || isProgrammaticScroll.current) return;
+    isAnyWheelScrolling.current = true;
     const scrollTop = ref.current.scrollTop;
     const rawIndex = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
     const index = Math.max(0, Math.min(rawIndex, items.length - 1));
@@ -186,6 +193,7 @@ export const TimePickerDrawer = ({
       ref.current.scrollTo({ top: targetTop, behavior: 'smooth' });
       window.setTimeout(() => {
         isProgrammaticScroll.current = false;
+        isAnyWheelScrolling.current = false;
       }, 60);
     }, 100);
   };
@@ -272,13 +280,13 @@ export const TimePickerDrawer = ({
 
   // Handle touch drag
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Only allow drag-to-close when scrolled to top
-    if (drawerRef.current) {
-      const scrollTop = drawerRef.current.scrollTop;
-      if (scrollTop === 0) {
-        startY.current = e.touches[0].clientY;
-        currentY.current = startY.current;
-      }
+    if (!handleRef.current) return;
+    const isFromHandle = handleRef.current.contains(e.target as Node);
+    if (!isFromHandle) return;
+    if (isAnyWheelScrolling.current) return;
+    if (drawerRef.current && drawerRef.current.scrollTop === 0) {
+      startY.current = e.touches[0].clientY;
+      currentY.current = startY.current;
     }
   };
 
@@ -287,25 +295,23 @@ export const TimePickerDrawer = ({
     currentY.current = e.touches[0].clientY;
     const deltaY = currentY.current - startY.current;
     if (deltaY > 0 && drawerRef.current) {
-      // Pull down gesture
-      drawerRef.current.style.transform = `translateY(${deltaY}px)`;
+      drawerRef.current.style.transform = `translateY(${Math.min(deltaY, 120)}px)`;
     }
   };
 
   const handleTouchEnd = () => {
     if (startY.current === 0) return;
     const deltaY = currentY.current - startY.current;
-    const velocity = deltaY; // Simplified velocity
-    
+
     if (drawerRef.current) {
       drawerRef.current.style.transform = '';
     }
-    
-    // Close if pulled down > 100px or fast flick
-    if (deltaY > 100 || velocity > 50) {
+
+    const DISTANCE_THRESHOLD = 24;
+    if (deltaY > DISTANCE_THRESHOLD) {
       handleCancel();
     }
-    
+
     startY.current = 0;
     currentY.current = 0;
   };
@@ -377,16 +383,14 @@ export const TimePickerDrawer = ({
 
   return (
     <>
-      {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
         onClick={handleCancel}
       />
 
-      {/* Drawer */}
       <div
         ref={drawerRef}
-        className={`fixed left-0 right-0 bottom-0 z-50 bg-background rounded-t-2xl shadow-2xl transition-all duration-300 ease-out animate-slide-in-bottom ${
+        className={`fixed left-0 right-0 bottom-0 z-50 bg-background rounded-t-2xl shadow-2xl transition-all duration-300 ease-out ${
           drawerHeight === 'medium' ? 'h-[60vh]' : 'h-[90vh]'
         }`}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -394,8 +398,7 @@ export const TimePickerDrawer = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-2 pb-3">
+        <div ref={handleRef} className="flex justify-center items-center h-12">
           <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
         </div>
 
@@ -416,19 +419,19 @@ export const TimePickerDrawer = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100% - 160px)' }}>
+        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ maxHeight: 'calc(100% - 160px)', WebkitTextSizeAdjust: '100%', textSizeAdjust: '100%', paddingBottom: 'calc(env(safe-area-inset-bottom) + 96px)' }}>
           {!showKeypad ? (
             <>
-              {/* Picker wheels */}
-              <div className="relative flex gap-2 items-center justify-center py-6 px-4">
+              <div className="relative flex gap-2 items-center justify-center py-6 px-4" style={{ WebkitTextSizeAdjust: '100%' }}>
                 {/* Date picker */}
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={dateRef}
-                    className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide overscroll-contain touch-pan-y"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => {
                       if (!dateRef.current || isProgrammaticScroll.current) return;
+                      isAnyWheelScrolling.current = true;
                       const scrollTop = dateRef.current.scrollTop;
                       const index = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
                       const clamped = Math.max(0, Math.min(index, dates.length - 1));
@@ -448,6 +451,7 @@ export const TimePickerDrawer = ({
                         dateRef.current.scrollTo({ top: targetTop, behavior: 'smooth' });
                         window.setTimeout(() => {
                           isProgrammaticScroll.current = false;
+                          isAnyWheelScrolling.current = false;
                         }, 60);
                       }, 100);
                     }}
@@ -457,7 +461,7 @@ export const TimePickerDrawer = ({
                       {dates.map((date, i) => (
                         <div
                           key={i}
-                          className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
+                          className={`h-12 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
                             stagedDateIndex === i ? 'text-foreground font-medium' : 'text-muted-foreground/40'
                           }`}
                         >
@@ -474,7 +478,7 @@ export const TimePickerDrawer = ({
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={hourRef}
-                    className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide overscroll-contain touch-pan-y"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => handleScroll(hourRef, hours, setStagedHour, 'Hour', hourSnapTimeout)}
                   >
@@ -483,7 +487,7 @@ export const TimePickerDrawer = ({
                       {hours.map((h, i) => (
                         <div
                           key={i}
-                          className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
+                          className={`h-12 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
                             stagedHour === h ? 'text-foreground font-medium' : 'text-muted-foreground/40'
                           }`}
                         >
@@ -500,7 +504,7 @@ export const TimePickerDrawer = ({
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={minuteRef}
-                    className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide overscroll-contain touch-pan-y"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => handleScroll(minuteRef, minutes, setStagedMinute, 'Minute', minuteSnapTimeout)}
                   >
@@ -509,7 +513,7 @@ export const TimePickerDrawer = ({
                       {minutes.map((m, i) => (
                         <div
                           key={i}
-                          className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
+                          className={`h-12 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
                             stagedMinute === m ? 'text-foreground font-medium' : 'text-muted-foreground/40'
                           }`}
                         >
@@ -525,23 +529,49 @@ export const TimePickerDrawer = ({
                 {/* AM/PM picker (only for 12-hour) */}
                 {!use24Hour && (
                   <div className="flex flex-col items-center w-16 relative">
-                    <div className="h-[220px] w-full flex flex-col justify-center gap-4">
-                      {['AM', 'PM'].map((period) => (
-                        <button
-                          key={period}
-                          type="button"
-                           className={`h-11 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
-                             stagedPeriod === period ? 'text-foreground font-medium' : 'text-muted-foreground/40'
-                           }`}
-                          onClick={() => {
-                            setStagedPeriod(period as 'AM' | 'PM');
-                            triggerHaptic('light');
-                          }}
-                        >
-                          {period}
-                        </button>
-                      ))}
+                    <div
+                      ref={periodRef}
+                      className="h-[240px] w-full overflow-y-scroll scrollbar-hide overscroll-contain touch-pan-y"
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+                      onScroll={() => {
+                        if (!periodRef.current || isProgrammaticScroll.current) return;
+                        isAnyWheelScrolling.current = true;
+                        const scrollTop = periodRef.current.scrollTop;
+                        const index = Math.max(0, Math.min(Math.round((scrollTop - SPACER) / ITEM_HEIGHT), 1));
+                        const period = index === 0 ? 'AM' : 'PM';
+                        setStagedPeriod(period as 'AM' | 'PM');
+                        triggerHaptic('light');
+
+                        if (periodSnapTimeout.current) window.clearTimeout(periodSnapTimeout.current);
+                        periodSnapTimeout.current = window.setTimeout(() => {
+                          if (!periodRef.current) return;
+                          isProgrammaticScroll.current = true;
+                          const snapped = Math.max(0, Math.min(Math.round((periodRef.current.scrollTop - SPACER) / ITEM_HEIGHT), 1));
+                          const targetTop = SPACER + snapped * ITEM_HEIGHT;
+                          periodRef.current.scrollTo({ top: targetTop, behavior: 'smooth' });
+                          window.setTimeout(() => {
+                            isProgrammaticScroll.current = false;
+                            isAnyWheelScrolling.current = false;
+                          }, 60);
+                        }, 100);
+                      }}
+                    >
+                      <div className="flex flex-col">
+                        <div style={{ height: `${SPACER}px` }} />
+                        {(['AM', 'PM'] as const).map((period) => (
+                          <div
+                            key={period}
+                            className={`h-12 flex items-center justify-center text-base leading-none whitespace-nowrap truncate transition-all ${
+                              stagedPeriod === period ? 'text-foreground font-medium' : 'text-muted-foreground/40'
+                            }`}
+                          >
+                            {period}
+                          </div>
+                        ))}
+                        <div style={{ height: `${SPACER}px` }} />
+                      </div>
                     </div>
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent via-40% to-background" />
                   </div>
                 )}
 
