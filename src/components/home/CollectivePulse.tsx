@@ -26,28 +26,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     );
   }
 
-  // Show minimal message if no data
+  // Don't show card if no data at all
   if (!cohortStats) {
-    return (
-      <div className="border border-border rounded-xl overflow-hidden bg-accent/20">
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-2 mb-1">
-            <Globe className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              Collective Pulse
-            </h3>
-          </div>
-          <p className="text-xs text-muted-foreground font-medium">
-            Coming Soon
-          </p>
-        </div>
-        <div className="p-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Rhythms at this age are settling. We'll share cohort stats as more families join.
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Format naps as range

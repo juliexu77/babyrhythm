@@ -104,8 +104,22 @@ Deno.serve(async (req) => {
 
     console.log(`Organized into ${cohorts.size} cohorts`);
 
+    // Also create entries for cohorts that might have users but no data yet
+    // This ensures seed baselines are available for all possible cohorts
+    const allPossibleCohorts = new Map(cohorts);
+    
+    // Add cohorts for the last 12 months if they don't exist
+    for (let i = 0; i < 12; i++) {
+      const monthDate = new Date();
+      monthDate.setMonth(monthDate.getMonth() - i);
+      const cohortKey = format(startOfMonth(monthDate), 'yyyy-MM-dd');
+      if (!allPossibleCohorts.has(cohortKey)) {
+        allPossibleCohorts.set(cohortKey, []);
+      }
+    }
+
     // Process each cohort
-    for (const [cohortMonth, cohortHouseholds] of cohorts.entries()) {
+    for (const [cohortMonth, cohortHouseholds] of allPossibleCohorts.entries()) {
       try {
         const cohortLabel = format(new Date(cohortMonth), 'MMMM yyyy') + ' Babies';
         console.log(`\nProcessing cohort: ${cohortLabel} (${cohortHouseholds.length} households)`);
@@ -159,7 +173,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        cohorts_processed: cohorts.size,
+        cohorts_processed: allPossibleCohorts.size,
         message: 'Cohort statistics computed successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -417,19 +431,8 @@ function applyFallback(
   
   const baseline = SEED_BASELINES[Math.min(ageInMonths, 12)] || SEED_BASELINES[12];
   
-  // Tier 4: Minimal (no data)
-  if (activeBabies === 0) {
-    return {
-      metrics: {
-        night_sleep_hours: null,
-        naps_per_day: null,
-        feed_count_per_day: null,
-        avg_feed_volume: null,
-        solids_started_pct: null,
-      },
-      tier: 'minimal',
-    };
-  }
+  // Always return at least seed baseline data
+  // Tier 4: Minimal is removed - we always show seed data at minimum
   
   // Tier 1: Seed baseline (1-4 babies)
   if (activeBabies < 5) {
