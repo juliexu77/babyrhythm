@@ -164,6 +164,14 @@ export default {
             transform: "scale(1.02)",
             boxShadow: "0 0 15px rgba(76, 175, 125, 0.4)"
           }
+        },
+        "slide-in-bottom": {
+          "0%": {
+            transform: "translateY(100%)"
+          },
+          "100%": {
+            transform: "translateY(0)"
+          }
         }
       },
       animation: {
@@ -176,6 +184,7 @@ export default {
         "glow": "glow 1s ease-in-out infinite",
         "breathe": "breathe 2s ease-in-out infinite",
         "breathe-dark": "breathe-dark 1.8s ease-out infinite",
+        "slide-in-bottom": "slide-in-bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },

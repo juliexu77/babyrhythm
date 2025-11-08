@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TimeScrollPicker } from "./TimeScrollPicker";
+import { TimePickerDrawer } from "./TimePickerDrawer";
 import { MinuteScrollPicker } from "./MinuteScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
@@ -713,7 +713,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 {/* Time Picker - Moved below feed type */}
-                <TimeScrollPicker 
+                <TimePickerDrawer 
                   value={time} 
                   selectedDate={selectedDate}
                   onChange={setTime} 
@@ -803,7 +803,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "diaper" && (
               <div className="space-y-5">
                 {/* Time Picker for Diaper */}
-                <TimeScrollPicker 
+                <TimePickerDrawer 
                   value={time} 
                   selectedDate={selectedDate}
                   onChange={setTime} 
@@ -886,7 +886,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "nap" && (
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <TimeScrollPicker 
+                  <TimePickerDrawer 
                     value={startTime} 
                     selectedDate={selectedDate}
                     onChange={setStartTime} 
@@ -913,7 +913,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                   {/* End Time Picker - Only show when checkbox is checked */}
                   {hasEndTime && (
-                    <TimeScrollPicker 
+                    <TimePickerDrawer 
                       value={endTime} 
                       selectedDate={selectedEndDate}
                       onChange={setEndTime} 
@@ -929,7 +929,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "note" && (
               <div className="space-y-4">
                 {/* Time Picker */}
-                <TimeScrollPicker 
+                <TimePickerDrawer 
                   value={time} 
                   selectedDate={selectedDate}
                   onChange={setTime} 
@@ -1029,7 +1029,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Measure Details */}
             {activityType === "measure" && (
               <div className="space-y-4">
-                <TimeScrollPicker 
+                <TimePickerDrawer 
                   value={time} 
                   selectedDate={selectedDate}
                   onChange={setTime} 
@@ -1104,7 +1104,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Photo Activity Details */}
             {activityType === "photo" && (
               <div className="space-y-4">
-                <TimeScrollPicker 
+                <TimePickerDrawer 
                   value={time} 
                   selectedDate={selectedDate}
                   onChange={setTime} 
