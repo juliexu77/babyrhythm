@@ -556,6 +556,17 @@
     50% { opacity: 0.6; }
   }
 
+  @keyframes story-headline-type {
+    from { 
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @keyframes story-headline-fade-up {
     from { 
       opacity: 0;
@@ -579,14 +590,46 @@
     }
   }
 
-  @keyframes story-bar-scale-fill {
+  /* Feed bar - scale with overshoot and pulse */
+  @keyframes story-bar-feed {
+    0% { 
+      transform: scaleX(0);
+    }
+    85% { 
+      transform: scaleX(1.02);
+    }
+    100% { 
+      transform: scaleX(1);
+    }
+  }
+
+  /* Nap bar - smooth linear calm */
+  @keyframes story-bar-nap {
     from { 
       transform: scaleX(0);
-      opacity: 0.5;
     }
     to { 
       transform: scaleX(1);
+    }
+  }
+
+  /* Nap time bar - with glint sweep */
+  @keyframes story-bar-naptime {
+    0% { 
+      transform: scaleX(0);
+    }
+    100% { 
+      transform: scaleX(1);
+    }
+  }
+
+  /* Wake window pulse highlight */
+  @keyframes story-window-pulse {
+    0%, 100% { 
       opacity: 1;
+    }
+    50% { 
+      opacity: 0.7;
     }
   }
 
@@ -698,8 +741,13 @@
     animation: story-glow-corners 2s ease-in-out infinite;
   }
 
+  .animate-story-headline-type {
+    animation: story-headline-type 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+    opacity: 0;
+  }
+
   .animate-story-headline-fade-up {
-    animation: story-headline-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+    animation: story-headline-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     opacity: 0;
   }
 
@@ -709,9 +757,24 @@
     opacity: 0;
   }
 
-  .animate-story-bar-scale-fill {
-    animation: story-bar-scale-fill 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  /* Bar animations with unique personalities */
+  .animate-story-bar-feed {
+    animation: story-bar-feed 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     transform-origin: left;
+  }
+
+  .animate-story-bar-nap {
+    animation: story-bar-nap 0.7s linear forwards;
+    transform-origin: left;
+  }
+
+  .animate-story-bar-naptime {
+    animation: story-bar-naptime 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-origin: left;
+  }
+
+  .animate-story-window-pulse {
+    animation: story-window-pulse 1.5s ease-in-out infinite;
   }
 
   /* Act 3 animations */

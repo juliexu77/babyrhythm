@@ -25,6 +25,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     return activityDate.getTime() === today.getTime();
   });
 
+  console.log('📖 Story Modal Debug:', {
+    totalActivities: activities.length,
+    todayActivities: todayActivities.length,
+    activities: todayActivities.map(a => ({ type: a.type, time: a.loggedAt, details: a.details }))
+  });
+
   const todayDate = format(today, "MMM d");
 
   // Get hero photo
@@ -37,6 +43,10 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   // Calculate metrics
   const feedCount = todayActivities.filter(a => a.type === "feed").length;
   const napCount = todayActivities.filter(a => a.type === "nap" && !a.details.isNightSleep).length;
+  
+  // Get solid food info
+  const solidFeeds = todayActivities.filter(a => a.type === "feed" && a.details.feedType === "solid");
+  const hadSolidFood = solidFeeds.length > 0;
   
   // Calculate total nap time
   const totalNapMinutes = todayActivities
@@ -110,42 +120,61 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     const feedDiff = feedCount - avgFeeds;
     const napDiff = napCount - avgNaps;
     const napTimeDiff = totalNapMinutes - avgNapMinutes;
+    const name = babyName || 'Baby';
 
-    // Solid food milestone
-    const hadSolidFood = todayActivities.some(a => a.type === "feed" && a.details.feedType === "solid");
+    // Solid food milestone - most specific
     if (hadSolidFood) {
-      const solidMeal = todayActivities.find(a => a.type === "feed" && a.details.feedType === "solid");
+      const solidMeal = solidFeeds[0];
       if (solidMeal?.details.note) {
-        return `${babyName || 'Baby'} discovered ${solidMeal.details.note.toLowerCase()} today.`;
+        const foodName = solidMeal.details.note.toLowerCase();
+        return `${name} discovered ${foodName} today.`;
       }
-      return `${babyName || 'Baby'} tried new foods today.`;
+      return `${name} tried new foods today.`;
     }
 
-    // Feed heavy day (growth spurt)
-    if (feedDiff >= 2) {
-      return "Lots of feeds today — growing fast.";
+    // Data-driven specific headlines
+    if (feedDiff >= 3) {
+      return `${feedCount} feeds, ${napCount} naps — growing fast.`;
     }
 
-    // Extra sleepy day
-    if (napDiff >= 2 || napTimeDiff >= 60) {
-      return "Lots of rest today — just what was needed.";
+    if (napDiff >= 2) {
+      return `Extra rest today — ${napCount} naps, ${totalNapHours}h ${totalNapMins}m total.`;
     }
 
-    // Balanced rhythm
+    if (longestWakeWindow && napCount >= 2) {
+      const [start] = longestWakeWindow.split(' – ');
+      return `Extra long wake window at ${start}, but the day found its flow.`;
+    }
+
+    // Balanced rhythm - be specific about numbers
     if (Math.abs(feedDiff) <= 1 && Math.abs(napDiff) <= 1 && Math.abs(napTimeDiff) <= 30) {
-      return "Everything found its rhythm.";
+      return `${feedCount} feeds, ${napCount} naps, and one very content kid.`;
     }
 
-    // Short naps but steady
-    if (napCount >= 2 && totalNapMinutes < avgNapMinutes - 30) {
-      return "Short naps, but steady energy.";
+    // Short naps but consistent
+    if (napCount >= 3 && totalNapMinutes < avgNapMinutes - 30) {
+      return `Short naps, but steady energy all day.`;
     }
 
-    // Default peaceful
-    return "A cozy, well-fed rhythm.";
+    // Light day
+    if (feedCount < avgFeeds - 1 && napCount < avgNaps - 1) {
+      return `Light day — ${feedCount} feeds, ${napCount} naps. Tomorrow resets.`;
+    }
+
+    // Default with specifics
+    return `Balanced rhythm — ${feedCount} feeds, ${napCount} naps, steady and calm.`;
   };
 
   const headline = getHeadline();
+
+  console.log('📖 Story Metrics:', {
+    feedCount,
+    napCount,
+    totalNapTime: `${totalNapHours}h ${totalNapMins}m`,
+    longestWakeWindow,
+    hadSolidFood,
+    headline
+  });
 
   // Get photo caption
   const getPhotoCaption = (): string | null => {
@@ -167,22 +196,22 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     return "A peaceful day — ready for tomorrow's adventures.";
   };
 
-  // Animation sequence timing
+  // Animation sequence timing - 4 second total
   useEffect(() => {
     if (!isOpen) {
       setAnimationPhase('act1');
       return;
     }
 
-    // Act 1: 0-1.2s (photo blur in + headline)
+    // Act 1: 0-1.0s (photo blur in + headline types in)
     const timer1 = setTimeout(() => {
       setAnimationPhase('act2');
-    }, 1200);
+    }, 1000);
 
-    // Act 2: 1.2-2.5s (metrics reveal)
+    // Act 2: 1.0-3.0s (bars fill sequentially)
     const timer2 = setTimeout(() => {
       setAnimationPhase('act3');
-    }, 2500);
+    }, 3000);
 
     return () => {
       clearTimeout(timer1);
@@ -221,12 +250,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 
                 {/* Headline (bottom) */}
                 <div className="absolute bottom-0 left-0 right-0 p-8 pb-12">
-                  <h1 className="text-[28px] leading-[1.3] font-light tracking-tight text-white animate-story-headline-fade-up">
+                  <h1 className="text-[28px] leading-[1.3] font-light tracking-tight text-white animate-story-headline-type">
                     {headline}
                   </h1>
                   
                   {getPhotoCaption() && (
-                    <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up" style={{ animationDelay: '0.8s' }}>
+                    <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up" style={{ animationDelay: '0.7s' }}>
                       {getPhotoCaption()}
                     </p>
                   )}
@@ -250,7 +279,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
           {/* ACT 2: Reveal - Metric cards overlaid on bottom */}
           {animationPhase !== 'act1' && (
             <div className="absolute bottom-0 left-0 right-0 p-6 space-y-3">
-              {/* Feeds */}
+              {/* Feeds - Peach with pulse */}
               <div 
                 className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
                 style={{ animationDelay: '0s' }}
@@ -264,7 +293,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 </div>
                 <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-terracotta))] to-[hsl(var(--pp-coral))] animate-story-bar-scale-fill"
+                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-terracotta))] to-[hsl(var(--pp-coral))] animate-story-bar-feed"
                     style={{ 
                       width: `${Math.min(100, (feedCount / avgFeeds) * 100)}%`,
                       animationDelay: '0.1s'
@@ -276,10 +305,10 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 </div>
               </div>
 
-              {/* Naps */}
+              {/* Naps - Lavender smooth */}
               <div 
                 className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
-                style={{ animationDelay: '0.15s' }}
+                style={{ animationDelay: '0.5s' }}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
@@ -290,10 +319,10 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 </div>
                 <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-lavender))] to-[hsl(264_40%_75%)] animate-story-bar-scale-fill"
+                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-lavender))] to-[hsl(264_40%_75%)] animate-story-bar-nap"
                     style={{ 
                       width: `${Math.min(100, (napCount / avgNaps) * 100)}%`,
-                      animationDelay: '0.25s'
+                      animationDelay: '0.6s'
                     }}
                   />
                 </div>
@@ -302,10 +331,10 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 </div>
               </div>
 
-              {/* Nap time */}
+              {/* Nap time - Mint with glint sweep */}
               <div 
                 className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
-                style={{ animationDelay: '0.3s' }}
+                style={{ animationDelay: '1.0s' }}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
@@ -314,12 +343,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                   </div>
                   <span className="text-sm font-medium">{totalNapHours}h {totalNapMins}m</span>
                 </div>
-                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden relative">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-mint))] to-[hsl(153_45%_65%)] animate-story-bar-scale-fill"
+                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-mint))] to-[hsl(153_45%_65%)] animate-story-bar-naptime"
                     style={{ 
                       width: `${Math.min(100, (totalNapMinutes / avgNapMinutes) * 100)}%`,
-                      animationDelay: '0.4s'
+                      animationDelay: '1.1s'
                     }}
                   />
                 </div>
@@ -328,11 +357,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 </div>
               </div>
 
-              {/* Longest wake window */}
+              {/* Longest wake window - Sand with pulse highlight */}
               {longestWakeWindow && (
                 <div 
                   className="backdrop-blur-xl bg-background/80 dark:bg-background/90 rounded-2xl p-4 border border-border/50 animate-story-card-slide-up"
-                  style={{ animationDelay: '0.45s' }}
+                  style={{ animationDelay: '1.5s' }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -340,7 +369,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                       <span className="text-sm text-muted-foreground">Longest wake window</span>
                     </div>
                   </div>
-                  <div className="mt-1 text-sm font-medium">{longestWakeWindow}</div>
+                  <div className="mt-1 text-sm font-medium animate-story-window-pulse" style={{ animationDelay: '1.6s' }}>
+                    {longestWakeWindow}
+                  </div>
                 </div>
               )}
             </div>
@@ -364,10 +395,20 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               <div className="absolute top-1/3 left-0 right-0 flex justify-center px-8 pointer-events-none">
                 <p 
                   className="text-lg font-light text-foreground/90 dark:text-foreground/80 text-center tracking-wide animate-story-closure-fade"
-                  style={{ animationDelay: '1s' }}
+                  style={{ animationDelay: '0.5s' }}
                 >
                   {getClosureMessage()}
                 </p>
+              </div>
+              
+              {/* Hold still for 1s before dismiss */}
+              <div className="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-none">
+                <div 
+                  className="text-xs text-muted-foreground/40 uppercase tracking-widest animate-story-closure-fade"
+                  style={{ animationDelay: '1s' }}
+                >
+                  Goodnight · rhythm saved
+                </div>
               </div>
             </>
           )}
