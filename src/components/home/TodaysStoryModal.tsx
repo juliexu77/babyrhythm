@@ -269,26 +269,6 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 
                 {/* Gradient overlay for readability - enhanced for text visibility */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent via-35% to-black/70" />
-                
-                {/* Date subtitle (top) */}
-                <div className="absolute top-8 left-6 right-6">
-                  <p className="text-xs font-light text-white/70 uppercase tracking-[0.2em] animate-story-headline-fade-up">
-                    {todayDate}
-                  </p>
-                </div>
-                
-                {/* Headline - positioned in safe zone above cards */}
-                <div className="absolute top-[38%] left-0 right-0 px-8">
-                  <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type drop-shadow-lg">
-                    {headline}
-                  </h1>
-                  
-                  {getPhotoCaption() && (
-                    <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up drop-shadow-lg" style={{ animationDelay: '0.7s' }}>
-                      {getPhotoCaption()}
-                    </p>
-                  )}
-                </div>
               </div>
             ) : (
               // No photo fallback
@@ -298,8 +278,31 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
           {/* Scrollable content layer - positioned over fixed photo */}
           <div className="relative w-full min-h-full">
-            {/* Spacer to position cards below headline in fixed layer */}
-            <div className="h-[65vh]" />
+            {/* Top spacer */}
+            <div className="h-8" />
+            
+            {/* Date subtitle */}
+            <div className="relative px-6">
+              <p className="text-xs font-light text-white/70 uppercase tracking-[0.2em] animate-story-headline-fade-up drop-shadow-lg">
+                {todayDate}
+              </p>
+            </div>
+
+            {/* Headline positioned in safe zone */}
+            <div className="relative px-8 mt-[25vh]">
+              <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type drop-shadow-lg">
+                {headline}
+              </h1>
+              
+              {getPhotoCaption() && (
+                <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up drop-shadow-lg" style={{ animationDelay: '0.7s' }}>
+                  {getPhotoCaption()}
+                </p>
+              )}
+            </div>
+
+            {/* Spacer to push cards down */}
+            <div className="h-[20vh]" />
 
             {/* ACT 2: Reveal - Metric cards section */}
             {animationPhase !== 'act1' && (
@@ -444,6 +447,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               )}
             </div>
           )}
+
+          {/* Bottom spacer and ending message */}
+          <div className="relative w-full px-6 pb-24 pt-12">
+            <div className="text-center text-xs text-white/40 uppercase tracking-widest animate-story-closure-fade">
+              {getClosureMessage()}
+            </div>
+          </div>
           </div>
 
           {/* ACT 3: Closure - Sparkles and bottom text overlays */}
