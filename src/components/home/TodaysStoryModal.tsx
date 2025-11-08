@@ -268,8 +268,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                   </p>
                 </div>
                 
-                {/* Headline (bottom) - positioned above cards */}
-                <div className="absolute bottom-[280px] left-0 right-0 px-8">
+                {/* Headline - positioned in safe zone above cards */}
+                <div className="absolute top-[38%] left-0 right-0 px-8">
                   <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type drop-shadow-lg">
                     {headline}
                   </h1>
@@ -296,12 +296,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
             )}
           </div>
 
-          {/* ACT 2: Reveal - Metric cards overlaid on bottom - closer together and lower */}
+          {/* ACT 2: Reveal - Metric cards at bottom, compact spacing */}
           {animationPhase !== 'act1' && (
-            <div className="absolute bottom-4 left-0 right-0 px-6 space-y-3">
+            <div className="absolute bottom-6 left-0 right-0 px-6 space-y-2.5">
               {/* Feeds - Peach with pulse */}
               <div 
-                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
+                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
                 style={{ animationDelay: '0s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -332,7 +332,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
               {/* Naps - Lavender smooth */}
               <div 
-                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
+                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
                 style={{ animationDelay: '0.5s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -363,7 +363,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
               {/* Nap time - Mint with glint sweep */}
               <div 
-                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
+                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
                 style={{ animationDelay: '1.0s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
@@ -395,7 +395,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {/* Longest wake window - Sand with pulse highlight */}
               {longestWakeWindow && (
                 <div 
-                  className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
+                  className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
                   style={{ animationDelay: '1.5s' }}
                 >
                   <div className="flex items-center justify-between">
