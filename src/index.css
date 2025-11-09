@@ -26,12 +26,12 @@
     --s-7: 32px;
     
     /* Light Mode - "Fall Latte" */
-    --bg: 26 29% 87%; /* #E8DDD5 - oat milk background */
-    --surface: 30 33% 96%; /* #F6F4F2 - warm card surface */
-    --surface-muted: 28 30% 88%; /* #E5DED5 - warm taupe surface */
+    --bg: 26 32% 90%; /* #EDE3DB - lighter oat milk background */
+    --surface: 340 25% 94%; /* #F5EBEF - pale warm pink card surface */
+    --surface-muted: 340 20% 92%; /* #EFE6E9 - slightly deeper pink */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
-    --divider: 30 20% 88%; /* #E8E2DC - warm neutral border */
+    --divider: 340 15% 88%; /* #E8E0E3 - warm pink border */
     
     /* Light mode color overrides - fall latte palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */

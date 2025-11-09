@@ -106,7 +106,7 @@ export const TodaysPulse = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+              <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
                 Today's Pulse
               </h3>
             </div>
@@ -165,7 +165,7 @@ export const TodaysPulse = ({
               <div className="pt-4 border-t border-border">
                 <div className="flex items-center gap-2 mb-3">
                   <Lightbulb className="w-4 h-4 text-amber-600" />
-                  <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
                     What This Means
                   </h4>
                 </div>

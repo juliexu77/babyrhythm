@@ -65,11 +65,11 @@ export const RightNowStatus = ({
       <div className="px-4 py-4 bg-gradient-to-br from-primary/5 to-primary/10 border-y border-primary/20 mb-4 shadow-sm">
         {/* Current Status */}
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
-              Right Now
-            </h3>
-          </div>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
+            Right Now
+          </h3>
+        </div>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && <Moon className="w-5 h-5 text-primary" />}
@@ -87,10 +87,10 @@ export const RightNowStatus = ({
         {/* Next Prediction */}
         {nextPrediction && (
           <div className="mb-3 p-3 bg-background/60 rounded-lg border border-border/40">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold text-foreground uppercase tracking-wider">
-                What's Next
-              </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-medium text-foreground uppercase tracking-wider">
+              What's Next
+            </p>
               {nextPrediction.confidence && (
                 <Badge variant="secondary" className="text-xs">
                   {nextPrediction.confidence} confidence
@@ -158,7 +158,7 @@ export const RightNowStatus = ({
         {/* Suggested Actions Section */}
         {topSuggestions.length > 0 && (
           <div className="mt-4 pt-4 border-t border-border/40">
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider mb-3">
               Suggested Actions
             </h3>
             <div className="space-y-2">
