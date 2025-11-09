@@ -1299,10 +1299,10 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="px-4 pt-6 space-y-2.5">
+      <div className="px-4 pt-6 space-y-4">
 
         {/* Greeting */}
-        <h2 className="text-xl font-semibold text-foreground">
+        <h2 className="text-lg font-semibold text-foreground">
           {getGreetingLine()}
         </h2>
 
