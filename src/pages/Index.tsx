@@ -1193,10 +1193,7 @@ return (
                 variant="ghost" 
                 size="sm" 
                 onClick={() => {
-                  toast({
-                    title: t("Coming Soon"),
-                    description: t("Notifications will be available soon"),
-                  });
+                  // TODO: Implement notifications panel
                 }}
                 className="p-2"
               >
