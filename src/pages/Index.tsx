@@ -371,6 +371,8 @@ const ongoingNap = (() => {
     activityType: string;
     timestamp: Date;
   } | null>(null);
+  const [isPullingToRefresh, setIsPullingToRefresh] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
 
   // Handle scroll for header fade effect
@@ -382,6 +384,65 @@ const ongoingNap = (() => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Pull to refresh functionality
+  useEffect(() => {
+    let startY = 0;
+    let currentY = 0;
+    const threshold = 80; // Distance to trigger refresh
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (window.scrollY === 0 && !isRefreshing) {
+        currentY = e.touches[0].clientY;
+        const pullDistance = currentY - startY;
+        
+        if (pullDistance > 10) {
+          setIsPullingToRefresh(true);
+        }
+      }
+    };
+
+    const handleTouchEnd = async () => {
+      const pullDistance = currentY - startY;
+      
+      if (pullDistance > threshold && !isRefreshing) {
+        setIsRefreshing(true);
+        setIsPullingToRefresh(false);
+        
+        // Refresh data
+        await Promise.all([
+          refetchActivities(),
+          refetchHousehold()
+        ]);
+        
+        // Keep spinner visible for at least 500ms for better UX
+        setTimeout(() => {
+          setIsRefreshing(false);
+        }, 500);
+      } else {
+        setIsPullingToRefresh(false);
+      }
+      
+      startY = 0;
+      currentY = 0;
+    };
+
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isRefreshing, refetchActivities, refetchHousehold]);
 
   // Auto-dismiss collaborator activity notification after 15 seconds
   useEffect(() => {
@@ -1235,6 +1296,12 @@ return (
           </div>
         </div>
 
+        {/* Loading spinner during refresh */}
+        {(isRefreshing || isPullingToRefresh) && (
+          <div className="sticky top-16 z-20 bg-background py-3 flex items-center justify-center border-b border-border/20">
+            <LoadingSpinner size="sm" />
+          </div>
+        )}
 
         {activeTab === 'home' && recentCollaboratorActivity && (
           <div className="sticky top-16 z-20 bg-accent/80 text-foreground border-b border-border px-4 py-2 text-sm text-center animate-in slide-in-from-top">
