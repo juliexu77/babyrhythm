@@ -220,15 +220,8 @@ export const DailyStoryCircles = ({
                 <div className="absolute inset-0 bg-background/5" />
                 
                 {/* Date label */}
-                <div className="relative w-full h-full flex flex-col items-center justify-center">
-                  <Sparkles className={`w-4 h-4 mb-1 ${
-                    isStoryReady
-                      ? 'text-primary animate-story-shimmer' 
-                      : isTodayStory 
-                        ? 'text-primary' 
-                        : 'text-primary/60'
-                  }`} />
-                  <span className="text-[10px] font-medium text-foreground/70">
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <span className="text-[11px] font-medium text-foreground/80">
                     {isTodayStory ? 'Today' : format(storyDate, 'MMM d')}
                   </span>
                 </div>
@@ -236,20 +229,20 @@ export const DailyStoryCircles = ({
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 
-                {/* Micro-icon overlay bottom-right */}
+                {/* Content icon on bottom-center of outline (Oura style) */}
                 {(hasPhoto || hasNote || isEmpty) && (
                   <div 
-                    className="absolute bottom-0.5 right-0.5 w-5 h-5 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-7 h-7 rounded-full bg-background border-2 border-border/50 flex items-center justify-center"
                     style={{
-                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)'
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)'
                     }}
                   >
                     {hasPhoto ? (
-                      <Image className="w-3 h-3 text-primary" />
+                      <Image className="w-4 h-4 text-primary" />
                     ) : hasNote ? (
-                      <PenLine className="w-3 h-3 text-muted-foreground" />
+                      <PenLine className="w-4 h-4 text-muted-foreground" />
                     ) : isEmpty ? (
-                      <Plus className="w-3 h-3 text-muted-foreground/60" />
+                      <Plus className="w-4 h-4 text-muted-foreground/60" />
                     ) : null}
                   </div>
                 )}
