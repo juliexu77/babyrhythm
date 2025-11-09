@@ -50,7 +50,7 @@ export function generateAdaptiveSchedule(
   const events: ScheduleEvent[] = [];
   const now = new Date();
   
-  // Find today's wake activity
+  // Find today's wake activity - prioritize actual logged wake time
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
   
@@ -59,7 +59,12 @@ export function generateAdaptiveSchedule(
     return actDate >= todayStart;
   });
   
-  // Check if baby woke up today
+  console.log('🌅 Looking for today\'s wake activity:', {
+    todayActivitiesCount: todayActivities.length,
+    nightSleeps: todayActivities.filter(a => a.type === 'nap' && a.details?.isNightSleep).length
+  });
+  
+  // Check if baby woke up today - look for night sleep with end time
   const todayWakeActivity = todayActivities.find(a => {
     if (a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep) {
       const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -68,7 +73,12 @@ export function generateAdaptiveSchedule(
         const period = timeMatch[3].toUpperCase();
         if (period === 'PM' && hour !== 12) hour += 12;
         if (period === 'AM' && hour === 12) hour = 0;
-        return hour >= 4 && hour <= 11;
+        // Consider wake times from 4 AM to 12 PM (noon)
+        const isValidWakeTime = hour >= 4 && hour <= 12;
+        if (isValidWakeTime) {
+          console.log('✅ Found today\'s wake time:', a.details.endTime);
+        }
+        return isValidWakeTime;
       }
     }
     return false;
@@ -78,6 +88,7 @@ export function generateAdaptiveSchedule(
   let hasActualWake = false;
   
   if (todayWakeActivity) {
+    // Use today's actual wake time
     const endTimeStr = todayWakeActivity.details?.endTime || '';
     const timeMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     
@@ -92,11 +103,18 @@ export function generateAdaptiveSchedule(
       scheduleStartTime = new Date(now);
       scheduleStartTime.setHours(hour, minute, 0, 0);
       hasActualWake = true;
+      
+      console.log('🎯 Using actual wake time for schedule:', {
+        time: endTimeStr,
+        hour,
+        minute
+      });
     } else {
       scheduleStartTime = new Date(todayWakeActivity.loggedAt);
       hasActualWake = true;
     }
   } else {
+    console.log('📊 No wake activity found today, using historical average');
     // Calculate average wake time from historical data
     const recentNightSleeps = activities
       .filter(a => a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep)
