@@ -40,7 +40,7 @@ const Onboarding = () => {
         <div className="max-w-md mx-auto text-center space-y-10">
           {/* Logo */}
           <div className="flex flex-col items-center justify-center leading-none">
-            <span className="text-2xl font-heading font-bold text-primary tracking-tight">
+            <span className="text-2xl font-sans font-bold text-primary tracking-tight">
               BABYRHYTHM
             </span>
           </div>
