@@ -138,15 +138,15 @@ export const DailyStoryCircles = ({
     );
   }
 
-  // Generate a unique gradient per day based on date
+  // Generate a brownish taupe gradient per day
   const getDayGradient = (dateStr: string) => {
     const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const gradients = [
-      'from-[hsl(340,35%,75%)] to-[hsl(30,25%,82%)]', // mauve → sand
-      'from-[hsl(350,45%,78%)] to-[hsl(35,30%,85%)]', // rose → cream
-      'from-[hsl(280,30%,75%)] to-[hsl(320,35%,80%)]', // lavender → blush
-      'from-[hsl(25,40%,78%)] to-[hsl(45,35%,85%)]',  // peach → vanilla
-      'from-[hsl(200,25%,78%)] to-[hsl(220,20%,85%)]', // powder blue → mist
+      'from-[hsl(30,20%,70%)] to-[hsl(25,18%,65%)]',   // warm taupe
+      'from-[hsl(35,18%,68%)] to-[hsl(28,16%,62%)]',   // sandy taupe
+      'from-[hsl(25,22%,72%)] to-[hsl(30,20%,66%)]',   // soft brown
+      'from-[hsl(32,16%,70%)] to-[hsl(28,18%,64%)]',   // neutral taupe
+      'from-[hsl(28,20%,68%)] to-[hsl(32,18%,62%)]',   // earth taupe
     ];
     return gradients[hash % gradients.length];
   };
@@ -176,45 +176,47 @@ export const DailyStoryCircles = ({
               onClick={() => onSelectDay(story.date, story.activities)}
               className="group relative flex-shrink-0 transition-all duration-300 hover:scale-105"
             >
-              {/* Enhanced glow for Today with gradient ring pulse */}
+              {/* Enhanced bold ring for Today (Instagram stories style) */}
               {isTodayStory && (
-                <div 
-                  className="absolute -inset-[3px] rounded-full blur-sm opacity-60 animate-pulse"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
-                    animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                  }}
-                />
+                <>
+                  <div 
+                    className="absolute -inset-[4px] rounded-full"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                    }}
+                  />
+                  <div 
+                    className="absolute -inset-[2px] rounded-full bg-background"
+                  />
+                </>
               )}
               
               {/* Circle container with shadow depth */}
               <div 
-                className={`relative w-16 h-16 rounded-full overflow-hidden ${
-                  isTodayStory 
-                    ? 'ring-[3px] ring-primary/50 ring-offset-2 ring-offset-background' 
-                    : ''
-                } mb-4`}
+                className="relative w-16 h-16 rounded-full overflow-hidden"
                 style={{
                   boxShadow: isTodayStory 
                     ? '0 4px 12px -2px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.06)'
                     : '0 2px 8px -2px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.05)'
                 }}
               >
-                {/* Photo background or unique gradient */}
+                {/* Photo background with blur */}
                 {hasPhoto && firstPhoto ? (
                   <div 
                     className="absolute inset-0 bg-cover bg-center"
                     style={{
                       backgroundImage: `url(${firstPhoto})`,
-                      filter: 'blur(8px) brightness(1.1)',
-                      opacity: 0.15,
-                      transform: 'scale(1.2)'
+                      filter: 'blur(12px) brightness(0.9)',
+                      opacity: 0.4,
+                      transform: 'scale(1.3)'
                     }}
                   />
-                ) : null}
-                
-                {/* Gradient background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)} opacity-${hasPhoto ? '70' : '100'}`} />
+                ) : (
+                  <>
+                    {/* Brownish taupe gradient background */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
+                  </>
+                )}
                 
                 {/* Soft overlay */}
                 <div className="absolute inset-0 bg-background/5" />
