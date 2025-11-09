@@ -211,11 +211,11 @@ export const DailyStoryCircles = ({
                     }}
                   />
                 ) : (
-                  <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
+                  <>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
+                    <div className="absolute inset-0 bg-background/5" />
+                  </>
                 )}
-                
-                {/* Soft overlay only for non-photo circles */}
-                {!hasPhoto && <div className="absolute inset-0 bg-background/5" />}
                 
                 {/* Date label */}
                 <div className="relative w-full h-full flex items-center justify-center">
