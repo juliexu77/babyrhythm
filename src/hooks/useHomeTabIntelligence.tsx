@@ -181,16 +181,20 @@ export const useHomeTabIntelligence = (
 
     // Handle sleeping/napping state - only if actually asleep
     // For night sleep (type === 'sleeping'), don't show countdown
-    if (currentActivity?.type === 'napping' && timing?.nextWakeAt) {
-      const wakeTime = new Date(timing.nextWakeAt);
-      const minutesUntil = Math.max(0, differenceInMinutes(wakeTime, now));
-      
-      return {
-        activity: 'Expected to wake',
-        timeRange: `${format(wakeTime, 'h:mm a')} ± 15 min`,
-        countdown: minutesUntil > 0 ? `in ${minutesUntil} min` : 'any moment',
-        confidence: prediction.confidence
-      };
+    if (currentActivity?.type === 'napping') {
+      if (timing?.nextWakeAt) {
+        const wakeTime = new Date(timing.nextWakeAt);
+        const minutesUntil = Math.max(0, differenceInMinutes(wakeTime, now));
+        
+        return {
+          activity: 'Expected to wake',
+          timeRange: `${format(wakeTime, 'h:mm a')} ± 15 min`,
+          countdown: minutesUntil > 0 ? `in ${minutesUntil} min` : 'any moment',
+          confidence: prediction.confidence
+        };
+      }
+      // If napping but no wake prediction, don't show next prediction
+      return null;
     }
     
     // For night sleep, don't show any prediction
