@@ -54,9 +54,13 @@ export default {
         },
         "card-ombre": {
           "1": "hsl(var(--card-ombre-1))",
+          "1-dark": "hsl(var(--card-ombre-1-dark))",
           "2": "hsl(var(--card-ombre-2))",
+          "2-dark": "hsl(var(--card-ombre-2-dark))",
           "3": "hsl(var(--card-ombre-3))",
+          "3-dark": "hsl(var(--card-ombre-3-dark))",
           "4": "hsl(var(--card-ombre-4))",
+          "4-dark": "hsl(var(--card-ombre-4-dark))",
         },
         feed: "hsl(var(--feed-color))",
         diaper: "hsl(var(--diaper-color))",

@@ -33,11 +33,15 @@
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
     --divider: 25 20% 83%; /* warm peachy divider */
     
-    /* Card ombré progression (light mode: warm taupe → deeper taupe) */
-    --card-ombre-1: 345 18% 87%; /* First card - warm taupe/mauve (from reference) */
-    --card-ombre-2: 345 19% 85%; /* Second card - slightly deeper */
-    --card-ombre-3: 345 20% 83%; /* Third card - deeper still */
-    --card-ombre-4: 345 21% 81%; /* Fourth card - deepest */
+    /* Card ombré progression (light mode: warm tan → deep brown) */
+    --card-ombre-1: 30 25% 88%; /* Lightest tan */
+    --card-ombre-1-dark: 30 28% 82%; /* Darker end of card 1 gradient */
+    --card-ombre-2: 28 26% 85%; /* Medium tan */
+    --card-ombre-2-dark: 28 28% 79%; /* Darker end of card 2 gradient */
+    --card-ombre-3: 25 27% 82%; /* Deeper tan */
+    --card-ombre-3-dark: 25 29% 76%; /* Darker end of card 3 gradient */
+    --card-ombre-4: 22 28% 79%; /* Deep brown-tan */
+    --card-ombre-4-dark: 22 30% 73%; /* Darker end of card 4 gradient */
     
     /* Light mode color overrides - fall latte palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
