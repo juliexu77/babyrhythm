@@ -27,11 +27,11 @@
     
     /* Light Mode - "Fall Latte" */
     --bg: 25 30% 94%; /* #F3EDE7 - light tan background */
-    --surface: 340 25% 94%; /* #F5EBEF - pale warm pink card surface */
-    --surface-muted: 340 20% 92%; /* #EFE6E9 - slightly deeper pink */
+    --surface: 25 28% 92%; /* warm tan card surface */
+    --surface-muted: 25 26% 90%; /* slightly deeper tan */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
-    --divider: 340 15% 88%; /* #E8E0E3 - warm pink border */
+    --divider: 25 22% 86%; /* warm tan divider */
     
     /* Card ombré progression (light mode: tan → berry) */
     --card-ombre-1: 25 28% 88%; /* Hero card - warm tan */
