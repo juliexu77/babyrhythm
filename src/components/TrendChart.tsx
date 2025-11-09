@@ -338,13 +338,13 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const napSummary = {
     avgDuration: Math.max(0, napDataForSummary.reduce((sum, d) => sum + d.value, 0) / napDataForSummary.filter(d => d.value > 0).length || 0),
     totalNaps: napDataForSummary.reduce((sum, d) => sum + d.napCount, 0),
-    avgNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.napCount, 0) / 7,
-    avgDaytimeNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.daytimeNapCount, 0) / 7,
+    avgNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.napCount, 0) / napDataForSummary.filter(d => d.napCount > 0).length || 0,
+    avgDaytimeNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.daytimeNapCount, 0) / napDataForSummary.filter(d => d.daytimeNapCount > 0).length || 0,
   };
   
   const prevNapSummary = {
     avgDuration: prevWeekNapData.reduce((sum, d) => sum + d.value, 0) / prevWeekNapData.filter(d => d.value > 0).length || 0,
-    avgNapsPerDay: prevWeekNapData.reduce((sum, d) => sum + d.napCount, 0) / 7,
+    avgNapsPerDay: prevWeekNapData.reduce((sum, d) => sum + d.napCount, 0) / prevWeekNapData.filter(d => d.napCount > 0).length || 0,
   };
   
   // Calculate percentage changes

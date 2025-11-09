@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
-import { isDaytimeNap, isNightSleep, calculateDuration } from "@/utils/napClassification";
 import { calculateNapStatistics } from "@/utils/napStatistics";
 
 interface CollectivePulseProps {
@@ -37,44 +36,19 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
-      // Calculate night sleep hours - any nap that qualifies as night sleep
-      const nightSleepByDate: Record<string, number> = {};
-      
-      activities?.forEach(activity => {
-        if (activity.type === 'nap' && isNightSleep(activity, nightSleepStartHour, nightSleepEndHour)) {
-          const timestamp = new Date(activity.logged_at);
-          const date = format(timestamp, 'yyyy-MM-dd');
-          
-          const details = activity.details as any;
-          if (details?.startTime && details?.endTime) {
-            const durationHours = calculateDuration(details.startTime, details.endTime);
-            nightSleepByDate[date] = (nightSleepByDate[date] || 0) + durationHours;
-          }
-        }
-      });
+      // Map to the format expected by calculateNapStatistics
+      const mappedActivities = activities?.map(a => ({
+        type: a.type,
+        loggedAt: a.logged_at,
+        details: a.details as any
+      })) || [];
 
-      const nightSleepDays = Object.keys(nightSleepByDate).length;
-      const totalNightSleep = Object.values(nightSleepByDate).reduce((sum, hours) => sum + hours, 0);
-      const avgNightSleep = nightSleepDays > 0 ? totalNightSleep / nightSleepDays : null;
-
-      // Calculate naps per day (daytime naps only, excluding night sleep)
-      const napsByDate: Record<string, number> = {};
-      
-      activities?.forEach(activity => {
-        if (activity.type === 'nap' && isDaytimeNap(activity, nightSleepStartHour, nightSleepEndHour)) {
-          const timestamp = new Date(activity.logged_at);
-          const date = format(timestamp, 'yyyy-MM-dd');
-          napsByDate[date] = (napsByDate[date] || 0) + 1;
-        }
-      });
-
-      // Calculate average naps per day over the full 7-day period
-      const totalNaps = Object.values(napsByDate).reduce((sum, count) => sum + count, 0);
-      const avgNaps = totalNaps / 7; // Divide by 7 days, not just days with naps
+      // Use shared utility for consistent calculation
+      const stats = calculateNapStatistics(mappedActivities, nightSleepStartHour, nightSleepEndHour);
 
       return {
-        nightSleepHours: avgNightSleep,
-        napsPerDay: avgNaps
+        nightSleepHours: stats.avgNightSleepHours > 0 ? stats.avgNightSleepHours : null,
+        napsPerDay: stats.avgDaytimeNapsPerDay
       };
     },
     enabled: !!household?.id,

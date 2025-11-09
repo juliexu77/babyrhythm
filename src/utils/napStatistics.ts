@@ -17,8 +17,9 @@ export interface NapStatistics {
 }
 
 /**
- * Calculate nap statistics for a 7-day period
+ * Calculate nap statistics based on logged days only
  * Single source of truth for nap calculations across the app
+ * Divides by actual days with nap data, not the full 7-day period
  */
 export const calculateNapStatistics = (
   activities: Activity[],
@@ -26,6 +27,17 @@ export const calculateNapStatistics = (
   nightSleepEndHour: number = 7
 ): NapStatistics => {
   const napActivities = activities.filter(a => a.type === 'nap');
+  
+  // Count unique days with nap data
+  const uniqueDates = new Set<string>();
+  napActivities.forEach(nap => {
+    if (nap.loggedAt) {
+      const date = new Date(nap.loggedAt).toISOString().split('T')[0];
+      uniqueDates.add(date);
+    }
+  });
+  
+  const daysWithData = uniqueDates.size || 1; // Fallback to 1 to avoid division by zero
   
   // Count daytime naps
   const daytimeNaps = napActivities.filter(nap => 
@@ -49,9 +61,9 @@ export const calculateNapStatistics = (
   });
   
   return {
-    avgNapsPerDay: napActivities.length / 7,
-    avgDaytimeNapsPerDay: daytimeNaps.length / 7,
+    avgNapsPerDay: napActivities.length / daysWithData,
+    avgDaytimeNapsPerDay: daytimeNaps.length / daysWithData,
     totalNaps: napActivities.length,
-    avgNightSleepHours: totalNightSleepMinutes / 60 / 7,
+    avgNightSleepHours: totalNightSleepMinutes / 60 / daysWithData,
   };
 };
