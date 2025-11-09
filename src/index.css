@@ -33,10 +33,11 @@
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
     --divider: 25 20% 83%; /* warm peachy divider */
     
-    /* Card ombré progression (light mode: tan → berry) */
-    --card-ombre-1: 25 25% 90%; /* Hero card - subtle warm tan */
-    --card-ombre-2: 20 28% 87%; /* Action card - gentle peachy tan */
-    --card-ombre-3: 340 30% 84%; /* Data card - soft rose/berry */
+    /* Card ombré progression (light mode: warm taupe → deeper taupe) */
+    --card-ombre-1: 345 18% 87%; /* First card - warm taupe/mauve (from reference) */
+    --card-ombre-2: 345 19% 85%; /* Second card - slightly deeper */
+    --card-ombre-3: 345 20% 83%; /* Third card - deeper still */
+    --card-ombre-4: 345 21% 81%; /* Fourth card - deepest */
     
     /* Light mode color overrides - fall latte palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
@@ -120,6 +121,7 @@
     --card-ombre-1: 0 0% 9%; /* Hero card - slightly darker than bg */
     --card-ombre-2: 0 0% 11%; /* Action card - lighter */
     --card-ombre-3: 0 0% 13%; /* Data card - lightest */
+    --card-ombre-4: 0 0% 14%; /* Fourth card */
     --accent-1: var(--pp-mint); /* feeding */
     --accent-2: var(--pp-lavender); /* sleep/insights */
     --chart-feed: 164 82% 68%; /* #36E2AE - brighter mint */

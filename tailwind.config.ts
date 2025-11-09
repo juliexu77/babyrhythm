@@ -56,6 +56,7 @@ export default {
           "1": "hsl(var(--card-ombre-1))",
           "2": "hsl(var(--card-ombre-2))",
           "3": "hsl(var(--card-ombre-3))",
+          "4": "hsl(var(--card-ombre-4))",
         },
         feed: "hsl(var(--feed-color))",
         diaper: "hsl(var(--diaper-color))",
