@@ -801,8 +801,8 @@ export class BabyCarePredictionEngine {
     tAwakeNow: number | null,
     lastNapDuration: number | null
   ): 'FEED_NOW' | 'START_WIND_DOWN' | 'INDEPENDENT_TIME' {
-    // CRITICAL: Never suggest nap if baby hasn't been awake for at least 60 minutes
-    const minCooldownAfterWake = 60;
+    // Use age-appropriate minimum wake window (e.g., 45min for newborns, longer for older babies)
+    const minCooldownAfterWake = this.adaptiveParams.wake_window_min;
     
     // If t_since_last_feed > feed_interval_max => choose FEED
     if (tSinceLastFeed && tSinceLastFeed > this.adaptiveParams.feed_interval_max) {
@@ -970,16 +970,16 @@ export class BabyCarePredictionEngine {
 
     // Calculate next nap window if awake - use position-specific wake window if available
     if (rationale.t_awake_now_min !== null) {
-      // Don't suggest nap immediately after waking - minimum 60min cooldown
-      const minCooldownAfterWake = 60;
+      // Use age-appropriate minimum wake window (e.g., 45min for newborns, longer for older babies)
+      const minCooldownAfterWake = this.adaptiveParams.wake_window_min;
       
       console.log('🔍 Calculating nap window:', {
         awakeMinutes: rationale.t_awake_now_min,
-        minCooldown: minCooldownAfterWake,
-        belowCooldown: rationale.t_awake_now_min < minCooldownAfterWake
+        ageBasedMinWakeWindow: minCooldownAfterWake,
+        belowMinimum: rationale.t_awake_now_min < minCooldownAfterWake
       });
       
-      // ALWAYS enforce minimum cooldown - never predict nap sooner than this
+      // ALWAYS enforce minimum wake window - never predict nap sooner than age-appropriate minimum
       if (rationale.t_awake_now_min < minCooldownAfterWake) {
         const remainingCooldown = minCooldownAfterWake - rationale.t_awake_now_min;
         timing.nextNapWindowStart = new Date(now.getTime() + remainingCooldown * 60000);
