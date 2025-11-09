@@ -138,17 +138,10 @@ export const DailyStoryCircles = ({
     );
   }
 
-  // Generate a warm brown gradient per day
+  // Generate gradients matching Today's Pulse card aesthetic
   const getDayGradient = (dateStr: string) => {
-    const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const gradients = [
-      'from-[hsl(25,35%,55%)] to-[hsl(30,30%,45%)]',   // rich warm brown
-      'from-[hsl(28,32%,58%)] to-[hsl(32,28%,48%)]',   // golden brown
-      'from-[hsl(22,38%,52%)] to-[hsl(28,32%,42%)]',   // deep warm brown
-      'from-[hsl(30,30%,56%)] to-[hsl(35,28%,46%)]',   // amber brown
-      'from-[hsl(26,36%,54%)] to-[hsl(30,32%,44%)]',   // caramel brown
-    ];
-    return gradients[hash % gradients.length];
+    // Using colors from card-ombre-3 variants for consistency
+    return 'from-card-ombre-3-dark to-card-ombre-3';
   };
 
   // Only show circles if we have at least one story
