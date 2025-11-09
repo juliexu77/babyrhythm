@@ -213,7 +213,10 @@ export const DailyStoryCircles = ({
               
               {/* Circle container - outlined only */}
               <div 
-                className="relative w-16 h-16 rounded-full border-2 border-border/30 bg-background transition-all duration-300 group-hover:border-border/50"
+                className="relative w-16 h-16 rounded-full border-[3px] bg-background transition-all duration-300"
+                style={{
+                  borderColor: 'hsl(340, 35%, 65%)'
+                }}
               >
                 {/* Content - sparkle for Today only */}
                 <div className="relative w-full h-full flex items-center justify-center">
