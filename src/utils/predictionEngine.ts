@@ -390,7 +390,7 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
 
   // Calculate wake windows (ONLY between naps, exclude night sleep)
   const sleepSegments = extractSleepSegments(recentEvents);
-  const napSegments = sleepSegments.filter(s => s.type === 'nap');
+  const napSegments = sleepSegments.filter(s => s.type === 'nap' && s.duration);
   const napAsc = [...napSegments].sort((a, b) => a.start.getTime() - b.start.getTime());
   const wakeWindows: number[] = [];
   
@@ -399,7 +399,12 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
     const next = napAsc[i + 1];
     if (current.end && next.start) {
       const wakeWindow = Math.round((next.start.getTime() - current.end.getTime()) / 60000);
-      if (wakeWindow > 0 && wakeWindow < 480) {
+      // Filter out unrealistic wake windows:
+      // - Too short (< 60 min) - likely logging errors or micro-sleeps
+      // - Too long (> 6 hours) - likely spans night sleep or missed naps
+      // Use age-appropriate minimum to avoid learning from anomalies
+      const minRealistic = Math.max(60, baseParams.wake_window_min * 0.6);
+      if (wakeWindow >= minRealistic && wakeWindow < 360) {
         wakeWindows.push(wakeWindow);
       }
     }
@@ -469,9 +474,9 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
     const blended = baseParams.wake_window_max * blendRatio.age + medianWakeWindow * blendRatio.learned;
     
     // Enforce stricter minimum bounds to prevent unreasonably short wake windows
-    // Use 80% of base params as absolute floor (not 70%)
-    const minWakeWindowFloor = baseParams.wake_window_min * 0.8;
-    const maxWakeWindowFloor = baseParams.wake_window_max * 0.8;
+    // Never go below 85% of age-based minimums to avoid false "nap now" predictions
+    const minWakeWindowFloor = baseParams.wake_window_min * 0.85;
+    const maxWakeWindowFloor = baseParams.wake_window_max * 0.85;
     
     adaptive.wake_window_min = clamp(blended * 0.8, minWakeWindowFloor, baseParams.wake_window_min * 1.5);
     adaptive.wake_window_max = clamp(blended, maxWakeWindowFloor, baseParams.wake_window_max * 1.5);
