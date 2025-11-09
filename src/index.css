@@ -34,9 +34,9 @@
     --divider: 25 22% 86%; /* warm tan divider */
     
     /* Card ombré progression (light mode: tan → berry) */
-    --card-ombre-1: 25 28% 89%; /* Hero card - light warm tan */
-    --card-ombre-2: 15 35% 80%; /* Action card - peachy tan/rose */
-    --card-ombre-3: 330 40% 72%; /* Data card - deeper rose/berry */
+    --card-ombre-1: 25 25% 90%; /* Hero card - subtle warm tan */
+    --card-ombre-2: 20 28% 87%; /* Action card - gentle peachy tan */
+    --card-ombre-3: 340 30% 84%; /* Data card - soft rose/berry */
     
     /* Light mode color overrides - fall latte palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
