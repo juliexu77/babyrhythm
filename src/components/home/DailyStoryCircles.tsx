@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, subDays, isToday, parseISO } from "date-fns";
-import { Sparkles, Image, PenLine, Plus } from "lucide-react";
+import { Sparkles, Camera, PenLine, Plus } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 
 interface CachedStory {
@@ -191,7 +191,7 @@ export const DailyStoryCircles = ({
               <div 
                 className={`relative w-16 h-16 rounded-full overflow-hidden ${
                   isTodayStory 
-                    ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background' 
+                    ? 'ring-[3px] ring-primary/50 ring-offset-2 ring-offset-background' 
                     : ''
                 }`}
                 style={{
@@ -238,7 +238,7 @@ export const DailyStoryCircles = ({
                     }}
                   >
                     {hasPhoto ? (
-                      <Image className="w-4 h-4 text-primary" />
+                      <Camera className="w-4 h-4 text-primary" />
                     ) : hasNote ? (
                       <PenLine className="w-4 h-4 text-muted-foreground" />
                     ) : isEmpty ? (
