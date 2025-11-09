@@ -11,7 +11,6 @@ import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { RightNowStatus } from "@/components/home/RightNowStatus";
-import { SmartQuickActions } from "@/components/home/SmartQuickActions";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { CollectivePulse } from "@/components/home/CollectivePulse";
 import { LearningProgress } from "@/components/LearningProgress";
@@ -1365,7 +1364,7 @@ const lastDiaper = displayActivities
           totalLogs={activities.length}
         />
 
-        {/* Zone 1: Right Now Status (replaces What's Next) */}
+        {/* Zone 1: Right Now Status with Actions */}
         <RightNowStatus
           currentActivity={currentActivity}
           nextPrediction={nextPrediction}
@@ -1378,62 +1377,44 @@ const lastDiaper = displayActivities
             });
           }}
           onStartNap={() => {
-            if (addActivity) {
-              const now = new Date();
-              addActivity('nap', {
-                startTime: format(now, 'h:mm a'),
-              }, now);
-              toast({
-                title: 'Nap started',
-                description: 'Timer is running',
-              });
-            }
+            // Start a new nap with current time
+            const now = new Date();
+            addActivity?.('nap', {
+              startTime: now.toTimeString().slice(0, 5),
+              isNightSleep: false,
+            }, now, now.toTimeString().slice(0, 5));
+            toast({
+              title: "Nap started",
+              description: "Timer is now running",
+            });
           }}
           onEndFeed={() => {
-            if (addActivity && currentActivity?.type === 'feeding') {
+            // End the current feed
+            const lastFeed = activities
+              .filter(a => a.type === 'feed')
+              .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
+            
+            if (lastFeed) {
               const now = new Date();
-              const startTime = currentActivity.startTime;
-              
-              // Calculate duration in minutes
-              let durationMinutes = 0;
-              if (startTime) {
-                const [time, period] = startTime.split(' ');
-                const [hours, minutes] = time.split(':').map(Number);
-                let startHours = hours;
-                if (period === 'PM' && hours !== 12) startHours += 12;
-                if (period === 'AM' && hours === 12) startHours = 0;
-                
-                const startDate = new Date(now);
-                startDate.setHours(startHours, minutes, 0, 0);
-                durationMinutes = differenceInMinutes(now, startDate);
-              }
-              
-              // Log the feed with duration
-              addActivity('feed', {
-                amount: 0, // User can edit later if needed
-                unit: 'ml',
-                startTime: startTime,
-                endTime: format(now, 'h:mm a'),
-                durationMinutes: Math.max(0, durationMinutes),
-              }, now);
-              
+              const updatedFeed = {
+                ...lastFeed,
+                details: {
+                  ...lastFeed.details,
+                  endTime: now.toTimeString().slice(0, 5),
+                }
+              };
+              onEditActivity(updatedFeed);
               toast({
-                title: 'Feed ended',
-                description: 'Logged successfully',
+                title: "Feed ended",
+                description: "Duration recorded",
               });
             }
           }}
           babyName={babyName || 'Baby'}
           babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
           activities={activities}
-        />
-
-
-        {/* Zone 2: Smart Quick Actions */}
-        <SmartQuickActions
           suggestions={smartSuggestions}
           onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
-          activities={activities}
           chatComponent={
             <ParentingChat
               activities={activities.map(a => ({
