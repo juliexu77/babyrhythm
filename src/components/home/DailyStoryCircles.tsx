@@ -226,24 +226,6 @@ export const DailyStoryCircles = ({
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                {/* Content icon on bottom-center of outline (Oura style) */}
-                {(hasPhoto || hasNote || isEmpty) && (
-                  <div 
-                    className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-background border-2 border-border/50 flex items-center justify-center"
-                    style={{
-                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)'
-                    }}
-                  >
-                    {hasPhoto ? (
-                      <Camera className="w-4 h-4 text-primary" />
-                    ) : hasNote ? (
-                      <PenLine className="w-4 h-4 text-muted-foreground" />
-                    ) : isEmpty ? (
-                      <Plus className="w-4 h-4 text-muted-foreground/60" />
-                    ) : null}
-                  </div>
-                )}
               </div>
             </button>
           );
