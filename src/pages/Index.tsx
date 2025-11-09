@@ -1070,7 +1070,13 @@ const ongoingNap = (() => {
                                         
                                         {/* Wake-up indicator - show in the date section where the wake-up happened */}
                                         {showWakeUpHere && nightSleep && wakeTime && (
-                                          <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
+                                          <button
+                                            onClick={() => {
+                                              console.log('Clicked wake up indicator, opening night sleep:', nightSleep);
+                                              setEditingActivity(nightSleep);
+                                            }}
+                                            className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors w-full text-left"
+                                          >
                                             {/* Timeline line */}
                                             <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border group-last:hidden"></div>
                                             
@@ -1081,14 +1087,14 @@ const ongoingNap = (() => {
                                             
                                             {/* Content */}
                                             <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
-                                              <p className="text-sm text-foreground font-medium break-words">
+                                              <p className="text-sm text-foreground font-medium break-words hover:text-primary transition-colors">
                                                 {babyProfile?.name?.split(' ')[0] || 'Baby'} woke up
                                               </p>
                                               <span className="text-xs text-muted-foreground whitespace-nowrap">
                                                 {wakeTime}
                                               </span>
                                             </div>
-                                          </div>
+                                          </button>
                                         )}
                                       </>
                                     );
