@@ -141,10 +141,10 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         {/* Micro Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-lg p-3 border border-border">
-            <div className="text-xs text-muted-foreground mb-1">Avg Night Sleep</div>
+            <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Night Sleep</div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-foreground">
-                {cohortStats.night_sleep_hours?.toFixed(1) || '—'}h
+              <div className="text-2xl font-semibold text-foreground tracking-tight">
+                {cohortStats.night_sleep_hours?.toFixed(1) || '—'}<span className="text-base text-muted-foreground font-normal">h</span>
               </div>
               {renderChange(cohortStats.night_sleep_change)}
             </div>
@@ -155,9 +155,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
             )}
           </div>
           <div className="bg-card rounded-lg p-3 border border-border">
-            <div className="text-xs text-muted-foreground mb-1">Avg Naps/Day</div>
+            <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Naps/Day</div>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-2xl font-semibold text-foreground tracking-tight">
                 {formatNaps(cohortStats.naps_per_day)}
               </div>
               {renderChange(cohortStats.naps_per_day_change)}
