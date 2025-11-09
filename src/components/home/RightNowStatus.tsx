@@ -138,6 +138,13 @@ export const RightNowStatus = ({
           </Button>
         )}
       </div>
+
+      {/* Sync Indicator at bottom */}
+      <div className="pt-2 border-t border-border/20">
+        <p className="text-xs text-muted-foreground text-center">
+          Synced just now
+        </p>
+      </div>
     </div>
   );
 };

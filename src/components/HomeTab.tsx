@@ -1299,11 +1299,6 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      {/* 1. Sticky Header with Sync Indicator */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/40">
-        <SyncIndicator />
-      </div>
-
       <div className="px-4 pt-3 space-y-4">
 
         {/* Greeting & Today's Story */}
