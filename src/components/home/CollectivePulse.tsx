@@ -112,9 +112,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     const Icon = isPositive ? TrendingUp : TrendingDown;
     
     return (
-      <div className={`flex items-center gap-1 text-xs ${
-        isPositive ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
-      }`}>
+      <div className="flex items-center gap-1 text-xs text-muted-foreground">
         <Icon className="w-3 h-3" />
         <span>{Math.abs(change).toFixed(1)}{cohortStats.night_sleep_hours ? 'h' : ''}</span>
       </div>
