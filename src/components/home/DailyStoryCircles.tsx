@@ -99,7 +99,7 @@ export const DailyStoryCircles = ({
   if (stories.length === 0) return null;
 
   return (
-    <div className="px-4 py-4 pb-6">
+    <div className="px-4 py-4 pb-6 pr-6">
       <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-hide px-2 py-2">
         {stories.map((story, index) => {
           const storyDate = parseISO(story.date);
@@ -133,7 +133,7 @@ export const DailyStoryCircles = ({
                         : 'text-primary/60'
                     }`} />
                     <span className="text-[10px] font-medium text-foreground/70">
-                      {format(storyDate, 'MMM d')}
+                      {isTodayStory ? 'Today' : format(storyDate, 'MMM d')}
                     </span>
                   </div>
                 </div>
@@ -142,14 +142,7 @@ export const DailyStoryCircles = ({
                 <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
 
-              {/* "Today" label */}
-              {isTodayStory && (
-                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <span className="text-[9px] font-medium text-primary uppercase tracking-wider">
-                    Today
-                  </span>
-                </div>
-              )}
+              {/* "Today" label - removed since it's now in the circle */}
             </button>
           );
         })}
