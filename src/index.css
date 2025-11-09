@@ -26,7 +26,7 @@
     --s-7: 32px;
     
     /* Light Mode - "Fall Latte" */
-    --bg: 25 30% 89%; /* peachy beige background matching Quick Actions */
+    --bg: var(--card-ombre-2); /* match Quick Actions container background */
     --surface: 25 28% 87%; /* warm peachy card surface */
     --surface-muted: 25 26% 85%; /* slightly deeper peachy tan */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
