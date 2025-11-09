@@ -647,6 +647,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               </DialogTitle>
               {!editingActivity && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowVoiceRecorder(true)}
@@ -673,6 +674,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               ].map(({ type, icon: Icon, label }) => (
                 <Button
                   key={type}
+                  type="button"
                   variant={activityType === type ? "default" : "outline"}
                   className={`h-12 flex-col gap-1 ${
                     activityType === type 
@@ -700,6 +702,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     ].map(({ type, icon: Icon, label }) => (
                       <Button
                         key={type}
+                        type="button"
                         variant={feedType === type ? "default" : "outline"}
                         className={`h-10 flex-col gap-1 text-xs ${
                           feedType === type 
@@ -731,6 +734,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       <div className="flex-1">
                         <Label className="text-sm font-medium mb-2 block">{t('amount')}</Label>
                         <Button
+                          type="button"
                           variant="outline"
                           className="w-full h-12 text-left"
                           onClick={() => setShowKeypad(true)}
@@ -824,6 +828,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     ].map(({ type, label }) => (
                       <Button
                         key={type}
+                        type="button"
                         variant={diaperType === type ? "default" : "outline"}
                         className={`h-12 ${
                           diaperType === type 
@@ -842,6 +847,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <div className="flex items-center justify-between py-3">
                     <Label className="text-sm">{t('leak')}</Label>
                     <Button
+                      type="button"
                       variant={hasLeak ? "default" : "outline"}
                       size="sm"
                       className={`h-8 px-4 ${
@@ -857,6 +863,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <div className="flex items-center justify-between py-3">
                     <Label className="text-sm">{t('diaperingCream')}</Label>
                     <Button
+                      type="button"
                       variant={hasCream ? "default" : "outline"}
                       size="sm"
                       className={`h-8 px-4 ${
@@ -965,6 +972,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           className="w-full h-32 object-cover rounded-lg border"
                         />
                         <Button
+                          type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => {
@@ -1126,6 +1134,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           className="w-full h-48 object-cover rounded-lg border"
                         />
                         <Button
+                          type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => {
@@ -1208,6 +1217,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             <div className="space-y-3 pt-4 border-t flex-shrink-0">{/* Buttons section */}
               <div className="flex gap-3">
                 <Button 
+                  type="button"
                   variant="outline" 
                   onClick={() => onClose ? onClose() : setInternalOpen(false)} 
                   className="flex-1 h-12"
@@ -1216,6 +1226,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </Button>
                 
                 <Button 
+                  type="button"
                   onClick={handleSubmit} 
                   disabled={uploadingPhoto || isSaving}
                   className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"

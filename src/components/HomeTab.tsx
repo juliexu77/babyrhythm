@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { SyncIndicator } from "@/components/SyncIndicator";
 import { Baby, Droplet, Moon, Clock, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
