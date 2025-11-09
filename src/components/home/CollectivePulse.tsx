@@ -13,7 +13,7 @@ interface CollectivePulseProps {
 export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
-  const { isNightTime, nightSleepStartHour } = useNightSleepWindow();
+  const { isNightTime, nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
@@ -73,19 +73,36 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       const napsByDate: Record<string, number> = {};
       
       activities?.forEach(activity => {
-        const timestamp = new Date(activity.logged_at);
-        const isNight = isNightTime(timestamp);
-        
-        // Count nap type activities that occur outside night hours
-        if (activity.type === 'nap' && !isNight) {
-          const date = format(timestamp, 'yyyy-MM-dd');
-          napsByDate[date] = (napsByDate[date] || 0) + 1;
+        if (activity.type === 'nap') {
+          const timestamp = new Date(activity.logged_at);
+          let startHour = timestamp.getHours();
+          
+          // Use details.startTime if available for more accurate day/night determination
+          const details = activity.details as any;
+          if (details?.startTime) {
+            const match = details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (match) {
+              let hours = parseInt(match[1]);
+              const period = match[3].toUpperCase();
+              if (period === 'PM' && hours !== 12) hours += 12;
+              if (period === 'AM' && hours === 12) hours = 0;
+              startHour = hours;
+            }
+          }
+          
+          // Count naps that occur outside night hours (before nightSleepStartHour and after nightSleepEndHour)
+          const isDayNap = startHour < nightSleepStartHour && startHour >= nightSleepEndHour;
+          
+          if (isDayNap) {
+            const date = format(timestamp, 'yyyy-MM-dd');
+            napsByDate[date] = (napsByDate[date] || 0) + 1;
+          }
         }
       });
 
-      const napDays = Object.keys(napsByDate).length;
+      // Calculate average naps per day over the full 7-day period
       const totalNaps = Object.values(napsByDate).reduce((sum, count) => sum + count, 0);
-      const avgNaps = napDays > 0 ? totalNaps / napDays : null;
+      const avgNaps = totalNaps / 7; // Divide by 7 days, not just days with naps
 
       return {
         nightSleepHours: avgNightSleep,
