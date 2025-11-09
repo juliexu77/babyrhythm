@@ -29,6 +29,17 @@ export const DailyStoryCircles = ({
   // Check if it's after 5pm for "story ready" state
   const isAfter5PM = new Date().getHours() >= 17;
 
+  // Debug logging
+  console.log('🎭 DailyStoryCircles received:', {
+    activitiesCount: activities.length,
+    babyName,
+    sampleActivities: activities.slice(0, 3).map(a => ({ 
+      type: a.type, 
+      loggedAt: a.loggedAt,
+      date: a.loggedAt ? format(new Date(a.loggedAt), 'yyyy-MM-dd') : 'no date'
+    }))
+  });
+
   // Cache stories - always backfill for prior days
   useEffect(() => {
     const cacheKey = 'babyrhythm_daily_stories';
