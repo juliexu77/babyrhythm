@@ -26,7 +26,7 @@
     --s-7: 32px;
     
     /* Light Mode - "Fall Latte" */
-    --bg: 25 38% 96%; /* Lighter cream background - softer than cards */
+    --bg: 25 25% 97%; /* #FAF8F7 - very light cream background, lighter than cards */
     --surface: 340 25% 94%; /* #F5EBEF - pale warm pink card surface */
     --surface-muted: 340 20% 92%; /* #EFE6E9 - slightly deeper pink */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
