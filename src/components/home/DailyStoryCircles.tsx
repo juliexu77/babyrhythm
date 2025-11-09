@@ -222,7 +222,10 @@ export const DailyStoryCircles = ({
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/15 to-accent/30" />
                 
                 {/* Date label */}
-                <div className="relative w-full h-full flex items-center justify-center">
+                <div className="relative w-full h-full flex flex-col items-center justify-center gap-0.5">
+                  {isTodayStory && (
+                    <Sparkles className="w-4 h-4 text-primary animate-story-shimmer" />
+                  )}
                   <span className="text-[11px] font-medium text-foreground/80">
                     {isTodayStory ? 'Today' : format(storyDate, 'MMM d')}
                   </span>
