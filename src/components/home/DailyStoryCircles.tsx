@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { format, subDays, isToday, parseISO } from "date-fns";
-import { Sparkles, Camera, PenLine, Plus, Moon, Baby, Image } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import dynamicIconImports from "lucide-react/dynamicIconImports";
 import { Activity } from "@/components/ActivityCard";
 
 interface CachedStory {
@@ -9,6 +10,7 @@ interface CachedStory {
   feedCount: number;
   napCount: number;
   activities: Activity[];
+  icon?: string | null; // AI-suggested icon name
 }
 
 interface DailyStoryCirclesProps {
@@ -42,7 +44,7 @@ export const DailyStoryCircles = ({
     };
 
     // Generate story for a specific date
-    const generateStoryForDate = (targetDate: Date): CachedStory | null => {
+    const generateStoryForDate = async (targetDate: Date): Promise<CachedStory | null> => {
       const dateStr = format(targetDate, 'yyyy-MM-dd');
       const dayActivities = activities.filter(a => {
         if (!a.loggedAt) return false;
@@ -55,7 +57,19 @@ export const DailyStoryCircles = ({
       const feedCount = dayActivities.filter(a => a.type === 'feed').length;
       const napCount = dayActivities.filter(a => a.type === 'nap' && !a.details.isNightSleep).length;
 
-      // Generate simple headline
+      // Check cache first
+      const cached = cachedStories.find(s => s.date === dateStr);
+      if (cached && cached.icon !== undefined) {
+        // Update with latest activity counts but keep cached headline/icon
+        return {
+          ...cached,
+          feedCount,
+          napCount,
+          activities: dayActivities
+        };
+      }
+
+      // Generate simple headline as fallback (will be replaced by AI if possible)
       const headline = feedCount >= 8 
         ? "Growing strong" 
         : napCount >= 4 
@@ -69,7 +83,8 @@ export const DailyStoryCircles = ({
         headline,
         feedCount,
         napCount,
-        activities: dayActivities
+        activities: dayActivities,
+        icon: null // Will be populated by AI later
       };
     };
 
@@ -78,32 +93,108 @@ export const DailyStoryCircles = ({
     const todayStr = format(today, 'yyyy-MM-dd');
 
     // Always show 5 days (today and 4 prior days) - even if empty
-    const newStories: CachedStory[] = [];
-    for (let i = 4; i >= 0; i--) { // Count backwards from 4 days ago to today
-      const targetDate = subDays(today, i);
-      const dateStr = format(targetDate, 'yyyy-MM-dd');
+    const fetchStories = async () => {
+      const newStories: CachedStory[] = [];
+      for (let i = 4; i >= 0; i--) { // Count backwards from 4 days ago to today
+        const targetDate = subDays(today, i);
+        const dateStr = format(targetDate, 'yyyy-MM-dd');
 
-      // Generate story for each day, or create empty placeholder
-      const story = generateStoryForDate(targetDate);
-      if (story) {
-        newStories.push(story);
-      } else {
-        // Create empty story placeholder for days without activities
-        newStories.push({
-          date: dateStr,
-          headline: "",
-          feedCount: 0,
-          napCount: 0,
-          activities: []
+        // Generate story for each day, or create empty placeholder
+        const story = await generateStoryForDate(targetDate);
+        if (story) {
+          newStories.push(story);
+        } else {
+          // Create empty story placeholder for days without activities
+          newStories.push({
+            date: dateStr,
+            headline: "",
+            feedCount: 0,
+            napCount: 0,
+            activities: [],
+            icon: null
+          });
+        }
+      }
+
+      setStories(newStories); // Already in correct order (oldest to newest)
+
+      // Save to cache (including empty placeholders)
+      localStorage.setItem(cacheKey, JSON.stringify(newStories));
+
+      // Fetch AI icons for days that don't have them yet (excluding today)
+      const storiesNeedingIcons = newStories.filter(
+        s => s.activities.length > 0 && s.icon === null && s.date !== todayStr
+      );
+
+      if (storiesNeedingIcons.length > 0) {
+        // Fetch icons in background
+        Promise.all(
+          storiesNeedingIcons.map(async (story) => {
+            try {
+              // Calculate total nap minutes
+              const totalNapMinutes = story.activities
+                .filter(a => a.type === 'nap' && !a.details.isNightSleep)
+                .reduce((sum, a) => {
+                  if (a.details.startTime && a.details.endTime) {
+                    const start = new Date(a.details.startTime).getTime();
+                    const end = new Date(a.details.endTime).getTime();
+                    return sum + (end - start) / (1000 * 60);
+                  }
+                  return sum;
+                }, 0);
+
+              const solidFeeds = story.activities.filter(a => a.type === 'feed' && a.details.feedType === 'solid');
+              const specialNotes = story.activities.filter(a => a.details?.note);
+
+              const response = await fetch(
+                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-story-headline`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    feedCount: story.feedCount,
+                    napCount: story.napCount,
+                    totalNapMinutes,
+                    hadSolidFood: solidFeeds.length > 0,
+                    solidFoodNote: solidFeeds[0]?.details.note || null,
+                    specialMoments: specialNotes.slice(0, 3).map(a => a.details.note),
+                    babyName
+                  })
+                }
+              );
+
+              if (response.ok) {
+                const data = await response.json();
+                if (data.headline || data.icon) {
+                  // Update story with AI-generated data
+                  return {
+                    ...story,
+                    headline: data.headline || story.headline,
+                    icon: data.icon || story.icon
+                  };
+                }
+              }
+            } catch (err) {
+              console.warn('Failed to fetch AI icon for', story.date, err);
+            }
+            return story;
+          })
+        ).then((updatedStories) => {
+          // Update cache and state with AI-generated icons
+          const finalStories = newStories.map(s => {
+            const updated = updatedStories.find(u => u.date === s.date);
+            return updated || s;
+          });
+          setStories(finalStories);
+          localStorage.setItem(cacheKey, JSON.stringify(finalStories));
         });
       }
-    }
+    };
 
-    setStories(newStories); // Already in correct order (oldest to newest)
-
-    // Save to cache (including empty placeholders)
-    localStorage.setItem(cacheKey, JSON.stringify(newStories));
-  }, [activities]);
+    fetchStories();
+  }, [activities, babyName]);
 
   // Empty state for completely new users (no stories at all)
   if (stories.length === 0) {
@@ -151,19 +242,29 @@ export const DailyStoryCircles = ({
     return 'from-card-ombre-3-dark to-card-ombre-3';
   };
 
-  // Determine emotional anchor icon for each day
-  const getEmotionalAnchor = (story: CachedStory) => {
-    if (story.activities.length === 0) return null;
+  // Render dynamic icon component
+  const DynamicIcon = ({ iconName }: { iconName: string }) => {
+    const [IconComponent, setIconComponent] = useState<any>(null);
     
-    // Sleep-heavy days (3+ naps or long sleep duration)
-    const napActivities = story.activities.filter(a => a.type === 'nap' && !a.details.isNightSleep);
-    if (napActivities.length >= 3) return Moon;
+    useEffect(() => {
+      const loadIcon = async () => {
+        try {
+          const iconKey = iconName.charAt(0).toLowerCase() + iconName.slice(1);
+          const kebabCase = iconKey.replace(/([A-Z])/g, '-$1').toLowerCase();
+          
+          if (kebabCase in dynamicIconImports) {
+            const module = await dynamicIconImports[kebabCase as keyof typeof dynamicIconImports]();
+            setIconComponent(() => module.default);
+          }
+        } catch (error) {
+          console.warn('Failed to load icon:', iconName, error);
+        }
+      };
+      loadIcon();
+    }, [iconName]);
     
-    // Feed focus (8+ feeds)
-    if (story.feedCount >= 8) return Baby;
-    
-    // Default: null (empty circle for calm days)
-    return null;
+    if (!IconComponent) return null;
+    return <IconComponent className="w-5 h-5" style={{ color: 'hsl(300, 35%, 55%)' }} />;
   };
 
   return (
@@ -184,9 +285,6 @@ export const DailyStoryCircles = ({
           const storyDate = parseISO(story.date);
           const isTodayStory = isToday(storyDate);
           const isStoryReady = isTodayStory && isAfter5PM;
-          
-          // Get emotional anchor for this day
-          const AnchorIcon = getEmotionalAnchor(story);
           
           return (
             <button
@@ -228,8 +326,8 @@ export const DailyStoryCircles = ({
                 <div className="relative w-full h-full flex items-center justify-center">
                   {isTodayStory ? (
                     <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
-                  ) : AnchorIcon ? (
-                    <AnchorIcon className="w-5 h-5" style={{ color: 'hsl(300, 35%, 55%)' }} />
+                  ) : story.icon ? (
+                    <DynamicIcon iconName={story.icon} />
                   ) : null}
                 </div>
               </div>

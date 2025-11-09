@@ -61,17 +61,28 @@ serve(async (req) => {
       context += `- Special moments: ${specialMoments.join(', ')}\n`;
     }
 
-    const systemPrompt = `You are a poetic storyteller for parents. Create a single, beautiful headline (max 15 words) that captures the essence of a baby's day.
+    const systemPrompt = `You are a poetic storyteller for parents. Analyze a baby's day and provide a meaningful headline and icon.
 
-Style guidelines:
-- Poetic, gentle, and emotionally resonant
+Style guidelines for headline:
+- Poetic, gentle, and emotionally resonant (max 15 words)
 - Use soft, lyrical language
 - Focus on rhythm, balance, and growth
 - Avoid clichés and overly sentimental phrases
-- Use present tense or timeless observations
-- Examples of good tone: "Steady breath. Gentle rhythm. Today flowed." or "First taste of peas. Curious eyes. Growing strong."
 
-Return ONLY the headline text, nothing else.`;
+For the icon, choose ONE Lucide icon name that best represents the essence of the day:
+- Use specific icons based on activities (e.g., "Carrot" if ate carrots, "Apple" if ate apples)
+- Use "Moon" for sleep-heavy days
+- Use "Baby" or "Milk" for feeding focus
+- Use "Sun" for active, playful days
+- Use "Heart" for bonding moments
+- Use "Sparkles" for milestone days
+- Use "Camera" if photos were taken
+- Return null if no icon fits
+
+You must respond with valid JSON in this exact format:
+{"headline": "your headline here", "icon": "IconName"}
+
+Valid icon examples: "Carrot", "Apple", "Moon", "Baby", "Milk", "Sun", "Heart", "Sparkles", "Camera", "Smile", "Banana", "Cookie"`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -83,7 +94,7 @@ Return ONLY the headline text, nothing else.`;
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Create a poetic headline for this day:\n\n${context}` }
+          { role: "user", content: `Analyze this day and provide headline + icon:\n\n${context}` }
         ],
       }),
     });
@@ -112,13 +123,25 @@ Return ONLY the headline text, nothing else.`;
     }
 
     const data = await response.json();
-    const headline = data.choices?.[0]?.message?.content?.trim() || "";
+    const content = data.choices?.[0]?.message?.content?.trim() || "";
 
-    console.log('✅ Generated headline:', headline);
+    try {
+      const parsed = JSON.parse(content);
+      const headline = parsed.headline || "";
+      const icon = parsed.icon || null;
+      
+      console.log('✅ Generated story:', { headline, icon });
 
-    return new Response(JSON.stringify({ headline }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      return new Response(JSON.stringify({ headline, icon }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (parseError) {
+      // Fallback if AI doesn't return valid JSON
+      console.warn('Failed to parse AI response as JSON, using content as headline:', parseError);
+      return new Response(JSON.stringify({ headline: content, icon: null }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
   } catch (error) {
     console.error('Error in generate-story-headline:', error);
