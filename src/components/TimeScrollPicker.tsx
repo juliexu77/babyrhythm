@@ -374,7 +374,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         {/* AM/PM - Single toggle button */}
         <div className="flex">
           <button
-            className="px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors text-foreground font-bold bg-muted hover:bg-muted/80 border border-muted-foreground/30"
+            className="px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors bg-primary/10 hover:bg-primary/20 text-foreground font-bold border border-primary/30"
             onClick={() => {
               const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
               setHasUserInteracted(true);
