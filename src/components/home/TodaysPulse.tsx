@@ -100,13 +100,13 @@ export const TodaysPulse = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border border-border rounded-xl overflow-hidden">
+      <div className="border-y border-border overflow-hidden">
         {/* Header */}
         <CollapsibleTrigger className="w-full p-4 bg-accent/20 hover:bg-accent/30 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
                 Today's Pulse
               </h3>
             </div>

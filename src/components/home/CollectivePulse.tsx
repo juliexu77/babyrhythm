@@ -57,7 +57,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="border border-border rounded-xl overflow-hidden bg-accent/20 animate-pulse">
+      <div className="border-y border-border overflow-hidden bg-accent/20 animate-pulse">
         <div className="p-4 border-b border-border">
           <div className="h-4 bg-muted rounded w-32 mb-2" />
           <div className="h-3 bg-muted rounded w-40" />
@@ -76,11 +76,11 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   // Show message when data not yet computed
   if (!cohortStats) {
     return (
-      <div className="border border-border rounded-xl overflow-hidden bg-accent/20">
+      <div className="border-y border-border overflow-hidden bg-accent/20">
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-2 mb-1">
             <Globe className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
               Collective Pulse
             </h3>
           </div>
@@ -122,12 +122,12 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   };
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-accent/20">
+    <div className="border-y border-border overflow-hidden bg-accent/20">
       {/* Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2 mb-1">
           <Globe className="w-4 h-4 text-primary" />
-          <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
             Collective Pulse
           </h3>
         </div>

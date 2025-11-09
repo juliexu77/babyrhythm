@@ -1446,26 +1446,22 @@ const lastDiaper = displayActivities
 
         {/* Zone 3: Today's Pulse (at the bottom) */}
         {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
-          <div className="px-4">
-            <TodaysPulse
-              deviations={todaysPulse.deviations}
-              biggestDeviation={todaysPulse.biggestDeviation}
-              onAdjustSchedule={() => {
-                // Navigate to Rhythm tab
-                const rhythmTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-                rhythmTab?.click();
-              }}
-              babyName={babyName || 'Baby'}
-              babyAge={babyAgeInWeeks}
-              activities={activities}
-            />
-          </div>
+          <TodaysPulse
+            deviations={todaysPulse.deviations}
+            biggestDeviation={todaysPulse.biggestDeviation}
+            onAdjustSchedule={() => {
+              // Navigate to Rhythm tab
+              const rhythmTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+              rhythmTab?.click();
+            }}
+            babyName={babyName || 'Baby'}
+            babyAge={babyAgeInWeeks}
+            activities={activities}
+          />
         )}
 
         {/* Zone 4: Collective Pulse */}
-        <div className="px-4">
-          <CollectivePulse babyBirthday={effectiveBabyBirthday} />
-        </div>
+        <CollectivePulse babyBirthday={effectiveBabyBirthday} />
 
       </div>
     </div>
