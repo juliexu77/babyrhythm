@@ -57,12 +57,12 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="border-y border-border overflow-hidden bg-accent/20 animate-pulse">
-        <div className="p-4 border-b border-border">
+      <div className="border-y border-border overflow-hidden bg-accent/20 animate-pulse mb-6">
+        <div className="px-4 py-5 border-b border-border">
           <div className="h-4 bg-muted rounded w-32 mb-2" />
           <div className="h-3 bg-muted rounded w-40" />
         </div>
-        <div className="p-4 space-y-4">
+        <div className="px-4 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-card rounded-lg p-3 border border-border h-20" />
             <div className="bg-card rounded-lg p-3 border border-border h-20" />
@@ -76,8 +76,8 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   // Show message when data not yet computed
   if (!cohortStats) {
     return (
-      <div className="border-y border-border overflow-hidden bg-accent/20">
-        <div className="p-4 border-b border-border">
+      <div className="border-y border-border overflow-hidden bg-accent/20 mb-6">
+        <div className="px-4 py-5 border-b border-border">
           <div className="flex items-center gap-2 mb-1">
             <Globe className="w-4 h-4 text-primary" />
             <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
@@ -88,7 +88,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
             {babyBirthday ? format(new Date(babyBirthday), 'MMMM yyyy') + ' Babies' : 'Coming Soon'}
           </p>
         </div>
-        <div className="p-4">
+        <div className="px-4 py-5">
           <p className="text-sm text-muted-foreground leading-relaxed">
             We're gathering insights from families with babies your age. Check back soon for cohort statistics.
           </p>
@@ -122,9 +122,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   };
 
   return (
-    <div className="border-y border-border overflow-hidden bg-accent/20">
+    <div className="border-y border-border overflow-hidden bg-accent/20 mb-6">
       {/* Header */}
-      <div className="p-4 border-b border-border">
+      <div className="px-4 py-5 border-b border-border">
         <div className="flex items-center gap-2 mb-1">
           <Globe className="w-4 h-4 text-primary" />
           <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
@@ -137,7 +137,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-4">
+      <div className="px-4 py-5 space-y-4">
         {/* Micro Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-lg p-3 border border-border">

@@ -100,9 +100,9 @@ export const TodaysPulse = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border-y border-border overflow-hidden">
+      <div className="border-y border-border overflow-hidden mb-6">
         {/* Header */}
-        <CollapsibleTrigger className="w-full p-4 bg-accent/20 hover:bg-accent/30 transition-colors">
+        <CollapsibleTrigger className="w-full px-4 py-5 bg-accent/20 hover:bg-accent/30 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" />
@@ -127,7 +127,7 @@ export const TodaysPulse = ({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-4 space-y-4">
+          <div className="px-4 py-5 space-y-4">
             {/* Categories */}
             {deviations.map((deviation, index) => (
               <div key={index} className="space-y-2">
