@@ -29,20 +29,9 @@ export const DailyStoryCircles = ({
   // Check if it's after 5pm for "story ready" state
   const isAfter5PM = new Date().getHours() >= 17;
 
-  // Debug logging
-  console.log('🎭 DailyStoryCircles received:', {
-    activitiesCount: activities.length,
-    babyName,
-    sampleActivities: activities.slice(0, 3).map(a => ({ 
-      type: a.type, 
-      loggedAt: a.loggedAt,
-      date: a.loggedAt ? format(new Date(a.loggedAt), 'yyyy-MM-dd') : 'no date'
-    }))
-  });
-
   // Cache stories - always backfill for prior days
   useEffect(() => {
-    const cacheKey = 'babyrhythm_daily_stories';
+    const cacheKey = 'babyrhythm_daily_stories_v2'; // v2: fixed backfill logic
 
     // Load cached stories from localStorage
     const loadCachedStories = (): CachedStory[] => {
@@ -68,9 +57,9 @@ export const DailyStoryCircles = ({
       const feedCount = dayActivities.filter(a => a.type === 'feed').length;
       const napCount = dayActivities.filter(a => a.type === 'nap' && !a.details.isNightSleep).length;
 
-      // Check cache first
+      // Check cache first - only use cached story if it has a valid icon
       const cached = cachedStories.find(s => s.date === dateStr);
-      if (cached && cached.icon !== undefined) {
+      if (cached && cached.icon !== null && cached.icon !== undefined) {
         // Update with latest activity counts but keep cached headline/icon
         return {
           ...cached,
