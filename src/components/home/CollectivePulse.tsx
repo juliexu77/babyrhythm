@@ -57,10 +57,31 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
           }
           
           // Count naps that start at or after the night sleep start time as night sleep
-          if (startHour >= nightSleepStartHour) {
+          if (startHour >= nightSleepStartHour && details?.startTime && details?.endTime) {
             const date = format(timestamp, 'yyyy-MM-dd');
-            const duration = details?.duration || 0;
-            nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
+            
+            // Calculate duration from startTime and endTime
+            const parseTime = (timeStr: string) => {
+              const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+              if (!match) return 0;
+              let hours = parseInt(match[1]);
+              const minutes = parseInt(match[2]);
+              const period = match[3].toUpperCase();
+              if (period === 'PM' && hours !== 12) hours += 12;
+              if (period === 'AM' && hours === 12) hours = 0;
+              return hours * 60 + minutes;
+            };
+            
+            const startMinutes = parseTime(details.startTime);
+            const endMinutes = parseTime(details.endTime);
+            
+            // Handle overnight sleep (end time < start time means crossed midnight)
+            const durationMinutes = endMinutes < startMinutes 
+              ? (24 * 60 - startMinutes) + endMinutes
+              : endMinutes - startMinutes;
+            
+            const durationHours = durationMinutes / 60;
+            nightSleepByDate[date] = (nightSleepByDate[date] || 0) + durationHours;
           }
         }
       });
