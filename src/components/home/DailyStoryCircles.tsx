@@ -121,14 +121,16 @@ export const DailyStoryCircles = ({
       // Save to cache (including empty placeholders)
       localStorage.setItem(cacheKey, JSON.stringify(newStories));
 
-      // Fetch AI icons for days that don't have them yet (excluding today)
+      // Fetch AI icons for days that don't have them yet (excluding today and empty days)
       const storiesNeedingIcons = newStories.filter(
         s => s.activities.length > 0 && s.icon === null && s.date !== todayStr
       );
 
       if (storiesNeedingIcons.length > 0) {
-        // Fetch icons in background
-        Promise.all(
+        console.log(`🎨 Backfilling AI icons for ${storiesNeedingIcons.length} days:`, storiesNeedingIcons.map(s => s.date));
+        
+        // Fetch icons immediately (not in background)
+        const updatedStoriesWithIcons = await Promise.all(
           storiesNeedingIcons.map(async (story) => {
             try {
               // Calculate total nap minutes
@@ -146,6 +148,8 @@ export const DailyStoryCircles = ({
               const solidFeeds = story.activities.filter(a => a.type === 'feed' && a.details.feedType === 'solid');
               const specialNotes = story.activities.filter(a => a.details?.note);
 
+              console.log(`📖 Fetching AI icon for ${story.date}...`);
+              
               const response = await fetch(
                 `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-story-headline`,
                 {
@@ -167,6 +171,7 @@ export const DailyStoryCircles = ({
 
               if (response.ok) {
                 const data = await response.json();
+                console.log(`✅ AI icon for ${story.date}:`, data.icon, data.headline);
                 if (data.headline || data.icon) {
                   // Update story with AI-generated data
                   return {
@@ -175,21 +180,24 @@ export const DailyStoryCircles = ({
                     icon: data.icon || story.icon
                   };
                 }
+              } else {
+                console.warn(`❌ Failed to fetch AI icon for ${story.date}:`, response.status);
               }
             } catch (err) {
-              console.warn('Failed to fetch AI icon for', story.date, err);
+              console.error(`❌ Error fetching AI icon for ${story.date}:`, err);
             }
             return story;
           })
-        ).then((updatedStories) => {
-          // Update cache and state with AI-generated icons
-          const finalStories = newStories.map(s => {
-            const updated = updatedStories.find(u => u.date === s.date);
-            return updated || s;
-          });
-          setStories(finalStories);
-          localStorage.setItem(cacheKey, JSON.stringify(finalStories));
+        );
+        
+        // Update cache and state with AI-generated icons
+        const finalStories = newStories.map(s => {
+          const updated = updatedStoriesWithIcons.find(u => u.date === s.date);
+          return updated || s;
         });
+        
+        setStories(finalStories);
+        localStorage.setItem(cacheKey, JSON.stringify(finalStories));
       }
     };
 
@@ -292,22 +300,22 @@ export const DailyStoryCircles = ({
               onClick={() => onSelectDay(story.date, story.activities)}
               className="group flex flex-col items-center gap-1.5 flex-shrink-0 transition-all duration-300 hover:scale-105"
             >
-              {/* Enhanced bold ring for Today with prominent shimmer/glow - positioned around circle only */}
+              {/* Subtle ring for Today - toned down */}
               <div className="relative">
                 {isTodayStory && (
                   <>
-                    {/* Outer glow */}
+                    {/* Subtle outer glow */}
                     <div 
-                      className="absolute -inset-[6px] rounded-full opacity-60 animate-pulse"
+                      className="absolute -inset-[3px] rounded-full opacity-30"
                       style={{
                         background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
-                        filter: 'blur(4px)',
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                        filter: 'blur(3px)',
+                        animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                       }}
                     />
-                    {/* Bold gradient ring */}
+                    {/* Thin gradient ring */}
                     <div 
-                      className="absolute -inset-[4px] rounded-full animate-story-shimmer"
+                      className="absolute -inset-[2px] rounded-full"
                       style={{
                         background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
                       }}
