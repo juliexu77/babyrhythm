@@ -24,11 +24,9 @@ export const DailyStoryCircles = ({
 }: DailyStoryCirclesProps) => {
   const [stories, setStories] = useState<CachedStory[]>([]);
 
-  // Cache stories at end of day (5pm onwards)
+  // Cache stories - always backfill for prior days
   useEffect(() => {
     const cacheKey = 'babyrhythm_daily_stories';
-    const currentHour = new Date().getHours();
-    const isStoryTime = currentHour >= 17; // After 5pm
 
     // Load cached stories from localStorage
     const loadCachedStories = (): CachedStory[] => {
@@ -76,28 +74,23 @@ export const DailyStoryCircles = ({
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
 
-    // Generate stories for the last 5 days
+    // Generate stories for the last 5 days - always backfill
     const newStories: CachedStory[] = [];
     for (let i = 0; i < 5; i++) {
       const targetDate = subDays(today, i);
       const dateStr = format(targetDate, 'yyyy-MM-dd');
 
-      // Use cached version if available, otherwise generate
-      const cached = cachedStories.find(s => s.date === dateStr);
-      if (cached) {
-        newStories.push(cached);
-      } else {
-        const story = generateStoryForDate(targetDate);
-        if (story) {
-          newStories.push(story);
-        }
+      // Always generate fresh story for each day
+      const story = generateStoryForDate(targetDate);
+      if (story) {
+        newStories.push(story);
       }
     }
 
     setStories(newStories.reverse()); // Reverse so most recent is on the right
 
-    // Cache stories if it's story time (5pm onwards)
-    if (isStoryTime) {
+    // Always save to cache
+    if (newStories.length > 0) {
       localStorage.setItem(cacheKey, JSON.stringify(newStories));
     }
   }, [activities]);
@@ -116,9 +109,7 @@ export const DailyStoryCircles = ({
             <button
               key={story.date}
               onClick={() => onSelectDay(story.date, story.activities)}
-              className={`group relative flex-shrink-0 transition-all duration-300 ${
-                isTodayStory ? 'scale-110' : 'scale-100 hover:scale-105'
-              }`}
+              className="group relative flex-shrink-0 transition-all duration-300 hover:scale-105"
             >
               {/* Circle container */}
               <div className={`relative w-16 h-16 rounded-full overflow-hidden ${
