@@ -167,7 +167,7 @@ export const RightNowStatus = ({
                 <button
                   key={suggestion.id}
                   onClick={suggestion.onClick}
-                  className="w-full p-2.5 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left"
+                  className="w-full p-2.5 bg-background/30 hover:bg-background/50 rounded-lg border border-border transition-colors text-left"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
