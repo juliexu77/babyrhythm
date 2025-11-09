@@ -149,7 +149,18 @@ export const DailyStoryCircles = ({
 
   return (
     <div className="w-full py-2 pb-3 bg-transparent">
-      <div className="flex items-center justify-center gap-3 px-4 py-2">
+      {/* Subtle gradient track behind circles */}
+      <div className="relative px-4 py-2">
+        <div 
+          className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-8 rounded-full"
+          style={{
+            background: 'linear-gradient(to right, hsl(280, 30%, 75%) 0%, hsl(350, 45%, 78%) 100%)',
+            opacity: 0.12,
+            filter: 'blur(2px)'
+          }}
+        />
+        
+        <div className="relative flex items-center justify-center gap-3 py-2">
         {stories.map((story, index) => {
           const storyDate = parseISO(story.date);
           const isTodayStory = isToday(storyDate);
@@ -167,7 +178,7 @@ export const DailyStoryCircles = ({
             <button
               key={story.date}
               onClick={() => onSelectDay(story.date, story.activities)}
-              className="group relative flex-shrink-0 transition-all duration-300 hover:scale-105"
+              className="group relative flex flex-col items-center gap-1.5 flex-shrink-0 transition-all duration-300 hover:scale-105"
             >
               {/* Enhanced bold ring for Today with prominent shimmer/glow */}
               {isTodayStory && (
@@ -221,22 +232,25 @@ export const DailyStoryCircles = ({
                 {/* Semi-transparent ombré overlay on all circles */}
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/15 to-accent/30" />
                 
-                {/* Date label */}
-                <div className="relative w-full h-full flex flex-col items-center justify-center gap-0.5">
+                {/* Content - sparkle for Today only */}
+                <div className="relative w-full h-full flex items-center justify-center">
                   {isTodayStory && (
-                    <Sparkles className="w-4 h-4 text-primary animate-story-shimmer" />
+                    <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
                   )}
-                  <span className="text-[11px] font-medium text-foreground/80">
-                    {isTodayStory ? 'Today' : format(storyDate, 'MMM d')}
-                  </span>
                 </div>
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
+              
+              {/* Label below circle */}
+              <span className="text-[10px] font-medium text-foreground/70">
+                {isTodayStory ? 'Today' : format(storyDate, 'EEE')}
+              </span>
             </button>
           );
         })}
+        </div>
       </div>
     </div>
   );
