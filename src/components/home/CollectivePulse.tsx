@@ -57,7 +57,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden animate-pulse">
+      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden animate-pulse">
         <div className="px-4 py-5 border-b border-border/30">
           <div className="h-4 bg-muted rounded w-32 mb-2" />
           <div className="h-3 bg-muted rounded w-40" />
@@ -76,7 +76,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   // Show message when data not yet computed
   if (!cohortStats) {
     return (
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
         <div className="px-4 py-5 border-b border-border/30">
           <div className="flex items-center gap-2 mb-1">
             <Globe className="w-4 h-4 text-primary" />
@@ -122,7 +122,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   };
 
   return (
-    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       {/* Header */}
       <div className="px-4 py-5 border-b border-border/30">
         <div className="flex items-center gap-2 mb-1">
