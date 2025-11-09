@@ -152,11 +152,11 @@ export const DailyStoryCircles = ({
       {/* Subtle gradient track behind circles */}
       <div className="relative px-4 py-2">
         <div 
-          className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-8 rounded-full"
+          className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-10 mx-4 rounded-full"
           style={{
-            background: 'linear-gradient(to right, hsl(280, 30%, 75%) 0%, hsl(350, 45%, 78%) 100%)',
-            opacity: 0.12,
-            filter: 'blur(2px)'
+            background: 'linear-gradient(to right, hsl(280, 30%, 65%) 0%, hsl(350, 45%, 70%) 100%)',
+            opacity: 0.15,
+            filter: 'blur(3px)'
           }}
         />
         
@@ -178,33 +178,34 @@ export const DailyStoryCircles = ({
             <button
               key={story.date}
               onClick={() => onSelectDay(story.date, story.activities)}
-              className="group relative flex flex-col items-center gap-1.5 flex-shrink-0 transition-all duration-300 hover:scale-105"
+              className="group flex flex-col items-center gap-1.5 flex-shrink-0 transition-all duration-300 hover:scale-105"
             >
-              {/* Enhanced bold ring for Today with prominent shimmer/glow */}
-              {isTodayStory && (
-                <>
-                  {/* Outer glow */}
-                  <div 
-                    className="absolute -inset-[6px] rounded-full opacity-60 animate-pulse"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
-                      filter: 'blur(4px)',
-                      animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                    }}
-                  />
-                  {/* Bold gradient ring */}
-                  <div 
-                    className="absolute -inset-[4px] rounded-full animate-story-shimmer"
-                    style={{
-                      background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
-                    }}
-                  />
-                  {/* Inner white ring */}
-                  <div 
-                    className="absolute -inset-[1.5px] rounded-full bg-background"
-                  />
-                </>
-              )}
+              {/* Enhanced bold ring for Today with prominent shimmer/glow - positioned around circle only */}
+              <div className="relative">
+                {isTodayStory && (
+                  <>
+                    {/* Outer glow */}
+                    <div 
+                      className="absolute -inset-[6px] rounded-full opacity-60 animate-pulse"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                        filter: 'blur(4px)',
+                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                      }}
+                    />
+                    {/* Bold gradient ring */}
+                    <div 
+                      className="absolute -inset-[4px] rounded-full animate-story-shimmer"
+                      style={{
+                        background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                      }}
+                    />
+                    {/* Inner white ring */}
+                    <div 
+                      className="absolute -inset-[1.5px] rounded-full bg-background"
+                    />
+                  </>
+                )}
               
               {/* Circle container with shadow depth */}
               <div 
@@ -241,6 +242,7 @@ export const DailyStoryCircles = ({
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
               </div>
               
               {/* Label below circle */}
