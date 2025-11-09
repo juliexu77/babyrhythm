@@ -57,12 +57,12 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="border-y border-border overflow-hidden bg-accent/20 animate-pulse mb-6">
+      <div className="mx-4 mb-6 rounded-xl bg-[#F8F3F1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden animate-pulse">
         <div className="px-4 py-5 border-b border-border">
           <div className="h-4 bg-muted rounded w-32 mb-2" />
           <div className="h-3 bg-muted rounded w-40" />
         </div>
-        <div className="px-4 py-5 space-y-4">
+        <div className="px-4 py-5 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-card rounded-lg p-3 border border-border h-20" />
             <div className="bg-card rounded-lg p-3 border border-border h-20" />
@@ -76,7 +76,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   // Show message when data not yet computed
   if (!cohortStats) {
     return (
-      <div className="border-y border-border overflow-hidden bg-accent/20 mb-6">
+      <div className="mx-4 mb-6 rounded-xl bg-[#F8F3F1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
         <div className="px-4 py-5 border-b border-border">
           <div className="flex items-center gap-2 mb-1">
             <Globe className="w-4 h-4 text-primary" />
@@ -122,7 +122,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   };
 
   return (
-    <div className="border-y border-border overflow-hidden bg-accent/20 mb-6">
+    <div className="mx-4 mb-6 rounded-xl bg-[#F8F3F1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
       {/* Header */}
       <div className="px-4 py-5 border-b border-border">
         <div className="flex items-center gap-2 mb-1">
@@ -137,7 +137,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       </div>
 
       {/* Content */}
-      <div className="px-4 py-5 space-y-4">
+      <div className="px-4 py-5 space-y-3">
         {/* Micro Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-lg p-3 border border-border">

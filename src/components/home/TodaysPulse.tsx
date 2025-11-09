@@ -100,9 +100,9 @@ export const TodaysPulse = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="border-y border-border overflow-hidden mb-6">
+      <div className="mx-4 mb-6 rounded-xl bg-[#F8F3F1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
         {/* Header */}
-        <CollapsibleTrigger className="w-full px-4 py-5 bg-accent/20 hover:bg-accent/30 transition-colors">
+        <CollapsibleTrigger className="w-full px-4 py-5 hover:bg-background/40 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-primary" />
@@ -127,7 +127,7 @@ export const TodaysPulse = ({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="px-4 py-5 space-y-4">
+          <div className="px-4 pb-5 space-y-3 border-t border-border/40 pt-5">
             {/* Categories */}
             {deviations.map((deviation, index) => (
               <div key={index} className="space-y-2">
@@ -162,8 +162,8 @@ export const TodaysPulse = ({
 
             {/* What This Means Section */}
             {biggestDeviation && (
-              <div className="pt-4 border-t border-border">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="pt-3 border-t border-border">
+                <div className="flex items-center gap-2 mb-2">
                   <Lightbulb className="w-4 h-4 text-amber-600" />
                   <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
                     What This Means

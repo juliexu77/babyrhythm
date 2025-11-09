@@ -51,10 +51,12 @@ export const RightNowStatus = ({
     .slice(0, 3);
   if (!currentActivity) {
     return (
-      <div className="px-4 py-5 bg-gradient-to-br from-primary/5 to-primary/10 border-y border-primary/20 mb-6">
-        <div className="text-center py-8">
-          <p className="text-sm text-muted-foreground">No recent activity detected</p>
-          <p className="text-xs text-muted-foreground mt-1">Log an activity to get started</p>
+      <div className="mx-4 mb-6 rounded-xl bg-[#F8F3F1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="px-4 py-5">
+          <div className="text-center py-8">
+            <p className="text-sm text-muted-foreground">No recent activity detected</p>
+            <p className="text-xs text-muted-foreground mt-1">Log an activity to get started</p>
+          </div>
         </div>
       </div>
     );
@@ -62,14 +64,13 @@ export const RightNowStatus = ({
 
   return (
     <>
-      <div className="px-4 py-5 bg-gradient-to-br from-primary/5 to-primary/10 border-y border-primary/20 mb-6 shadow-sm">
-        {/* Current Status */}
-        <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
-            Right Now
-          </h3>
-        </div>
+      <div className="mx-4 mb-6 rounded-xl bg-[#F8F3F1] shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="px-4 py-5">
+          {/* Current Status */}
+          <div className="mb-3">
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2">
+              Right Now
+            </h3>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && <Moon className="w-5 h-5 text-primary" />}
@@ -86,8 +87,8 @@ export const RightNowStatus = ({
 
         {/* Next Prediction */}
         {nextPrediction && (
-          <div className="mb-3 p-3 bg-background/60 rounded-lg border border-border/40">
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-3 p-3 bg-background/40 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-medium text-foreground uppercase tracking-wider">
               What's Next
             </p>
@@ -157,11 +158,11 @@ export const RightNowStatus = ({
 
         {/* Suggested Actions Section */}
         {topSuggestions.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-border/40">
-            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider mb-3">
+          <div className="mt-3 pt-3 border-t border-border/40">
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2">
               Suggested Actions
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {topSuggestions.map((suggestion) => (
                 <button
                   key={suggestion.id}
@@ -187,6 +188,7 @@ export const RightNowStatus = ({
           </div>
         )}
 
+        </div>
       </div>
     </>
   );
