@@ -48,7 +48,7 @@ export const RightNowStatus = ({
   }
 
   return (
-    <div className="p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 mb-4 shadow-sm">
+    <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 mb-4 shadow-sm">
       {/* Current Status */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
@@ -75,7 +75,7 @@ export const RightNowStatus = ({
 
       {/* Next Prediction */}
       {nextPrediction && (
-        <div className="mb-4 p-3 bg-background/60 rounded-lg border border-border/40">
+        <div className="mb-3 p-3 bg-background/60 rounded-lg border border-border/40">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
               What's Next
