@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { getActivitiesByDate } from "@/utils/activityDateFilters";
 import { isDaytimeNap } from "@/utils/napClassification";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -17,6 +18,7 @@ interface TrendChartProps {
 
 export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const { t, language } = useLanguage();
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
   const [daysOffset, setDaysOffset] = useState(0);
   const feedChartRef = useRef<HTMLDivElement>(null);
@@ -197,7 +199,8 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       
       // Use shared utility to check if nap is daytime
       // This ensures consistency with CollectivePulse and other components
-      const daytimeNaps = dayNaps.filter(nap => isDaytimeNap(nap, 19, 7));
+      // Uses user's configured night sleep hours from settings
+      const daytimeNaps = dayNaps.filter(nap => isDaytimeNap(nap, nightSleepStartHour, nightSleepEndHour));
       
       let totalHours = 0;
       dayNaps.forEach(nap => {
