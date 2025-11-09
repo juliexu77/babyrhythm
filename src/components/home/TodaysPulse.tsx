@@ -100,12 +100,12 @@ export const TodaysPulse = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-blue-500/15 via-blue-400/10 to-blue-300/5 dark:from-blue-400/20 dark:via-blue-400/12 dark:to-blue-400/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-orange-500/15 via-orange-400/10 to-orange-300/5 dark:from-orange-400/18 dark:via-orange-500/12 dark:to-orange-600/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
         {/* Header */}
         <CollapsibleTrigger className="w-full px-4 py-5 hover:bg-muted/20 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <BarChart3 className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
                 Today's Pulse
               </h3>

@@ -122,7 +122,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   };
 
   return (
-    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       {/* Header */}
       <div className="px-4 py-5 border-b border-border/30">
         <div className="flex items-center gap-2 mb-1">
