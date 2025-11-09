@@ -343,7 +343,7 @@ export const ScheduleTimeline = ({
 
 
   return (
-    <div className="space-y-4">
+    <div className="mx-2 space-y-4">
       {/* Day Progress Bar - Countdown to Bedtime - Only show when less than 3 hours away */}
       {groupedActivities.length > 0 && dayProgress.percent < 100 && dayProgress.timeUntilBedtime && dayProgress.minutesUntilBedtime < 180 && (
         <div className="space-y-2 p-3 bg-accent/20 rounded-lg border border-border/40">

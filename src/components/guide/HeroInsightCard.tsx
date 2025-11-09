@@ -10,7 +10,7 @@ interface HeroInsightCardProps {
 export const HeroInsightCard = ({ insight, confidence, loading }: HeroInsightCardProps) => {
   if (loading) {
     return (
-      <div className="mb-6 p-5 bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 rounded-xl animate-pulse">
+      <div className="mx-2 mb-6 p-5 bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 rounded-xl animate-pulse">
         <div className="flex items-start gap-2 mb-3">
           <div className="h-6 w-48 bg-primary/20 rounded"></div>
         </div>
@@ -24,7 +24,7 @@ export const HeroInsightCard = ({ insight, confidence, loading }: HeroInsightCar
   const firstSentence = insight.split(/[.!?]/).filter(s => s.trim())[0] + '.';
 
   return (
-    <div className="mb-6 p-5 bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 rounded-xl shadow-sm">
+    <div className="mx-2 mb-6 p-5 bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 rounded-xl shadow-sm">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="w-5 h-5 text-primary" />
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">

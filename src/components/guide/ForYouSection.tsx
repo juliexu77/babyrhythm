@@ -112,7 +112,7 @@ export const ForYouSection = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="mx-2 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold">✨ For You</h2>
         <span className="text-xs text-muted-foreground">Personalized</span>

@@ -35,7 +35,7 @@ export const UnifiedInsightCard = ({
 
   if (loading) {
     return (
-      <div className="p-5 bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 rounded-xl border border-border/20 animate-pulse space-y-4">
+      <div className="mx-2 p-5 bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 rounded-xl border border-border/20 animate-pulse space-y-4">
         <div className="h-5 w-48 bg-muted rounded"></div>
         <div className="h-4 w-full bg-muted rounded"></div>
         <div className="h-4 w-5/6 bg-muted rounded"></div>
@@ -50,7 +50,7 @@ export const UnifiedInsightCard = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="mx-2 space-y-4">
       {/* Section Title - Matching Schedule Timeline Style */}
       <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
         Understanding {babyName}&apos;s Rhythm
