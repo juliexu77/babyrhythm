@@ -199,7 +199,7 @@ export const DailyStoryCircles = ({
                     className="absolute inset-0 bg-cover bg-center"
                     style={{
                       backgroundImage: `url(${firstPhoto})`,
-                      filter: 'blur(16px) brightness(0.85)',
+                      filter: 'brightness(0.85)',
                       transform: 'scale(1.1)'
                     }}
                   />
