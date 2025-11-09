@@ -193,7 +193,7 @@ export const DailyStoryCircles = ({
                     : '0 2px 8px -2px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.05)'
                 }}
               >
-                {/* Photo thumbnail blur fills circle OR warm brown gradient */}
+                {/* Photo thumbnail OR gradient background */}
                 {hasPhoto && firstPhoto ? (
                   <div 
                     className="absolute inset-0 bg-cover bg-center"
@@ -204,11 +204,11 @@ export const DailyStoryCircles = ({
                     }}
                   />
                 ) : (
-                  <>
-                    <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
-                    <div className="absolute inset-0 bg-background/5" />
-                  </>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
                 )}
+                
+                {/* Semi-transparent ombré overlay on all circles */}
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/10 to-accent/20" />
                 
                 {/* Date label */}
                 <div className="relative w-full h-full flex items-center justify-center">
