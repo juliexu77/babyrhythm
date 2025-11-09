@@ -1330,6 +1330,7 @@ const lastDiaper = displayActivities
           }}
           activities={selectedStoryDate ? selectedStoryActivities : activities}
           babyName={babyName}
+          targetDate={selectedStoryDate || undefined}
         />
 
         {/* Learning Progress Chip */}

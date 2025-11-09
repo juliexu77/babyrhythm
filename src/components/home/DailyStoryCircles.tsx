@@ -99,8 +99,8 @@ export const DailyStoryCircles = ({
   if (stories.length === 0) return null;
 
   return (
-    <div className="px-4 py-4 pb-6 pr-6">
-      <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-hide px-2 py-2">
+    <div className="px-4 py-4 pb-6 pr-12">
+      <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-hide px-2 py-2 pr-12">
         {stories.map((story, index) => {
           const storyDate = parseISO(story.date);
           const isTodayStory = isToday(storyDate);
@@ -109,7 +109,7 @@ export const DailyStoryCircles = ({
             <button
               key={story.date}
               onClick={() => onSelectDay(story.date, story.activities)}
-              className="group relative flex-shrink-0 transition-all duration-300 hover:scale-105"
+              className="group relative flex-shrink-0 transition-all duration-300 hover:scale-105 mr-1 last:mr-12"
             >
               {/* Circle container */}
               <div className={`relative w-16 h-16 rounded-full overflow-hidden ${

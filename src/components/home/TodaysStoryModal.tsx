@@ -10,20 +10,24 @@ interface TodaysStoryModalProps {
   onClose: () => void;
   activities: Activity[];
   babyName?: string;
+  targetDate?: string; // YYYY-MM-DD, when viewing a past day
 }
 
-export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: TodaysStoryModalProps) {
+export function TodaysStoryModal({ isOpen, onClose, activities, babyName, targetDate }: TodaysStoryModalProps) {
   const [animationPhase, setAnimationPhase] = useState<'act1' | 'act2' | 'act3'>('act1');
   const [aiHeadline, setAiHeadline] = useState<string | null>(null);
   const [isLoadingHeadline, setIsLoadingHeadline] = useState(false);
   
-  // Filter today's activities
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Determine which day's activities to show
+  const dayStart = (() => {
+    const d = targetDate ? new Date(`${targetDate}T00:00:00`) : new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  })();
   
   console.log('📖 Story Modal - Filtering Debug:', {
     totalActivitiesReceived: activities.length,
-    todayDateMidnight: today.toISOString(),
+    selectedDayMidnight: dayStart.toISOString(),
     allActivities: activities.map(a => ({
       type: a.type,
       loggedAt: a.loggedAt,
@@ -32,28 +36,19 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     }))
   });
   
-  const todayActivities = activities.filter(activity => {
-    if (!activity.loggedAt) {
-      console.log('❌ Activity missing loggedAt:', activity);
-      return false;
-    }
-    const activityDate = new Date(activity.loggedAt);
-    const activityDateMidnight = new Date(activityDate);
-    activityDateMidnight.setHours(0, 0, 0, 0);
-    
-    const isToday = activityDateMidnight.getTime() === today.getTime();
-    
-    if (!isToday && activity.type === 'nap') {
-      console.log('❌ Nap not matching today:', {
-        activity: activity,
-        activityDateMidnight: activityDateMidnight.toISOString(),
-        todayMidnight: today.toISOString(),
-        match: isToday
+  // If viewing a past day, activities are pre-filtered by caller
+  const todayActivities = targetDate
+    ? activities
+    : activities.filter(activity => {
+        if (!activity.loggedAt) {
+          console.log('❌ Activity missing loggedAt:', activity);
+          return false;
+        }
+        const activityDate = new Date(activity.loggedAt);
+        const activityDateMidnight = new Date(activityDate);
+        activityDateMidnight.setHours(0, 0, 0, 0);
+        return activityDateMidnight.getTime() === dayStart.getTime();
       });
-    }
-    
-    return isToday;
-  });
 
   console.log('📖 Story Modal Debug:', {
     totalActivities: activities.length,
@@ -61,7 +56,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     activities: todayActivities.map(a => ({ type: a.type, time: a.loggedAt, details: a.details }))
   });
 
-  const todayDate = format(today, "MMM d");
+  const todayDate = format(dayStart, "MMM d");
 
   // Get hero photo
   const photosWithNotes = todayActivities.filter(a => 
