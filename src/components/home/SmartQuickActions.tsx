@@ -76,7 +76,7 @@ export const SmartQuickActions = ({
 
   return (
     <>
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/20 overflow-hidden">
+      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-accent/25 to-accent/10 shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/20 overflow-hidden">
         <div className="px-4 py-5">
           <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
             Quick Actions
