@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap, isNightSleep, calculateDuration } from "@/utils/napClassification";
+import { calculateNapStatistics } from "@/utils/napStatistics";
 
 interface CollectivePulseProps {
   babyBirthday?: string;
