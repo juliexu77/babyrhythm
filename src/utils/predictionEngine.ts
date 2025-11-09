@@ -33,6 +33,8 @@ export interface PersonalizedParams {
   feed_interval_max: number;
   day_sleep_target: number;
   nap_floor_short: number;
+  // Position-specific wake windows (1st, 2nd, 3rd of the day)
+  wakeWindowsByPosition?: Map<number, { median: number; count: number }>; // position -> learned pattern
 }
 
 export interface PredictionScores {
@@ -83,6 +85,8 @@ export interface EngineInternals {
   feedIntervalStdDev?: number;
   dataStability: 'sparse' | 'unstable' | 'stable';
   blendRatio: { age: number; learned: number };
+  wakeWindowsByPosition?: Map<number, { median: number; count: number }>; // position-specific patterns
+  currentWakeWindowPosition?: number; // which wake window is baby currently in
 }
 
 export interface NextActionResult {
@@ -380,6 +384,7 @@ interface AdaptiveResult {
     wakeWindows: number[];
     feedIntervals: number[];
     dailySleepTotals: number[];
+    wakeWindowsByPosition?: Map<number, { median: number; count: number }>;
   };
 }
 
@@ -388,22 +393,49 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const recentEvents = events.filter(e => e.timestamp >= sevenDaysAgo);
 
-  // Calculate wake windows (ONLY between naps, exclude night sleep)
+  // Calculate wake windows with position tracking
   const sleepSegments = extractSleepSegments(recentEvents);
-  const napSegments = sleepSegments.filter(s => s.type === 'nap');
-  const napAsc = [...napSegments].sort((a, b) => a.start.getTime() - b.start.getTime());
+  const napSegments = sleepSegments.filter(s => s.type === 'nap' && s.end);
+  
+  // Group naps by day to track wake window positions
+  const napsByDay = new Map<string, SleepSegment[]>();
+  napSegments.forEach(nap => {
+    const dayKey = nap.start.toDateString();
+    if (!napsByDay.has(dayKey)) {
+      napsByDay.set(dayKey, []);
+    }
+    napsByDay.get(dayKey)!.push(nap);
+  });
+  
+  // Sort naps within each day by start time
+  napsByDay.forEach(naps => naps.sort((a, b) => a.start.getTime() - b.start.getTime()));
+  
+  // Track wake windows by position (1st, 2nd, 3rd, etc.)
+  const wakeWindowsByPosition = new Map<number, number[]>();
   const wakeWindows: number[] = [];
   
-  for (let i = 0; i < napAsc.length - 1; i++) {
-    const current = napAsc[i];
-    const next = napAsc[i + 1];
-    if (current.end && next.start) {
-      const wakeWindow = Math.round((next.start.getTime() - current.end.getTime()) / 60000);
-      if (wakeWindow > 0 && wakeWindow < 480) {
-        wakeWindows.push(wakeWindow);
+  napsByDay.forEach(dayNaps => {
+    for (let i = 0; i < dayNaps.length - 1; i++) {
+      const current = dayNaps[i];
+      const next = dayNaps[i + 1];
+      
+      if (current.end && next.start) {
+        const wakeWindow = Math.round((next.start.getTime() - current.end.getTime()) / 60000);
+        
+        // Filter out unrealistic wake windows
+        if (wakeWindow > 0 && wakeWindow < 480) {
+          wakeWindows.push(wakeWindow);
+          
+          // Track by position (i+1 because we're looking at wake window AFTER nap i)
+          const position = i + 1;
+          if (!wakeWindowsByPosition.has(position)) {
+            wakeWindowsByPosition.set(position, []);
+          }
+          wakeWindowsByPosition.get(position)!.push(wakeWindow);
+        }
       }
     }
-  }
+  });
 
   // Calculate feed intervals
   const feedEvents = extractFeedEvents(recentEvents);
@@ -464,6 +496,31 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
   // Apply blended parameters
   const adaptive = { ...baseParams };
   
+  // Calculate position-specific medians (only if enough data per position)
+  const positionMedians = new Map<number, { median: number; count: number }>();
+  wakeWindowsByPosition.forEach((windows, position) => {
+    if (windows.length >= 3) { // Minimum 3 samples per position
+      positionMedians.set(position, {
+        median: median(windows),
+        count: windows.length
+      });
+    }
+  });
+  
+  // Store position-specific patterns for use in predictions
+  if (positionMedians.size > 0) {
+    adaptive.wakeWindowsByPosition = positionMedians;
+    
+    console.log('📊 Position-Specific Wake Windows:', 
+      Array.from(positionMedians.entries()).map(([pos, data]) => ({
+        position: pos,
+        median: Math.round(data.median),
+        count: data.count,
+        hours: Math.round(data.median / 60 * 10) / 10
+      }))
+    );
+  }
+  
   if (wakeWindows.length >= 3) {
     const medianWakeWindow = median(wakeWindows);
     const blended = baseParams.wake_window_max * blendRatio.age + medianWakeWindow * blendRatio.learned;
@@ -512,7 +569,8 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
       blendRatio,
       wakeWindows,
       feedIntervals,
-      dailySleepTotals
+      dailySleepTotals,
+      wakeWindowsByPosition: positionMedians.size > 0 ? positionMedians : undefined
     }
   };
 }
@@ -699,11 +757,32 @@ export class BabyCarePredictionEngine {
     tAwakeNow: number | null,
     cumulativeDaySleep: number,
     shortNapFlag: boolean,
-    isNight: boolean
+    isNight: boolean,
+    now: Date
   ): number {
     if (tAwakeNow === null) return 0; // Can't calculate without wake time
     
-    const w1 = sigmoid((tAwakeNow - this.adaptiveParams.wake_window_max) / 20);
+    // Use position-specific wake window if available
+    let targetWakeWindow = this.adaptiveParams.wake_window_max;
+    
+    if (this.adaptiveParams.wakeWindowsByPosition && this.adaptiveParams.wakeWindowsByPosition.size > 0) {
+      const currentPosition = this.getCurrentWakeWindowPosition(now);
+      const positionData = this.adaptiveParams.wakeWindowsByPosition.get(currentPosition);
+      
+      if (positionData && positionData.count >= 3) {
+        // Use learned position-specific wake window
+        targetWakeWindow = positionData.median;
+        
+        console.log('🎯 Using position-specific wake window:', {
+          position: currentPosition,
+          learned: Math.round(positionData.median),
+          baseMax: this.adaptiveParams.wake_window_max,
+          count: positionData.count
+        });
+      }
+    }
+    
+    const w1 = sigmoid((tAwakeNow - targetWakeWindow) / 20);
     const sleepDeficit = this.adaptiveParams.day_sleep_target - cumulativeDaySleep;
     const w2 = sigmoid(sleepDeficit / 40);
     const w3 = shortNapFlag ? 0.15 : 0;
@@ -770,6 +849,27 @@ export class BabyCarePredictionEngine {
     if (this.ageInMonths < 12) return { min: 2, max: 3 };
     if (this.ageInMonths < 18) return { min: 1, max: 2 };
     return { min: 1, max: 2 };
+  }
+
+  private getCurrentWakeWindowPosition(now: Date): number {
+    // Determine which wake window of the day we're in based on completed naps today
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+    
+    const completedNapsToday = this.sleepSegments.filter(s => 
+      s.type === 'nap' &&
+      s.start >= todayStart && 
+      s.start < todayEnd && 
+      s.end !== null
+    ).length;
+    
+    // Position is number of completed naps + 1
+    // 0 naps = position 1 (first wake window of the day)
+    // 1 nap = position 2 (second wake window, after first nap)
+    // etc.
+    return completedNapsToday + 1;
   }
 
   private getDayProgress(now: Date): DayProgress {
@@ -856,12 +956,24 @@ export class BabyCarePredictionEngine {
       timing.expectedFeedVolume = Math.round(avgVolume);
     }
 
-    // Calculate next nap window if awake
+    // Calculate next nap window if awake - use position-specific wake window if available
     if (rationale.t_awake_now_min !== null) {
       // Don't suggest nap immediately after waking - minimum 60min cooldown
       const minCooldownAfterWake = 60;
       
-      const napWindowMinutes = this.adaptiveParams.wake_window_max - rationale.t_awake_now_min;
+      // Use position-specific wake window if available
+      let targetWakeWindow = this.adaptiveParams.wake_window_max;
+      
+      if (this.adaptiveParams.wakeWindowsByPosition && this.adaptiveParams.wakeWindowsByPosition.size > 0) {
+        const currentPosition = this.getCurrentWakeWindowPosition(now);
+        const positionData = this.adaptiveParams.wakeWindowsByPosition.get(currentPosition);
+        
+        if (positionData && positionData.count >= 3) {
+          targetWakeWindow = positionData.median;
+        }
+      }
+      
+      const napWindowMinutes = targetWakeWindow - rationale.t_awake_now_min;
       
       // If we haven't reached minimum cooldown, set nap window to cooldown time
       if (rationale.t_awake_now_min < minCooldownAfterWake) {
@@ -870,7 +982,7 @@ export class BabyCarePredictionEngine {
       } else if (napWindowMinutes > 0) {
         timing.nextNapWindowStart = new Date(now.getTime() + napWindowMinutes * 60000);
       } else {
-        // Baby has been awake longer than wake_window_max - nap is overdue
+        // Baby has been awake longer than target - nap is overdue
         timing.nextNapWindowStart = now;
       }
     }
@@ -974,7 +1086,11 @@ export class BabyCarePredictionEngine {
 
     // Calculate pressure scores
     const feedScore = this.calculateFeedPressureScore(tSinceLastFeed, isNight, clusterFeeding);
-    const sleepScore = this.calculateSleepPressureScore(tAwakeNow, cumulativeDaySleep, shortNapFlag, isNight);
+    const sleepScore = this.calculateSleepPressureScore(tAwakeNow, cumulativeDaySleep, shortNapFlag, isNight, now);
+    
+    // Track current wake window position in internals
+    const currentPosition = this.getCurrentWakeWindowPosition(now);
+    this.internals.currentWakeWindowPosition = currentPosition;
     
     const THRESHOLD_FEED = 0.55;
     const THRESHOLD_WIND_DOWN = 0.60;
