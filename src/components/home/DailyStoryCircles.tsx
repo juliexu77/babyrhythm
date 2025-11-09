@@ -155,10 +155,6 @@ export const DailyStoryCircles = ({
   const getEmotionalAnchor = (story: CachedStory) => {
     if (story.activities.length === 0) return null;
     
-    // Check for photos first
-    const hasPhoto = story.activities.some(a => a.type === 'photo' || a.details?.photoUrl);
-    if (hasPhoto) return Image;
-    
     // Sleep-heavy days (3+ naps or long sleep duration)
     const napActivities = story.activities.filter(a => a.type === 'nap' && !a.details.isNightSleep);
     if (napActivities.length >= 3) return Moon;
@@ -218,10 +214,6 @@ export const DailyStoryCircles = ({
                         background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
                       }}
                     />
-                    {/* Inner white ring */}
-                    <div 
-                      className="absolute -inset-[1.5px] rounded-full bg-background"
-                    />
                   </>
                 )}
               
@@ -237,7 +229,7 @@ export const DailyStoryCircles = ({
                   {isTodayStory ? (
                     <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
                   ) : AnchorIcon ? (
-                    <AnchorIcon className="w-5 h-5 text-foreground/60" />
+                    <AnchorIcon className="w-5 h-5" style={{ color: 'hsl(300, 35%, 55%)' }} />
                   ) : null}
                 </div>
               </div>
