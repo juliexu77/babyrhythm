@@ -207,41 +207,16 @@ export const DailyStoryCircles = ({
                   </>
                 )}
               
-              {/* Circle container with shadow depth */}
+              {/* Circle container - outlined only */}
               <div 
-                className="relative w-16 h-16 rounded-full overflow-hidden"
-                style={{
-                  boxShadow: isTodayStory 
-                    ? '0 4px 12px -2px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.06)'
-                    : '0 2px 8px -2px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.05)'
-                }}
+                className="relative w-16 h-16 rounded-full border-2 border-border/30 bg-background transition-all duration-300 group-hover:border-border/50"
               >
-                {/* Photo thumbnail OR gradient background */}
-                {hasPhoto && firstPhoto ? (
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-40"
-                    style={{
-                      backgroundImage: `url(${firstPhoto})`,
-                      filter: 'blur(4px) brightness(0.85)',
-                      transform: 'scale(1.1)'
-                    }}
-                  />
-                ) : (
-                  <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
-                )}
-                
-                {/* Semi-transparent ombré overlay on all circles */}
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/15 to-accent/30" />
-                
                 {/* Content - sparkle for Today only */}
                 <div className="relative w-full h-full flex items-center justify-center">
                   {isTodayStory && (
                     <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
                   )}
                 </div>
-
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               </div>
               
