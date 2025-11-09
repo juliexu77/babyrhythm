@@ -35,7 +35,7 @@ export const UnifiedInsightCard = ({
 
   if (loading) {
     return (
-      <div className="p-5 bg-accent/30 rounded-xl border border-border animate-pulse space-y-4">
+      <div className="p-5 bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 rounded-xl border border-border/20 animate-pulse space-y-4">
         <div className="h-5 w-48 bg-muted rounded"></div>
         <div className="h-4 w-full bg-muted rounded"></div>
         <div className="h-4 w-5/6 bg-muted rounded"></div>
@@ -56,7 +56,7 @@ export const UnifiedInsightCard = ({
         Understanding {babyName}&apos;s Rhythm
       </h3>
       
-      <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4 text-left">
+      <div className="p-5 bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 rounded-xl border border-border/20 space-y-4 text-left">
         {/* What to Know - Collapsible with preview */}
         {whyThisMatters && (() => {
           const isExpanded = expandedSections.has('know');
