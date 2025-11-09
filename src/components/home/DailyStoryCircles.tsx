@@ -196,7 +196,7 @@ export const DailyStoryCircles = ({
                 {/* Photo thumbnail OR gradient background */}
                 {hasPhoto && firstPhoto ? (
                   <div 
-                    className="absolute inset-0 bg-cover bg-center"
+                    className="absolute inset-0 bg-cover bg-center opacity-40"
                     style={{
                       backgroundImage: `url(${firstPhoto})`,
                       filter: 'brightness(0.85)',
