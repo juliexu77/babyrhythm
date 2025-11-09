@@ -281,20 +281,15 @@ export const useHomeTabIntelligence = (
       };
     }
 
-    // Handle nap prediction
+    // Handle nap prediction - but not during active feeding
     if (intent === 'START_WIND_DOWN' && timing?.nextNapWindowStart) {
-      const napTime = new Date(timing.nextNapWindowStart);
-      const minutesUntil = Math.max(0, differenceInMinutes(napTime, now));
-      
-      // Don't show nap as "now" if baby is feeding or just woke up (needs minimum 30 min awake)
-      if (currentActivity?.type === 'feeding' || 
-          (currentActivity?.type === 'awake' && currentActivity.duration < 30)) {
-        // If nap would be shown as "now", skip it entirely
-        if (minutesUntil <= 0) {
-          return null;
-        }
+      // Don't show nap predictions while baby is actively feeding
+      if (currentActivity?.type === 'feeding') {
+        return null;
       }
       
+      const napTime = new Date(timing.nextNapWindowStart);
+      const minutesUntil = Math.max(0, differenceInMinutes(napTime, now));
       const hoursUntil = Math.floor(minutesUntil / 60);
       const minsRemaining = minutesUntil % 60;
       
