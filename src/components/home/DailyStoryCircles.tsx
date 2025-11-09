@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, subDays, isToday, parseISO } from "date-fns";
-import { Sparkles, Camera, PenLine, Plus } from "lucide-react";
+import { Sparkles, Camera, PenLine, Plus, Moon, Baby, Image } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 
 interface CachedStory {
@@ -151,6 +151,25 @@ export const DailyStoryCircles = ({
     return 'from-card-ombre-3-dark to-card-ombre-3';
   };
 
+  // Determine emotional anchor icon for each day
+  const getEmotionalAnchor = (story: CachedStory) => {
+    if (story.activities.length === 0) return null;
+    
+    // Check for photos first
+    const hasPhoto = story.activities.some(a => a.type === 'photo' || a.details?.photoUrl);
+    if (hasPhoto) return Image;
+    
+    // Sleep-heavy days (3+ naps or long sleep duration)
+    const napActivities = story.activities.filter(a => a.type === 'nap' && !a.details.isNightSleep);
+    if (napActivities.length >= 3) return Moon;
+    
+    // Feed focus (8+ feeds)
+    if (story.feedCount >= 8) return Baby;
+    
+    // Default: null (empty circle for calm days)
+    return null;
+  };
+
   return (
     <div className="w-full py-2 pb-3 bg-transparent">
       {/* Subtle gradient track behind circles */}
@@ -170,13 +189,8 @@ export const DailyStoryCircles = ({
           const isTodayStory = isToday(storyDate);
           const isStoryReady = isTodayStory && isAfter5PM;
           
-          // Check content types
-          const hasPhoto = story.activities.some(a => a.type === 'photo' || a.details?.photoUrl);
-          const hasNote = story.activities.some(a => a.details?.note);
-          const isEmpty = story.activities.length === 0;
-          
-          // Get the first photo for background
-          const firstPhoto = story.activities.find(a => a.details?.photoUrl)?.details?.photoUrl;
+          // Get emotional anchor for this day
+          const AnchorIcon = getEmotionalAnchor(story);
           
           return (
             <button
@@ -218,11 +232,13 @@ export const DailyStoryCircles = ({
                   borderColor: 'hsl(340, 35%, 65%)'
                 }}
               >
-                {/* Content - sparkle for Today only */}
+                {/* Emotional anchor icon or sparkle for Today */}
                 <div className="relative w-full h-full flex items-center justify-center">
-                  {isTodayStory && (
+                  {isTodayStory ? (
                     <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
-                  )}
+                  ) : AnchorIcon ? (
+                    <AnchorIcon className="w-5 h-5 text-foreground/60" />
+                  ) : null}
                 </div>
               </div>
               </div>
