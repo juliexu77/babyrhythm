@@ -26,12 +26,12 @@
     --s-7: 32px;
     
     /* Light Mode - "Fall Latte" */
-    --bg: 28 38% 93%; /* warmer peachy tan background */
-    --surface: 28 35% 91%; /* warm peachy card surface */
-    --surface-muted: 28 32% 89%; /* slightly deeper peachy tan */
+    --bg: 25 30% 89%; /* peachy beige background matching Quick Actions */
+    --surface: 25 28% 87%; /* warm peachy card surface */
+    --surface-muted: 25 26% 85%; /* slightly deeper peachy tan */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
-    --divider: 25 22% 86%; /* warm tan divider */
+    --divider: 25 20% 83%; /* warm peachy divider */
     
     /* Card ombré progression (light mode: tan → berry) */
     --card-ombre-1: 25 25% 90%; /* Hero card - subtle warm tan */
