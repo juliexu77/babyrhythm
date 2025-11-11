@@ -125,6 +125,11 @@ const Auth = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-6 relative">
+            {/* Faint glow effect */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-lg opacity-60"></div>
+            <Heart className="w-8 h-8 text-primary relative z-10" strokeWidth={1.5} />
+          </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
             Step into the rhythm.
           </h1>
