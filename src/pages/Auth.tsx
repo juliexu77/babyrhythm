@@ -154,7 +154,7 @@ const Auth = () => {
                     variant="outline"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
+                    className="w-full bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-white dark:text-gray-700 dark:hover:bg-gray-50 dusk:bg-[#72656E] dusk:text-white dusk:border-[#8A7C83]/30 dusk:hover:bg-[#7D6978]"
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Sign in with Google
@@ -211,7 +211,7 @@ const Auth = () => {
                     variant="outline"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
+                    className="w-full bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-white dark:text-gray-700 dark:hover:bg-gray-50 dusk:bg-[#72656E] dusk:text-white dusk:border-[#8A7C83]/30 dusk:hover:bg-[#7D6978]"
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Sign up with Google
