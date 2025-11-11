@@ -387,19 +387,33 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Dusk mode - Frosted Glass Effect */
+  /* Dusk mode - Subtle Glass Effect */
   .dusk .card,
   .dusk .liquid-glass {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12)) !important;
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12)) !important;
-    backdrop-filter: blur(18px) saturate(150%) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)) !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)) !important;
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     box-shadow: 
-      0 20px 30px 0 rgba(0, 0, 0, 0.4),
-      inset 0 1px 2px 0 rgba(255, 255, 255, 0.15),
-      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.1) !important;
+      0 8px 16px 0 rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 0 1px 0 rgba(255, 255, 255, 0.18) !important;
     border-radius: var(--card-radius);
+    position: relative;
+  }
+  
+  /* Subtle top edge highlight */
+  .dusk .card::before,
+  .dusk .liquid-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
   }
 
   /* Dusk mode - Remove light mode gradients from card ombre classes */
@@ -408,13 +422,13 @@
   .dusk .bg-gradient-to-t:not(.backdrop-blur-md),
   .dusk .bg-gradient-to-r:not(.backdrop-blur-md),
   .dusk .bg-gradient-to-l:not(.backdrop-blur-md) {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12)) !important;
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12)) !important;
-    backdrop-filter: blur(18px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)) !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)) !important;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 
-      0 20px 30px 0 rgba(0, 0, 0, 0.4),
-      inset 0 1px 2px 0 rgba(255, 255, 255, 0.15);
+      0 8px 16px 0 rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
     border-radius: var(--card-radius);
   }
 
@@ -436,9 +450,9 @@
 
   /* Dusk mode - Override bg-card for non-story elements */
   .dusk .bg-card:not(.backdrop-blur-md) {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.12)) !important;
-    backdrop-filter: blur(18px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)) !important;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--card-radius);
   }
 
