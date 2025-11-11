@@ -129,26 +129,26 @@ const Auth = () => {
             <div className="relative inline-flex items-center justify-center overflow-visible p-8">
               {/* Sprout aura - two-layer moon glow (inner + outer) */}
               <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
-                {/* Outer glow: wide diffuse halo */}
+                {/* Outer glow: wide diffuse halo - suspended in air */}
                 <div 
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] rounded-full"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(170, 185, 205, 0.12) 0%, transparent 50%)',
+                    background: 'radial-gradient(circle, rgba(170,156,150,0.12) 0%, transparent 50%)',
                     mixBlendMode: 'soft-light',
-                    filter: 'blur(20px)'
+                    filter: 'blur(110px)'
                   }}
                 />
                 {/* Inner glow: concentrated core */}
                 <div 
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80px] h-[80px] rounded-full"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[70px] rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(200, 210, 225, 0.35) 0%, rgba(190, 200, 215, 0.18) 50%, transparent 70%)',
-                    mixBlendMode: 'overlay',
-                    filter: 'blur(4px)'
+                    background: 'radial-gradient(circle, rgba(170,156,150,0.4) 0%, rgba(170,156,150,0.2) 50%, transparent 70%)',
+                    mixBlendMode: 'soft-light',
+                    filter: 'blur(35px)'
                   }}
                 />
               </div>
-              <Sprout className="sprout-icon text-primary relative z-10" strokeWidth={2} />
+              <Sprout className="sprout-icon w-6 h-6 text-primary relative z-10" strokeWidth={2} />
             </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">

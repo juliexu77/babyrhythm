@@ -311,16 +311,16 @@
   .dusk body {
     font-family: var(--font-ui-dark);
     background: 
-      /* Layer 6: Micro-grain texture for film quality */
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E"),
-      /* Layer 5: Edge vignette (wide feather, pulls eye inward) */
+      /* Micrograin: subtle film texture */
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E"),
+      /* Edge vignette */
       radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.05) 70%, rgba(0,0,0,0.12) 100%),
-      /* Layer 3: Vertical light falloff (sky glow above horizon) */
-      radial-gradient(ellipse 140% 80% at 50% -20%, rgba(255,255,255,0.06) 0%, transparent 60%),
-      /* Layer 2: Blue night tint (bottom-heavier to anchor horizon) */
-      linear-gradient(180deg, rgba(10,20,40,0.15) 0%, rgba(10,20,40,0.22) 50%, rgba(10,20,40,0.30) 100%),
-      /* Layer 1: Base sky gradient (three-stop dusk progression - navy to deep ink) */
-      linear-gradient(160deg, #1F2536 0%, #1A1D2D 55%, #0D1018 100%);
+      /* Top halo: faint residual daylight */
+      radial-gradient(ellipse 120% 55% at 50% -15%, rgba(245,235,225,0.05) 0%, transparent 60%),
+      /* Atmospheric overlay: prevents plum warmth from turning red */
+      linear-gradient(180deg, rgba(12,18,30,0.10) 0%, rgba(12,18,30,0.22) 50%, rgba(12,18,30,0.35) 100%),
+      /* Base gradient: neutral evening ink (warm night sky → espresso-charcoal → inky horizon) */
+      linear-gradient(165deg, #3A2E33 0%, #1E1A21 50%, #0C1015 100%);
     background-attachment: fixed;
   }
 
