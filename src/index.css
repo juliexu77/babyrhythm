@@ -311,12 +311,10 @@
   .dusk body {
     font-family: var(--font-ui-dark);
     background: 
-      /* Layer 1: Blue-black overlay */
-      linear-gradient(160deg, rgba(10, 20, 40, 0.25) 0%, rgba(10, 20, 40, 0.22) 100%),
-      /* Layer 2: Radial glow at top center (simulates last trace of daylight) */
-      radial-gradient(circle at 50% 10%, rgba(64, 52, 74, 0.2) 0%, transparent 60%),
-      /* Layer 3: Main gradient (plum → raisin ink → inky blue) */
-      linear-gradient(160deg, #262630 0%, #1E1A26 60%, #101622 100%);
+      /* Layer 1: Soft blue overlay to neutralize purple and restore ink-night quality */
+      linear-gradient(160deg, rgba(10, 20, 40, 0.25) 0%, rgba(10, 20, 40, 0.25) 100%),
+      /* Layer 2: Main 3-stop gradient (plum warmth → foggy indigo midtone → inky blue base) */
+      linear-gradient(160deg, #2B2433 0%, #1E1A26 50%, #101622 100%);
     background-attachment: fixed;
   }
 
