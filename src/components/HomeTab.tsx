@@ -1358,6 +1358,22 @@ const lastDiaper = displayActivities
           activities={selectedStoryDate ? selectedStoryActivities : activities}
           babyName={babyName}
           targetDate={selectedStoryDate || undefined}
+          availableDates={(() => {
+            // Generate 5 days: today and 4 prior days (sorted oldest to newest)
+            const dates: string[] = [];
+            const today = new Date();
+            for (let i = 4; i >= 0; i--) {
+              const date = new Date(today);
+              date.setDate(date.getDate() - i);
+              dates.push(format(date, 'yyyy-MM-dd'));
+            }
+            return dates;
+          })()}
+          onNavigate={(newDate, dayActivities) => {
+            setSelectedStoryDate(newDate);
+            setSelectedStoryActivities(dayActivities);
+          }}
+          allActivities={activities}
         />
 
         {/* Learning Progress Chip */}

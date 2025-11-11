@@ -1,7 +1,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Activity } from "@/components/ActivityCard";
 import { format } from "date-fns";
-import { Baby, Moon, Clock, Sparkles } from "lucide-react";
+import { Baby, Moon, Clock, Sparkles, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,12 +11,17 @@ interface TodaysStoryModalProps {
   activities: Activity[];
   babyName?: string;
   targetDate?: string; // YYYY-MM-DD, when viewing a past day
+  availableDates?: string[]; // Array of YYYY-MM-DD dates (sorted oldest to newest)
+  onNavigate?: (newDate: string, activities: Activity[]) => void;
+  allActivities?: Activity[]; // All activities for filtering
 }
 
-export function TodaysStoryModal({ isOpen, onClose, activities, babyName, targetDate }: TodaysStoryModalProps) {
+export function TodaysStoryModal({ isOpen, onClose, activities, babyName, targetDate, availableDates, onNavigate, allActivities }: TodaysStoryModalProps) {
   const [animationPhase, setAnimationPhase] = useState<'act1' | 'act2' | 'act3'>('act1');
   const [aiHeadline, setAiHeadline] = useState<string | null>(null);
   const [isLoadingHeadline, setIsLoadingHeadline] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   
   // Determine which day's activities to show
   const dayStart = (() => {
@@ -265,6 +270,86 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     }
   }, [isOpen]);
 
+  // Navigation handlers
+  const currentDate = targetDate || format(new Date(), 'yyyy-MM-dd');
+  const currentIndex = availableDates?.indexOf(currentDate) ?? -1;
+  const isOldestDate = currentIndex === 0;
+  const isNewestDate = currentIndex === (availableDates?.length ?? 1) - 1;
+
+  const handleNavigate = (direction: 'prev' | 'next') => {
+    if (!availableDates || !onNavigate || !allActivities) return;
+
+    if (direction === 'prev') {
+      if (isOldestDate) {
+        onClose(); // Close if at oldest day
+        return;
+      }
+      const prevDate = availableDates[currentIndex - 1];
+      if (prevDate) {
+        const dayActivities = allActivities.filter(a => {
+          if (!a.loggedAt) return false;
+          return format(new Date(a.loggedAt), 'yyyy-MM-dd') === prevDate;
+        });
+        onNavigate(prevDate, dayActivities);
+      }
+    } else {
+      if (isNewestDate) {
+        onClose(); // Close if at today
+        return;
+      }
+      const nextDate = availableDates[currentIndex + 1];
+      if (nextDate) {
+        const dayActivities = allActivities.filter(a => {
+          if (!a.loggedAt) return false;
+          return format(new Date(a.loggedAt), 'yyyy-MM-dd') === nextDate;
+        });
+        onNavigate(nextDate, dayActivities);
+      }
+    }
+  };
+
+  // Swipe detection
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      handleNavigate('next'); // Swipe left = go to next (newer) day
+    }
+    if (isRightSwipe) {
+      handleNavigate('prev'); // Swipe right = go to previous (older) day
+    }
+  };
+
+  // Tap zone detection
+  const handleTapZone = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    
+    // Left 30% = previous day, Right 30% = next day
+    if (x < width * 0.3) {
+      handleNavigate('prev');
+    } else if (x > width * 0.7) {
+      handleNavigate('next');
+    }
+  };
+
   const headline = aiHeadline || fallbackHeadline;
 
   console.log('📖 Story Metrics:', {
@@ -318,7 +403,21 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0">
-        <div className="relative w-full h-full overflow-y-auto">
+        {/* Enhanced close button */}
+        <button
+          onClick={onClose}
+          className="absolute right-6 top-6 z-50 rounded-full p-2 bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-all duration-200 border border-white/20"
+        >
+          <X className="h-5 w-5 text-white drop-shadow-lg" />
+        </button>
+        
+        <div 
+          className="relative w-full h-full overflow-y-auto"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onClick={handleTapZone}
+        >
           {/* Fixed photo background layer */}
           <div className="fixed inset-0 w-full h-full pointer-events-none">
             {heroMoment?.details.photoUrl ? (
@@ -338,9 +437,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                 <div className="absolute inset-0 bg-gradient-to-b from-[#FFE9D4]/40 via-transparent via-40% to-[#E9E3FF]/40" />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-35% to-black/50" />
                 
-                {/* Date subtitle (fixed on photo) */}
+                {/* Date subtitle (fixed on photo) - enhanced visibility */}
                 <div className="absolute top-8 left-6 right-6">
-                  <p className="text-xs font-light text-white/70 uppercase tracking-[0.2em] animate-story-headline-fade-up drop-shadow-lg">
+                  <p className="text-sm font-medium text-white uppercase tracking-[0.25em] animate-story-headline-fade-up drop-shadow-2xl" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>
                     {todayDate}
                   </p>
                 </div>
