@@ -137,7 +137,7 @@ const Auth = () => {
         </div>
 
         {/* Auth Forms */}
-        <Card className="border-border bg-card/50 backdrop-blur shadow-card">
+        <Card className="border-border backdrop-blur shadow-card dark:bg-transparent dark:backdrop-blur-[24px] dusk:bg-transparent dusk:backdrop-blur-[32px]">
           <CardHeader className="pb-4">
           </CardHeader>
           <CardContent>
