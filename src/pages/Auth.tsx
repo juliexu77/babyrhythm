@@ -126,14 +126,14 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6 relative">
-            {/* Circular glow behind icon - brighter */}
-            <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-xl opacity-75"></div>
+            {/* Circular glow behind icon - animated pulse */}
+            <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-xl opacity-75 animate-pulse"></div>
             <Activity className="auth-icon w-8 h-8 text-primary relative z-10" strokeWidth={1.5} />
           </div>
-          <h1 className="text-[22px] md:text-[36px] font-medium mb-6 tracking-tight" style={{ lineHeight: '1.25', color: 'rgba(180, 180, 180, 0.95)' }}>
+          <h1 className="text-[22px] md:text-[36px] font-medium mb-6 tracking-tight" style={{ lineHeight: '1.25', color: 'rgba(200, 200, 200, 0.95)' }}>
             Step into the rhythm
           </h1>
-          <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto" style={{ color: 'rgba(160, 160, 160, 0.85)' }}>
+          <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto" style={{ color: 'rgba(180, 180, 180, 0.90)' }}>
             Create an account to start tracking and reflecting your baby's day — and let BabyRhythm guide you toward balance, predictability, and peace of mind.
           </p>
         </div>
