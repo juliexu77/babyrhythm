@@ -130,16 +130,16 @@ const Auth = () => {
             <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-xl opacity-75 animate-pulse"></div>
             <Activity className="auth-icon w-8 h-8 text-primary relative z-10" strokeWidth={1.5} />
           </div>
-          <h1 className="text-[22px] md:text-[36px] font-medium mb-6 tracking-tight" style={{ lineHeight: '1.25', color: 'rgba(200, 200, 200, 0.95)' }}>
+          <h1 className="text-[22px] md:text-[36px] font-medium mb-6 tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
             Step into the rhythm
           </h1>
-          <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto" style={{ color: 'rgba(180, 180, 180, 0.90)' }}>
+          <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto text-foreground/80">
             Create an account to start tracking and reflecting your baby's day — and let BabyRhythm guide you toward balance, predictability, and peace of mind.
           </p>
         </div>
 
         {/* Auth Forms */}
-        <Card className="card border border-border shadow-card">
+        <Card className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 dark:bg-transparent shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 dark:border-border overflow-hidden">
           <CardContent className="pt-6">
             {mode === 'signup' ? (
               <form onSubmit={handleSignUp} className="space-y-4">
