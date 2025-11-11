@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { Baby, Heart, Mail, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'signup' | 'signin'>('signup');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -140,155 +140,155 @@ const Auth = () => {
 
         {/* Auth Forms */}
         <Card className="card border border-border shadow-card">
-          <CardHeader className="pb-4">
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="signup" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
-                <TabsTrigger value="signin">{t('signIn')}</TabsTrigger>
-              </TabsList>
+          <CardContent className="pt-6">
+            {mode === 'signup' ? (
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <Button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                  className="w-full font-semibold"
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  Sign up with Google
+                </Button>
 
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <Button
-                    type="button"
-                    onClick={handleGoogleSignIn}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or continue with email
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="full-name">{t('fullName')}</Label>
+                  <Input
+                    id="full-name"
+                    name="full-name"
+                    type="text"
+                    placeholder={t('fullName')}
+                    required
                     disabled={isLoading}
-                    className="w-full font-semibold"
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Sign up with Google
-                  </Button>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">
-                        Or continue with email
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="full-name">{t('fullName')}</Label>
-                    <Input
-                      id="full-name"
-                      name="full-name"
-                      type="text"
-                      placeholder={t('fullName')}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">{t('email')}</Label>
-                    <Input
-                      id="signup-email"
-                      name="signup-email"
-                      type="email"
-                      placeholder={t('enterEmail')}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-sm font-medium">{t('password')}</Label>
-                    <Input
-                      id="signup-password"
-                      name="signup-password"
-                      type="password"
-                      placeholder={t('enterPassword')}
-                      required
-                      disabled={isLoading}
-                      className="text-sm"
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full font-semibold" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">{t('email')}</Label>
+                  <Input
+                    id="signup-email"
+                    name="signup-email"
+                    type="email"
+                    placeholder={t('enterEmail')}
+                    required
                     disabled={isLoading}
-                  >
-                    {isLoading ? t('settingUp') : t('createAccount')}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <Button
-                    type="button"
-                    onClick={handleGoogleSignIn}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password" className="text-sm font-medium">{t('password')}</Label>
+                  <Input
+                    id="signup-password"
+                    name="signup-password"
+                    type="password"
+                    placeholder={t('enterPassword')}
+                    required
                     disabled={isLoading}
-                    className="w-full font-semibold"
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Sign in with Google
-                  </Button>
+                    className="text-sm"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full font-semibold" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? t('settingUp') : t('createAccount')}
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <Button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                  className="w-full font-semibold"
+                >
+                  <Mail className="mr-2 h-4 w-4" />
+                  Sign in with Google
+                </Button>
 
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">
-                        Or continue with email
-                      </span>
-                    </div>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
                   </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or continue with email
+                    </span>
+                  </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">{t('email')}</Label>
-                    <Input
-                      id="signin-email"
-                      name="signin-email"
-                      type="email"
-                      placeholder={t('enterEmail')}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-sm font-medium">{t('password')}</Label>
-                    <Input
-                      id="signin-password"
-                      name="signin-password"
-                      type="password"
-                      placeholder={t('enterPassword')}
-                      required
-                      disabled={isLoading}
-                      className="text-sm"
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full font-semibold" 
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">{t('email')}</Label>
+                  <Input
+                    id="signin-email"
+                    name="signin-email"
+                    type="email"
+                    placeholder={t('enterEmail')}
+                    required
                     disabled={isLoading}
-                  >
-                    {isLoading ? t('loading') : t('signIn')}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password" className="text-sm font-medium">{t('password')}</Label>
+                  <Input
+                    id="signin-password"
+                    name="signin-password"
+                    type="password"
+                    placeholder={t('enterPassword')}
+                    required
+                    disabled={isLoading}
+                    className="text-sm"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full font-semibold" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? t('loading') : t('signIn')}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
         
-        {/* Microcopy below card */}
+        {/* Toggle between sign up and sign in */}
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Already have an account?{' '}
-          <button
-            type="button"
-            onClick={() => {
-              const tabsList = document.querySelector('[role="tablist"]');
-              const signinTab = tabsList?.querySelector('[value="signin"]') as HTMLElement;
-              signinTab?.click();
-            }}
-            className="text-primary hover:underline"
-          >
-            Sign in
-          </button>
+          {mode === 'signup' ? (
+            <>
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => setMode('signin')}
+                className="text-primary hover:underline"
+              >
+                Sign in
+              </button>
+            </>
+          ) : (
+            <>
+              Don't have an account?{' '}
+              <button
+                type="button"
+                onClick={() => setMode('signup')}
+                className="text-primary hover:underline"
+              >
+                Sign up
+              </button>
+            </>
+          )}
         </p>
       </div>
     </div>
