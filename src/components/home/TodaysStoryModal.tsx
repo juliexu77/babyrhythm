@@ -454,11 +454,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                 
                 {/* Warm gradient overlay - amber to mauve */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#FFE9D4]/40 via-transparent via-40% to-[#E9E3FF]/40" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-35% to-background" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-35% to-black/50" />
                 
                 {/* Date subtitle (fixed on photo) - enhanced visibility */}
                 <div className="absolute top-8 left-6 right-6">
-                  <p className="text-sm font-medium text-white uppercase tracking-[0.25em] animate-story-headline-fade-up drop-shadow-2xl" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>
+                  <p className="text-sm font-medium text-foreground/90 uppercase tracking-[0.25em] animate-story-headline-fade-up drop-shadow-2xl" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>
                     {todayDate}
                   </p>
                 </div>
@@ -476,12 +476,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
           )}>
             {/* Headline positioned in safe zone - whispered typography */}
             <div className="relative px-8 pt-[30vh]">
-              <h1 className="text-[24px] leading-[1.4] font-light tracking-[0.04em] text-white/80 animate-story-headline-type drop-shadow-2xl" style={{ fontFamily: 'var(--font-ui-light)' }}>
+              <h1 className="text-[24px] leading-[1.4] font-light tracking-[0.04em] text-foreground/80 animate-story-headline-type drop-shadow-2xl" style={{ fontFamily: 'var(--font-ui-light)' }}>
                 {headline}
               </h1>
               
               {getPhotoCaption() && (
-                <p className="text-[13px] text-white/50 mt-4 font-light tracking-[0.03em] animate-story-headline-fade-up drop-shadow-xl" style={{ animationDelay: '2s' }}>
+                <p className="text-[13px] text-foreground/60 mt-4 font-light tracking-[0.03em] animate-story-headline-fade-up drop-shadow-xl" style={{ animationDelay: '2s' }}>
                   {getPhotoCaption()}
                 </p>
               )}
@@ -495,7 +495,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               <div className="relative w-full px-6 pb-6 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
               {/* Feeds */}
               <div 
-                className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '1s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -521,7 +521,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
               {/* Naps */}
               <div 
-                className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '1.5s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -547,7 +547,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
               {/* Nap time */}
               <div 
-                className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '2s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -574,7 +574,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Longest wake window */}
               {longestWakeWindow && (
                 <div 
-                  className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                  className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                   style={{ animationDelay: '2.5s' }}
                 >
                   <div className="flex items-center justify-between">
@@ -592,7 +592,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Special moments */}
               {allSpecialNotes.length > 0 && (
                 <div 
-                  className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                  className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                   style={{ animationDelay: longestWakeWindow ? '3s' : '2.5s' }}
                 >
                   <div className="flex items-center gap-2 mb-2">
