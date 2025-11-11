@@ -382,6 +382,21 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   }
 
+  /* Dusk mode - Remove light mode gradients from card ombre classes */
+  .dusk .bg-gradient-to-b,
+  .dusk .bg-gradient-to-br,
+  .dusk .bg-gradient-to-t,
+  .dusk .bg-gradient-to-r,
+  .dusk .bg-gradient-to-l {
+    background: rgba(28, 30, 36, 0.72) !important;
+    background-image: none !important;
+  }
+
+  /* Dusk mode - Override bg-card */
+  .dusk .bg-card {
+    background: rgba(28, 30, 36, 0.72) !important;
+  }
+
   /* Dusk mode - Transparent tabs */
   .dusk [role="tablist"] {
     background: transparent !important;
