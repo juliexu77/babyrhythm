@@ -148,7 +148,7 @@ const Auth = () => {
                   }}
                 />
               </div>
-              <Sprout className="w-6 h-6 text-primary dusk:text-muted relative z-10 dusk:opacity-90" strokeWidth={2} />
+              <Sprout className="w-6 h-6 text-primary relative z-10 dusk:!text-[hsl(0,0%,70%)] dusk:opacity-90" strokeWidth={2} />
             </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
