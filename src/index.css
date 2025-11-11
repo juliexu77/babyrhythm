@@ -311,9 +311,9 @@
   .dusk body {
     font-family: var(--font-ui-dark);
     background: 
-      /* Layer 1: Soft blue overlay to neutralize purple and restore ink-night quality */
-      linear-gradient(160deg, rgba(10, 20, 40, 0.25) 0%, rgba(10, 20, 40, 0.25) 100%),
-      /* Layer 2: Main 3-stop gradient (plum warmth → foggy indigo midtone → inky blue base) */
+      /* Layer 1: Soft blue overlay to neutralize purple (reduced opacity for more gradient visibility) */
+      linear-gradient(160deg, rgba(10, 20, 40, 0.15) 0%, rgba(10, 20, 40, 0.3) 100%),
+      /* Layer 2: Main 3-stop gradient with enhanced contrast (plum warmth → foggy indigo midtone → inky blue base) */
       linear-gradient(160deg, #2B2433 0%, #1E1A26 50%, #101622 100%);
     background-attachment: fixed;
   }
