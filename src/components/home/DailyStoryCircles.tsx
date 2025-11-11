@@ -272,7 +272,7 @@ export const DailyStoryCircles = ({
     }, [iconName]);
     
     if (!IconComponent) return null;
-    return <IconComponent className="w-5 h-5" style={{ color: 'hsl(300, 35%, 55%)' }} />;
+    return <IconComponent className="w-5 h-5 text-primary" />;
   };
 
   return (
@@ -282,7 +282,7 @@ export const DailyStoryCircles = ({
         <div 
           className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-10 mx-4 rounded-full"
           style={{
-            background: 'linear-gradient(to right, hsl(280, 30%, 65%) 0%, hsl(350, 45%, 70%) 100%)',
+            background: 'linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
             opacity: 0.15,
             filter: 'blur(3px)'
           }}
@@ -308,7 +308,7 @@ export const DailyStoryCircles = ({
                     <div 
                       className="absolute -inset-[3px] rounded-full opacity-30"
                       style={{
-                        background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                        background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
                         filter: 'blur(3px)',
                         animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                       }}
@@ -317,7 +317,7 @@ export const DailyStoryCircles = ({
                     <div 
                       className="absolute -inset-[2px] rounded-full"
                       style={{
-                        background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                        background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
                       }}
                     />
                   </>
@@ -327,7 +327,7 @@ export const DailyStoryCircles = ({
               <div 
                 className="relative w-16 h-16 rounded-full border-[3px] bg-background transition-all duration-300"
                 style={{
-                  borderColor: 'hsl(340, 35%, 65%)'
+                  borderColor: 'hsl(var(--primary))'
                 }}
               >
                 {/* Emotional anchor icon or sparkle for Today */}

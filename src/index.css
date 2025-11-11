@@ -329,7 +329,7 @@
 
   /* Component base styles */
   .card {
-    background: hsl(var(--card) / 0.3);
+    background: linear-gradient(to bottom, hsl(var(--card-ombre-3)), hsl(var(--card-ombre-3-dark)));
     backdrop-filter: blur(8px);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
@@ -497,7 +497,8 @@
   }
   
   .supportive-card {
-    @apply rounded-2xl shadow-card bg-card/50 border border-border/20 backdrop-blur-sm;
+    background: linear-gradient(to bottom, hsl(var(--card-ombre-2)), hsl(var(--card-ombre-2-dark)));
+    @apply rounded-2xl shadow-card border border-border/20 backdrop-blur-sm;
   }
   
   .dark .supportive-card {
@@ -1009,7 +1010,7 @@
   
   /* Component utilities */
   .pp-card {
-    background: hsl(var(--card) / 0.3);
+    background: linear-gradient(to bottom, hsl(var(--card-ombre-3)), hsl(var(--card-ombre-3-dark)));
     backdrop-filter: blur(8px);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
