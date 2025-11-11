@@ -389,9 +389,7 @@
 
   /* Dusk mode - Inked glass card effect */
   .dusk .card,
-  .dusk .liquid-glass,
-  .dusk [class*="card"],
-  .dusk .bg-card {
+  .dusk .liquid-glass {
     background: rgba(28, 30, 36, 0.72) !important;
     background-image: none !important;
     backdrop-filter: blur(40px) saturate(110%);
@@ -400,11 +398,11 @@
   }
 
   /* Dusk mode - Remove light mode gradients from card ombre classes */
-  .dusk .bg-gradient-to-b,
-  .dusk .bg-gradient-to-br,
-  .dusk .bg-gradient-to-t,
-  .dusk .bg-gradient-to-r,
-  .dusk .bg-gradient-to-l {
+  .dusk .bg-gradient-to-b:not(.backdrop-blur-md),
+  .dusk .bg-gradient-to-br:not(.backdrop-blur-md),
+  .dusk .bg-gradient-to-t:not(.backdrop-blur-md),
+  .dusk .bg-gradient-to-r:not(.backdrop-blur-md),
+  .dusk .bg-gradient-to-l:not(.backdrop-blur-md) {
     background: rgba(28, 30, 36, 0.72) !important;
     background-image: none !important;
     backdrop-filter: blur(40px) saturate(110%);
@@ -412,8 +410,15 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
   }
 
-  /* Dusk mode - Override bg-card */
-  .dusk .bg-card {
+  /* Dusk mode - Story modal cards keep semi-transparent backgrounds */
+  .dusk .backdrop-blur-md[class*="bg-background"] {
+    background: rgba(28, 30, 36, 0.50) !important;
+    backdrop-filter: blur(12px) saturate(100%);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  /* Dusk mode - Override bg-card for non-story elements */
+  .dusk .bg-card:not(.backdrop-blur-md) {
     background: rgba(28, 30, 36, 0.72) !important;
     backdrop-filter: blur(40px) saturate(110%);
     border: 1px solid rgba(255, 255, 255, 0.03);

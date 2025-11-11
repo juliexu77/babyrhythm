@@ -434,7 +434,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
           <div className="absolute inset-0 bg-background" />
           
           {/* Photo layer on top (decorative) */}
-          <div className="absolute inset-0 w-full h-[50vh] pointer-events-none">
+          <div className="absolute inset-0 w-full h-[35vh] pointer-events-none">
             {heroMoment?.details.photoUrl ? (
               <div className="relative w-full h-full">
                 {/* Hero photo with blur-in animation */}
@@ -475,7 +475,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
             navigationDirection ? "opacity-0" : "opacity-100"
           )}>
             {/* Headline positioned in safe zone - whispered typography */}
-            <div className="relative px-8 pt-[30vh]">
+            <div className="relative px-8 pt-[20vh]">
               <h1 className="text-[24px] leading-[1.4] font-light tracking-[0.04em] text-foreground/80 animate-story-headline-type drop-shadow-2xl" style={{ fontFamily: 'var(--font-ui-light)' }}>
                 {headline}
               </h1>
