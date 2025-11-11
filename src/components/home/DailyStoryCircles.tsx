@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, subDays, isToday, parseISO } from "date-fns";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Moon } from "lucide-react";
 import dynamicIconImports from "lucide-react/dynamicIconImports";
 import { Activity } from "@/components/ActivityCard";
 
@@ -334,9 +334,14 @@ export const DailyStoryCircles = ({
                 <div className="relative w-full h-full flex items-center justify-center">
                   {isTodayStory ? (
                     <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
-                  ) : story.icon ? (
-                    <DynamicIcon iconName={story.icon} />
-                  ) : null}
+                  ) : (
+                    <div className="relative flex flex-col items-center justify-center gap-0.5">
+                      <Moon className="w-4 h-4 text-primary" />
+                      <span className="text-[11px] font-bold text-primary">
+                        {story.napCount}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               </div>
