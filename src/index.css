@@ -395,6 +395,7 @@
     backdrop-filter: blur(40px) saturate(110%);
     border: 1px solid rgba(255, 255, 255, 0.03);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    border-radius: var(--card-radius);
   }
 
   /* Dusk mode - Remove light mode gradients from card ombre classes */
@@ -408,6 +409,7 @@
     backdrop-filter: blur(40px) saturate(110%);
     border: 1px solid rgba(255, 255, 255, 0.03);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    border-radius: var(--card-radius);
   }
 
   /* Dusk mode - Story modal cards keep semi-transparent backgrounds */
@@ -415,6 +417,15 @@
     background: rgba(28, 30, 36, 0.50) !important;
     backdrop-filter: blur(12px) saturate(100%);
     border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: var(--card-radius);
+  }
+
+  /* Dusk mode - Ensure inner backgrounds don't override card styling */
+  .dusk .card .bg-background,
+  .dusk .card .bg-card,
+  .dusk .bg-gradient-to-b .bg-background,
+  .dusk .bg-gradient-to-br .bg-background {
+    background: transparent !important;
   }
 
   /* Dusk mode - Override bg-card for non-story elements */
@@ -422,6 +433,7 @@
     background: rgba(28, 30, 36, 0.72) !important;
     backdrop-filter: blur(40px) saturate(110%);
     border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: var(--card-radius);
   }
 
   /* Dusk mode - Transparent tabs */
