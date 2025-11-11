@@ -20,15 +20,15 @@ export default defineConfig(({ mode }) => ({
         name: 'BabyRhythm - Baby Tracker',
         short_name: 'BabyRhythm',
         description: 'Beautiful baby activity tracker for feeds, diaper changes, naps, and notes',
-        theme_color: '#8B5CF6',
-        background_color: '#ffffff',
+        theme_color: '#F5F1ED',
+        background_color: '#F5F1ED',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
         icons: [
           {
-            src: '/favicon.png',
+            src: '/app-icon.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
