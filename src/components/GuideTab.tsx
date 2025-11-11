@@ -1352,7 +1352,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <>
           {/* Birthday Setup Prompt */}
           {needsBirthdaySetup && (
-            <div className="p-4 bg-accent/20 border-b border-border/40">
+            <div className="p-4 mx-2 bg-accent/20 border-b border-border/40">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-5 h-5 text-primary" />
@@ -1379,7 +1379,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
           {/* Main Content */}
           <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="px-4 pt-4 space-y-4">
+        <div ref={scrollRef} className="pt-4 space-y-4">
           {/* Hero Insight Card - Only for Tier 3 */}
           {!needsBirthdaySetup && hasTier3Data && (
             <>
@@ -1395,7 +1395,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           
           {/* Tier 1 & 2: Simple confidence message + unlock progress */}
           {!needsBirthdaySetup && hasTier1Data && !hasTier3Data && (
-            <div className="mb-4 p-4 bg-accent/20 rounded-lg border border-border/40 space-y-3">
+            <div className="mb-4 mx-2 p-4 bg-accent/20 rounded-lg border border-border/40 space-y-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium text-foreground">
