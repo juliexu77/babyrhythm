@@ -46,27 +46,27 @@ const Onboarding = () => {
           </div>
 
           {/* Welcome Message */}
-          <div className="space-y-6">
-            <h1 className="text-3xl md:text-4xl font-sans font-semibold text-foreground tracking-tight leading-tight">
-              Intelligence meets intuition
+          <div className="space-y-8">
+            <h1 className="text-[22px] md:text-[36px] font-medium text-foreground/90 tracking-tight" style={{ lineHeight: '1.25', color: 'rgba(243, 241, 242, 0.9)' }}>
+              Where intuition meets intelligence
             </h1>
-            <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
-              BabyRhythm starts guiding you from the moment you log your first nap, feed, or diaper — using patterns to offer gentle, data-backed predictions that grow smarter every day.
+            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal mt-8" style={{ color: '#C9C6C9' }}>
+              BabyRhythm learns your baby's natural patterns from the moment you log your first nap, feed, or diaper — gently predicting what comes next with insights that grow smarter every day.
             </p>
-            <p className="text-sm text-muted-foreground/80 max-w-sm mx-auto">
-              Built to adapt to your baby's rhythm — so you feel calm, informed, and in sync.
+            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal" style={{ color: '#C9C6C9' }}>
+              Built to adapt to your baby's rhythm — so you feel calm, connected, and in sync.
             </p>
           </div>
 
           {/* CTA */}
-          <div className="pt-4">
+          <div className="pt-6">
             <Button
               onClick={handleGetStarted}
               size="lg"
               className="w-full h-14 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
-              <span className="relative">Start your rhythm</span>
+              <span className="relative">Begin your rhythm</span>
             </Button>
           </div>
         </div>
