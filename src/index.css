@@ -307,6 +307,16 @@
     font-family: var(--font-ui-dark);
   }
 
+  /* Dusk mode - transparent root container to show gradient */
+  .dusk #root {
+    background: transparent !important;
+  }
+  
+  /* Dusk mode - transparent backgrounds to show body gradient */
+  .dusk .bg-background {
+    background: transparent !important;
+  }
+
   /* Dusk mode - "Inverted Twilight with nightlight glow" */
   .dusk body {
     font-family: var(--font-ui-dark);
