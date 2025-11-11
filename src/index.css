@@ -346,7 +346,7 @@
   /* Dusk mode - Liquid glass card effect */
   .dusk .card,
   .dusk .liquid-glass {
-    background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.15) 100%), #23232D !important;
+    background: transparent !important;
     backdrop-filter: blur(32px) saturate(105%);
     border: 1px solid rgba(255, 255, 255, 0.03);
     box-shadow: 0 8px 8px 2px rgba(0, 0, 0, 0.2);
