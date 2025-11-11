@@ -127,15 +127,24 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="relative inline-flex items-center justify-center overflow-visible p-8">
-              {/* Moon glow effect - only visible in dusk mode */}
-              <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] pointer-events-none z-0">
+              {/* Sprout aura - two-layer moon glow (inner + outer) */}
+              <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
+                {/* Outer glow: wide diffuse halo */}
                 <div 
-                  className="w-full h-full rounded-full"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(200, 200, 200, 0.25) 20%, rgba(180, 180, 180, 0.15) 45%, transparent 70%)',
-                    opacity: 0.35,
+                    background: 'radial-gradient(circle, rgba(155, 138, 148, 0.15) 0%, transparent 50%)',
                     mixBlendMode: 'soft-light',
-                    filter: 'blur(2px)'
+                    filter: 'blur(20px)'
+                  }}
+                />
+                {/* Inner glow: concentrated core */}
+                <div 
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80px] h-[80px] rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(155, 138, 148, 0.40) 0%, rgba(155, 138, 148, 0.20) 50%, transparent 70%)',
+                    mixBlendMode: 'overlay',
+                    filter: 'blur(4px)'
                   }}
                 />
               </div>
