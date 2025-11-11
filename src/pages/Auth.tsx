@@ -118,10 +118,6 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-transparent flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        {/* Language Toggle */}
-        <div className="flex justify-end mb-6">
-          <LanguageToggle />
-        </div>
         
         {/* Header */}
         <div className="text-center mb-8">
