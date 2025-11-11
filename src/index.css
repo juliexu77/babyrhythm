@@ -352,6 +352,16 @@
     box-shadow: 0 8px 8px 2px rgba(0, 0, 0, 0.2);
   }
 
+  /* Dusk - Google auth button */
+  .dusk .google-auth-btn {
+    background: linear-gradient(180deg, #6E646D 0%, #5D565E 100%) !important;
+    color: #F2EDEB !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  .dusk .google-auth-btn:hover {
+    filter: brightness(1.05);
+  }
+
   /* Dusk mode - Primary buttons */
   .dusk .bg-primary,
   .dusk button.bg-primary {

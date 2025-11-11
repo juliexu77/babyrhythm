@@ -149,7 +149,7 @@ const Auth = () => {
         </div>
 
         {/* Auth Forms */}
-        <Card className="border-border backdrop-blur shadow-card dark:bg-transparent dark:backdrop-blur-[24px] dusk:bg-transparent dusk:backdrop-blur-[32px]">
+        <Card className="card border border-border shadow-card">
           <CardHeader className="pb-4">
           </CardHeader>
           <CardContent>
@@ -166,7 +166,7 @@ const Auth = () => {
                     variant="outline"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-white dark:text-gray-700 dark:hover:bg-gray-50 dusk:bg-[#72656E] dusk:text-white dusk:border-[#8A7C83]/30 dusk:hover:bg-[#7D6978]"
+                    className="google-auth-btn w-full bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-white dark:text-gray-700 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Sign in with Google
@@ -223,7 +223,7 @@ const Auth = () => {
                     variant="outline"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-white dark:text-gray-700 dark:hover:bg-gray-50 dusk:bg-[#72656E] dusk:text-white dusk:border-[#8A7C83]/30 dusk:hover:bg-[#7D6978]"
+                    className="google-auth-btn w-full bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-white dark:text-gray-700 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Sign up with Google
