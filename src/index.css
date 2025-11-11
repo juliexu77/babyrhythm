@@ -336,11 +336,11 @@
   }
 
   .dark .card {
-    background: hsl(var(--card) / 1);
-    backdrop-filter: none;
-    border-radius: 8px;
-    box-shadow: none;
-    border: 1px solid hsl(0 0% 16%); /* #2A2A2A */
+    background: transparent;
+    backdrop-filter: blur(24px) saturate(100%);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.02), 0 4px 16px 0 rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   /* Dusk mode - Liquid glass card effect */
@@ -501,7 +501,11 @@
   }
   
   .dark .supportive-card {
-    @apply rounded-lg shadow-none bg-card border-border;
+    background: transparent;
+    backdrop-filter: blur(24px) saturate(100%);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.02), 0 4px 16px 0 rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .reassuring-text {
@@ -522,7 +526,7 @@
   }
   
   .performance-card {
-    @apply dark:rounded-lg dark:border dark:border-border dark:bg-card;
+    @apply dark:rounded-lg dark:border dark:border-border;
   }
   
   .metric-text {
@@ -1013,11 +1017,11 @@
   }
   
   .dark .pp-card {
-    background: hsl(var(--card) / 1);
-    backdrop-filter: none;
-    border-radius: 8px;
-    box-shadow: none;
-    border: 1px solid hsl(0 0% 16%);
+    background: transparent;
+    backdrop-filter: blur(24px) saturate(100%);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.02), 0 4px 16px 0 rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
   
   .pp-divider {
