@@ -126,7 +126,19 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Sprout className="w-6 h-6 text-primary" />
+            <div className="relative">
+              {/* Moon glow effect - only visible in dusk mode */}
+              <div className="absolute inset-0 dusk:block hidden">
+                <div 
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[70px] rounded-full"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(155, 138, 148, 0.4) 0%, transparent 70%)',
+                    opacity: 0.2
+                  }}
+                />
+              </div>
+              <Sprout className="w-6 h-6 text-primary relative z-10" />
+            </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
             Step into the rhythm.

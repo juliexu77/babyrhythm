@@ -195,26 +195,26 @@
     /* Background: Gradient from charcoal-plum to deep ink blue */
     --bg: 250 10% 17%; /* #262630 - Muted charcoal-plum */
     --bg-bottom: 225 35% 9%; /* #101622 - Deep ink blue night sky */
-    --surface: 280 16% 18%; /* #27232F - Soft graphite */
+    --surface: 270 11% 17%; /* #23232D - Graphite with faint violet undertone */
     --surface-muted: 280 14% 16%; /* Deeper graphite */
-    --text: 28 12% 81%; /* #CFC7C2 - Softer ivory */
-    --text-secondary: 28 8% 76%; /* Dimmed paragraphs */
-    --text-muted: 24 8% 70%; /* Dimmed labels */
+    --text: 22 19% 82%; /* #D8D0CA - Dim ivory */
+    --text-secondary: 24 10% 71%; /* #B9B0AC - Fog taupe-grey */
+    --text-muted: 28 8% 63%; /* #A59C98 - Further softened labels */
     --divider: 280 12% 25%; /* Subtle borders */
     
     /* Card ombré progression (dusk mode: consistent dark glass) */
-    --card-ombre-1: 280 16% 18%;
-    --card-ombre-1-dark: 280 16% 18%;
-    --card-ombre-2: 280 16% 18%;
-    --card-ombre-2-dark: 280 16% 18%;
-    --card-ombre-3: 280 16% 18%;
-    --card-ombre-3-dark: 280 16% 18%;
-    --card-ombre-4: 280 16% 18%;
-    --card-ombre-4-dark: 280 16% 18%;
+    --card-ombre-1: 270 11% 17%;
+    --card-ombre-1-dark: 270 11% 17%;
+    --card-ombre-2: 270 11% 17%;
+    --card-ombre-2-dark: 270 11% 17%;
+    --card-ombre-3: 270 11% 17%;
+    --card-ombre-3-dark: 270 11% 17%;
+    --card-ombre-4: 270 11% 17%;
+    --card-ombre-4-dark: 270 11% 17%;
     
-    /* Accent colors - lavender-grey neutrals */
-    --accent-1: 320 12% 52%; /* #8A7C83 - Lavender-grey */
-    --accent-2: 315 10% 60%; /* #A89AA3 - Lighter lavender-grey */
+    /* Accent colors - muted rose-grey with lavender undertone */
+    --accent-1: 320 13% 58%; /* #9B8A94 - Muted rose-grey */
+    --accent-2: 320 12% 61%; /* #A38A97 - Active state */
     
     /* Atmospheric glow */
     --radial-glow: 265 19% 25%; /* #40344A */
@@ -233,10 +233,10 @@
     --card-foreground: var(--text);
     --popover: var(--surface);
     --popover-foreground: var(--text);
-    --primary: 320 12% 52%; /* Lavender-grey primary */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 315 10% 60%;
-    --secondary-foreground: 0 0% 100%;
+    --primary: 320 13% 58%; /* #9B8A94 - Muted rose-grey primary */
+    --primary-foreground: 23 16% 95%; /* #F2EDEB - Ivory */
+    --secondary: 320 12% 61%; /* #A38A97 - Active state */
+    --secondary-foreground: 23 16% 95%;
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
     --accent: var(--accent-1);
@@ -249,14 +249,14 @@
     --radius: 16px;
     
     /* Activity colors - muted for dusk */
-    --feed-color: 320 12% 52%;
-    --diaper-color: 315 10% 60%;
-    --nap-color: 315 10% 60%;
+    --feed-color: 320 13% 58%;
+    --diaper-color: 320 12% 61%;
+    --nap-color: 320 12% 61%;
     --note-color: 28 12% 70%;
-    --chat-color: 320 12% 52%;
+    --chat-color: 320 13% 58%;
     
     /* Gradients - subtle for dusk */
-    --gradient-primary: linear-gradient(180deg, #72656E 0%, #5D515A 100%);
+    --gradient-primary: linear-gradient(180deg, #6E646D 0%, #5D565E 100%);
     --gradient-feed: linear-gradient(135deg, hsl(320 12% 52%), hsl(320 12% 60%));
     --gradient-diaper: linear-gradient(135deg, hsl(315 10% 60%), hsl(315 10% 70%));
     --gradient-nap: linear-gradient(135deg, hsl(315 10% 60%), hsl(315 10% 70%));
@@ -264,8 +264,8 @@
     --gradient-chat: linear-gradient(135deg, hsl(320 12% 52%), hsl(320 12% 60%));
     
     /* Shadows - liquid glass depth */
-    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.03), 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    --shadow-soft: 0 8px 8px rgba(0, 0, 0, 0.2);
+    --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.03), 0 8px 8px 2px rgba(0, 0, 0, 0.2);
     
     /* Sidebar */
     --sidebar-background: var(--bg);
@@ -314,9 +314,9 @@
       /* Layer 1: Blue-black overlay */
       linear-gradient(160deg, rgba(10, 20, 40, 0.25) 0%, rgba(10, 20, 40, 0.22) 100%),
       /* Layer 2: Radial glow at top center (simulates last trace of daylight) */
-      radial-gradient(circle at 50% 10%, rgba(64, 52, 74, 0.28) 0%, transparent 40%),
-      /* Layer 3: Main gradient (plum → twilight → inky blue) */
-      linear-gradient(160deg, #262630 0%, #1B1A24 60%, #101622 100%);
+      radial-gradient(circle at 50% 10%, rgba(64, 52, 74, 0.2) 0%, transparent 60%),
+      /* Layer 3: Main gradient (plum → raisin ink → inky blue) */
+      linear-gradient(160deg, #262630 0%, #1E1A26 60%, #101622 100%);
     background-attachment: fixed;
   }
 
@@ -346,18 +346,17 @@
   /* Dusk mode - Liquid glass card effect */
   .dusk .card,
   .dusk .liquid-glass {
-    background: transparent !important;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.15) 100%), #23232D !important;
     backdrop-filter: blur(32px) saturate(105%);
-    border: 1px solid rgba(138, 124, 131, 0.15);
-    box-shadow: 
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.03),  /* Inner highlight */
-      0 8px 32px 0 rgba(0, 0, 0, 0.4);  /* Outer shadow */
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 8px 8px 2px rgba(0, 0, 0, 0.2);
   }
 
   /* Dusk mode - Primary buttons */
   .dusk .bg-primary,
   .dusk button.bg-primary {
-    background: linear-gradient(180deg, #72656E 0%, #5D515A 100%) !important;
+    background: linear-gradient(180deg, #6E646D 0%, #5D565E 100%) !important;
+    color: #F2EDEB !important;
   }
 
   .dusk .bg-primary:hover {
