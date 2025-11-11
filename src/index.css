@@ -198,6 +198,7 @@
     --surface: 280 16% 18%; /* #27232F - Soft graphite */
     --surface-muted: 280 14% 16%; /* Deeper graphite */
     --text: 28 12% 81%; /* #CFC7C2 - Softer ivory */
+    --text-secondary: 28 8% 76%; /* Dimmed paragraphs */
     --text-muted: 24 8% 70%; /* Dimmed labels */
     --divider: 280 12% 25%; /* Subtle borders */
     
