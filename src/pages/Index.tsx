@@ -981,9 +981,18 @@ const ongoingNap = (() => {
                                     const previousDayActivities = activityGroups[previousDateKey] || [];
                                     const activitiesToCheck = [...previousDayActivities, ...currentDayActivities];
                                     
-                                    // Detect night sleep from these activities (simplified: just find any nap with isNightSleep flag)
+                                    // Detect night sleep from these activities
                                     const nightSleep = activitiesToCheck.find(a => a.type === 'nap' && a.details?.isNightSleep && a.details?.endTime);
                                     const wakeTime = nightSleep?.details?.endTime || null;
+                                    
+                                    console.log('🌅 Wake detection for', dateKey, {
+                                      hasNightSleep: !!nightSleep,
+                                      wakeTime,
+                                      nightSleepLoggedAt: nightSleep?.loggedAt,
+                                      nightSleepStart: nightSleep?.details?.startTime,
+                                      currentDayActivities: currentDayActivities.length,
+                                      previousDayActivities: previousDayActivities.length
+                                    });
                                     
                                     // Check if this night sleep's wake-up belongs to the current date
                                     let showWakeUpHere = false;

@@ -76,7 +76,12 @@ export function generateAdaptiveSchedule(
         // Consider wake times from 4 AM to 12 PM (noon)
         const isValidWakeTime = hour >= 4 && hour <= 12;
         if (isValidWakeTime) {
-          console.log('✅ Found today\'s wake time:', a.details.endTime);
+          console.log('✅ Found today\'s wake time:', {
+            endTime: a.details.endTime,
+            loggedAt: a.loggedAt,
+            hour,
+            period
+          });
         }
         return isValidWakeTime;
       }

@@ -546,10 +546,7 @@ export const ScheduleTimeline = ({
                   <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 py-2 ${
                     isAdjusting ? 'animate-pulse' : ''
                   }`}>
-                    <button
-                      onClick={() => handleEventClick(activity.id)}
-                      className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
-                    >
+                    <div className="w-full flex items-start gap-3">
                       <div className="flex flex-col items-center">
                         <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-amber-500/20 border-2 border-amber-500/40' : 'bg-amber-500/10 border-2 border-amber-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm transition-all duration-500 ${
                           animateWakeTime ? 'animate-pulse scale-110 border-amber-500/70 shadow-lg shadow-amber-500/30' : ''
@@ -574,20 +571,7 @@ export const ScheduleTimeline = ({
                           )}
                         </div>
                       </div>
-                    </button>
-                    {selectedEvent === activity.id && matchingEvent && (
-                      <div className="mt-3 pt-3 border-t border-border/40 animate-fade-in">
-                        <div className="flex items-start gap-2 text-xs">
-                          <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                          <div className="space-y-1">
-                            <p className="text-muted-foreground">
-                              <span className="font-medium text-foreground">{getConfidenceIndicator(matchingEvent.confidence).label}</span>
-                              {matchingEvent.reasoning && ` — ${matchingEvent.reasoning}`}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 )}
                 
@@ -631,10 +615,7 @@ export const ScheduleTimeline = ({
                     <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 py-2 ${
                       isAdjusting ? 'animate-pulse' : ''
                     }`}>
-                      <button
-                        onClick={() => handleEventClick(activity.id)}
-                        className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
-                      >
+                      <div className="w-full flex items-start gap-3">
                         <div className="flex flex-col items-center">
                           <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-blue-500/20 border-2 border-blue-500/40' : 'bg-blue-500/10 border-2 border-blue-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                             <Moon className="w-4 h-4 text-blue-600" />
@@ -660,23 +641,10 @@ export const ScheduleTimeline = ({
                               <span className="text-xs text-muted-foreground">
                                 Wake window: {wakeWindowText}
                               </span>
-                            )}
-                          </div>
+                          )}
                         </div>
-                      </button>
-                      {selectedEvent === activity.id && matchingEvent && (
-                        <div className="mt-3 pt-3 border-t border-border/40 animate-fade-in">
-                          <div className="flex items-start gap-2 text-xs">
-                            <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                            <div className="space-y-1">
-                              <p className="text-muted-foreground">
-                                <span className="font-medium text-foreground">{getConfidenceIndicator(matchingEvent.confidence).label}</span>
-                                {matchingEvent.reasoning && ` — ${matchingEvent.reasoning}`}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      </div>
+                      </div>
                     </div>
                   );
                 })()}
@@ -685,10 +653,7 @@ export const ScheduleTimeline = ({
                   <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 py-2 ${
                     isAdjusting ? 'animate-pulse' : ''
                   }`}>
-                    <button
-                      onClick={() => handleEventClick(activity.id)}
-                      className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
-                    >
+                    <div className="w-full flex items-start gap-3">
                       <div className="flex flex-col items-center">
                         <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-purple-500/20 border-2 border-purple-500/40' : 'bg-purple-500/10 border-2 border-purple-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
                           <Bed className="w-4 h-4 text-purple-600" />
@@ -707,20 +672,7 @@ export const ScheduleTimeline = ({
                           )}
                         </div>
                       </div>
-                    </button>
-                    {selectedEvent === activity.id && matchingEvent && (
-                      <div className="mt-3 pt-3 border-t border-border/40 animate-fade-in">
-                        <div className="flex items-start gap-2 text-xs">
-                          <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                          <div className="space-y-1">
-                            <p className="text-muted-foreground">
-                              <span className="font-medium text-foreground">{getConfidenceIndicator(matchingEvent.confidence).label}</span>
-                              {matchingEvent.reasoning && ` — ${matchingEvent.reasoning}`}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 )}
               </>
