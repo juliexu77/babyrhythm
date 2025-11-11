@@ -27,6 +27,7 @@ const App = () => (
         attribute="class"
         defaultTheme="light"
         enableSystem
+        themes={["light", "dark", "dusk"]}
         disableTransitionOnChange
       >
         <DuskModeManager />
