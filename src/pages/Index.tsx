@@ -25,7 +25,7 @@ import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, User, Undo2, Filter, Share, Sprout, X, Sun, Bell } from "lucide-react";
+import { Calendar, User, Undo2, Filter, Share, X, Sun, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 

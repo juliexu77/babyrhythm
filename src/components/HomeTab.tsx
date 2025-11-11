@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

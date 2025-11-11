@@ -8,7 +8,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Baby, Heart, Mail, Sprout } from "lucide-react";
+import { Baby, Heart, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
@@ -125,30 +125,6 @@ const Auth = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4 relative" style={{ minHeight: '120px' }}>
-            {/* Sprout glow - backlit by horizon light, shifted down */}
-            <div className="hidden dusk:block absolute inset-0 flex items-center justify-center pointer-events-none" style={{ transform: 'translateY(8px)' }}>
-              {/* Outer glow: wide atmospheric presence */}
-              <div 
-                className="absolute w-[220px] h-[220px] rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(155,145,135,0.1) 0%, transparent 50%)',
-                  mixBlendMode: 'soft-light',
-                  filter: 'blur(110px)'
-                }}
-              />
-              {/* Inner glow: concentrated core */}
-              <div 
-                className="absolute w-[70px] h-[70px] rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(155,145,135,0.3) 0%, rgba(155,145,135,0.15) 50%, transparent 70%)',
-                  mixBlendMode: 'soft-light',
-                  filter: 'blur(35px)'
-                }}
-              />
-            </div>
-            <Sprout className="sprout-icon w-6 h-6 text-primary relative z-10" strokeWidth={2} />
-          </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
             Step into the rhythm.
           </h1>

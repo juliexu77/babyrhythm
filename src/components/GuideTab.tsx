@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { 
-  Sprout, Send, Calendar, Activity, TrendingUp, 
+  Send, Calendar, Activity, TrendingUp, 
   Sun, Moon, Target, Milk, CloudRain, 
   Clock, Timer, Bed, Lightbulb, CheckSquare, 
   ArrowRight, Compass, ChevronDown
@@ -307,12 +307,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Get icon component for each pattern
   const getPatternIcon = (pattern: string) => {
     if (pattern === "Smooth Flow") return Sun;
-    if (pattern === "Building Rhythm") return Sprout;
+    if (pattern === "Building Rhythm") return TrendingUp;
     if (pattern === "In Sync") return Target;
     if (pattern === "Extra Sleepy") return Moon;
     if (pattern === "Active Feeding") return Milk;
     if (pattern === "Off Rhythm") return CloudRain;
-    return Sprout;
+    return TrendingUp;
   };
   
   // Get icon color for each pattern
@@ -1195,7 +1195,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       // Parse the insight into a card
       const insightCard: InsightCard = {
         id: "daily-insight",
-        icon: <Sprout className="w-5 h-5 text-primary" />,
+        icon: <TrendingUp className="w-5 h-5 text-primary" />,
         title: "About Today's Activities",
         content: content.trim(),
         questions: [
@@ -1397,7 +1397,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {!needsBirthdaySetup && hasTier1Data && !hasTier3Data && (
             <div className="mb-4 p-4 bg-accent/20 rounded-lg border border-border/40 space-y-3">
               <div className="flex items-center gap-2">
-                <Sprout className="w-4 h-4 text-primary" />
+                <TrendingUp className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium text-foreground">
                   {hasTier2Data 
                     ? 'Learning patterns — insights unlock soon'

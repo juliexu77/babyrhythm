@@ -8,7 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Sprout } from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 
 const BabySetup = () => {
@@ -112,9 +112,6 @@ const BabySetup = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="flex items-center justify-center">
-            <Sprout className="w-6 h-6 text-primary" />
-          </div>
           <h1 className="text-2xl font-heading font-semibold text-foreground leading-tight">
             Let's meet your baby.
           </h1>
