@@ -207,7 +207,7 @@
     --bg-bottom: 225 35% 9%; /* #101622 - Deep ink blue night sky */
     --surface: 270 11% 17%; /* #23232D - Graphite with faint violet undertone */
     --surface-muted: 280 14% 16%; /* Deeper graphite */
-    --text: 0 0% 91%; /* #E6E1DB - soft linen */
+    --text: 0 0% 78%; /* #C8C8C8 - Softer grey to match auth screen */
     --text-secondary: 0 0% 70%; /* #B5B0AB */
     --text-muted: 0 0% 55%; /* #8E8A86 */
     --divider: 280 12% 25%; /* Subtle borders */
@@ -240,19 +240,19 @@
     --background: var(--bg);
     --foreground: var(--text);
     --card: var(--surface);
-    --card-foreground: 0 0% 91%; /* Soft linen */
+    --card-foreground: 0 0% 78%; /* Softer grey */
     --popover: var(--surface);
     --popover-foreground: var(--text);
     --primary: 320 13% 58%; /* #9B8A94 - Muted rose-grey primary */
-    --primary-foreground: 23 16% 95%; /* #F2EDEB - Ivory */
+    --primary-foreground: 0 0% 78%; /* Softer grey */
     --secondary: 320 12% 61%; /* #A38A97 - Active state */
-    --secondary-foreground: 23 16% 95%;
+    --secondary-foreground: 0 0% 78%;
     --muted: var(--surface-muted);
     --muted-foreground: 0 0% 55%; /* Muted grey */
     --accent: var(--accent-1);
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 0 0% 78%;
     --destructive: var(--pp-coral);
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 0 0% 78%;
     --border: var(--divider);
     --input: var(--surface-muted);
     --ring: var(--accent-1);
