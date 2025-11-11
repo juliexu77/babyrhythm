@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Baby, Moon, Clock, Sparkles, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface TodaysStoryModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   const [isLoadingHeadline, setIsLoadingHeadline] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [navigationDirection, setNavigationDirection] = useState<'prev' | 'next' | null>(null);
   
   // Determine which day's activities to show
   const dayStart = (() => {
@@ -279,33 +281,40 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   const handleNavigate = (direction: 'prev' | 'next') => {
     if (!availableDates || !onNavigate || !allActivities) return;
 
-    if (direction === 'prev') {
-      if (isOldestDate) {
-        onClose(); // Close if at oldest day
-        return;
+    // Trigger animation
+    setNavigationDirection(direction);
+
+    // Wait for animation to complete before navigating
+    setTimeout(() => {
+      if (direction === 'prev') {
+        if (isOldestDate) {
+          onClose(); // Close if at oldest day
+          return;
+        }
+        const prevDate = availableDates[currentIndex - 1];
+        if (prevDate) {
+          const dayActivities = allActivities.filter(a => {
+            if (!a.loggedAt) return false;
+            return format(new Date(a.loggedAt), 'yyyy-MM-dd') === prevDate;
+          });
+          onNavigate(prevDate, dayActivities);
+        }
+      } else {
+        if (isNewestDate) {
+          onClose(); // Close if at today
+          return;
+        }
+        const nextDate = availableDates[currentIndex + 1];
+        if (nextDate) {
+          const dayActivities = allActivities.filter(a => {
+            if (!a.loggedAt) return false;
+            return format(new Date(a.loggedAt), 'yyyy-MM-dd') === nextDate;
+          });
+          onNavigate(nextDate, dayActivities);
+        }
       }
-      const prevDate = availableDates[currentIndex - 1];
-      if (prevDate) {
-        const dayActivities = allActivities.filter(a => {
-          if (!a.loggedAt) return false;
-          return format(new Date(a.loggedAt), 'yyyy-MM-dd') === prevDate;
-        });
-        onNavigate(prevDate, dayActivities);
-      }
-    } else {
-      if (isNewestDate) {
-        onClose(); // Close if at today
-        return;
-      }
-      const nextDate = availableDates[currentIndex + 1];
-      if (nextDate) {
-        const dayActivities = allActivities.filter(a => {
-          if (!a.loggedAt) return false;
-          return format(new Date(a.loggedAt), 'yyyy-MM-dd') === nextDate;
-        });
-        onNavigate(nextDate, dayActivities);
-      }
-    }
+      setNavigationDirection(null);
+    }, 300);
   };
 
   // Swipe detection
@@ -402,7 +411,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0">
+      <DialogContent hideCloseButton className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0">
         {/* Enhanced close button */}
         <button
           onClick={onClose}
@@ -412,7 +421,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
         </button>
         
         <div 
-          className="relative w-full h-full overflow-y-auto"
+          className={cn(
+            "relative w-full h-full overflow-y-auto transition-all duration-300",
+            navigationDirection === 'prev' && "animate-story-page-flip-left",
+            navigationDirection === 'next' && "animate-story-page-flip-right"
+          )}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}

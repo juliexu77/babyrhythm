@@ -1077,6 +1077,37 @@
   .animate-story-dusk-overlay {
     animation: story-dusk-overlay 3s cubic-bezier(0.4, 0, 0.6, 1) forwards;
   }
+
+  /* Story page flip animations - Instagram-like */
+  @keyframes story-page-flip-left {
+    0% {
+      transform: perspective(1000px) rotateY(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: perspective(1000px) rotateY(-15deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes story-page-flip-right {
+    0% {
+      transform: perspective(1000px) rotateY(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: perspective(1000px) rotateY(15deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-story-page-flip-left {
+    animation: story-page-flip-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-story-page-flip-right {
+    animation: story-page-flip-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
   
   /* Component utilities */
   .pp-card {
