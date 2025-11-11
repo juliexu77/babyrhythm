@@ -62,9 +62,7 @@ const Onboarding = () => {
           <div className="pt-6">
             <Button
               onClick={handleGetStarted}
-              variant="cta"
-              className="w-full rounded-full py-[14px] px-8 text-base"
-              style={{ boxShadow: 'var(--cta-shadow)' }}
+              className="w-full rounded-full py-[14px] px-8 text-base font-semibold"
             >
               Begin your rhythm
             </Button>
