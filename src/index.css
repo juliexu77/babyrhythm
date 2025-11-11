@@ -362,6 +362,31 @@
       0 4px 8px rgba(0, 0, 0, 0.3);
   }
 
+  /* Dusk mode - Transparent tabs */
+  .dusk [role="tablist"] {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .dusk [role="tab"][data-state="active"] {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Dusk mode - Transparent inputs */
+  .dusk input:not([type="checkbox"]):not([type="radio"]),
+  .dusk textarea {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .dusk input:focus:not([type="checkbox"]):not([type="radio"]),
+  .dusk textarea:focus {
+    background: transparent !important;
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
   /* Dusk - Google auth button */
   .dusk .google-auth-btn {
     background: linear-gradient(180deg, #6E646D 0%, #5D565E 100%) !important;
