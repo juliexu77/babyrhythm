@@ -774,8 +774,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
               className="flex-1 min-h-[48px] max-h-36 transition-all duration-200 rounded-2xl border-border/40 bg-muted/50 dark:bg-muted/30 resize-none px-4 py-3 text-[16px] leading-6 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50"
             />
             <Button
-              onMouseDown={handleSend}
-              onTouchStart={handleSend}
+              onClick={handleSend}
               disabled={isLoading || !input.trim()}
               size="icon"
               aria-label="Send message"

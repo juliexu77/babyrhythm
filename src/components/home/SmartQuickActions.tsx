@@ -119,7 +119,7 @@ export const SmartQuickActions = ({
         <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
           <DialogContent className="max-w-2xl h-[600px] flex flex-col p-0">
             <DialogHeader className="p-4 pb-3 border-b">
-              <DialogTitle>AI Parenting Assistant</DialogTitle>
+              <DialogTitle>Parenting Coach</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden">
               {chatComponent}
