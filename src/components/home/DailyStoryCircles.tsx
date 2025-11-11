@@ -91,28 +91,51 @@ export const DailyStoryCircles = ({
     const cachedStories = loadCachedStories();
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
+    const isAfter5PM = today.getHours() >= 17;
 
-    // Always show 5 days (today and 4 prior days) - even if empty
+    // Show today only after 5pm, otherwise show 5 prior days
     const fetchStories = async () => {
       const newStories: CachedStory[] = [];
-      for (let i = 4; i >= 0; i--) { // Count backwards from 4 days ago to today
-        const targetDate = subDays(today, i);
-        const dateStr = format(targetDate, 'yyyy-MM-dd');
+      
+      if (isAfter5PM) {
+        // After 5pm: Show 4 prior days + today (5 total)
+        for (let i = 4; i >= 0; i--) {
+          const targetDate = subDays(today, i);
+          const dateStr = format(targetDate, 'yyyy-MM-dd');
 
-        // Generate story for each day, or create empty placeholder
-        const story = await generateStoryForDate(targetDate);
-        if (story) {
-          newStories.push(story);
-        } else {
-          // Create empty story placeholder for days without activities
-          newStories.push({
-            date: dateStr,
-            headline: "",
-            feedCount: 0,
-            napCount: 0,
-            activities: [],
-            icon: null
-          });
+          const story = await generateStoryForDate(targetDate);
+          if (story) {
+            newStories.push(story);
+          } else {
+            newStories.push({
+              date: dateStr,
+              headline: "",
+              feedCount: 0,
+              napCount: 0,
+              activities: [],
+              icon: null
+            });
+          }
+        }
+      } else {
+        // Before 5pm: Show 5 prior days (not including today)
+        for (let i = 5; i >= 1; i--) {
+          const targetDate = subDays(today, i);
+          const dateStr = format(targetDate, 'yyyy-MM-dd');
+
+          const story = await generateStoryForDate(targetDate);
+          if (story) {
+            newStories.push(story);
+          } else {
+            newStories.push({
+              date: dateStr,
+              headline: "",
+              feedCount: 0,
+              napCount: 0,
+              activities: [],
+              icon: null
+            });
+          }
         }
       }
 
@@ -336,8 +359,8 @@ export const DailyStoryCircles = ({
                     <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
                   ) : (
                     <div className="relative flex flex-col items-center justify-center gap-0.5">
-                      <Moon className="w-4 h-4 text-primary" />
-                      <span className="text-[11px] font-bold text-primary">
+                      <Moon className="w-4 h-4 text-foreground" />
+                      <span className="text-[11px] font-bold text-foreground">
                         {story.napCount}
                       </span>
                     </div>
