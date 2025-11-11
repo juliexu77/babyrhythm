@@ -47,13 +47,13 @@ const Onboarding = () => {
 
           {/* Welcome Message */}
           <div className="space-y-8">
-            <h1 className="text-[22px] md:text-[36px] font-medium text-foreground/90 tracking-tight" style={{ lineHeight: '1.25', color: 'rgba(243, 241, 242, 0.9)' }}>
+            <h1 className="text-[22px] md:text-[36px] font-medium tracking-tight" style={{ lineHeight: '1.25', color: 'rgba(180, 180, 180, 0.95)' }}>
               Where intuition meets intelligence
             </h1>
-            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal mt-8" style={{ color: '#C9C6C9' }}>
+            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal mt-8" style={{ color: 'rgba(160, 160, 160, 0.85)' }}>
               BabyRhythm learns your baby's natural patterns from the moment you log your first nap, feed, or diaper — gently predicting what comes next with insights that grow smarter every day.
             </p>
-            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal" style={{ color: '#C9C6C9' }}>
+            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal" style={{ color: 'rgba(160, 160, 160, 0.85)' }}>
               Built to adapt to your baby's rhythm — so you feel calm, connected, and in sync.
             </p>
           </div>
