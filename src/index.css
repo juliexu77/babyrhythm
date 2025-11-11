@@ -379,12 +379,72 @@
     box-shadow: var(--elev-shadow);
   }
 
-  .dark .card {
-    background: transparent;
-    backdrop-filter: blur(24px) saturate(100%);
-    border-radius: 12px;
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.02), 0 4px 16px 0 rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Dark mode - Clear Liquid Glass Effect (matches dusk) */
+  .dark .card,
+  .dark .liquid-glass {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 
+      0 8px 20px 0 rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    border-radius: var(--card-radius);
+    position: relative;
+  }
+  
+  /* Subtle top edge highlight for light catch */
+  .dark .card::before,
+  .dark .liquid-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
+  }
+
+  /* Dark mode - Remove light mode gradients from card ombre classes */
+  .dark .bg-gradient-to-b:not(.backdrop-blur-md),
+  .dark .bg-gradient-to-br:not(.backdrop-blur-md),
+  .dark .bg-gradient-to-t:not(.backdrop-blur-md),
+  .dark .bg-gradient-to-r:not(.backdrop-blur-md),
+  .dark .bg-gradient-to-l:not(.backdrop-blur-md) {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      0 8px 20px 0 rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    border-radius: var(--card-radius);
+  }
+
+  /* Dark mode - Story modal cards keep semi-transparent backgrounds */
+  .dark .backdrop-blur-md[class*="bg-background"] {
+    background: rgba(28, 30, 36, 0.50) !important;
+    backdrop-filter: blur(12px) saturate(100%);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: var(--card-radius);
+  }
+
+  /* Dark mode - Ensure inner backgrounds don't override card styling */
+  .dark .card .bg-background,
+  .dark .card .bg-card,
+  .dark .bg-gradient-to-b .bg-background,
+  .dark .bg-gradient-to-br .bg-background {
+    background: transparent !important;
+  }
+
+  /* Dark mode - Override bg-card for non-story elements */
+  .dark .bg-card:not(.backdrop-blur-md) {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--card-radius);
   }
 
   /* Dusk mode - Clear Liquid Glass Effect */
