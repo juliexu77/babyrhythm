@@ -1201,7 +1201,7 @@ const ongoingNap = (() => {
 return (
     <ErrorBoundary onRetry={() => { refetchHousehold(); refetchActivities(); }}>
       <div className="min-h-screen bg-background pb-16 overflow-x-hidden w-full">
-        <div className={`sticky top-0 z-30 bg-background border-b border-background pt-8 pb-3 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
+        <div className={`sticky top-0 z-30 bg-background border-b border-background pt-12 pb-3 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
             {/* Left side - Notification bell */}
             <div className="flex items-center gap-2 w-20">
