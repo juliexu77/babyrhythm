@@ -476,11 +476,12 @@
   }
 
   /* Dusk mode - Remove light mode gradients from card ombre classes */
-  .dusk .bg-gradient-to-b:not(.backdrop-blur-md),
-  .dusk .bg-gradient-to-br:not(.backdrop-blur-md),
-  .dusk .bg-gradient-to-t:not(.backdrop-blur-md),
-  .dusk .bg-gradient-to-r:not(.backdrop-blur-md),
-  .dusk .bg-gradient-to-l:not(.backdrop-blur-md) {
+  /* Exclude story photo overlays from this rule */
+  .dusk .bg-gradient-to-b:not(.backdrop-blur-md):not([class*="from-[#"]),
+  .dusk .bg-gradient-to-br:not(.backdrop-blur-md):not([class*="from-[#"]),
+  .dusk .bg-gradient-to-t:not(.backdrop-blur-md):not([class*="from-[#"]),
+  .dusk .bg-gradient-to-r:not(.backdrop-blur-md):not([class*="from-[#"]),
+  .dusk .bg-gradient-to-l:not(.backdrop-blur-md):not([class*="from-[#"]) {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
     backdrop-filter: blur(4px);
