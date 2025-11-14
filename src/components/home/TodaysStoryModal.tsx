@@ -24,6 +24,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [navigationDirection, setNavigationDirection] = useState<'prev' | 'next' | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   // Determine which day's activities to show
   const dayStart = (() => {
@@ -391,8 +392,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   useEffect(() => {
     if (!isOpen) {
       setAnimationPhase('act1');
+      setImageLoaded(false);
       return;
     }
+
+    // Reset image loaded state when date changes
+    setImageLoaded(false);
 
     // Act 1: 0-1.0s (photo blur in + headline types in)
     const timer1 = setTimeout(() => {
@@ -408,7 +413,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [isOpen]);
+  }, [isOpen, targetDate]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -442,9 +447,10 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                   key={targetDate || 'today'}
                   src={heroMoment.details.photoUrl} 
                   alt="Today's moment" 
+                  onLoad={() => setImageLoaded(true)}
                   className={cn(
                     "w-full h-full object-cover transition-opacity duration-300",
-                    navigationDirection ? "opacity-0" : "opacity-100 animate-story-photo-blur-in"
+                    navigationDirection ? "opacity-0" : imageLoaded ? "opacity-100 animate-story-photo-blur-in" : "opacity-0 blur-[20px]"
                   )}
                 />
                 

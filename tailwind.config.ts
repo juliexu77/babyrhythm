@@ -333,7 +333,7 @@ export default {
         "breathe": "breathe 2s ease-in-out infinite",
         "breathe-dark": "breathe-dark 1.8s ease-out infinite",
         // Today's Story Modal Animations
-        "story-photo-blur-in": "story-photo-blur-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards",
+        "story-photo-blur-in": "story-photo-blur-in 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards",
         "story-glow-corners": "story-glow-corners 2s ease-out forwards",
         "story-headline-type": "story-headline-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards",
         "story-headline-fade-up": "story-headline-fade-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards",
