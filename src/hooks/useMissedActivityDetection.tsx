@@ -40,9 +40,37 @@ function median(values: number[]): number {
     : sorted[mid];
 }
 
-// Convert time string to minutes since midnight
-function timeToMinutes(timeStr: string): number {
-  const date = new Date(timeStr);
+// Convert time string to minutes since midnight (LOCAL time, not UTC)
+function timeToMinutes(activity: Activity): number {
+  // Priority 1: Use details.startTime if available (for naps)
+  if (activity.details?.startTime) {
+    const timeStr = activity.details.startTime;
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const period = match[3].toUpperCase();
+      
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      return hours * 60 + minutes;
+    }
+  }
+  
+  // Priority 2: Use time_local from details if available (stored as any)
+  const timeLocal = (activity.details as any)?.time_local;
+  if (timeLocal) {
+    const match = timeLocal.match(/(\d{1,2}):(\d{2})/);
+    if (match) {
+      const hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      return hours * 60 + minutes;
+    }
+  }
+  
+  // Fallback: Convert UTC to local time
+  const date = new Date(activity.loggedAt);
   return date.getHours() * 60 + date.getMinutes();
 }
 
@@ -77,10 +105,10 @@ function wasLoggedToday(activities: Activity[], type: 'nap' | 'feed', subType?: 
     
     // Check subtype
     if (subType === 'bedtime') {
-      const activityMinutes = timeToMinutes(a.loggedAt);
+      const activityMinutes = timeToMinutes(a);
       return activityMinutes >= 18 * 60 && activityMinutes <= 22 * 60; // 6 PM - 10 PM
     } else if (subType === 'morning-wake') {
-      const activityMinutes = timeToMinutes(a.loggedAt);
+      const activityMinutes = timeToMinutes(a);
       return activityMinutes >= 5 * 60 && activityMinutes <= 9 * 60; // 5 AM - 9 AM
     } else if (subType === 'first-nap') {
       // Check if this is the first nap of the day
@@ -111,7 +139,7 @@ function analyzePattern(
   // Filter by time range if specified
   if (timeRangeStart !== undefined && timeRangeEnd !== undefined) {
     relevantActivities = relevantActivities.filter(a => {
-      const mins = timeToMinutes(a.loggedAt);
+      const mins = timeToMinutes(a);
       return mins >= timeRangeStart && mins <= timeRangeEnd;
     });
   }
@@ -131,7 +159,7 @@ function analyzePattern(
   
   if (relevantActivities.length < 5) return null; // Need at least 5 occurrences
   
-  const times = relevantActivities.map(a => timeToMinutes(a.loggedAt));
+  const times = relevantActivities.map(a => timeToMinutes(a));
   const medianTime = median(times);
   const stdDev = standardDeviation(times);
   
