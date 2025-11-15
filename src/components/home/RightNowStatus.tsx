@@ -179,7 +179,7 @@ export const RightNowStatus = ({
         )}
 
         {/* Proactive Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-3">
           {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
             <>
               <Button
