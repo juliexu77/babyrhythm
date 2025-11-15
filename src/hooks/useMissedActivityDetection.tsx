@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Activity } from "@/components/ActivityCard";
 import { differenceInMinutes, parseISO, startOfDay, format } from "date-fns";
+import { isNightSleep, isDaytimeNap, parseTimeToHour } from "@/utils/napClassification";
 
 export interface MissedActivitySuggestion {
   activityType: 'nap' | 'feed';
@@ -94,7 +95,13 @@ function getRecentActivities(activities: Activity[], days: number): Activity[] {
 }
 
 // Check if activity was already logged today (based on ACTIVITY time, not when logged)
-function wasLoggedToday(activities: Activity[], type: 'nap' | 'feed', subType?: string): boolean {
+function wasLoggedToday(
+  activities: Activity[], 
+  type: 'nap' | 'feed', 
+  subType?: string,
+  nightSleepStartHour: number = 19,
+  nightSleepEndHour: number = 7
+): boolean {
   const todayStart = startOfDay(new Date());
   
   return activities.some(a => {
@@ -109,7 +116,6 @@ function wasLoggedToday(activities: Activity[], type: 'nap' | 'feed', subType?: 
       // Parse date_local (format: "2025-11-14")
       activityLocalDate = parseISO(dateLocal);
     } else {
-      // Fallback: convert UTC to local
       activityLocalDate = parseISO(a.loggedAt);
     }
     
@@ -119,13 +125,14 @@ function wasLoggedToday(activities: Activity[], type: 'nap' | 'feed', subType?: 
     
     if (activityDateOnly.getTime() !== todayOnly.getTime()) return false;
     
-    // Check subtype
+    // Check subtype using existing napClassification utilities
     if (subType === 'bedtime') {
-      const activityMinutes = timeToMinutes(a);
-      return activityMinutes >= 18 * 60 && activityMinutes <= 22 * 60; // 6 PM - 10 PM
+      return isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && !a.details?.endTime;
     } else if (subType === 'morning-wake') {
-      const activityMinutes = timeToMinutes(a);
-      return activityMinutes >= 5 * 60 && activityMinutes <= 9 * 60; // 5 AM - 9 AM
+      // Check if there's a completed night sleep today (has endTime)
+      return a.type === 'nap' && 
+             isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
+             !!a.details?.endTime;
     } else if (subType === 'first-nap') {
       // Check if this is the first nap of the day
       const dayNaps = activities.filter(n => {
@@ -148,22 +155,38 @@ function analyzePattern(
   type: 'nap' | 'feed',
   timeRangeStart?: number, // minutes since midnight
   timeRangeEnd?: number,
-  subType?: 'bedtime' | 'morning-wake' | 'first-nap'
+  subType?: 'bedtime' | 'morning-wake' | 'first-nap',
+  nightSleepStartHour: number = 19,
+  nightSleepEndHour: number = 7
 ): ActivityPattern | null {
   const recent = getRecentActivities(activities, 14); // Last 14 days
   
   let relevantActivities = recent.filter(a => a.type === type);
   
-  // Filter by time range if specified
-  if (timeRangeStart !== undefined && timeRangeEnd !== undefined) {
+  // Filter using napClassification utilities for subtypes
+  if (subType === 'bedtime') {
+    relevantActivities = relevantActivities.filter(a => 
+      isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && !a.details?.endTime
+    );
+  } else if (subType === 'morning-wake') {
+    // Get wake times from completed night sleeps
+    relevantActivities = relevantActivities.filter(a => 
+      isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && !!a.details?.endTime
+    );
+  } else if (timeRangeStart !== undefined && timeRangeEnd !== undefined) {
     relevantActivities = relevantActivities.filter(a => {
       const mins = timeToMinutes(a);
       return mins >= timeRangeStart && mins <= timeRangeEnd;
     });
   }
   
-  // For first-nap, get only the first nap of each day (using activity date, not logged date)
+  // For first-nap, get only the first daytime nap of each day (using activity date, not logged date)
   if (subType === 'first-nap') {
+    // Filter to only daytime naps
+    relevantActivities = relevantActivities.filter(a => 
+      isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
+    );
+    
     const napsByDay = new Map<string, Activity>();
     relevantActivities.forEach(a => {
       // Use date_local if available for grouping by day
@@ -185,6 +208,42 @@ function analyzePattern(
     relevantActivities = Array.from(napsByDay.values());
   }
   
+  // For morning-wake, extract the end time instead of start time
+  if (subType === 'morning-wake') {
+    const times = relevantActivities
+      .filter(a => a.details?.endTime)
+      .map(a => {
+        const endTime = a.details!.endTime as string;
+        const match = endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (!match) return -1;
+        
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const period = match[3].toUpperCase();
+        
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        return hours * 60 + minutes;
+      })
+      .filter(t => t >= 0);
+    
+    if (times.length < 5) return null;
+    
+    const medianTime = median(times);
+    const stdDev = standardDeviation(times);
+    
+    return {
+      type,
+      subType,
+      times,
+      medianTime,
+      stdDev,
+      occurrenceCount: times.length,
+      gracePeriodMinutes: 60
+    };
+  }
+  
   if (relevantActivities.length < 5) return null; // Need at least 5 occurrences
   
   const times = relevantActivities.map(a => timeToMinutes(a));
@@ -194,7 +253,6 @@ function analyzePattern(
   // Determine grace period based on activity type
   let gracePeriodMinutes = 45; // default
   if (subType === 'bedtime') gracePeriodMinutes = 90;
-  else if (subType === 'morning-wake') gracePeriodMinutes = 60;
   else if (subType === 'first-nap') gracePeriodMinutes = 60;
   
   return {
@@ -237,7 +295,9 @@ function shouldShowSuggestion(pattern: ActivityPattern, currentMinutes: number):
 
 export function useMissedActivityDetection(
   activities: Activity[],
-  babyName?: string
+  babyName?: string,
+  nightSleepStartHour: number = 19,
+  nightSleepEndHour: number = 7
 ): MissedActivitySuggestion | null {
   return useMemo(() => {
     const currentTime = new Date();
@@ -250,7 +310,7 @@ export function useMissedActivityDetection(
       last14DaysActivities: getRecentActivities(activities, 14).length
     });
     
-    // Define patterns to monitor in priority order
+    // Define patterns to monitor in priority order (using user's night sleep settings)
     const patternsToCheck: Array<{
       type: 'nap' | 'feed';
       subType?: 'bedtime' | 'morning-wake' | 'first-nap';
@@ -261,15 +321,11 @@ export function useMissedActivityDetection(
       {
         type: 'nap',
         subType: 'bedtime',
-        timeStart: 18 * 60, // 6 PM
-        timeEnd: 22 * 60,   // 10 PM
         message: (time) => `Did ${babyName || 'baby'} go to bed around ${time}?`
       },
       {
         type: 'nap',
         subType: 'morning-wake',
-        timeStart: 5 * 60,  // 5 AM
-        timeEnd: 9 * 60,    // 9 AM
         message: (time) => `Did ${babyName || 'baby'} wake up around ${time}?`
       },
       {
@@ -286,7 +342,7 @@ export function useMissedActivityDetection(
     // Check each pattern
     for (const patternConfig of patternsToCheck) {
       // Skip if already logged today
-      if (wasLoggedToday(activities, patternConfig.type, patternConfig.subType)) {
+      if (wasLoggedToday(activities, patternConfig.type, patternConfig.subType, nightSleepStartHour, nightSleepEndHour)) {
         continue;
       }
       
@@ -296,7 +352,9 @@ export function useMissedActivityDetection(
         patternConfig.type,
         patternConfig.timeStart,
         patternConfig.timeEnd,
-        patternConfig.subType
+        patternConfig.subType,
+        nightSleepStartHour,
+        nightSleepEndHour
       );
       
       console.log(`📊 Pattern analysis for ${patternConfig.type} ${patternConfig.subType || ''}:`, {

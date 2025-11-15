@@ -85,9 +85,41 @@ export const RightNowStatus = ({
           </div>
         </div>
 
+        {/* Suggested Actions - Moved above What's Next */}
+        {topSuggestions.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-border/30">
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
+              Suggested Actions
+            </h3>
+            <div className="space-y-3">
+              {topSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion.id}
+                  onClick={suggestion.onClick}
+                  className="w-full p-2.5 bg-muted/20 hover:bg-muted/40 rounded-lg border border-border/30 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      {suggestion.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {suggestion.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {suggestion.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Next Prediction */}
         {nextPrediction && (
-          <div className="mb-3 p-3 bg-muted/30 rounded-lg border border-border/30">
+          <div className="mt-3 p-3 bg-muted/30 rounded-lg border border-border/30">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
                 What's Next
@@ -155,39 +187,6 @@ export const RightNowStatus = ({
             </Button>
           )}
         </div>
-
-        {/* Suggested Actions Section */}
-        {topSuggestions.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-border/30">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
-              Suggested Actions
-            </h3>
-            <div className="space-y-3">
-              {topSuggestions.map((suggestion) => (
-                <button
-                  key={suggestion.id}
-                  onClick={suggestion.onClick}
-                  className="w-full p-2.5 bg-muted/20 hover:bg-muted/40 rounded-lg border border-border/30 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      {suggestion.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground mb-0.5">
-                        {suggestion.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {suggestion.subtitle}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         </div>
       </div>
     </>

@@ -52,7 +52,7 @@ interface HomeTabProps {
 export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile, addActivity }: HomeTabProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { nightSleepEndHour } = useNightSleepWindow();
+  const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   const { household } = useHousehold();
   
   // Use household baby_birthday as authoritative source (same as GuideTab)
@@ -84,7 +84,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
   // Missed activity detection
-  const missedActivitySuggestion = useMissedActivityDetection(activities, babyName);
+  const missedActivitySuggestion = useMissedActivityDetection(
+    activities, 
+    babyName,
+    nightSleepStartHour,
+    nightSleepEndHour
+  );
 
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
