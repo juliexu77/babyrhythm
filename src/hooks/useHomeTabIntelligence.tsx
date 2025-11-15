@@ -4,6 +4,8 @@ import { toZonedTime } from 'date-fns-tz';
 import { Moon, Milk, Sun } from 'lucide-react';
 import { Activity } from '@/components/ActivityCard';
 import { usePredictionEngine } from '@/hooks/usePredictionEngine';
+import { useNightSleepWindow } from '@/hooks/useNightSleepWindow';
+import { isDaytimeNap, isNightSleep } from '@/utils/napClassification';
 
 interface CurrentActivityState {
   type: 'napping' | 'sleeping' | 'awake' | 'feeding';
@@ -48,6 +50,9 @@ export const useHomeTabIntelligence = (
 ) => {
   // Use the prediction engine for intelligent forecasting
   const { prediction } = usePredictionEngine(activities);
+  
+  // Get configurable night sleep window
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   // Calculate current activity state
   const currentActivity = useMemo((): CurrentActivityState | null => {
     if (ongoingNap) {
@@ -432,14 +437,14 @@ export const useHomeTabIntelligence = (
     });
     const numDays = Math.max(1, daysWithData.size);
 
-    const last7DaysNaps = last7DaysActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
+    const last7DaysNaps = last7DaysActivities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
     const last7DaysFeeds = last7DaysActivities.filter(a => a.type === 'feed');
     
     const avg7DayNaps = last7DaysNaps.length / numDays;
     const avg7DayFeeds = last7DaysFeeds.length / numDays;
 
     // Today's counts
-    const napsToday = todayActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
+    const napsToday = todayActivities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
     const feedsToday = todayActivities.filter(a => a.type === 'feed');
     
     const napCount = napsToday.length;
