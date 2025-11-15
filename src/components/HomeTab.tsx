@@ -11,6 +11,8 @@ import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { RightNowStatus } from "@/components/home/RightNowStatus";
 import { SmartQuickActions } from "@/components/home/SmartQuickActions";
+import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
+import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { CollectivePulse } from "@/components/home/CollectivePulse";
 import { LearningProgress } from "@/components/LearningProgress";
@@ -80,6 +82,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     smartSuggestions, 
     todaysPulse 
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
+
+  // Missed activity detection
+  const missedActivitySuggestion = useMissedActivityDetection(activities, babyName);
 
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
@@ -1467,6 +1472,57 @@ const lastDiaper = displayActivities
           activities={activities}
           suggestions={smartSuggestions}
         />
+
+        {/* Missed Activity Detection Prompt */}
+        {missedActivitySuggestion && (
+          <MissedActivityPrompt
+            suggestion={missedActivitySuggestion}
+            onAccept={async () => {
+              // Auto-log the activity at the suggested time
+              const now = new Date();
+              const suggestedDate = new Date();
+              
+              // Set suggested time
+              const hours = Math.floor(missedActivitySuggestion.medianTimeMinutes / 60);
+              const minutes = missedActivitySuggestion.medianTimeMinutes % 60;
+              suggestedDate.setHours(hours, minutes, 0, 0);
+              
+              // If suggested time is in the future, use yesterday
+              if (suggestedDate > now) {
+                suggestedDate.setDate(suggestedDate.getDate() - 1);
+              }
+              
+              const timeString = suggestedDate.toTimeString().slice(0, 5);
+              
+              // Log the activity
+              if (missedActivitySuggestion.activityType === 'nap') {
+                const isNightSleep = missedActivitySuggestion.subType === 'bedtime';
+                await addActivity?.('nap', {
+                  isNightSleep,
+                  startTime: timeString,
+                  note: 'Logged from pattern detection'
+                }, suggestedDate, timeString);
+              } else if (missedActivitySuggestion.activityType === 'feed') {
+                await addActivity?.('feed', {
+                  note: 'Logged from pattern detection'
+                }, suggestedDate, timeString);
+              }
+              
+              toast({
+                title: "Activity logged",
+                description: `${missedActivitySuggestion.activityType === 'nap' ? 'Nap' : 'Feed'} logged at ${missedActivitySuggestion.suggestedTime}`,
+              });
+            }}
+            onDismiss={() => {
+              // Store dismissal in localStorage
+              const dismissalKey = `missed-${missedActivitySuggestion.activityType}-${missedActivitySuggestion.subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
+              localStorage.setItem(dismissalKey, 'true');
+              
+              // Force re-render by updating a state
+              setCurrentTime(new Date());
+            }}
+          />
+        )}
 
         {/* Zone 2: Smart Quick Actions */}
           <SmartQuickActions
