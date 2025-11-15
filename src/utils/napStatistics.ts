@@ -62,9 +62,6 @@ export const calculateNapStatistics = (
     !isDaytimeNap(nap as any, nightSleepStartHour, nightSleepEndHour)
   );
   
-  // Count each night sleep session separately (not unique dates)
-  const nightSleepSessions = nightSleeps.length || 1; // Fallback to 1 to avoid division by zero
-  
   // Helper to parse 12-hour time format to minutes since midnight
   const parseTimeToMinutes = (timeStr: string): number => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -96,6 +93,6 @@ export const calculateNapStatistics = (
     avgNapsPerDay: napActivities.length / daysWithData,
     avgDaytimeNapsPerDay: daytimeNaps.length / daysWithData,
     totalNaps: napActivities.length,
-    avgNightSleepHours: totalNightSleepMinutes / 60 / nightSleepSessions, // Divide by number of sleep sessions
+    avgNightSleepHours: totalNightSleepMinutes / 60 / daysWithData, // Average total night sleep per day
   };
 };
