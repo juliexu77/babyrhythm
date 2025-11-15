@@ -210,7 +210,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const stored = localStorage.getItem('patternMilestones');
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
-  const previousAccuracyRef = useRef<number | undefined>();
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
   const babyName = household?.baby_name || 'Baby';
@@ -1048,40 +1047,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, [hasTier2Data, household, activities.length, aiPrediction]);
 
   // Adaptive schedule is now generated via useMemo, no need for separate effect
-
-  // 🎉 Celebrate accuracy improvements
-  useEffect(() => {
-    const currentAccuracy = adaptiveSchedule?.accuracyScore;
-    
-    if (currentAccuracy !== undefined && previousAccuracyRef.current !== undefined) {
-      const improvement = currentAccuracy - previousAccuracyRef.current;
-      
-      // Celebrate 10%+ improvement
-      if (improvement >= 10) {
-        toast({
-          title: "🎯 Prediction Accuracy Improved!",
-          description: `Schedule is now ${currentAccuracy}% accurate — AI is learning ${babyName}'s rhythm!`,
-          duration: 5000,
-        });
-      }
-      
-      // Special celebration at 80%+ accuracy milestone
-      if (currentAccuracy >= 80 && previousAccuracyRef.current < 80 && !patternMilestones.has('accuracy_80')) {
-        const newMilestones = new Set(patternMilestones);
-        newMilestones.add('accuracy_80');
-        setPatternMilestones(newMilestones);
-        localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
-        
-        toast({
-          title: "🎉 Milestone Unlocked!",
-          description: `${babyName}'s schedule is now highly predictable (${currentAccuracy}% accurate)!`,
-          duration: 6000,
-        });
-      }
-    }
-    
-    previousAccuracyRef.current = currentAccuracy;
-  }, [adaptiveSchedule?.accuracyScore, babyName, toast, patternMilestones]);
 
   // 🏆 Celebrate pattern milestones
   useEffect(() => {
