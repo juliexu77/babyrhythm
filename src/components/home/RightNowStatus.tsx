@@ -69,6 +69,24 @@ export const RightNowStatus = ({
     hasAccept: !!onAcceptMissedActivity, 
     hasDismiss: !!onDismissMissedActivity 
   });
+
+  // TEMP: Force-show missed activity prompt for debugging
+  const FORCE_SHOW_MISSED_PROMPT = true;
+  const now = new Date();
+  const forcedSuggestion: MissedActivitySuggestion = {
+    activityType: 'nap',
+    subType: 'first-nap',
+    suggestedTime: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+    medianTimeMinutes: now.getHours() * 60 + now.getMinutes(),
+    confidence: 0.99,
+    message: `Test: Did ${babyName} nap around now?`
+  };
+  const acceptHandler = onAcceptMissedActivity ?? (async () => {
+    console.log('✅ Forced accept clicked (test)');
+  });
+  const dismissHandler = onDismissMissedActivity ?? (() => {
+    console.log('❌ Forced dismiss clicked (test)');
+  });
     
   if (!currentActivity) {
     return (
@@ -107,13 +125,13 @@ export const RightNowStatus = ({
         </div>
 
         {/* Missed Activity Prompt - In Right Now section */}
-        {missedActivitySuggestion && onAcceptMissedActivity && onDismissMissedActivity && (
+        {(FORCE_SHOW_MISSED_PROMPT || (missedActivitySuggestion && onAcceptMissedActivity && onDismissMissedActivity)) && (
           <div className="mt-3 pt-3 border-t border-border/30">
             <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
               <MissedActivityPrompt
-                suggestion={missedActivitySuggestion}
-                onAccept={onAcceptMissedActivity}
-                onDismiss={onDismissMissedActivity}
+                suggestion={missedActivitySuggestion ?? forcedSuggestion}
+                onAccept={acceptHandler}
+                onDismiss={dismissHandler}
               />
             </div>
           </div>
