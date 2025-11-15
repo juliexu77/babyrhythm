@@ -64,34 +64,6 @@ export const RightNowStatus = ({
     .sort((a, b) => b.priority - a.priority)
     .slice(0, 3);
     
-  console.log('🔍 RightNowStatus:', { 
-    missedActivitySuggestion, 
-    hasAccept: !!onAcceptMissedActivity, 
-    hasDismiss: !!onDismissMissedActivity 
-  });
-
-  // TEMP: Force-show missed activity prompt for debugging
-  const FORCE_SHOW_MISSED_PROMPT = true;
-  const now = new Date();
-  const forcedSuggestion: MissedActivitySuggestion = {
-    activityType: 'nap',
-    subType: 'first-nap',
-    suggestedTime: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-    medianTimeMinutes: now.getHours() * 60 + now.getMinutes(),
-    confidence: 0.99,
-    message: `Test: Did ${babyName} nap around now?`
-  };
-  const acceptHandler = onAcceptMissedActivity ?? (async () => {
-    console.log('✅ Forced accept clicked (test)');
-  });
-  const dismissHandler = onDismissMissedActivity ?? (() => {
-    console.log('❌ Forced dismiss clicked (test)');
-  });
-  
-  // Compute visibility for debug and log it
-  const showMissedPrompt = FORCE_SHOW_MISSED_PROMPT || (!!missedActivitySuggestion && !!onAcceptMissedActivity && !!onDismissMissedActivity);
-  console.log('🎯 showMissedPrompt', { showMissedPrompt, hasSuggestion: !!missedActivitySuggestion, FORCE_SHOW_MISSED_PROMPT });
-    
   if (!currentActivity) {
     return (
       <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
@@ -128,17 +100,6 @@ export const RightNowStatus = ({
             </div>
           </div>
 
-        {/* Missed Activity Prompt */}
-        {showMissedPrompt && (
-          <div className="mt-3 pt-3 border-t border-border/30">
-            <MissedActivityPrompt
-              suggestion={missedActivitySuggestion ?? forcedSuggestion}
-              onAccept={acceptHandler}
-              onDismiss={dismissHandler}
-            />
-          </div>
-        )}
-
         {/* What's Next - Moved above Suggested Actions */}
         {nextPrediction && (
           <div className="mt-3 pt-3 border-t border-border/30">
@@ -169,13 +130,13 @@ export const RightNowStatus = ({
         )}
 
         {/* Suggested Actions */}
-        {topSuggestions.length > 0 && (
+        {suggestions.length > 0 && (
           <div className="mt-3 pt-3 border-t border-border/30">
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
               Suggested Actions
             </h3>
             <div className="space-y-3">
-              {topSuggestions.map((suggestion) => (
+              {suggestions.slice(0, 3).map((suggestion) => (
                 <button
                   key={suggestion.id}
                   onClick={suggestion.onClick}
