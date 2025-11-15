@@ -469,11 +469,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     
-    // Check if there's a wake-up logged today
+    // Check if there's a wake-up that ENDED today (not just logged today)
     const todayWakeActivity = activities.find(a => {
-      const actDate = new Date(a.logged_at);
-      if (actDate < todayStart) return false;
-      
       // Detect morning wake from night sleep end
       if (a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
         const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -482,7 +479,23 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           const period = timeMatch[3].toUpperCase();
           if (period === 'PM' && hour !== 12) hour += 12;
           if (period === 'AM' && hour === 12) hour = 0;
-          return hour >= 4 && hour <= 11; // Morning wake between 4-11 AM
+          
+          // Check if this is a morning wake (4-11 AM)
+          if (hour >= 4 && hour <= 11) {
+            // For night sleeps, check if it ended today (not when it was logged)
+            // Night sleeps can be logged yesterday but end today
+            const actDate = new Date(a.logged_at);
+            const loggedDate = new Date(actDate.getFullYear(), actDate.getMonth(), actDate.getDate());
+            
+            // If logged yesterday and ended this morning, that's today's wake
+            if (loggedDate < todayStart) {
+              return true; // Night sleep from yesterday ending this morning
+            }
+            // If logged today and ended this morning, that's also today's wake
+            if (actDate >= todayStart) {
+              return true;
+            }
+          }
         }
       }
       return false;

@@ -91,6 +91,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     nightSleepStartHour,
     nightSleepEndHour
   );
+  
+  // Debug log the suggestion
+  console.log('🎯 HomeTab missedActivitySuggestion:', missedActivitySuggestion);
 
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
