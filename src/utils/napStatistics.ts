@@ -19,32 +19,14 @@ export interface NapStatistics {
   avgNightSleepHours: number;
 }
 
+import { getActivityEventDate, getActivityEventDateString } from "@/utils/activityDate";
+
 /**
  * Extract the actual event date from an activity
  * Uses date_local from details if available, otherwise falls back to logged_at
  */
 const getEventDate = (activity: Activity): string | null => {
-  // First priority: use date_local from details if available
-  if (activity.details?.date_local) {
-    return activity.details.date_local;
-  }
-  
-  // Fallback: use logged_at adjusted for timezone offset if available
-  if (activity.loggedAt) {
-    const loggedDate = new Date(activity.loggedAt);
-    
-    // If we have an offset, adjust the date
-    if (activity.details?.offset_minutes) {
-      const offsetMs = activity.details.offset_minutes * 60 * 1000;
-      const localDate = new Date(loggedDate.getTime() + offsetMs);
-      return localDate.toISOString().split('T')[0];
-    }
-    
-    // No offset, just use logged_at date
-    return loggedDate.toISOString().split('T')[0];
-  }
-  
-  return null;
+  return getActivityEventDateString(activity as any) || null;
 };
 
 /**
