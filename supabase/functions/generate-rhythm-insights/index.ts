@@ -362,52 +362,50 @@ DO NOT make up different numbers. DO NOT say "4 naps" if the data shows ${napsPe
 
     // CALL 1: Generate Hero Insight
     const predictedNapsToday = aiPrediction?.total_naps_today || napsPerDayThisWeek;
-    const heroPrompt = `You are a professional sleep coach analyzing daily patterns. Write a concise daily briefing for parents.
+    const heroPrompt = `You are an intelligent sleep coach providing proactive, actionable guidance. Analyze today's pattern and give specific recommendations.
 
-CRITICAL CONTEXT YOU MUST USE:
+CONTEXT (MUST USE THIS DATA):
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-TODAY'S PREDICTED PATTERN: ${predictedNapsToday} naps (${actualNapsToday} completed so far)
-THIS WEEK: ${napsPerDayThisWeek} naps/day average
-LAST WEEK: ${napsPerDayLastWeek} naps/day average
-LAST 7 DAYS RANGE: ${minNapCount}–${maxNapCount} naps per day
-BEDTIME CONSISTENCY: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'variable'} (${Math.round(bedtimeVariation)} min variance)
+CURRENT STATUS: ${actualNapsToday} of ${predictedNapsToday} predicted naps completed
+RECENT PATTERN: ${napsPerDayThisWeek} naps/day this week (was ${napsPerDayLastWeek} last week)
+VARIABILITY: ${minNapCount}–${maxNapCount} naps/day range over last 7 days
+BEDTIME CONSISTENCY: ${Math.round(bedtimeVariation)} min variance (${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'inconsistent'})
 ${transitionInfo || ''}
+${aiPrediction ? `AI PREDICTION: ${JSON.stringify(aiPrediction).slice(0, 200)}` : ''}
 
-MANDATORY 3-PART STRUCTURE (1-2 sentences, ~30 words total):
-1. VIBE: State the macro pattern (smooth/choppy/early shift/late shift/overtired risk)
-2. ACTION: Give ONE specific adjustment or thing to watch
-3. WHY: Explain based on ACTUAL recent data (last night, this week, past 3 days)
+TASK: Write 1-2 sentences (~35 words) following this EXACT structure:
+[What's happening with TODAY's data] → [Why it matters/what to watch] → [Specific action with timing if relevant]
 
-CRITICAL RULES:
-- NO emojis, NO greetings
-- NO generic statements like "day ahead with naps complete"
-- MUST reference actual recent patterns (last night quality, this week trends, wake time shifts)
-- MUST be specific to THIS baby's data
-- Sound like Oura/WHOOP daily briefings - professional, data-driven, actionable
+CRITICAL REQUIREMENTS:
+- Be PROACTIVE: identify risks, opportunities, and what to do about them
+- Be SPECIFIC: use actual numbers, times, and concrete actions
+- Be INTELLIGENT: connect patterns to outcomes (e.g., "short nap after long wake = overtired")
+- NO emojis, NO generic praise, NO obvious statements
+- Reference ACTUAL data from today/this week/last night
+- Include specific timing when giving recommendations (e.g., "offer catnap in 1-1.5 hours", "aim for 6:30pm bedtime")
 
-GOOD EXAMPLES (use these as templates):
-"Today should be a smooth ${predictedNapsToday}-nap day — wake windows have been steady and naps are trending longer."
-"Naps may run short today — last night was fragmented. Try keeping the first wake window slightly shorter."
-"Watch for overtiredness in late afternoon — nap 2 has been shorter this week."
-"Bedtime may drift later — wake windows have been stretching the past three days."
-"Rhythm is running earlier today — expect naps to fall ~20 min ahead of usual."
-${transitionInfo ? `"Signs point to ${predictedNapsToday} → ${predictedNapsToday - 1} nap readiness — morning wake window is lengthening."` : ''}
+EXCELLENT EXAMPLES (match this intelligence level):
+"Last nap was only 28 min after 3h15m awake suggesting overtiredness. Offer an early catnap in 1-1.5 hours to prevent evening meltdown, then aim for 6:30pm bedtime."
+"Wake time shifted 35 min earlier today—expect all naps to fall ~30 min ahead. Watch for tired cues around 9:15am for nap 1."
+"Nap 2 has averaged just 32 min this week while nap 1 stays strong. Consider capping nap 1 at 90 min to protect afternoon sleep."
+"Bedtime has drifted 40+ min later this week as wake windows stretch. Lock bedtime at 7:15pm tonight to prevent cumulative sleep debt."
+${transitionInfo ? `"Morning wake window hit 3h20m yesterday—${predictedNapsToday - 1} naps may be close. Test a longer first window (3h30m) and watch afternoon fatigue."` : ''}
 
 BAD EXAMPLES (never write like this):
-"Choppy day ahead with two naps complete."
+"Two naps complete, looking good!"
 "${babyName} is doing great today!"
-"You're doing an amazing job!"
-"Pattern looks good."
+"Pattern is consistent this week."
+"Bedtime may vary tonight."
 
-SPECIFIC SCENARIOS TO HANDLE:
-- If bedtime variance is high: "Bedtime may be unpredictable — it's varied by ${Math.round(bedtimeVariation)} min this week"
-- If nap count changed week-over-week: "${napsPerDayThisWeek === napsPerDayLastWeek ? 'Consistent rhythm' : 'Shifting from ' + napsPerDayLastWeek + ' to ' + napsPerDayThisWeek + ' naps'}"
-- If in transition: Must acknowledge the transition explicitly
-- If early in day (${actualNapsToday} naps logged): Focus on what to watch/expect
-- If late in day: Focus on bedtime preparation
+SCENARIO-SPECIFIC LOGIC:
+${actualNapsToday === 0 ? '- Focus on what to expect for nap 1 timing and watch for overtiredness signs' : ''}
+${actualNapsToday > 0 && actualNapsToday < predictedNapsToday ? '- Analyze completed naps and give specific guidance for remaining naps/bedtime' : ''}
+${actualNapsToday >= predictedNapsToday ? '- Focus on bedtime preparation and evening routine timing' : ''}
+${bedtimeVariation > 30 ? `- Address high bedtime inconsistency (${Math.round(bedtimeVariation)} min variance) with specific recommendation` : ''}
+${napsPerDayThisWeek !== napsPerDayLastWeek ? `- Acknowledge shift from ${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps and what it means` : ''}
+${transitionInfo ? '- Explicitly discuss transition readiness with concrete next steps' : ''}
 
-Write the daily briefing NOW using the EXACT data above:
-"💪 ${babyName} is transitioning beautifully to ${predictedNapsToday} naps—longer wake windows are right on track!"`;
+Write your intelligent, proactive recommendation NOW:`;
 
     const heroResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
