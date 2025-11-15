@@ -6,6 +6,9 @@ interface Activity {
   details?: {
     startTime?: string;
     endTime?: string;
+    date_local?: string;
+    offset_minutes?: number;
+    [key: string]: any;
   };
 }
 
@@ -17,9 +20,37 @@ export interface NapStatistics {
 }
 
 /**
- * Calculate nap statistics based on logged days only
+ * Extract the actual event date from an activity
+ * Uses date_local from details if available, otherwise falls back to logged_at
+ */
+const getEventDate = (activity: Activity): string | null => {
+  // First priority: use date_local from details if available
+  if (activity.details?.date_local) {
+    return activity.details.date_local;
+  }
+  
+  // Fallback: use logged_at adjusted for timezone offset if available
+  if (activity.loggedAt) {
+    const loggedDate = new Date(activity.loggedAt);
+    
+    // If we have an offset, adjust the date
+    if (activity.details?.offset_minutes) {
+      const offsetMs = activity.details.offset_minutes * 60 * 1000;
+      const localDate = new Date(loggedDate.getTime() + offsetMs);
+      return localDate.toISOString().split('T')[0];
+    }
+    
+    // No offset, just use logged_at date
+    return loggedDate.toISOString().split('T')[0];
+  }
+  
+  return null;
+};
+
+/**
+ * Calculate nap statistics based on actual event dates
  * Single source of truth for nap calculations across the app
- * Divides by actual days with nap data, not the full 7-day period
+ * Uses actual event dates from activity details, not logged_at timestamps
  */
 export const calculateNapStatistics = (
   activities: Activity[],
@@ -28,12 +59,12 @@ export const calculateNapStatistics = (
 ): NapStatistics => {
   const napActivities = activities.filter(a => a.type === 'nap');
   
-  // Count unique days with nap data
+  // Count unique days with nap data using actual event dates
   const uniqueDates = new Set<string>();
   napActivities.forEach(nap => {
-    if (nap.loggedAt) {
-      const date = new Date(nap.loggedAt).toISOString().split('T')[0];
-      uniqueDates.add(date);
+    const eventDate = getEventDate(nap);
+    if (eventDate) {
+      uniqueDates.add(eventDate);
     }
   });
   
