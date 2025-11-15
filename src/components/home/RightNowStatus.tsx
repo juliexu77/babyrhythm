@@ -107,40 +107,45 @@ export const RightNowStatus = ({
 
   return (
     <>
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+      {/* TEST BANNER - SHOULD BE VISIBLE */}
+      <div className="mx-2 mb-2 p-4 bg-red-500 text-white font-bold text-center rounded-lg">
+        🚨 TEST: RightNowStatus is RENDERING 🚨
+      </div>
+      
+      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden border-4 border-blue-500">
         <div className="px-4 py-5">
           {/* Current Status */}
           <div className="mb-3">
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
               Right Now
             </h3>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && <Moon className="w-5 h-5 text-primary" />}
-              {currentActivity.type === 'feeding' && <Milk className="w-5 h-5 text-primary" />}
-              {currentActivity.type === 'awake' && <Sun className="w-5 h-5 text-primary" />}
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && <Moon className="w-5 h-5 text-primary" />}
+                {currentActivity.type === 'feeding' && <Milk className="w-5 h-5 text-primary" />}
+                {currentActivity.type === 'awake' && <Sun className="w-5 h-5 text-primary" />}
+              </div>
+              <div>
+                <p className="text-base font-semibold text-foreground">
+                  {currentActivity.statusText}
+                </p>
+              </div>
             </div>
-          <div>
-            <p className="text-base font-semibold text-foreground">
-              {currentActivity.statusText}
-            </p>
           </div>
+
+        {/* Missed Activity Prompt - UNCONDITIONAL TEST */}
+        <div className="mt-3 pt-3 border-t-4 border-yellow-500 bg-yellow-100 dark:bg-yellow-900/20 p-4">
+          <p className="text-sm font-bold text-yellow-900 dark:text-yellow-100 mb-2">
+            🧪 TEST: Missed Activity Section (showMissedPrompt={String(showMissedPrompt)})
+          </p>
+          <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg border-2 border-purple-500">
+            <MissedActivityPrompt
+              suggestion={missedActivitySuggestion ?? forcedSuggestion}
+              onAccept={acceptHandler}
+              onDismiss={dismissHandler}
+            />
           </div>
         </div>
-
-        {/* Missed Activity Prompt - In Right Now section */}
-        {showMissedPrompt && (
-          <div className="px-4 mt-3 pt-3 border-t border-border/30">
-            <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground/60 mb-1">Debug: Missed prompt visible</p>
-              <MissedActivityPrompt
-                suggestion={missedActivitySuggestion ?? forcedSuggestion}
-                onAccept={acceptHandler}
-                onDismiss={dismissHandler}
-              />
-            </div>
-          </div>
-        )}
 
         {/* What's Next - Moved above Suggested Actions */}
         {nextPrediction && (
