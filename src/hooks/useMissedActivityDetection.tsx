@@ -215,6 +215,13 @@ export function useMissedActivityDetection(
     const currentTime = new Date();
     const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
     
+    console.log('🔍 Missed Activity Detection Debug:', {
+      currentTime: currentTime.toLocaleString(),
+      currentMinutes,
+      totalActivities: activities.length,
+      last14DaysActivities: getRecentActivities(activities, 14).length
+    });
+    
     // Define patterns to monitor in priority order
     const patternsToCheck: Array<{
       type: 'nap' | 'feed';
@@ -263,6 +270,14 @@ export function useMissedActivityDetection(
         patternConfig.timeEnd,
         patternConfig.subType
       );
+      
+      console.log(`📊 Pattern analysis for ${patternConfig.type} ${patternConfig.subType || ''}:`, {
+        found: !!pattern,
+        occurrences: pattern?.occurrenceCount,
+        medianMinutes: pattern?.medianTime,
+        medianTime: pattern ? minutesToTime(pattern.medianTime) : null,
+        stdDev: pattern?.stdDev
+      });
       
       if (!pattern) continue;
       
