@@ -26,6 +26,8 @@ import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 import { clearAppCache } from "@/utils/clearAppCache";
+import { isNightSleep } from "@/utils/napClassification";
+
 
 interface Activity {
   id: string;
@@ -216,23 +218,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
   
   // Get night sleep window detection (needed for enriching activities)
-  const { isNightTime, isNightTimeString } = useNightSleepWindow();
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   
   // Enrich activities with isNightSleep flag FIRST (needed by both rhythm insights and schedule predictor)
   const enrichedActivities = useMemo(() => {
     return activities.map(activity => {
       if (activity.type !== 'nap') return activity;
       
-      // Check if this nap falls within night sleep window
-      const startTime = activity.details?.startTime;
-      const endTime = activity.details?.endTime;
-      
-      let isNight = false;
-      if (startTime && isNightTimeString(startTime)) {
-        isNight = true;
-      } else if (endTime && isNightTimeString(endTime)) {
-        isNight = true;
-      }
+      // Use proper napClassification utility with user settings
+      const isNight = isNightSleep(activity, nightSleepStartHour, nightSleepEndHour);
       
       return {
         ...activity,
@@ -242,7 +236,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         }
       };
     });
-  }, [activities, isNightTimeString]);
+  }, [activities, nightSleepStartHour, nightSleepEndHour]);
 
   // Normalize enriched activities for schedule predictor
   const normalizedActivities = useMemo(() => {
