@@ -87,6 +87,10 @@ export const RightNowStatus = ({
   const dismissHandler = onDismissMissedActivity ?? (() => {
     console.log('❌ Forced dismiss clicked (test)');
   });
+  
+  // Compute visibility for debug and log it
+  const showMissedPrompt = FORCE_SHOW_MISSED_PROMPT || (!!missedActivitySuggestion && !!onAcceptMissedActivity && !!onDismissMissedActivity);
+  console.log('🎯 showMissedPrompt', { showMissedPrompt, hasSuggestion: !!missedActivitySuggestion, FORCE_SHOW_MISSED_PROMPT });
     
   if (!currentActivity) {
     return (
@@ -125,9 +129,10 @@ export const RightNowStatus = ({
         </div>
 
         {/* Missed Activity Prompt - In Right Now section */}
-        {(FORCE_SHOW_MISSED_PROMPT || (missedActivitySuggestion && onAcceptMissedActivity && onDismissMissedActivity)) && (
-          <div className="mt-3 pt-3 border-t border-border/30">
+        {showMissedPrompt && (
+          <div className="px-4 mt-3 pt-3 border-t border-border/30">
             <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground/60 mb-1">Debug: Missed prompt visible</p>
               <MissedActivityPrompt
                 suggestion={missedActivitySuggestion ?? forcedSuggestion}
                 onAccept={acceptHandler}
