@@ -107,12 +107,7 @@ export const RightNowStatus = ({
 
   return (
     <>
-      {/* TEST BANNER - SHOULD BE VISIBLE */}
-      <div className="mx-2 mb-2 p-4 bg-red-500 text-white font-bold text-center rounded-lg">
-        🚨 TEST: RightNowStatus is RENDERING 🚨
-      </div>
-      
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden border-4 border-blue-500">
+      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="px-4 py-5">
           {/* Current Status */}
           <div className="mb-3">
@@ -133,19 +128,16 @@ export const RightNowStatus = ({
             </div>
           </div>
 
-        {/* Missed Activity Prompt - UNCONDITIONAL TEST */}
-        <div className="mt-3 pt-3 border-t-4 border-yellow-500 bg-yellow-100 dark:bg-yellow-900/20 p-4">
-          <p className="text-sm font-bold text-yellow-900 dark:text-yellow-100 mb-2">
-            🧪 TEST: Missed Activity Section (showMissedPrompt={String(showMissedPrompt)})
-          </p>
-          <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg border-2 border-purple-500">
+        {/* Missed Activity Prompt */}
+        {showMissedPrompt && (
+          <div className="mt-3 pt-3 border-t border-border/30">
             <MissedActivityPrompt
               suggestion={missedActivitySuggestion ?? forcedSuggestion}
               onAccept={acceptHandler}
               onDismiss={dismissHandler}
             />
           </div>
-        </div>
+        )}
 
         {/* What's Next - Moved above Suggested Actions */}
         {nextPrediction && (

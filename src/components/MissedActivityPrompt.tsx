@@ -29,7 +29,7 @@ export const MissedActivityPrompt = ({
   };
 
   return (
-    <div className="mt-4 p-4 bg-purple-50/80 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+    <div className="p-4 bg-purple-50/80 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 mt-0.5">
           <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
