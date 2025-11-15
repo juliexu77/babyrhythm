@@ -134,7 +134,7 @@ function wasLoggedToday(
              isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
              !!a.details?.endTime;
     } else if (subType === 'first-nap') {
-      // Check if ANY daytime nap was logged today
+      // Check if this is a daytime nap logged today
       return isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour);
     }
     
@@ -296,6 +296,12 @@ export function useMissedActivityDetection(
     const currentTime = new Date();
     const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
     
+    console.log('🔍 Missed Activity Detection:', {
+      currentTime: currentTime.toLocaleTimeString(),
+      currentMinutes,
+      activities: activities.length
+    });
+    
     // Define patterns to monitor in priority order (using user's night sleep settings)
     const patternsToCheck: Array<{
       type: 'nap' | 'feed';
@@ -328,7 +334,10 @@ export function useMissedActivityDetection(
     // Check each pattern
     for (const patternConfig of patternsToCheck) {
       // Skip if already logged today
-      if (wasLoggedToday(activities, patternConfig.type, patternConfig.subType, nightSleepStartHour, nightSleepEndHour)) {
+      const alreadyLogged = wasLoggedToday(activities, patternConfig.type, patternConfig.subType, nightSleepStartHour, nightSleepEndHour);
+      console.log(`  Checking ${patternConfig.type} ${patternConfig.subType || ''}: alreadyLogged=${alreadyLogged}`);
+      
+      if (alreadyLogged) {
         continue;
       }
       
@@ -343,24 +352,32 @@ export function useMissedActivityDetection(
         nightSleepEndHour
       );
       
+      console.log(`    Pattern found: ${!!pattern}, occurrences: ${pattern?.occurrenceCount}`);
+      
       if (!pattern) continue;
       
       // Calculate confidence
       const confidence = calculateConfidence(pattern);
+      console.log(`    Confidence: ${confidence}`);
       
       // Only show high confidence suggestions
       if (confidence < 0.7) continue;
       
       // Check if enough time has passed
-      if (!shouldShowSuggestion(pattern, currentMinutes)) continue;
+      const shouldShow = shouldShowSuggestion(pattern, currentMinutes);
+      console.log(`    Should show (time check): ${shouldShow}, median: ${pattern.medianTime}, current: ${currentMinutes}`);
+      
+      if (!shouldShow) continue;
       
       // Check localStorage for dismissals
       const dismissalKey = `missed-${pattern.type}-${pattern.subType || 'default'}-${format(currentTime, 'yyyy-MM-dd')}`;
       const isDismissed = localStorage.getItem(dismissalKey) === 'true';
+      console.log(`    Dismissed: ${isDismissed}, key: ${dismissalKey}`);
+      
       if (isDismissed) continue;
       
       // Found a valid suggestion!
-      return {
+      const suggestion = {
         activityType: pattern.type,
         subType: pattern.subType,
         suggestedTime: minutesToTime(pattern.medianTime),
@@ -368,8 +385,11 @@ export function useMissedActivityDetection(
         confidence,
         message: patternConfig.message(minutesToTime(pattern.medianTime))
       };
+      console.log('✅ Returning suggestion:', suggestion);
+      return suggestion;
     }
     
+    console.log('❌ No suggestion found');
     return null;
   }, [activities, babyName, nightSleepStartHour, nightSleepEndHour]);
 }
