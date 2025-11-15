@@ -229,6 +229,23 @@ serve(async (req) => {
     const currentHour = new Date().getHours();
     const isEarlyMorning = currentHour < 12;
 
+    // Get today's wake time to help determine pattern
+    const todayWake = (todayActivities || [])
+      .find((a: Activity) => a.type === 'nap' && a.details?.isNightSleep && a.details?.endTime);
+    const wakeTimeStr = todayWake?.details?.endTime || 'unknown';
+    
+    // Parse wake time to determine if it's early (before 8am) or later
+    let wakeHour = -1;
+    if (wakeTimeStr !== 'unknown') {
+      const match = wakeTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        wakeHour = parseInt(match[1], 10);
+        const period = match[3].toUpperCase();
+        if (period === 'PM' && wakeHour !== 12) wakeHour += 12;
+        if (period === 'AM' && wakeHour === 12) wakeHour = 0;
+      }
+    }
+
     const prompt = `You are a baby sleep pattern analyst. Your job is HIGH-LEVEL pattern recognition only.
 The detailed schedule timing will be calculated separately by the adaptive schedule generator.
 
@@ -240,32 +257,38 @@ ${patternSummary}
 Last 7 days nap counts: ${napCountsLine}
 Range: ${minNapCount}–${maxNapCount} naps
 
-Today so far (${currentTime}):
-- ${todayNaps} nap${todayNaps !== 1 ? 's' : ''} logged
+TODAY'S ACTUAL DATA (${currentTime}):
+- Wake time: ${wakeTimeStr}${wakeHour >= 0 && wakeHour < 8 ? ' (EARLY wake - typically indicates multi-nap day)' : ''}
+- ${todayNaps} nap${todayNaps !== 1 ? 's' : ''} logged so far
 - ${todayFeeds} feed${todayFeeds !== 1 ? 's' : ''} logged
-${lastNap ? `- Last nap: ${lastNapDuration} min` : ''}
+${lastNap ? `- Last nap ended: ${new Date(lastNap.logged_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} (${lastNapDuration} min duration)` : ''}
 ${isEarlyMorning ? '\nNote: It is still early in the day - more naps are expected later.' : ''}
 
-CRITICAL PREDICTION RULES:
-1. Predict the MOST COMMON nap count from the last 7 days as today's expected total
-2. Only predict a different count if there's a CLEAR sustained transition (3+ consecutive days of new pattern)
-3. If 6 out of 7 days show 3 naps, predict 3 naps (not 2)
-4. Do NOT predict developmental "should be" patterns - predict what the DATA shows
+CRITICAL PREDICTION RULES (IN ORDER OF PRIORITY):
+1. TODAY'S ACTUAL TIMING IS THE STRONGEST SIGNAL:
+   - If wake time is before 8am AND first nap happened before 11am with 60+ min duration → almost certainly a 2+ nap day
+   - If first nap started after 11am → likely a 1-nap day
+   - Early wake + early first nap = baby isn't building pressure for a single long nap
 
-Your task: Analyze ONLY the high-level pattern. Do NOT calculate times, wake windows, or bedtimes.
+2. Use historical pattern as SECONDARY signal:
+   - Predict the most common nap count from last 7 days UNLESS today's timing contradicts it
+   - Only predict transition if 3+ consecutive days show new pattern
+
+3. Do NOT predict developmental "should be" patterns - predict what TODAY'S DATA + HISTORY shows
+
+Your task: Analyze the high-level pattern combining TODAY'S ACTUAL TIMING with historical data.
 
 Answer these questions:
-1. What is the expected TOTAL nap count for today? (not remaining—TOTAL including already logged)
-2. Is the baby transitioning between nap schedules? (e.g., moving from 3→2 naps)
-3. What's your confidence level (high/medium/low) in this prediction?
-4. Brief reasoning (1-2 sentences about the pattern you see)
+1. What is the expected TOTAL nap count for today? (including already logged naps)
+2. Is the baby transitioning between nap schedules?
+3. What's your confidence level (high/medium/low)?
+4. Brief reasoning referencing TODAY'S timing and historical pattern
 
 Rules:
+- TODAY'S WAKE TIME + FIRST NAP TIMING is the primary signal, historical pattern is secondary
 - Only analyze DAYTIME naps (6am-8pm). Night sleep tracked separately.
-- Do NOT infer transitions from 4→3 naps unless you see 4+ nap days in the data.
-- If naps vary 2-3, call it "stabilizing between 2-3" not "transitioning from 4."
-- Do NOT calculate specific times—that's handled by the schedule generator.
-- ALWAYS predict the most common nap count unless there's sustained evidence of change.
+- If today shows early wake + early first nap, don't force it into a 1-nap prediction just because history shows 1-nap days
+- ALWAYS explain your reasoning with reference to today's actual timing
 `;
 
     console.log('Calling Lovable AI for schedule prediction...');
