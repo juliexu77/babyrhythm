@@ -3,6 +3,7 @@ import { useHousehold } from "./useHousehold";
 import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
 import { SleepDataDay, AverageDailySummary, SleepBlock } from "@/types/sleep";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getActivityEventDate } from "@/utils/activityDate";
 
 export const useSleepData = (activities: Activity[], showFullDay: boolean, currentWeekOffset: number) => {
   const { household } = useHousehold();
@@ -31,7 +32,7 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
         if (!a.loggedAt) return false;
         if (!a.details.startTime || !a.details.endTime) return false;
         
-        const activityDate = new Date(a.loggedAt);
+        const activityDate = getActivityEventDate(a as any);
         const localActivityDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
         const localTargetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         
@@ -163,7 +164,7 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
     activities.forEach(activity => {
       if (!activity.loggedAt) return; // Skip activities without loggedAt timestamp
       
-      const activityDate = new Date(activity.loggedAt);
+      const activityDate = getActivityEventDate(activity as any);
       const dateKey = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
       
       if (!activityByDate[dateKey]) {

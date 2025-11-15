@@ -6,6 +6,7 @@ import { Activity } from '@/components/ActivityCard';
 import { usePredictionEngine } from '@/hooks/usePredictionEngine';
 import { useNightSleepWindow } from '@/hooks/useNightSleepWindow';
 import { isDaytimeNap, isNightSleep } from '@/utils/napClassification';
+import { getActivityEventDateString } from '@/utils/activityDate';
 
 interface CurrentActivityState {
   type: 'napping' | 'sleeping' | 'awake' | 'feeding';
@@ -429,10 +430,10 @@ export const useHomeTabIntelligence = (
       new Date(a.loggedAt) >= sevenDaysAgo
     );
 
-    // Calculate 7-day averages
+    // Calculate 7-day averages using actual event dates
     const daysWithData = new Set<string>();
     last7DaysActivities.forEach(a => {
-      const date = new Date(a.loggedAt).toDateString();
+      const date = getActivityEventDateString(a as any);
       daysWithData.add(date);
     });
     const numDays = Math.max(1, daysWithData.size);

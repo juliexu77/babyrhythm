@@ -1523,11 +1523,17 @@ const lastDiaper = displayActivities
             });
           }}
           onStartNap={() => {
-            // Start a new nap with current time
+            // Start a new nap with current time in correct 12-hour format
             const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const hour12 = hours % 12 || 12;
+            const timeString = `${hour12}:${String(minutes).padStart(2, '0')} ${period}`;
+            
             addActivity?.('nap', {
-              startTime: now.toTimeString().slice(0, 5),
-            }, now, now.toTimeString().slice(0, 5));
+              startTime: timeString,
+            }, now, timeString);
             toast({
               title: "Nap started",
               description: "Timer is now running",
