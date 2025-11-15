@@ -1477,58 +1477,55 @@ const lastDiaper = displayActivities
           babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
           activities={activities}
           suggestions={smartSuggestions}
+          onAddFeed={() => onAddActivity?.('feed')}
+          missedActivitySuggestion={missedActivitySuggestion}
+          onAcceptMissedActivity={async () => {
+            if (!missedActivitySuggestion) return;
+            // Auto-log the activity at the suggested time
+            const now = new Date();
+            const suggestedDate = new Date();
+            
+            // Set suggested time
+            const hours = Math.floor(missedActivitySuggestion.medianTimeMinutes / 60);
+            const minutes = missedActivitySuggestion.medianTimeMinutes % 60;
+            suggestedDate.setHours(hours, minutes, 0, 0);
+            
+            // If suggested time is in the future, use yesterday
+            if (suggestedDate > now) {
+              suggestedDate.setDate(suggestedDate.getDate() - 1);
+            }
+            
+            const timeString = suggestedDate.toTimeString().slice(0, 5);
+            
+            // Log the activity
+            if (missedActivitySuggestion.activityType === 'nap') {
+              await addActivity?.('nap', {
+                startTime: timeString,
+                note: 'Logged from pattern detection'
+              }, suggestedDate, timeString);
+            } else if (missedActivitySuggestion.activityType === 'feed') {
+              await addActivity?.('feed', {
+                note: 'Logged from pattern detection'
+              }, suggestedDate, timeString);
+            }
+            
+            toast({
+              title: "Activity logged",
+              description: `${missedActivitySuggestion.activityType === 'nap' ? 'Nap' : 'Feed'} logged at ${missedActivitySuggestion.suggestedTime}`,
+            });
+          }}
+          onDismissMissedActivity={() => {
+            if (!missedActivitySuggestion) return;
+            // Store dismissal in localStorage
+            const dismissalKey = `missed-${missedActivitySuggestion.activityType}-${missedActivitySuggestion.subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
+            localStorage.setItem(dismissalKey, 'true');
+            
+            // Force re-render by updating a state
+            setCurrentTime(new Date());
+          }}
+          nightSleepStartHour={nightSleepStartHour}
+          nightSleepEndHour={nightSleepEndHour}
         />
-
-        {/* Missed Activity Detection Prompt */}
-        {missedActivitySuggestion && (
-          <MissedActivityPrompt
-            suggestion={missedActivitySuggestion}
-            onAccept={async () => {
-              // Auto-log the activity at the suggested time
-              const now = new Date();
-              const suggestedDate = new Date();
-              
-              // Set suggested time
-              const hours = Math.floor(missedActivitySuggestion.medianTimeMinutes / 60);
-              const minutes = missedActivitySuggestion.medianTimeMinutes % 60;
-              suggestedDate.setHours(hours, minutes, 0, 0);
-              
-              // If suggested time is in the future, use yesterday
-              if (suggestedDate > now) {
-                suggestedDate.setDate(suggestedDate.getDate() - 1);
-              }
-              
-              const timeString = suggestedDate.toTimeString().slice(0, 5);
-              
-              // Log the activity
-              if (missedActivitySuggestion.activityType === 'nap') {
-                const isNightSleep = missedActivitySuggestion.subType === 'bedtime';
-                await addActivity?.('nap', {
-                  isNightSleep,
-                  startTime: timeString,
-                  note: 'Logged from pattern detection'
-                }, suggestedDate, timeString);
-              } else if (missedActivitySuggestion.activityType === 'feed') {
-                await addActivity?.('feed', {
-                  note: 'Logged from pattern detection'
-                }, suggestedDate, timeString);
-              }
-              
-              toast({
-                title: "Activity logged",
-                description: `${missedActivitySuggestion.activityType === 'nap' ? 'Nap' : 'Feed'} logged at ${missedActivitySuggestion.suggestedTime}`,
-              });
-            }}
-            onDismiss={() => {
-              // Store dismissal in localStorage
-              const dismissalKey = `missed-${missedActivitySuggestion.activityType}-${missedActivitySuggestion.subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
-              localStorage.setItem(dismissalKey, 'true');
-              
-              // Force re-render by updating a state
-              setCurrentTime(new Date());
-            }}
-          />
-        )}
 
         {/* Zone 2: Smart Quick Actions */}
           <SmartQuickActions

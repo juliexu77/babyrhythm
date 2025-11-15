@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Moon, Milk, Sun } from "lucide-react";
+import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
+import { MissedActivitySuggestion } from "@/hooks/useMissedActivityDetection";
 
 interface RightNowStatusProps {
   currentActivity: {
@@ -32,6 +34,12 @@ interface RightNowStatusProps {
     icon: React.ReactNode;
     onClick: () => void;
   }>;
+  onAddFeed?: () => void;
+  missedActivitySuggestion?: MissedActivitySuggestion | null;
+  onAcceptMissedActivity?: () => Promise<void>;
+  onDismissMissedActivity?: () => void;
+  nightSleepStartHour: number;
+  nightSleepEndHour: number;
 }
 
 export const RightNowStatus = ({
@@ -44,7 +52,13 @@ export const RightNowStatus = ({
   babyName,
   babyAge,
   activities,
-  suggestions = []
+  suggestions = [],
+  onAddFeed,
+  missedActivitySuggestion,
+  onAcceptMissedActivity,
+  onDismissMissedActivity,
+  nightSleepStartHour,
+  nightSleepEndHour
 }: RightNowStatusProps) => {
   const topSuggestions = suggestions
     .sort((a, b) => b.priority - a.priority)
@@ -85,7 +99,45 @@ export const RightNowStatus = ({
           </div>
         </div>
 
-        {/* Suggested Actions - Moved above What's Next */}
+        {/* Missed Activity Prompt - In Right Now section */}
+        {missedActivitySuggestion && onAcceptMissedActivity && onDismissMissedActivity && (
+          <div className="mt-3 pt-3 border-t border-border/30">
+            <MissedActivityPrompt
+              suggestion={missedActivitySuggestion}
+              onAccept={onAcceptMissedActivity}
+              onDismiss={onDismissMissedActivity}
+            />
+          </div>
+        )}
+
+        {/* What's Next - Moved above Suggested Actions */}
+        {nextPrediction && (
+          <div className="mt-3 pt-3 border-t border-border/30">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                What's Next
+              </p>
+              {nextPrediction.confidence && (
+                <Badge variant="secondary" className="text-xs">
+                  {nextPrediction.confidence} confidence
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm font-medium text-foreground">
+                {nextPrediction.activity}
+              </p>
+              <p className="text-xs text-muted-foreground font-mono">
+                {nextPrediction.countdown}
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Expected: {nextPrediction.timeRange}
+            </p>
+          </div>
+        )}
+
+        {/* Suggested Actions */}
         {topSuggestions.length > 0 && (
           <div className="mt-3 pt-3 border-t border-border/30">
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
@@ -114,33 +166,6 @@ export const RightNowStatus = ({
                 </button>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Next Prediction */}
-        {nextPrediction && (
-          <div className="mt-3 p-3 bg-muted/30 rounded-lg border border-border/30">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                What's Next
-              </p>
-              {nextPrediction.confidence && (
-                <Badge variant="secondary" className="text-xs">
-                  {nextPrediction.confidence} confidence
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-medium text-foreground">
-                {nextPrediction.activity}
-              </p>
-              <p className="text-xs text-muted-foreground font-mono">
-                {nextPrediction.countdown}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Expected: {nextPrediction.timeRange}
-            </p>
           </div>
         )}
 
