@@ -59,9 +59,18 @@ export function generateAdaptiveSchedule(
     return actDate >= todayStart;
   });
   
+  // Extract today's completed naps (with end times only)
+  const todayCompletedNaps = todayActivities
+    .filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.startTime && a.details?.endTime)
+    .map(a => ({
+      startTime: a.details!.startTime!,
+      endTime: a.details!.endTime!
+    }));
+  
   console.log('🌅 Looking for today\'s wake activity:', {
     todayActivitiesCount: todayActivities.length,
-    nightSleeps: todayActivities.filter(a => a.type === 'nap' && a.details?.isNightSleep).length
+    nightSleeps: todayActivities.filter(a => a.type === 'nap' && a.details?.isNightSleep).length,
+    completedNaps: todayCompletedNaps.length
   });
   
   // Check if baby woke up today - look for night sleep with end time
@@ -315,7 +324,8 @@ export function generateAdaptiveSchedule(
     transitioningToCount,
     babyAgeMonths,
     napsByDay, // Use all nap data for accurate duration calculations
-    daysWithWakeAndNaps // Days with wake times for timing calculations
+    daysWithWakeAndNaps, // Days with wake times for timing calculations
+    todayCompletedNaps // Pass today's completed naps to adjust schedule
   );
   
   events.push(...napSchedule);
@@ -547,9 +557,22 @@ function generateNapSchedule(
   transitioningToCount: number | null,
   babyAgeMonths: number | null,
   napsByDay: Map<string, Array<{ time: Date, duration: number }>>,
-  daysWithWakeAndNaps: Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>
+  daysWithWakeAndNaps: Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>,
+  todayCompletedNaps: Array<{ startTime: string, endTime: string }>
 ): ScheduleEvent[] {
   const naps: ScheduleEvent[] = [];
+  
+  // Parse today's completed naps to get actual times
+  const completedNapTimes = todayCompletedNaps.map(nap => {
+    const start = parseTimeString(nap.startTime);
+    const end = parseTimeString(nap.endTime);
+    return start && end ? { start, end } : null;
+  }).filter((n): n is { start: Date, end: Date } => n !== null);
+  
+  console.log('✅ Today\'s completed naps:', {
+    count: completedNapTimes.length,
+    times: completedNapTimes.map(n => `${formatTime(n.start)} - ${formatTime(n.end)}`)
+  });
   
   // Calculate predicted bedtime first to use as cutoff for naps
   const sevenDaysAgo = new Date(wakeTime);
@@ -692,17 +715,67 @@ function generateNapSchedule(
     }
   }
   
-  // Generate initial nap events
+  // Generate initial nap events, accounting for today's completed naps
   napStartTimes.forEach((minutesFromWake, index) => {
-    const napTime = new Date(wakeTime.getTime() + minutesFromWake * 60000);
+    const napNumber = index + 1;
     
-    // Skip naps that would interfere with bedtime (dynamic cutoff based on historical bedtime)
-    if (napTime.getHours() >= napCutoffHour) {
-      console.log(`⏭️ Skipping nap ${index + 1} scheduled at ${formatTime(napTime)} (after ${napCutoffHour}:00 cutoff, bedtime typically at ${bedtimeCutoffHour}:00)`);
+    // Check if this nap has already been completed today
+    const completedNap = completedNapTimes[index];
+    
+    if (completedNap) {
+      // Use actual logged nap
+      const startMinutes = completedNap.start.getHours() * 60 + completedNap.start.getMinutes();
+      const endMinutes = completedNap.end.getHours() * 60 + completedNap.end.getMinutes();
+      const duration = endMinutes - startMinutes;
+      
+      naps.push({
+        time: formatTime(completedNap.start),
+        type: 'nap',
+        duration: formatDuration(duration),
+        notes: `Nap ${napNumber} (completed)`,
+        confidence: 'high',
+        reasoning: 'Actual logged nap'
+      });
+      
+      console.log(`✅ Using actual completed nap ${napNumber}: ${formatTime(completedNap.start)} - ${formatTime(completedNap.end)}`);
       return;
     }
     
-    const napNumber = index + 1;
+    // For remaining naps, calculate from last completed nap or wake time
+    let referenceTime = wakeTime;
+    let minutesFromReference = minutesFromWake;
+    
+    if (completedNapTimes.length > 0) {
+      // Use last completed nap's end time as reference
+      const lastCompleted = completedNapTimes[completedNapTimes.length - 1];
+      referenceTime = lastCompleted.end;
+      
+      // Calculate typical wake window after this position
+      const remainingIndex = index - completedNapTimes.length;
+      
+      // Use historical wake windows or age-appropriate defaults
+      const getAgeWakeWindow = (months: number | null) => {
+        if (!months) return 120; // 2 hours default
+        if (months <= 3) return 90;   // 1.5 hours
+        if (months <= 6) return 120;  // 2 hours
+        if (months <= 9) return 150;  // 2.5 hours
+        if (months <= 12) return 180; // 3 hours
+        return 210; // 3.5 hours for 12+ months
+      };
+      
+      const wakeWindow = getAgeWakeWindow(babyAgeMonths);
+      minutesFromReference = wakeWindow * (remainingIndex + 1);
+      
+      console.log(`🔄 Calculating remaining nap ${napNumber} from last completed nap end (${formatTime(lastCompleted.end)}), wake window: ${wakeWindow}min`);
+    }
+    
+    const napTime = new Date(referenceTime.getTime() + minutesFromReference * 60000);
+    
+    // Skip naps that would interfere with bedtime (dynamic cutoff based on historical bedtime)
+    if (napTime.getHours() >= napCutoffHour) {
+      console.log(`⏭️ Skipping nap ${napNumber} scheduled at ${formatTime(napTime)} (after ${napCutoffHour}:00 cutoff, bedtime typically at ${bedtimeCutoffHour}:00)`);
+      return;
+    }
     
     // Use actual average duration for this nap position, or fall back to 90 minutes
     const positionDurations = napDurationsByPosition.get(index);
