@@ -17,6 +17,8 @@ export const MissedActivityPrompt = ({
 }: MissedActivityPromptProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log('🧪 MissedActivityPrompt render', { suggestion });
+
   const handleAccept = async () => {
     setIsLoading(true);
     try {
