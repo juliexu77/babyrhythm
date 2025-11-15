@@ -1317,7 +1317,7 @@ return (
                 throw new Error('Activity not found');
               }
 
-              // Convert time string to timestamp for database update
+              // Parse the activity time (consistent with addActivity)
               const [time, period] = activityTime.split(' ');
               const [hours, minutes] = time.split(':').map(Number);
               
@@ -1325,38 +1325,49 @@ return (
               if (period === 'PM' && hours !== 12) hour24 += 12;
               if (period === 'AM' && hours === 12) hour24 = 0;
               
-              // Create timestamp the same way as addActivity to ensure consistency
-              const combinedDateTime = new Date(
+              // Get timezone info (consistent with addActivity)
+              const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              const offsetMinutes = new Date(
                 selectedDate.getFullYear(),
                 selectedDate.getMonth(),
                 selectedDate.getDate(),
                 hour24,
-                minutes,
-                0,
-                0
-              );
+                minutes
+              ).getTimezoneOffset();
               
-              // Get user's current timezone
-              const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              // Format date_local and time_local (consistent with addActivity)
+              const year = selectedDate.getFullYear();
+              const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+              const day = String(selectedDate.getDate()).padStart(2, '0');
+              const dateLocal = `${year}-${month}-${day}`;
+              const timeLocal = `${String(hour24).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
               
-              // Store as local time without 'Z' suffix (same as addActivity)
-              const year = combinedDateTime.getFullYear();
-              const month = String(combinedDateTime.getMonth() + 1).padStart(2, '0');
-              const day = String(combinedDateTime.getDate()).padStart(2, '0');
-              const hour = String(combinedDateTime.getHours()).padStart(2, '0');
-              const minute = String(combinedDateTime.getMinutes()).padStart(2, '0');
-              const loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00`;
+              // Compute UTC timestamp (same logic as create-activity edge function)
+              const localAsUTC = Date.UTC(year, selectedDate.getMonth(), selectedDate.getDate(), hour24, minutes, 0, 0);
+              const timestampUTC = new Date(localAsUTC + (offsetMinutes * 60 * 1000)).toISOString();
 
-              // Preserve household_id and created_by from original activity
+              console.log('🔄 onEditActivity consistency check:', {
+                activityTime,
+                hour24,
+                minutes,
+                dateLocal,
+                timeLocal,
+                offsetMinutes,
+                timestampUTC
+              });
+
+              // Update with consistent fields (matching addActivity/create-activity)
               const { error } = await supabase
                 .from('activities')
                 .update({
                   type: updatedActivity.type,
-                  logged_at: loggedAt,
+                  logged_at: timestampUTC,
                   timezone,
                   details: {
                     ...updatedActivity.details,
-                    displayTime: activityTime // Store display time for consistent display
+                    date_local: dateLocal,
+                    time_local: timeLocal,
+                    offset_minutes: offsetMinutes
                   },
                   household_id: currentActivity.household_id,
                   created_by: currentActivity.created_by
@@ -1375,7 +1386,7 @@ return (
                   {
                     id: updatedActivity.id,
                     type: updatedActivity.type,
-                    logged_at: loggedAt,
+                    logged_at: timestampUTC,
                     details: updatedActivity.details,
                     household_id: currentActivity.household_id,
                     created_by: currentActivity.created_by
