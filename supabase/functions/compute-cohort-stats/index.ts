@@ -363,6 +363,25 @@ function computeMetrics(activities: Activity[], householdIds: string[]): {
     });
   }
   
+  // Helper to check if nap is during nighttime
+  const isNightSleep = (activity: Activity): boolean => {
+    if (!activity.details?.startTime) return false;
+    
+    // Parse time in 12-hour format
+    const timeMatch = activity.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!timeMatch) return false;
+    
+    let hours = parseInt(timeMatch[1], 10);
+    const period = timeMatch[3].toUpperCase();
+    
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    // Night sleep window: 7 PM (19) to 7 AM (7)
+    // Night sleep starts at or after 7pm OR ends before 7am
+    return hours >= 19 || hours < 7;
+  };
+
   // Aggregate per household
   for (const activity of activities) {
     const hm = householdMetrics.get(activity.household_id);
@@ -375,8 +394,8 @@ function computeMetrics(activities: Activity[], householdIds: string[]): {
       const duration = activity.details.duration;
       const minutes = duration.hours * 60 + duration.minutes;
       
-      // Detect night sleep (>6 hours typically)
-      if (minutes >= 360) {
+      // Detect night sleep by time window, not duration
+      if (isNightSleep(activity)) {
         hm.nightSleepMinutes += minutes;
       } else {
         hm.napCount++;
