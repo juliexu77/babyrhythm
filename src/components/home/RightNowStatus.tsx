@@ -64,14 +64,6 @@ export const RightNowStatus = ({
     .sort((a, b) => b.priority - a.priority)
     .slice(0, 3);
     
-  // Debug logging
-  console.log('🔍 RightNowStatus render:', { 
-    hasSuggestion: !!missedActivitySuggestion, 
-    suggestion: missedActivitySuggestion,
-    hasAccept: !!onAcceptMissedActivity, 
-    hasDismiss: !!onDismissMissedActivity 
-  });
-  
   if (!currentActivity) {
     return (
       <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">

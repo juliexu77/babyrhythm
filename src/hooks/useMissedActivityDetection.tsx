@@ -134,15 +134,8 @@ function wasLoggedToday(
              isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
              !!a.details?.endTime;
     } else if (subType === 'first-nap') {
-      // Check if this is the first nap of the day
-      const dayNaps = activities.filter(n => {
-        if (n.type !== 'nap') return false;
-        const napDateLocal = (n.details as any)?.date_local;
-        const napDate = napDateLocal ? parseISO(napDateLocal) : parseISO(n.loggedAt);
-        const napDateOnly = startOfDay(napDate);
-        return napDateOnly.getTime() === todayOnly.getTime() && napDate < activityLocalDate;
-      });
-      return dayNaps.length === 0 && a.type === 'nap';
+      // Check if ANY daytime nap was logged today
+      return isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour);
     }
     
     return true;
@@ -303,13 +296,6 @@ export function useMissedActivityDetection(
     const currentTime = new Date();
     const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
     
-    console.log('🔍 Missed Activity Detection Debug:', {
-      currentTime: currentTime.toLocaleString(),
-      currentMinutes,
-      totalActivities: activities.length,
-      last14DaysActivities: getRecentActivities(activities, 14).length
-    });
-    
     // Define patterns to monitor in priority order (using user's night sleep settings)
     const patternsToCheck: Array<{
       type: 'nap' | 'feed';
@@ -356,14 +342,6 @@ export function useMissedActivityDetection(
         nightSleepStartHour,
         nightSleepEndHour
       );
-      
-      console.log(`📊 Pattern analysis for ${patternConfig.type} ${patternConfig.subType || ''}:`, {
-        found: !!pattern,
-        occurrences: pattern?.occurrenceCount,
-        medianMinutes: pattern?.medianTime,
-        medianTime: pattern ? minutesToTime(pattern.medianTime) : null,
-        stdDev: pattern?.stdDev
-      });
       
       if (!pattern) continue;
       
