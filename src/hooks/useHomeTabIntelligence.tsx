@@ -294,9 +294,22 @@ export const useHomeTabIntelligence = (
         return null;
       }
       
-      // Don't show "now" if baby just woke up - enforce minimum cooldown
-      if (currentActivity?.type === 'awake' && currentActivity.duration < 45) {
-        // Baby just woke up (less than 45 min awake), don't show immediate nap
+      // Calculate age-appropriate minimum wake window (from prediction engine AGE_BRACKETS)
+      let minWakeWindow = 45; // Default for 0-3 months
+      if (babyBirthday) {
+        const birthDate = new Date(babyBirthday);
+        const ageInMonths = Math.floor((new Date().getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+        
+        if (ageInMonths >= 7) {
+          minWakeWindow = 180; // 3 hours for 7-12 months
+        } else if (ageInMonths >= 4) {
+          minWakeWindow = 105; // 1h45m for 4-6 months
+        } // else 45 min for 0-3 months (default)
+      }
+      
+      // Don't show "now" if baby just woke up - enforce age-appropriate minimum cooldown
+      if (currentActivity?.type === 'awake' && currentActivity.duration < minWakeWindow) {
+        // Baby just woke up (less than minimum wake window), don't show immediate nap
         return null;
       }
       
