@@ -393,5 +393,5 @@ export function useMissedActivityDetection(
     }
     
     return null;
-  }, [activities, babyName]);
+  }, [activities, babyName, nightSleepStartHour, nightSleepEndHour]);
 }
