@@ -32,6 +32,7 @@ interface RightNowStatusProps {
     icon: React.ReactNode;
     onClick: () => void;
   }>;
+  missedActivityPrompt?: React.ReactNode;
 }
 
 export const RightNowStatus = ({
@@ -44,7 +45,8 @@ export const RightNowStatus = ({
   babyName,
   babyAge,
   activities,
-  suggestions = []
+  suggestions = [],
+  missedActivityPrompt
 }: RightNowStatusProps) => {
   const topSuggestions = suggestions
     .sort((a, b) => b.priority - a.priority)
@@ -84,6 +86,9 @@ export const RightNowStatus = ({
           </div>
           </div>
         </div>
+
+        {/* Missed Activity Prompt - appears above What's Next */}
+        {missedActivityPrompt}
 
         {/* Next Prediction */}
         {nextPrediction && (
