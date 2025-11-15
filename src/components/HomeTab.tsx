@@ -94,6 +94,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   
   console.log('🎯 HomeTab received suggestion:', missedActivitySuggestion);
 
+  // Ensure dismissals don't hide during testing (first nap)
+  try {
+    const key = `missed-nap-first-nap-${format(new Date(), 'yyyy-MM-dd')}`;
+    localStorage.removeItem(key);
+  } catch {}
+
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
     try {
