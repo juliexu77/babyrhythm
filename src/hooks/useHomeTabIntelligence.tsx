@@ -294,22 +294,29 @@ export const useHomeTabIntelligence = (
         return null;
       }
       
-      // Calculate age-appropriate minimum wake window (from prediction engine AGE_BRACKETS)
-      let minWakeWindow = 45; // Default for 0-3 months
+      // Calculate age-appropriate minimum wake window
+      // Use 2/3 of wake_window_max from AGE_BRACKETS to avoid showing "now" too early
+      let minWakeWindow = 60; // Default minimum (2/3 of 90min for 0-3mo)
       if (babyBirthday) {
         const birthDate = new Date(babyBirthday);
         const ageInMonths = Math.floor((new Date().getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
         
+        // AGE_BRACKETS from predictionEngine.ts:
+        // 0-3mo: wake_window_max: 90min
+        // 4-6mo: wake_window_max: 150min  
+        // 7-12mo: wake_window_max: 240min
+        
         if (ageInMonths >= 7) {
-          minWakeWindow = 180; // 3 hours for 7-12 months
+          minWakeWindow = 160; // 2/3 of 240min (2h40m) for 7-12 months
         } else if (ageInMonths >= 4) {
-          minWakeWindow = 105; // 1h45m for 4-6 months
-        } // else 45 min for 0-3 months (default)
+          minWakeWindow = 100; // 2/3 of 150min (1h40m) for 4-6 months
+        } else {
+          minWakeWindow = 60; // 2/3 of 90min (1h) for 0-3 months
+        }
       }
       
-      // Don't show "now" if baby just woke up - enforce age-appropriate minimum cooldown
+      // Don't show nap predictions if baby just woke up
       if (currentActivity?.type === 'awake' && currentActivity.duration < minWakeWindow) {
-        // Baby just woke up (less than minimum wake window), don't show immediate nap
         return null;
       }
       
