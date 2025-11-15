@@ -396,16 +396,21 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep
     );
     
-    // Find first nap
-    const firstNap = todayActivities.find(a => 
-      a.type === 'nap' && !a.details?.isNightSleep
-    );
+    // Find first nap (daytime nap, not night sleep)
+    const firstNap = todayActivities
+      .filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.startTime)
+      .sort((a, b) => {
+        const timeA = a.details?.startTime || '';
+        const timeB = b.details?.startTime || '';
+        return timeA.localeCompare(timeB);
+      })[0];
     
     return {
       hasWake: !!wakeActivity,
       wakeTime: wakeActivity?.details?.endTime,
       hasFirstNap: !!firstNap,
-      firstNapTime: firstNap?.details?.startTime
+      firstNapTime: firstNap?.details?.startTime,
+      firstNapId: firstNap?.id
     };
   }, [activities]);
 
@@ -673,7 +678,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }, 1800);
   };
   
-  // Detect nap transition and get nap counts - combine AI reactive and age-based anticipatory
+  // Detect nap transition and get nap counts - DON'T presume which will happen
   const transitionInfo = useMemo(() => {
     // Check if AI detects transition OR baby is in age-based window
     const aiTransition = aiPrediction?.is_transitioning;
@@ -681,10 +686,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     
     if (!aiTransition && !ageBasedWindow) return null;
     
-    // If both exist, prioritize AI prediction for nap counts
+    // During transition, show BOTH schedules as equally valid possibilities
+    // Don't presume which one baby will follow today
+    
     if (aiTransition) {
       const currentCount = aiPrediction!.total_naps_today;
-      const transitioningCount = currentCount > 2 ? currentCount - 1 : currentCount + 1;
+      const transitioningCount = currentCount > 1 ? currentCount - 1 : 1;
       
       return {
         isTransitioning: true,
@@ -695,7 +702,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       };
     }
     
-    // Otherwise use age-based window
+    // Age-based anticipatory window
     return {
       isTransitioning: true,
       napCounts: {
@@ -705,11 +712,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     };
   }, [aiPrediction, transitionWindow]);
   
-  // Generate alternate schedule for transitions - persist user's last selection
-  const [showAlternateSchedule, setShowAlternateSchedule] = useState(() => {
-    const saved = localStorage.getItem('guide-schedule-preference');
-    return saved === 'alternate';
-  });
+  // Generate alternate schedule for transitions - DON'T persist preference during transition
+  const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
+  
+  // Reset toggle when transition ends
+  useEffect(() => {
+    if (!transitionInfo) {
+      setShowAlternateSchedule(false);
+      localStorage.removeItem('guide-schedule-preference');
+    }
+  }, [transitionInfo]);
   
   // Calculate today's actual nap count
   const todayActualNapCount = useMemo(() => {
@@ -726,7 +738,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !aiPrediction) return null;
     
     try {
-      // Create a modified AI prediction with alternate nap count - force different count
+      // Create schedules for BOTH nap counts - don't presume which one
       const alternateNapCount = transitionInfo.napCounts.transitioning;
       
       // Only generate if different from current
@@ -735,11 +747,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         return null;
       }
       
-      console.log('🔄 Generating alternate schedule:', {
-        currentNapCount: aiPrediction.total_naps_today,
-        alternateNapCount,
-        transitionInfo,
-        showingAlternate: showAlternateSchedule
+      console.log('🔄 Generating alternate schedule (both are valid):', {
+        option1NapCount: aiPrediction.total_naps_today,
+        option2NapCount: alternateNapCount,
+        transitionInfo
       });
       
       const alternateAIPrediction: AISchedulePrediction = {
@@ -769,7 +780,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       console.error('Failed to generate alternate schedule:', error);
       return null;
     }
-  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, activities, userTimezone, showAlternateSchedule]);
+  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, activities, userTimezone]);
   
   // Use alternate schedule when toggled during transitions
   const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
@@ -1452,7 +1463,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     showAlternate={showAlternateSchedule}
                     onToggleAlternate={(show) => {
                       setShowAlternateSchedule(show);
-                      localStorage.setItem('guide-schedule-preference', show ? 'alternate' : 'current');
+                      // Don't persist during transition - let it reset naturally
                     }}
                     isAdjusting={isAdjusting}
                     adjustmentContext={adjustmentContext}
