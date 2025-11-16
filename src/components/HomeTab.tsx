@@ -89,7 +89,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     activities, 
     babyName,
     nightSleepStartHour,
-    nightSleepEndHour
+    nightSleepEndHour,
+    household?.id
   );
   
   console.log('🎯 HomeTab received suggestion:', missedActivitySuggestion);
@@ -1399,7 +1400,7 @@ const lastDiaper = displayActivities
               }}
               onDismiss={() => {
                 if (!missedActivitySuggestion) return;
-                const dismissalKey = `missed-${missedActivitySuggestion.activityType}-${missedActivitySuggestion.subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
+                const dismissalKey = `missed-${household?.id || 'household'}-${missedActivitySuggestion.activityType}-${missedActivitySuggestion.subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
                 localStorage.setItem(dismissalKey, 'true');
                 setCurrentTime(new Date());
               }}
@@ -1432,7 +1433,7 @@ const lastDiaper = displayActivities
               }}
               onDismiss={() => {
                 if (!missedActivitySuggestion) return;
-                const dismissalKey = `missed-${missedActivitySuggestion.activityType}-${missedActivitySuggestion.subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
+                const dismissalKey = `missed-${household?.id || 'household'}-${missedActivitySuggestion.activityType}-${missedActivitySuggestion.subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
                 localStorage.setItem(dismissalKey, 'true');
                 setCurrentTime(new Date());
               }}
