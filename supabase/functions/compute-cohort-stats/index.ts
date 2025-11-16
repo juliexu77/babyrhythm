@@ -371,15 +371,44 @@ function computeMetrics(activities: Activity[], householdIds: string[]): {
     const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
     hm.dayCount.add(date);
     
-    if (activity.type === 'nap' && activity.details?.duration) {
-      const duration = activity.details.duration;
-      const minutes = duration.hours * 60 + duration.minutes;
+    if (activity.type === 'nap') {
+      let minutes = 0;
       
-      // Detect night sleep (>6 hours typically)
-      if (minutes >= 360) {
-        hm.nightSleepMinutes += minutes;
-      } else {
-        hm.napCount++;
+      // Calculate duration from either duration object or startTime/endTime
+      if (activity.details?.duration) {
+        const duration = activity.details.duration;
+        minutes = duration.hours * 60 + duration.minutes;
+      } else if (activity.details?.startTime && activity.details?.endTime) {
+        // Parse time strings to calculate duration
+        const parseTime = (timeStr: string): number => {
+          const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (!match) return 0;
+          let hours = parseInt(match[1]);
+          const mins = parseInt(match[2]);
+          const period = match[3].toUpperCase();
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          return hours * 60 + mins;
+        };
+        
+        const startMinutes = parseTime(activity.details.startTime);
+        const endMinutes = parseTime(activity.details.endTime);
+        
+        // Handle overnight sleep (end time < start time)
+        if (endMinutes < startMinutes) {
+          minutes = (1440 - startMinutes) + endMinutes; // 1440 = 24 hours
+        } else {
+          minutes = endMinutes - startMinutes;
+        }
+      }
+      
+      if (minutes > 0) {
+        // Detect night sleep (>6 hours typically)
+        if (minutes >= 360) {
+          hm.nightSleepMinutes += minutes;
+        } else {
+          hm.napCount++;
+        }
       }
     } else if (activity.type === 'feed') {
       hm.feedCount++;
