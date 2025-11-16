@@ -22,9 +22,7 @@ export const clearAppCache = async (householdId?: string) => {
       'guideData',
       'guideDataTimestamp',
       'scheduleData',
-      'scheduleTimestamp',
-      'guideSections',
-      'guideSectionsLastFetch'
+      'scheduleTimestamp'
     ];
     
     localStorageCaches.forEach(key => {

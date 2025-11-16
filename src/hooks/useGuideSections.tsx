@@ -79,18 +79,26 @@ export function useGuideSections(activitiesCount: number) {
       }
     }
 
-    // Determine if we should fetch new data
-    // Fetch if: no cached data, no last fetch, or it's been at least 4 hours
+    // Determine if we should fetch new data - every 4 hours starting at 6am
+    // Valid fetch times: 6am, 10am, 2pm, 6pm, 10pm, 2am
     let shouldFetch = false;
-    if (!lastFetch || !cached) {
+    if (!lastFetch) {
       shouldFetch = true;
     } else {
       const lastFetchDate = new Date(lastFetch);
       const hoursSinceLastFetch = (now.getTime() - lastFetchDate.getTime()) / (1000 * 60 * 60);
       
-      // Fetch if it's been at least 4 hours since last successful fetch
+      // Check if it's been at least 4 hours since last fetch
       if (hoursSinceLastFetch >= 4) {
-        shouldFetch = true;
+        // Only fetch at specific times: 6am, 10am, 2pm, 6pm, 10pm, 2am
+        const currentHour = now.getHours();
+        const validFetchHours = [6, 10, 14, 18, 22, 2];
+        const lastFetchHour = lastFetchDate.getHours();
+        
+        // Fetch if we're in a valid hour and haven't fetched during this hour yet
+        if (validFetchHours.includes(currentHour) && lastFetchHour !== currentHour) {
+          shouldFetch = true;
+        }
       }
     }
 
