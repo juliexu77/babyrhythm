@@ -25,7 +25,7 @@ import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
-import { clearAppCache } from "@/utils/clearAppCache";
+
 import { isNightSleep, isDaytimeNap } from "@/utils/napClassification";
 
 
@@ -814,20 +814,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, []);
 
   // ===== ALL EFFECTS =====
-  // Clear stale caches to force refetch with new logic
-  useEffect(() => {
-    const hasClearedV12 = localStorage.getItem('cacheCleared_v12');
-    if (!hasClearedV12) {
-      localStorage.removeItem('rhythmInsights');
-      localStorage.removeItem('rhythmInsightsLastFetch');
-      localStorage.removeItem('aiPrediction');
-      localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v12', 'true');
-    }
-    
-    // Also clear session storage caches
-    clearAppCache();
-  }, []);
 
   // Fetch rhythm insights once daily at midnight (only for Tier 3)
   useEffect(() => {
