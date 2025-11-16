@@ -38,7 +38,8 @@ export function generateAdaptiveSchedule(
   activities: Activity[],
   babyBirthday?: string,
   aiPrediction?: AISchedulePrediction,
-  totalActivitiesCount?: number
+  totalActivitiesCount?: number,
+  forceShowAllNaps?: boolean // When true, show all naps regardless of bedtime proximity
 ): AdaptiveSchedule {
   console.log('🔮 Generating adaptive schedule:', {
     hasAIPrediction: !!aiPrediction,
@@ -325,7 +326,8 @@ export function generateAdaptiveSchedule(
     babyAgeMonths,
     napsByDay, // Use all nap data for accurate duration calculations
     daysWithWakeAndNaps, // Days with wake times for timing calculations
-    todayCompletedNaps // Pass today's completed naps to adjust schedule
+    todayCompletedNaps, // Pass today's completed naps to adjust schedule
+    forceShowAllNaps // When true, show all naps regardless of bedtime proximity
   );
   
   events.push(...napSchedule);
@@ -558,7 +560,8 @@ function generateNapSchedule(
   babyAgeMonths: number | null,
   napsByDay: Map<string, Array<{ time: Date, duration: number }>>,
   daysWithWakeAndNaps: Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>,
-  todayCompletedNaps: Array<{ startTime: string, endTime: string }>
+  todayCompletedNaps: Array<{ startTime: string, endTime: string }>,
+  forceShowAllNaps?: boolean // When true, skip bedtime proximity filtering
 ): ScheduleEvent[] {
   const naps: ScheduleEvent[] = [];
   
@@ -776,7 +779,8 @@ function generateNapSchedule(
     const napTime = new Date(referenceTime.getTime() + minutesFromReference * 60000);
     
     // Skip naps that would interfere with bedtime (dynamic cutoff based on historical bedtime)
-    if (napTime.getHours() >= napCutoffHour) {
+    // UNLESS user explicitly selected this nap count via toggle
+    if (!forceShowAllNaps && napTime.getHours() >= napCutoffHour) {
       console.log(`⏭️ Skipping nap ${napNumber} scheduled at ${formatTime(napTime)} (after ${napCutoffHour}:00 cutoff, bedtime typically at ${bedtimeCutoffHour}:00)`);
       return;
     }

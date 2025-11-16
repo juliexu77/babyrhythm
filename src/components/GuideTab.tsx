@@ -797,7 +797,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         details: a.details
       }));
       
-      const result = generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday, alternateAIPrediction);
+      const result = generateAdaptiveSchedule(
+        activitiesForEngine, 
+        household.baby_birthday, 
+        alternateAIPrediction,
+        undefined, // totalActivitiesCount
+        true // forceShowAllNaps - user explicitly selected this nap count
+      );
       console.log('✅ Alternate schedule generated:', result);
       return result;
     } catch (error) {
