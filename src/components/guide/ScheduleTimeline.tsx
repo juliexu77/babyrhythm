@@ -267,31 +267,18 @@ export const ScheduleTimeline = ({
       });
     }
     else if (event.type === 'nap') {
-      const minutes = parseTime(event.time);
-      const isNightWindow = minutes >= 20 * 60 || minutes < 8 * 60;
-
-      if (isNightWindow) {
-        const endIsWake = nextEvent?.type === 'wake';
-        groupedActivities.push({
-          id: `night-${i}`,
-          type: 'bedtime',
-          time: event.time,
-          endTime: endIsWake ? nextEvent!.time : undefined,
-          title: 'Night sleep'
-        });
-      } else {
-        napCounter++;
-        // Calculate properly rounded end time and adjusted duration
-        const { adjustedDuration } = calculateEndTimeAndDuration(event.time, event.duration || '1h 30m');
-        groupedActivities.push({
-          id: `nap-${i}`,
-          type: 'nap-block',
-          time: event.time,
-          napDuration: adjustedDuration,
-          napNumber: napCounter,
-          title: `Nap ${napCounter}`
-        });
-      }
+      // Always treat predicted/actual day naps as nap blocks; bedtime comes from explicit 'bed' event
+      napCounter++;
+      // Calculate properly rounded end time and adjusted duration
+      const { adjustedDuration } = calculateEndTimeAndDuration(event.time, event.duration || '1h 30m');
+      groupedActivities.push({
+        id: `nap-${i}`,
+        type: 'nap-block',
+        time: event.time,
+        napDuration: adjustedDuration,
+        napNumber: napCounter,
+        title: `Nap ${napCounter}`
+      });
     }
     else if (event.type === 'bed') {
       groupedActivities.push({
