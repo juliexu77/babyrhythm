@@ -251,10 +251,18 @@ Deno.serve(async (req) => {
       .filter(time => time > 0);
 
     let bedtimeVariation = 0;
+    let calculatedBedtime = '7:00 PM'; // default fallback
     if (bedtimes.length > 1) {
       const avg = bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length;
       const variance = bedtimes.reduce((sum, time) => sum + Math.pow(time - avg, 2), 0) / bedtimes.length;
       bedtimeVariation = Math.sqrt(variance);
+      
+      // Convert average minutes back to time string
+      const avgHours = Math.floor(avg / 60);
+      const avgMinutes = Math.round(avg % 60);
+      const displayHours = avgHours > 12 ? avgHours - 12 : avgHours;
+      const period = avgHours >= 12 ? 'PM' : 'AM';
+      calculatedBedtime = `${displayHours}:${avgMinutes.toString().padStart(2, '0')} ${period}`;
     }
 
     // Calculate confidence score
@@ -367,13 +375,35 @@ Deno.serve(async (req) => {
       ? Math.round(avgNapDurations.reduce((a, b) => a + b, 0) / avgNapDurations.length)
       : null;
 
+    // Add time-of-day context
+    const getTimeOfDayContext = () => {
+      if (currentHour >= 20) {
+        return `TIME CONTEXT: It's ${currentHour}:00 (evening/night). Today is essentially done - reflect on what happened today and avoid predicting future activities for today. Focus on summarizing today's actual pattern.`;
+      } else if (currentHour >= 17) {
+        return `TIME CONTEXT: It's ${currentHour}:00 (late afternoon/evening). Bedtime is approaching - focus on end-of-day guidance and bedtime preparation.`;
+      } else if (currentHour >= 12) {
+        return `TIME CONTEXT: It's ${currentHour}:00 (afternoon). Focus on afternoon naps and setting up for bedtime.`;
+      } else if (currentHour >= 10) {
+        return `TIME CONTEXT: It's ${currentHour}:00 (late morning). Focus on upcoming naps and maintaining rhythm through the day.`;
+      } else {
+        return `TIME CONTEXT: It's ${currentHour}:00 (early morning). Focus on the day ahead and first nap preparation.`;
+      }
+    };
+
     // Create consistent context for all calls
-    const sharedContext = `CRITICAL - USE THESE EXACT NUMBERS:
+    const sharedContext = `${getTimeOfDayContext()}
+
+CRITICAL - USE THESE EXACT NUMBERS:
 - Current average: ${napsPerDayThisWeek} naps per day this week
 - Previous average: ${napsPerDayLastWeek} naps per day last week
 - Last 7 days range: ${minNapCount}-${maxNapCount} naps per day
 - Today's actual count: ${actualNapsToday} naps logged
+- Baby age: ${ageInMonths ? `${ageInMonths} months` : 'unknown'}
+- Typical bedtime: ${calculatedBedtime} (calculated from last 14 days)
+- Bedtime consistency: ${Math.round(bedtimeVariation)} minutes variation
+- Average nap length: ${avgNapMinutes ? `${avgNapMinutes} minutes` : 'insufficient data'}
 ${transitionInfo ? `- Pattern status: ${transitionInfo}` : ''}
+${dstInfo.isDSTTransitionPeriod ? `- ⏰ DST ALERT: Clock ${dstInfo.transitionType === 'spring' ? 'moved forward' : 'moved back'} recently - sleep may shift temporarily` : ''}
 
 DO NOT make up different numbers. DO NOT say "4 naps" if the data shows ${napsPerDayThisWeek}. DO NOT invent transitions that aren't in the data.`;
 
@@ -445,6 +475,7 @@ Write your warm, intelligent, explanatory guidance NOW:`;
           { role: 'system', content: 'You are an emotionally intelligent baby sleep coach who explains patterns warmly and clearly. You think through the "why" behind sleep patterns and help parents understand what\'s happening. Use conversational language like you\'re talking to a friend, not clinical terminology. Always explain WHY patterns matter, not just WHAT is happening. No emojis.' },
           { role: 'user', content: heroPrompt }
         ],
+        temperature: 0,
       }),
     });
 
@@ -472,7 +503,7 @@ RULES:
 
 Example (use actual numbers):
 "Keep ${babyName}'s ${napsPerDayThisWeek} naps at consistent times each day to reinforce the rhythm"
-"Protect that ${aiPrediction?.predicted_bedtime || '7-8pm'} bedtime—it's working well for ${babyName}"
+"Protect that ${calculatedBedtime} bedtime—it's working well for ${babyName}"
 "Watch for ${babyName}'s sleepy cues and respond quickly during this ${transitionInfo ? 'adjustment phase' : 'phase'}"`;
 
     const whatToDoResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -487,6 +518,7 @@ Example (use actual numbers):
           { role: 'system', content: 'You are a practical parenting coach who gives specific, actionable advice.' },
           { role: 'user', content: whatToDoPrompt }
         ],
+        temperature: 0,
       }),
     });
 
@@ -541,6 +573,7 @@ Example logic:
           { role: 'system', content: 'You are a developmental expert who explains sleep milestones clearly.' },
           { role: 'user', content: whatsNextPrompt }
         ],
+        temperature: 0,
       }),
     });
 
@@ -584,6 +617,7 @@ Example logic:
           { role: 'system', content: 'You are a forward-thinking parenting coach who gives specific prep tips.' },
           { role: 'user', content: prepTipPrompt }
         ],
+        temperature: 0,
       }),
     });
 
@@ -631,6 +665,7 @@ Example (adjust to actual numbers):
           { role: 'system', content: 'You are a developmental expert who explains why understanding sleep patterns is important.' },
           { role: 'user', content: whyThisMattersPrompt }
         ],
+        temperature: 0,
       }),
     });
 
