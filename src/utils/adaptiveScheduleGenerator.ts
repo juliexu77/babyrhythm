@@ -736,8 +736,9 @@ function generateNapSchedule(
   napStartTimes.forEach((minutesFromWake, index) => {
     const napNumber = index + 1;
     
-    // Check if this nap has already been completed today
-    const completedNap = completedNapTimes[index];
+    // CRITICAL: Only use actual times for the FIRST nap
+    // All subsequent naps should remain predicted based on wake windows
+    const completedNap = index === 0 ? completedNapTimes[0] : null;
     
     if (completedNap) {
       // Use actual logged nap
