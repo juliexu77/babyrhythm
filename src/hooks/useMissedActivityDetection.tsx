@@ -302,26 +302,6 @@ export function useMissedActivityDetection(
       activities: activities.length
     });
     
-    // FALLBACK: For new users with no data, suggest morning wake during typical hours
-    if (activities.length === 0) {
-      const morningWakeStart = nightSleepEndHour * 60; // e.g., 7:00 AM = 420 minutes
-      const morningWakeEnd = (nightSleepEndHour + 3) * 60; // e.g., 10:00 AM = 600 minutes
-      
-      // Check if we're in morning wake window and haven't logged anything today
-      if (currentMinutes >= morningWakeStart && currentMinutes <= morningWakeEnd) {
-        const suggestedTime = minutesToTime(currentMinutes - 15); // Suggest 15 min ago
-        console.log('✅ New user fallback: suggesting morning wake');
-        return {
-          activityType: 'nap',
-          subType: 'morning-wake',
-          suggestedTime,
-          medianTimeMinutes: currentMinutes - 15,
-          confidence: 0.7,
-          message: `Did ${babyName || 'baby'} wake up around ${suggestedTime}?`
-        };
-      }
-    }
-    
     // Define patterns to monitor in priority order (using user's night sleep settings)
     const patternsToCheck: Array<{
       type: 'nap' | 'feed';
