@@ -1,5 +1,6 @@
 import { BabyCarePredictionEngine, type NextActionResult } from "./predictionEngine";
 import { Activity } from "@/components/ActivityCard";
+import { isNightSleep, isDaytimeNap } from "./napClassification";
 
 export interface ScheduleEvent {
   time: string;
@@ -39,7 +40,9 @@ export function generateAdaptiveSchedule(
   babyBirthday?: string,
   aiPrediction?: AISchedulePrediction,
   totalActivitiesCount?: number,
-  forceShowAllNaps?: boolean // When true, show all naps regardless of bedtime proximity
+  forceShowAllNaps?: boolean, // When true, show all naps regardless of bedtime proximity
+  nightSleepStartHour: number = 19,
+  nightSleepEndHour: number = 7
 ): AdaptiveSchedule {
   console.log('🔮 Generating adaptive schedule:', {
     hasAIPrediction: !!aiPrediction,
@@ -62,7 +65,7 @@ export function generateAdaptiveSchedule(
   
   // Extract today's completed naps (with end times only)
   const todayCompletedNaps = todayActivities
-    .filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.startTime && a.details?.endTime)
+    .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.startTime && a.details?.endTime)
     .map(a => ({
       startTime: a.details!.startTime!,
       endTime: a.details!.endTime!
@@ -70,13 +73,13 @@ export function generateAdaptiveSchedule(
   
   console.log('🌅 Looking for today\'s wake activity:', {
     todayActivitiesCount: todayActivities.length,
-    nightSleeps: todayActivities.filter(a => a.type === 'nap' && a.details?.isNightSleep).length,
+    nightSleeps: todayActivities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).length,
     completedNaps: todayCompletedNaps.length
   });
   
   // Check if baby woke up today - look for night sleep with end time
   const todayWakeActivity = todayActivities.find(a => {
-    if (a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep) {
+    if (a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
       const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       if (timeMatch) {
         let hour = parseInt(timeMatch[1]);
@@ -132,7 +135,7 @@ export function generateAdaptiveSchedule(
     console.log('📊 No wake activity found today, using historical average');
     // Calculate average wake time from historical data
     const recentNightSleeps = activities
-      .filter(a => a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep)
+      .filter(a => a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour))
       .slice(0, 14);
     
     let avgWakeHour = 7;
@@ -180,7 +183,7 @@ export function generateAdaptiveSchedule(
   });
   
   // Analyze nap patterns - GROUP BY DAY to track position-based durations
-  const recentNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).slice(0, 100);
+  const recentNaps = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).slice(0, 100);
   
   // Build a map of all days with nap data
   const napsByDay = new Map<string, Array<{ time: Date, duration: number }>>();
@@ -226,7 +229,7 @@ export function generateAdaptiveSchedule(
   let napTimingsMinutesFromWake: number[] = [];
   const daysWithWakeAndNaps = new Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>();
   
-  activities.filter(a => a.type === 'nap' && a.details?.isNightSleep).slice(0, 21).forEach(nightSleep => {
+  activities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).slice(0, 21).forEach(nightSleep => {
     if (nightSleep.details?.endTime) {
       const wakeTime = parseTimeString(nightSleep.details.endTime);
       if (wakeTime) {

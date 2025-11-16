@@ -449,7 +449,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         activitiesForEngine, 
         household.baby_birthday, 
         hasTier3Data ? aiPrediction : null, // Only use AI prediction if we have enough data
-        activities.length // Pass total activities count for "basedOn" text
+        activities.length, // Pass total activities count for "basedOn" text
+        false, // forceShowAllNaps
+        nightSleepStartHour,
+        nightSleepEndHour
       );
       console.log('✅ Schedule generated:', schedule);
       return schedule;
@@ -805,7 +808,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         household.baby_birthday, 
         alternateAIPrediction,
         undefined, // totalActivitiesCount
-        true // forceShowAllNaps - user explicitly selected this nap count
+        true, // forceShowAllNaps - user explicitly selected this nap count
+        nightSleepStartHour,
+        nightSleepEndHour
       );
       console.log('✅ Alternate schedule generated:', result);
       return result;
