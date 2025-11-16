@@ -28,7 +28,7 @@ export const HeroInsightCard = ({ insight, confidence, loading }: HeroInsightCar
           Today's Rhythm
         </h3>
       </div>
-      <p className="text-base text-foreground leading-relaxed">
+      <p className="text-sm text-foreground leading-relaxed">
         {insight}
       </p>
     </div>

@@ -226,12 +226,29 @@ Deno.serve(async (req) => {
     const minNapCount = napCountsArray.length ? Math.min(...napCountsArray) : 0;
 
     // Calculate bedtime consistency (standard deviation)
+    // Use actual bedtime (startTime) not logged_at timestamp
+    const parseTimeToMinutes = (timeStr: string): number => {
+      try {
+        const [time, period] = timeStr.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+        let adjustedHours = hours;
+        
+        if (period === 'PM' && hours !== 12) {
+          adjustedHours += 12;
+        } else if (period === 'AM' && hours === 12) {
+          adjustedHours = 0;
+        }
+        
+        return adjustedHours * 60 + minutes;
+      } catch {
+        return 0;
+      }
+    };
+
     const bedtimes = last14Days
-      .filter((a: Activity) => a.type === 'nap' && a.details?.isNightSleep)
-      .map((a: Activity) => {
-        const date = new Date(a.logged_at);
-        return date.getHours() * 60 + date.getMinutes();
-      });
+      .filter((a: Activity) => a.type === 'nap' && a.details?.isNightSleep && a.details?.startTime)
+      .map((a: Activity) => parseTimeToMinutes(a.details.startTime))
+      .filter(time => time > 0);
 
     let bedtimeVariation = 0;
     if (bedtimes.length > 1) {
