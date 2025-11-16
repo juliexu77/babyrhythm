@@ -5,6 +5,8 @@ import { Baby, Moon, Clock, Sparkles, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { isDaytimeNap } from "@/utils/napClassification";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 interface TodaysStoryModalProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [navigationDirection, setNavigationDirection] = useState<'prev' | 'next' | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   
   // Determine which day's activities to show
   const dayStart = (() => {
@@ -75,7 +78,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
   // Calculate metrics
   const feedCount = todayActivities.filter(a => a.type === "feed").length;
-  const napCount = todayActivities.filter(a => a.type === "nap" && !a.details.isNightSleep).length;
+  const napCount = todayActivities.filter(a => a.type === "nap" && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length;
   
   // Get solid food info
   const solidFeeds = todayActivities.filter(a => a.type === "feed" && a.details.feedType === "solid");
@@ -92,7 +95,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   
   // Calculate total nap time
   const totalNapMinutes = todayActivities
-    .filter(a => a.type === "nap" && !a.details.isNightSleep)
+    .filter(a => a.type === "nap" && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour))
     .reduce((sum, a) => {
       if (a.details.startTime && a.details.endTime) {
         // Parse time strings more carefully
@@ -122,12 +125,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
   // Calculate longest wake window
   const napsWithTimes = todayActivities
-    .filter(a => a.type === "nap" && !a.details.isNightSleep && a.details.startTime && a.details.endTime)
+    .filter(a => a.type === "nap" && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details.startTime && a.details.endTime)
     .map(a => ({
       start: a.details.startTime,
       end: a.details.endTime,
-      loggedAt: a.loggedAt,
-      isNightSleep: a.details.isNightSleep
+      loggedAt: a.loggedAt
     }))
     .sort((a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime());
   
@@ -414,10 +416,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     longestWakeWindow,
     hadSolidFood,
     headline,
-    napActivities: todayActivities.filter(a => a.type === "nap" && !a.details.isNightSleep).map(a => ({
+    napActivities: todayActivities.filter(a => a.type === "nap" && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).map(a => ({
       startTime: a.details.startTime,
       endTime: a.details.endTime,
-      isNightSleep: a.details.isNightSleep,
       loggedAt: a.loggedAt
     }))
   });

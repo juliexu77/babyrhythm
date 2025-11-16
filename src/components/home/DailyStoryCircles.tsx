@@ -3,6 +3,8 @@ import { format, subDays, isToday, parseISO } from "date-fns";
 import { Sparkles, Moon } from "lucide-react";
 import dynamicIconImports from "lucide-react/dynamicIconImports";
 import { Activity } from "@/components/ActivityCard";
+import { isDaytimeNap } from "@/utils/napClassification";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 interface CachedStory {
   date: string; // YYYY-MM-DD format
@@ -25,6 +27,7 @@ export const DailyStoryCircles = ({
   onSelectDay 
 }: DailyStoryCirclesProps) => {
   const [stories, setStories] = useState<CachedStory[]>([]);
+  const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   
   // Check if it's after 5pm for "story ready" state
   const isAfter5PM = new Date().getHours() >= 17;
@@ -55,7 +58,7 @@ export const DailyStoryCircles = ({
       if (dayActivities.length === 0) return null;
 
       const feedCount = dayActivities.filter(a => a.type === 'feed').length;
-      const napCount = dayActivities.filter(a => a.type === 'nap' && !a.details.isNightSleep).length;
+      const napCount = dayActivities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length;
 
       // Check cache first - only use cached story if it has a valid icon
       const cached = cachedStories.find(s => s.date === dateStr);
@@ -158,7 +161,7 @@ export const DailyStoryCircles = ({
             try {
               // Calculate total nap minutes
               const totalNapMinutes = story.activities
-                .filter(a => a.type === 'nap' && !a.details.isNightSleep)
+                .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour))
                 .reduce((sum, a) => {
                   if (a.details.startTime && a.details.endTime) {
                     const start = new Date(a.details.startTime).getTime();
