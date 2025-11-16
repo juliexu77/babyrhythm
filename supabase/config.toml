@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.debug-sleep-calc]
 verify_jwt = false
+
+[functions.clear-schedule-cache]
+verify_jwt = false

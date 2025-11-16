@@ -5,6 +5,6 @@ import { clearAppCache } from "./utils/clearAppCache";
 
 // Clear cache on load to ensure fresh data
 console.log('🔄 Clearing cache on app load...');
-clearAppCache();
-
-createRoot(document.getElementById("root")!).render(<App />);
+clearAppCache().then(() => {
+  createRoot(document.getElementById("root")!).render(<App />);
+});
