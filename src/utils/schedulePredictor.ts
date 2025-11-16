@@ -253,9 +253,28 @@ export function calculatePredictionAccuracy(
         return false;
       }
       
-      const actualTimeUTC = new Date(actual.logged_at);
-      const actualTimeLocal = toZonedTime(actualTimeUTC, timezone);
-      const actualMinutes = actualTimeLocal.getHours() * 60 + actualTimeLocal.getMinutes();
+      let actualMinutes: number;
+      // For naps, use actual startTime if available, otherwise fall back to logged_at
+      if (actual.type === 'nap' && actual.details?.startTime) {
+        const timeMatch = actual.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (timeMatch) {
+          let hours = parseInt(timeMatch[1]);
+          const minutes = parseInt(timeMatch[2]);
+          const period = timeMatch[3].toUpperCase();
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          actualMinutes = hours * 60 + minutes;
+        } else {
+          const actualTimeUTC = new Date(actual.logged_at);
+          const actualTimeLocal = toZonedTime(actualTimeUTC, timezone);
+          actualMinutes = actualTimeLocal.getHours() * 60 + actualTimeLocal.getMinutes();
+        }
+      } else {
+        const actualTimeUTC = new Date(actual.logged_at);
+        const actualTimeLocal = toZonedTime(actualTimeUTC, timezone);
+        actualMinutes = actualTimeLocal.getHours() * 60 + actualTimeLocal.getMinutes();
+      }
+      
       const diff = Math.abs(actualMinutes - predictedMinutes);
       
       return diff <= 45; // Within 45 minutes is considered a match

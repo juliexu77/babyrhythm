@@ -64,9 +64,23 @@ export const ForYouSection = ({
   const recentNaps = recentActivities.filter(a => a.type === 'nap');
   const recentFeeds = recentActivities.filter(a => a.type === 'feed');
   
-  // Check for night wakings (naps logged between 10pm-6am)
+  // Check for night wakings (naps that occurred between 10pm-6am)
   const nightWakings = recentNaps.filter(nap => {
-    const hour = new Date(nap.logged_at).getHours();
+    // Use actual start time if available, otherwise fall back to logged_at
+    let hour: number;
+    if (nap.details?.startTime) {
+      const timeMatch = nap.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (timeMatch) {
+        hour = parseInt(timeMatch[1]);
+        const period = timeMatch[3].toUpperCase();
+        if (period === 'PM' && hour !== 12) hour += 12;
+        if (period === 'AM' && hour === 12) hour = 0;
+      } else {
+        hour = new Date(nap.logged_at).getHours();
+      }
+    } else {
+      hour = new Date(nap.logged_at).getHours();
+    }
     return hour >= 22 || hour <= 6;
   });
   

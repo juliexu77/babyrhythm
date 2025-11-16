@@ -57,8 +57,16 @@ serve(async (req) => {
           // Find matching actual activity within ±30 minutes
           const match = actualActivities.find(actual => {
             if (actual.type !== event.type) return false;
-            const actualDate = new Date(actual.logged_at);
-            const actualMinutes = actualDate.getHours() * 60 + actualDate.getMinutes();
+            
+            // For naps, use actual startTime if available, otherwise fall back to logged_at
+            let actualMinutes: number;
+            if (actual.type === 'nap' && actual.details?.startTime) {
+              actualMinutes = parseTimeToMinutes(actual.details.startTime);
+            } else {
+              const actualDate = new Date(actual.logged_at);
+              actualMinutes = actualDate.getHours() * 60 + actualDate.getMinutes();
+            }
+            
             return Math.abs(actualMinutes - predictedMinutes) <= 30;
           });
 
