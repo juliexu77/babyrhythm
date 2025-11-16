@@ -19,7 +19,10 @@ interface Activity {
 export const getActivityEventDate = (activity: Activity): Date => {
   // First priority: use date_local from details if available
   if (activity.details?.date_local) {
-    return new Date(activity.details.date_local);
+    // Parse as local date, not UTC
+    const dateStr = activity.details.date_local;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed
   }
   
   // Second priority: use logged_at adjusted for timezone offset
