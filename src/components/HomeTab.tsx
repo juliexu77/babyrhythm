@@ -93,13 +93,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     household?.id
   );
   
-  console.log('🎯 HomeTab received suggestion:', missedActivitySuggestion);
-
-  // Ensure dismissals don't hide during testing (first nap)
-  try {
-    const key = `missed-nap-first-nap-${format(new Date(), 'yyyy-MM-dd')}`;
-    localStorage.removeItem(key);
-  } catch {}
 
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
@@ -310,8 +303,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     } catch {}
   }
   
-// Use the ongoingNap passed from parent (Index.tsx) for consistency
-const ongoingNap = passedOngoingNap;
+  // Use the ongoingNap passed from parent (Index.tsx) for consistency
+  const ongoingNap = passedOngoingNap;
 
   // Calculate awake time
   const getAwakeTime = () => {
@@ -1426,6 +1419,36 @@ const lastDiaper = displayActivities
               onViewFullSchedule={() => {
                 const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
                 guideTab?.click();
+              }}
+            />
+          </div>
+        )}
+
+        {/* Missed Activity Prompt - Show above Right Now card */}
+        {missedActivitySuggestion && (
+          <div className="px-4 mb-4">
+            <MissedActivityPrompt
+              suggestion={missedActivitySuggestion}
+              onAccept={async () => {
+                const { activityType, subType, suggestedTime } = missedActivitySuggestion;
+                
+                if (subType === 'morning-wake') {
+                  // For morning wake, end the ongoing night sleep
+                  if (ongoingNap) {
+                    onEndNap?.();
+                  }
+                } else {
+                  // For other activities, add them with suggested time
+                  await addActivity?.(activityType, { time: suggestedTime }, new Date(), suggestedTime);
+                }
+                
+                toast({
+                  title: "Activity logged",
+                  description: `${subType === 'morning-wake' ? 'Morning wake' : activityType} recorded at ${suggestedTime}`,
+                });
+              }}
+              onDismiss={() => {
+                // Dismissed - hook handles localStorage
               }}
             />
           </div>
