@@ -424,17 +424,24 @@ export const ScheduleTimeline = ({
         <div className="flex items-center justify-between mb-3">
           <div className="inline-flex rounded-lg overflow-hidden border border-border">
             {(() => {
-              // Always show lower nap count on the left
+              // Use actual nap count from displayed schedule, not transitionNapCounts
+              const currentDisplayedNaps = napCount;
               const lowerCount = Math.min(transitionNapCounts.current, transitionNapCounts.transitioning);
               const higherCount = Math.max(transitionNapCounts.current, transitionNapCounts.transitioning);
-              const isLowerCurrent = lowerCount === transitionNapCounts.current;
+              
+              // Determine which schedule is currently shown based on displayed nap count
+              const isShowingLowerNapSchedule = currentDisplayedNaps === lowerCount;
               
               return (
                 <>
                   <button
-                    onClick={() => onToggleAlternate?.(isLowerCurrent ? false : true)}
+                    onClick={() => {
+                      // Toggle to lower nap schedule
+                      const shouldShowAlternate = lowerCount !== transitionNapCounts.current;
+                      onToggleAlternate?.(shouldShowAlternate);
+                    }}
                     className={`px-4 py-2 text-xs font-medium transition-all border-r border-border ${
-                      (isLowerCurrent && !showAlternate) || (!isLowerCurrent && showAlternate)
+                      isShowingLowerNapSchedule
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
@@ -442,9 +449,13 @@ export const ScheduleTimeline = ({
                     {lowerCount}-nap day
                   </button>
                   <button
-                    onClick={() => onToggleAlternate?.(isLowerCurrent ? true : false)}
+                    onClick={() => {
+                      // Toggle to higher nap schedule
+                      const shouldShowAlternate = higherCount !== transitionNapCounts.current;
+                      onToggleAlternate?.(shouldShowAlternate);
+                    }}
                     className={`px-4 py-2 text-xs font-medium transition-all ${
-                      (isLowerCurrent && showAlternate) || (!isLowerCurrent && !showAlternate)
+                      !isShowingLowerNapSchedule
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}

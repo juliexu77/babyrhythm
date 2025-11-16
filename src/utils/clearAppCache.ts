@@ -28,10 +28,15 @@ export const clearAppCache = () => {
       console.log(`🗑️ Cleared localStorage: ${key}`);
     });
     
-    // Clear any React Query cache keys
+    // Clear ALL localStorage keys (including React Query, Supabase, and user profile caches)
     const allLocalStorageKeys = Object.keys(localStorage);
     allLocalStorageKeys.forEach(key => {
-      if (key.includes('REACT_QUERY') || key.includes('supabase') || key.includes('cache')) {
+      if (key.includes('REACT_QUERY') || 
+          key.includes('supabase') || 
+          key.includes('cache') ||
+          key.includes('user-profile') ||
+          key.includes('household') ||
+          key.includes('auth')) {
         localStorage.removeItem(key);
         console.log(`🗑️ Cleared localStorage: ${key}`);
       }
