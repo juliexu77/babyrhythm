@@ -458,18 +458,27 @@ export const useHomeTabIntelligence = (
     );
 
     // Calculate 7-day averages using actual event dates
-    const daysWithData = new Set<string>();
-    last7DaysActivities.forEach(a => {
-      const date = getActivityEventDateString(a as any);
-      daysWithData.add(date);
-    });
-    const numDays = Math.max(1, daysWithData.size);
-
     const last7DaysNaps = last7DaysActivities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
     const last7DaysFeeds = last7DaysActivities.filter(a => a.type === 'feed');
     
-    const avg7DayNaps = last7DaysNaps.length / numDays;
-    const avg7DayFeeds = last7DaysFeeds.length / numDays;
+    // Count days with nap data (for nap average calculation - matches CollectivePulse logic)
+    const daysWithNapData = new Set<string>();
+    last7DaysActivities.filter(a => a.type === 'nap').forEach(a => {
+      const date = getActivityEventDateString(a as any);
+      if (date) daysWithNapData.add(date);
+    });
+    const numDaysForNaps = Math.max(1, daysWithNapData.size);
+    
+    // Count days with any activity (for feed average)
+    const daysWithAnyData = new Set<string>();
+    last7DaysActivities.forEach(a => {
+      const date = getActivityEventDateString(a as any);
+      if (date) daysWithAnyData.add(date);
+    });
+    const numDaysForFeeds = Math.max(1, daysWithAnyData.size);
+    
+    const avg7DayNaps = last7DaysNaps.length / numDaysForNaps;
+    const avg7DayFeeds = last7DaysFeeds.length / numDaysForFeeds;
 
     // Today's counts
     const napsToday = todayActivities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
