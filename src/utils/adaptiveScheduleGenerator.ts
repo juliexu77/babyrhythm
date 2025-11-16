@@ -128,8 +128,8 @@ export function generateAdaptiveSchedule(
       hasActualWake = true;
     }
   } else {
-    console.log('📊 No wake activity found today, using historical average');
-    // Calculate average wake time from historical data
+    console.log('📊 No wake activity found today, using weighted recent average');
+    // Calculate weighted average wake time - prioritize last 3 days heavily
     const recentNightSleeps = activities
       .filter(a => a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep)
       .slice(0, 14);
@@ -138,10 +138,10 @@ export function generateAdaptiveSchedule(
     let avgWakeMinute = 0;
     
     if (recentNightSleeps.length > 0) {
-      let totalMinutes = 0;
-      let count = 0;
+      let weightedMinutes = 0;
+      let totalWeight = 0;
       
-      recentNightSleeps.forEach(sleep => {
+      recentNightSleeps.forEach((sleep, index) => {
         const timeMatch = sleep.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
         if (timeMatch) {
           let hour = parseInt(timeMatch[1]);
@@ -152,14 +152,16 @@ export function generateAdaptiveSchedule(
           if (period === 'AM' && hour === 12) hour = 0;
           
           if (hour >= 4 && hour <= 11) {
-            totalMinutes += hour * 60 + minute;
-            count++;
+            // Weight recent days more heavily: last 3 days get weight 3, next 4 get weight 2, rest get weight 1
+            const weight = index < 3 ? 3 : (index < 7 ? 2 : 1);
+            weightedMinutes += (hour * 60 + minute) * weight;
+            totalWeight += weight;
           }
         }
       });
       
-      if (count > 0) {
-        const avgTotalMinutes = Math.round(totalMinutes / count);
+      if (totalWeight > 0) {
+        const avgTotalMinutes = Math.round(weightedMinutes / totalWeight);
         avgWakeHour = Math.floor(avgTotalMinutes / 60);
         avgWakeMinute = avgTotalMinutes % 60;
       }
@@ -600,12 +602,16 @@ function generateNapSchedule(
     bedtimeCutoffHour = Math.floor(avgMinutes / 60);
   }
   
-  // Use bedtime minus 1 hour as the latest nap start time
-  const napCutoffHour = Math.max(16, bedtimeCutoffHour - 1); // Minimum 4 PM, typically 1 hour before bed
+  // Use bedtime minus appropriate buffer based on nap count
+  // For 3+ naps, allow naps closer to bedtime; for 2 or fewer, keep 1 hour buffer
+  const napBuffer = napCount >= 3 ? 0.5 : 1; // 30 min buffer for 3+ naps, 1 hour for others
+  const napCutoffHour = Math.max(16, bedtimeCutoffHour - napBuffer); // Minimum 4 PM
   
   console.log('⏰ Nap cutoff calculation:', {
     bedtimeHour: bedtimeCutoffHour,
     napCutoffHour,
+    napBuffer,
+    napCount,
     nightSleepSamples: nightStarts.length
   });
   
