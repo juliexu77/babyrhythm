@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Activity } from "@/components/ActivityCard";
 import { differenceInMinutes, parseISO, startOfDay, format } from "date-fns";
 import { isNightSleep, isDaytimeNap, parseTimeToHour } from "@/utils/napClassification";
+import { isActivityOnDate } from "@/utils/activityDate";
 
 export interface MissedActivitySuggestion {
   activityType: 'nap' | 'feed';
@@ -333,6 +334,55 @@ export function useMissedActivityDetection(
     
     // Check each pattern
     for (const patternConfig of patternsToCheck) {
+      // Special handling for morning-wake: Check if there's an ongoing night sleep
+      if (patternConfig.subType === 'morning-wake') {
+        const ongoingNightSleep = activities.find(a => 
+          a.type === 'nap' && 
+          isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
+          !a.details?.endTime &&
+          isActivityOnDate(a, new Date())
+        );
+        
+        // If there's ongoing night sleep, check if wake-up is overdue
+        if (ongoingNightSleep) {
+          const sleepStartMinutes = timeToMinutes(ongoingNightSleep);
+          let expectedWakeMinutes = nightSleepEndHour * 60 + 30; // Default: 30 min after night end (e.g., 7:30 AM)
+          
+          // Use historical pattern if available
+          const pattern = analyzePattern(
+            activities,
+            'nap',
+            undefined,
+            undefined,
+            'morning-wake',
+            nightSleepStartHour,
+            nightSleepEndHour
+          );
+          
+          if (pattern && pattern.occurrenceCount >= 3) {
+            expectedWakeMinutes = pattern.medianTime;
+          }
+          
+          // If current time is > 1 hour past expected wake, suggest logging it
+          if (currentMinutes > expectedWakeMinutes + 60) {
+            const suggestedTime = minutesToTime(expectedWakeMinutes);
+            console.log('✅ Overdue morning wake detected');
+            return {
+              activityType: 'nap',
+              subType: 'morning-wake',
+              suggestedTime,
+              medianTimeMinutes: expectedWakeMinutes,
+              confidence: 0.8,
+              message: `Did ${babyName || 'baby'} wake up around ${suggestedTime}?`
+            };
+          }
+          
+          // Not overdue yet, skip
+          console.log(`  Morning wake not overdue yet (expected: ${expectedWakeMinutes}, current: ${currentMinutes})`);
+          continue;
+        }
+      }
+      
       // Skip if already logged today
       const alreadyLogged = wasLoggedToday(activities, patternConfig.type, patternConfig.subType, nightSleepStartHour, nightSleepEndHour);
       console.log(`  Checking ${patternConfig.type} ${patternConfig.subType || ''}: alreadyLogged=${alreadyLogged}`);
