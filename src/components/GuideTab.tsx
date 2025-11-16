@@ -185,9 +185,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
-  const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
-  const [showStreakInsight, setShowStreakInsight] = useState(false);
   const [rhythmInsights, setRhythmInsights] = useState<{
     heroInsight: string;
     whatToDo?: string[];
@@ -420,16 +417,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const hasAnyNap = activities.filter(a => a.type === 'nap').length >= 1;
     
     if (!hasTier1Data || !hasAnyNap || !household?.baby_birthday) {
-      console.log('🚫 Insufficient data for schedule:', { 
-        hasTier1Data, 
-        hasAnyNap,
-        hasBirthday: !!household?.baby_birthday 
-      });
       return null;
     }
     
     try {
-      console.log('🔄 Generating schedule with available data', todayKeyEvents);
       
       // Convert activities to the format expected by prediction engine
       const activitiesForEngine = activities.map(a => ({
@@ -454,10 +445,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         nightSleepStartHour,
         nightSleepEndHour
       );
-      console.log('✅ Schedule generated:', schedule);
       return schedule;
     } catch (error) {
-      console.error('❌ Failed to generate schedule:', error);
       return null;
     }
   }, [activities, household?.baby_birthday, hasTier1Data, userTimezone, aiPrediction, hasTier3Data, activities.length, todayKeyEvents]);
@@ -540,7 +529,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (todayWakeActivity) {
       const hasRecalculatedToday = sessionStorage.getItem(`schedule-recalc-${todayStart.toDateString()}`);
       if (!hasRecalculatedToday) {
-        console.log('🌅 Morning wake detected - auto-recalculating schedule');
         localStorage.removeItem('aiPrediction');
         localStorage.removeItem('aiPredictionLastFetch');
         sessionStorage.setItem(`schedule-recalc-${todayStart.toDateString()}`, 'true');
@@ -621,8 +609,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   
   // Recalculate schedule function - for manual midday adjustments
   const handleRecalculateSchedule = async () => {
-    console.log('🔄 Manually recalculating schedule for midday adjustment...');
-    
     // Trigger adjustment animation
     setIsAdjusting(true);
     setAdjustmentContext("Adjusting today's rhythm…");
@@ -661,15 +647,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       });
       
       if (error) {
-        console.error('❌ Error fetching AI prediction:', error);
+        // Error handled silently
       } else if (data) {
-        console.log('✅ Fresh AI prediction received:', data);
         setAiPrediction(data);
         localStorage.setItem('aiPrediction', JSON.stringify(data));
         localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
       }
     } catch (err) {
-      console.error('❌ Failed to fetch AI prediction:', err);
+      // Error handled silently
     } finally {
       setAiPredictionLoading(false);
     }
@@ -731,14 +716,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       // Show alternate if it has MORE naps than display
       const shouldShowAlternate = alternateNapCount > displayNapCount;
       setShowAlternateSchedule(shouldShowAlternate);
-      
-      console.log('🎯 Schedule selection logic:', {
-        displayNapCount,
-        alternateNapCount,
-        shouldShowAlternate,
-        current: transitionInfo.napCounts.current,
-        transitioning: transitionInfo.napCounts.transitioning
-      });
     }
   }, [transitionInfo?.napCounts?.current, transitionInfo?.napCounts?.transitioning, aiPrediction?.total_naps_today]);
   
@@ -773,15 +750,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       
       // Only generate if different from current
       if (alternateNapCount === displayNapCount) {
-        console.log('⚠️ Alternate nap count same as current, not generating alternate schedule');
         return null;
       }
-      
-      console.log('🔄 Generating alternate schedule (both are valid):', {
-        option1NapCount: aiPrediction.total_naps_today,
-        option2NapCount: alternateNapCount,
-        transitionInfo
-      });
       
       const alternateAIPrediction: AISchedulePrediction = {
         total_naps_today: alternateNapCount,
@@ -812,10 +782,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         nightSleepStartHour,
         nightSleepEndHour
       );
-      console.log('✅ Alternate schedule generated:', result);
       return result;
     } catch (error) {
-      console.error('Failed to generate alternate schedule:', error);
       return null;
     }
   }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, activities, userTimezone]);
@@ -825,17 +793,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     ? alternateSchedule 
     : displaySchedule;
   
-  console.log('📅 Active Schedule Debug:', {
-    showAlternateSchedule,
-    hasAlternateSchedule: !!alternateSchedule,
-    hasDisplaySchedule: !!displaySchedule,
-    displayScheduleNaps: displaySchedule?.events.filter(e => e.type === 'nap').length,
-    alternateScheduleNaps: alternateSchedule?.events.filter(e => e.type === 'nap').length,
-    activeScheduleNaps: activeDisplaySchedule?.events.filter(e => e.type === 'nap').length,
-    transitionInfo,
-    aiPredictionNaps: aiPrediction?.total_naps_today
-  });
-
   // Enable smart reminders - only when we have adaptive schedule
   useSmartReminders({ 
     schedule: adaptiveSchedule as any, // Type compatibility with old interface
@@ -859,10 +816,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // ===== ALL EFFECTS =====
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
-    // Clear rhythm insights and AI prediction caches once to force refresh
     const hasClearedV12 = localStorage.getItem('cacheCleared_v12');
     if (!hasClearedV12) {
-      console.log('🧹 Clearing stale prediction caches (v12 - schedule predictor night sleep fix)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
@@ -873,24 +828,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     // Also clear session storage caches
     clearAppCache();
   }, []);
-
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 GuideTab Debug:', {
-      totalActivities: activities.length,
-      allSleepActivities: allSleepActivities.length,
-      daytimeNaps: daytimeNaps.length,
-      nightSleepCount: allSleepActivities.length - daytimeNaps.length,
-      feeds: feeds.length,
-      hasTier1Data,
-      hasTier2Data,
-      hasTier3Data,
-      babyName,
-      babyAgeInWeeks,
-      hasInitialized,
-      insightCardsCount: insightCards.length
-    });
-  }, [activities.length, daytimeNaps.length, feeds.length, hasTier1Data, hasTier2Data, hasTier3Data, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
 
   // Fetch rhythm insights once daily at midnight (only for Tier 3)
   useEffect(() => {
@@ -904,7 +841,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         setRhythmInsightsLoading(true);
       }
       try {
-        console.log('🔄 Fetching rhythm insights from edge function...');
         const { data, error } = await supabase.functions.invoke('generate-rhythm-insights', {
           body: { 
             activities: activities.slice(-300), // Send last 300 activities
@@ -944,7 +880,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           localStorage.setItem('rhythmInsightsLastFetch', new Date().toISOString());
         }
       } catch (err) {
-        console.error('❌ Failed to fetch rhythm insights:', err);
+        // Error handled silently
       } finally {
         if (showLoadingState) {
           setRhythmInsightsLoading(false);
@@ -979,11 +915,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         // If insights mention a different nap count than predicted, invalidate cache
         if (mentionedCounts.size > 0 && !mentionedCounts.has(aiPrediction.total_naps_today)) {
-          console.log(`🔄 Nap count mismatch detected: insights mention ${Array.from(mentionedCounts).join('/')} naps, but AI predicts ${aiPrediction.total_naps_today} naps`);
           return true;
         }
       } catch (e) {
-        console.error('Failed to check nap count mismatch:', e);
+        // Error handled silently
       }
       return false;
     };
@@ -996,7 +931,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const napMismatch = hasNapCountMismatch();
         
         // Always show cached data immediately
-        console.log('📦 Loading cached rhythm insights...');
         setRhythmInsights({
           heroInsight: parsed.heroInsight,
           whatToDo: parsed.whatToDo,
@@ -1009,21 +943,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         // Fetch fresh data in background if cache is stale or has mismatch
         if (cachedDate !== todayDate || napMismatch) {
-          console.log('🔄 Cache is stale, fetching fresh data in background...');
           localStorage.removeItem('rhythmInsights');
           fetchRhythmInsights(false); // Don't show loading state
-        } else {
-          console.log('✅ Using cached insights from today');
         }
         return;
       } catch (e) {
-        console.error('Failed to parse cached rhythm insights:', e);
         localStorage.removeItem('rhythmInsights');
       }
     }
     
     // No cache available - show loading state and fetch
-    console.log('🚀 No cache available, fetching rhythm insights...');
     fetchRhythmInsights(true); // Show loading state only on first load
   }, [hasTier3Data, household, babyAgeInWeeks, activities.length, userTimezone]);
 
@@ -1036,8 +965,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         setAiPredictionLoading(true);
       }
       try {
-        console.log('🔄 Fetching AI schedule prediction...');
-        
         // Get today's activities (use normalized activities with isNightSleep flag)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -1066,18 +993,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         });
         
         if (error) {
-          console.error('❌ Error fetching AI prediction:', error);
           return;
         }
         
         if (data) {
-          console.log('✅ AI prediction received:', data);
           setAiPrediction(data);
           localStorage.setItem('aiPrediction', JSON.stringify(data));
           localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
         }
       } catch (err) {
-        console.error('❌ Failed to fetch AI prediction:', err);
+        // Error handled silently
       } finally {
         if (showLoadingState) {
           setAiPredictionLoading(false);
@@ -1093,11 +1018,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        console.log('📦 Loading cached AI prediction...');
         setAiPrediction(parsed);
         setAiPredictionLoading(false);
       } catch (e) {
-        console.error('Failed to parse cached AI prediction:', e);
         localStorage.removeItem('aiPrediction');
       }
     }
@@ -1117,7 +1040,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       
       // Fetch in background if it's a new day AND we're past 5am
       if (isNewDay && currentHour >= 5) {
-        console.log('🔄 Fetching fresh AI prediction in background...');
         fetchAiPrediction(false); // Don't show loading state
       }
     }
@@ -1185,7 +1107,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      console.log('🔐 GuideTab: invoking parenting-chat (initial)', { hasToken: !!token, CHAT_URL });
       if (!token) throw new Error('No active session token for parenting-chat');
 
       const resp = await fetch(CHAT_URL, {
@@ -1263,7 +1184,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       setInsightCards([insightCard]);
     } catch (error) {
-      console.error("Error loading insight:", error);
+      // Error handled silently
     } finally {
       setIsLoading(false);
     }
@@ -1287,7 +1208,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      console.log('🔐 GuideTab: invoking parenting-chat (chat)', { hasToken: !!token, CHAT_URL });
       if (!token) throw new Error('No active session token for parenting-chat');
 
       const resp = await fetch(CHAT_URL, {
@@ -1373,7 +1293,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         }
       }
     } catch (error) {
-      console.error("Chat error:", error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
