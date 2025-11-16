@@ -336,11 +336,15 @@ export function useMissedActivityDetection(
     for (const patternConfig of patternsToCheck) {
       // Special handling for morning-wake: Check if there's an ongoing night sleep
       if (patternConfig.subType === 'morning-wake') {
+        // Check for ongoing night sleep from yesterday or today (since night sleep spans dates)
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
         const ongoingNightSleep = activities.find(a => 
           a.type === 'nap' && 
           isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
           !a.details?.endTime &&
-          isActivityOnDate(a, new Date())
+          (isActivityOnDate(a, new Date()) || isActivityOnDate(a, yesterday))
         );
         
         // If there's ongoing night sleep, check if wake-up is overdue
