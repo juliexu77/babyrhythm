@@ -9,22 +9,13 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
+    console.log('🔒 RouteGuard:', { loading, hasUser: !!user, pathname: location.pathname });
+    
     if (loading) return;
 
-    // TEMPORARILY DISABLED FOR DEBUGGING
-    // const publicRoutes = ['/auth', '/login', '/invite', '/onboarding'];
-    // const isPublicRoute = publicRoutes.some(route => 
-    //   location.pathname === route || location.pathname.startsWith(route + '/')
-    // );
-
-    // // Redirect unauthenticated users to onboarding
-    // if (!user && !isPublicRoute) {
-    //   navigate("/onboarding", { replace: true });
-    //   return;
-    // }
-
-    // Redirect authenticated users away from auth/login pages only (allow onboarding subpages for setup)
+    // Redirect authenticated users away from auth/login pages
     if (user && (location.pathname === "/auth" || location.pathname === "/login")) {
+      console.log('🔄 Redirecting authenticated user from', location.pathname, 'to /');
       navigate("/", { replace: true });
       return;
     }
