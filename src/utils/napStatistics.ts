@@ -41,7 +41,7 @@ export const calculateNapStatistics = (
 ): NapStatistics => {
   const napActivities = activities.filter(a => a.type === 'nap');
   
-  // Count unique days with nap data using actual event dates
+  // Count unique days with ANY nap data (for nap averages)
   const uniqueDates = new Set<string>();
   napActivities.forEach(nap => {
     const eventDate = getEventDate(nap);
@@ -77,7 +77,10 @@ export const calculateNapStatistics = (
     return hours * 60 + minutes;
   };
   
+  // Count unique dates with NIGHT SLEEP data specifically
+  const nightSleepDates = new Set<string>();
   let totalNightSleepMinutes = 0;
+  
   nightSleeps.forEach(sleep => {
     if (sleep.details?.startTime && sleep.details?.endTime) {
       const startMinutes = parseTimeToMinutes(sleep.details.startTime);
@@ -86,13 +89,21 @@ export const calculateNapStatistics = (
       let duration = endMinutes - startMinutes;
       if (duration < 0) duration += 24 * 60; // Handle overnight
       totalNightSleepMinutes += duration;
+      
+      // Track dates with night sleep
+      const eventDate = getEventDate(sleep);
+      if (eventDate) {
+        nightSleepDates.add(eventDate);
+      }
     }
   });
+  
+  const daysWithNightSleep = nightSleepDates.size || 1; // Fallback to 1 to avoid division by zero
   
   return {
     avgNapsPerDay: napActivities.length / daysWithData,
     avgDaytimeNapsPerDay: daytimeNaps.length / daysWithData,
     totalNaps: napActivities.length,
-    avgNightSleepHours: totalNightSleepMinutes / 60 / daysWithData, // Average total night sleep per day
+    avgNightSleepHours: totalNightSleepMinutes / 60 / daysWithNightSleep, // Average per night that has sleep logged
   };
 };
