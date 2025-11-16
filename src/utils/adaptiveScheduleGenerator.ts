@@ -58,7 +58,16 @@ export function generateAdaptiveSchedule(
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
   
-  const todayActivities = activities.filter(a => {
+  // Include yesterday's activities too (for night sleeps that ended this morning)
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+  
+  const recentActivities = activities.filter(a => {
+    const actDate = new Date(a.loggedAt);
+    return actDate >= yesterdayStart;
+  });
+  
+  const todayActivities = recentActivities.filter(a => {
     const actDate = new Date(a.loggedAt);
     return actDate >= todayStart;
   });
@@ -72,13 +81,14 @@ export function generateAdaptiveSchedule(
     }));
   
   console.log('🌅 Looking for today\'s wake activity:', {
+    recentActivitiesCount: recentActivities.length,
     todayActivitiesCount: todayActivities.length,
-    nightSleeps: todayActivities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).length,
+    nightSleeps: recentActivities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).length,
     completedNaps: todayCompletedNaps.length
   });
   
-  // Check if baby woke up today - look for night sleep with end time
-  const todayWakeActivity = todayActivities.find(a => {
+  // Check if baby woke up today - look for night sleep with end time (from yesterday or today)
+  const todayWakeActivity = recentActivities.find(a => {
     if (a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
       const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       if (timeMatch) {
@@ -86,17 +96,31 @@ export function generateAdaptiveSchedule(
         const period = timeMatch[3].toUpperCase();
         if (period === 'PM' && hour !== 12) hour += 12;
         if (period === 'AM' && hour === 12) hour = 0;
-        // Consider wake times from 4 AM to 12 PM (noon)
-        const isValidWakeTime = hour >= 4 && hour <= 12;
-        if (isValidWakeTime) {
-          console.log('✅ Found today\'s wake time:', {
-            endTime: a.details.endTime,
-            loggedAt: a.loggedAt,
-            hour,
-            period
-          });
+        
+        // Check if this end time is today and in valid wake window (4 AM to 12 PM)
+        const endTimeDate = new Date(a.loggedAt);
+        const endTimeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (endTimeMatch) {
+          let endHour = parseInt(endTimeMatch[1]);
+          const endMinute = parseInt(endTimeMatch[2]);
+          const endPeriod = endTimeMatch[3].toUpperCase();
+          if (endPeriod === 'PM' && endHour !== 12) endHour += 12;
+          if (endPeriod === 'AM' && endHour === 12) endHour = 0;
+          
+          endTimeDate.setHours(endHour, endMinute, 0, 0);
+          
+          const isWakeToday = endTimeDate >= todayStart && endHour >= 4 && endHour <= 12;
+          if (isWakeToday) {
+            console.log('✅ Found today\'s wake time:', {
+              endTime: a.details.endTime,
+              loggedAt: a.loggedAt,
+              endTimeDate: endTimeDate.toISOString(),
+              hour: endHour,
+              period: endPeriod
+            });
+          }
+          return isWakeToday;
         }
-        return isValidWakeTime;
       }
     }
     return false;
