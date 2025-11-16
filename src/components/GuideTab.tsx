@@ -714,8 +714,30 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     return null;
   }, [aiPrediction, transitionWindow]);
   
-  // Generate alternate schedule for transitions - DON'T persist preference during transition
+  // Generate alternate schedule for transitions - default to showing higher nap count
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
+  
+  // Initialize to show higher nap count by default when transitioning
+  useEffect(() => {
+    if (transitionInfo && transitionInfo.napCounts && aiPrediction) {
+      const displayNapCount = aiPrediction.total_naps_today;
+      const alternateNapCount = transitionInfo.napCounts.current === displayNapCount
+        ? transitionInfo.napCounts.transitioning
+        : transitionInfo.napCounts.current;
+      
+      // Show alternate if it has MORE naps than display
+      const shouldShowAlternate = alternateNapCount > displayNapCount;
+      setShowAlternateSchedule(shouldShowAlternate);
+      
+      console.log('🎯 Schedule selection logic:', {
+        displayNapCount,
+        alternateNapCount,
+        shouldShowAlternate,
+        current: transitionInfo.napCounts.current,
+        transitioning: transitionInfo.napCounts.transitioning
+      });
+    }
+  }, [transitionInfo?.napCounts?.current, transitionInfo?.napCounts?.transitioning, aiPrediction?.total_naps_today]);
   
   // Reset toggle when transition ends
   useEffect(() => {
