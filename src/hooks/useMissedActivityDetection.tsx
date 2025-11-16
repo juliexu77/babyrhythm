@@ -291,7 +291,8 @@ export function useMissedActivityDetection(
   activities: Activity[],
   babyName?: string,
   nightSleepStartHour: number = 19,
-  nightSleepEndHour: number = 7
+  nightSleepEndHour: number = 7,
+  householdId?: string
 ): MissedActivitySuggestion | null {
   return useMemo(() => {
     const currentTime = new Date();
@@ -471,7 +472,7 @@ export function useMissedActivityDetection(
       if (!shouldShow) continue;
       
       // Check localStorage for dismissals
-      const dismissalKey = `missed-${pattern.type}-${pattern.subType || 'default'}-${format(currentTime, 'yyyy-MM-dd')}`;
+      const dismissalKey = `missed-${householdId || 'household'}-${pattern.type}-${pattern.subType || 'default'}-${format(currentTime, 'yyyy-MM-dd')}`;
       const isDismissed = localStorage.getItem(dismissalKey) === 'true';
       console.log(`    Dismissed: ${isDismissed}, key: ${dismissalKey}`);
       
@@ -492,5 +493,5 @@ export function useMissedActivityDetection(
     
     console.log('No suggestion found - end of detection');
     return null;
-  }, [activities, babyName, nightSleepStartHour, nightSleepEndHour]);
+  }, [activities, babyName, nightSleepStartHour, nightSleepEndHour, householdId]);
 }
