@@ -129,6 +129,17 @@ export const RightNowStatus = ({
           </div>
         )}
 
+        {/* Missed Activity (from detection) inside Right Now card */}
+        {missedActivitySuggestion && onAcceptMissedActivity && onDismissMissedActivity && (
+          <div className="mt-3">
+            <MissedActivityPrompt 
+              suggestion={missedActivitySuggestion}
+              onAccept={onAcceptMissedActivity}
+              onDismiss={onDismissMissedActivity}
+            />
+          </div>
+        )}
+
         {/* Suggested Actions */}
         {suggestions.length > 0 && (
           <div className="mt-3 pt-3 border-t border-border/30">
