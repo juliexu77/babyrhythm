@@ -872,9 +872,9 @@ const ongoingNap = (() => {
                                     {displayDate}
                                   </h3>
                                   
-                  {/* Filter Button - Only show on first date (today) and when filters are active */}
-                  {index === 0 && hasActiveFilters && (
-                    <DropdownMenu 
+                  {/* Filter Button - Show on first date (today) */}
+                  {index === 0 && (
+                    <DropdownMenu
                       open={showFilterDropdown} 
                       onOpenChange={(open) => {
                         setShowFilterDropdown(open);
@@ -888,9 +888,12 @@ const ongoingNap = (() => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 relative"
                         >
                           <Filter className="h-4 w-4" />
+                          {hasActiveFilters && (
+                            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
+                          )}
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 bg-background z-50">
