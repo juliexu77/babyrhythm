@@ -128,8 +128,8 @@ export function generateAdaptiveSchedule(
       hasActualWake = true;
     }
   } else {
-    console.log('📊 No wake activity found today, using weighted recent average');
-    // Calculate weighted average wake time - prioritize last 3 days heavily
+    console.log('📊 No wake activity found today, using historical average');
+    // Calculate average wake time from historical data
     const recentNightSleeps = activities
       .filter(a => a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep)
       .slice(0, 14);
@@ -138,10 +138,10 @@ export function generateAdaptiveSchedule(
     let avgWakeMinute = 0;
     
     if (recentNightSleeps.length > 0) {
-      let weightedMinutes = 0;
-      let totalWeight = 0;
+      let totalMinutes = 0;
+      let count = 0;
       
-      recentNightSleeps.forEach((sleep, index) => {
+      recentNightSleeps.forEach(sleep => {
         const timeMatch = sleep.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
         if (timeMatch) {
           let hour = parseInt(timeMatch[1]);
@@ -152,16 +152,14 @@ export function generateAdaptiveSchedule(
           if (period === 'AM' && hour === 12) hour = 0;
           
           if (hour >= 4 && hour <= 11) {
-            // Weight recent days more heavily: last 3 days get weight 3, next 4 get weight 2, rest get weight 1
-            const weight = index < 3 ? 3 : (index < 7 ? 2 : 1);
-            weightedMinutes += (hour * 60 + minute) * weight;
-            totalWeight += weight;
+            totalMinutes += hour * 60 + minute;
+            count++;
           }
         }
       });
       
-      if (totalWeight > 0) {
-        const avgTotalMinutes = Math.round(weightedMinutes / totalWeight);
+      if (count > 0) {
+        const avgTotalMinutes = Math.round(totalMinutes / count);
         avgWakeHour = Math.floor(avgTotalMinutes / 60);
         avgWakeMinute = avgTotalMinutes % 60;
       }
