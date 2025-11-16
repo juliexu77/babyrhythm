@@ -762,11 +762,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !aiPrediction) return null;
     
     try {
-      // Create schedules for BOTH nap counts - don't presume which one
-      const alternateNapCount = transitionInfo.napCounts.transitioning;
+      // Get the nap count that's NOT in the display schedule
+      const displayNapCount = aiPrediction.total_naps_today;
+      const alternateNapCount = transitionInfo.napCounts.current === displayNapCount
+        ? transitionInfo.napCounts.transitioning
+        : transitionInfo.napCounts.current;
       
       // Only generate if different from current
-      if (alternateNapCount === aiPrediction.total_naps_today) {
+      if (alternateNapCount === displayNapCount) {
         console.log('⚠️ Alternate nap count same as current, not generating alternate schedule');
         return null;
       }
