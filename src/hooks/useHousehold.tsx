@@ -46,14 +46,13 @@ export const useHousehold = () => {
           setHousehold(JSON.parse(stored));
         }
       } catch (error) {
-        console.error('Error loading household from localStorage:', error);
+        // Error loading from localStorage
       }
       setLoading(false);
       return;
     }
 
     fetchHousehold().catch(err => {
-      console.error('Error in fetchHousehold effect:', err);
       setError('Failed to load household');
       setLoading(false);
     });
@@ -65,8 +64,8 @@ export const useHousehold = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'households' }, 
         () => {
-          fetchHousehold().catch(err => {
-            console.error('Error in real-time household fetch:', err);
+          fetchHousehold().catch(() => {
+            // Real-time household fetch error
           });
         }
       )
@@ -77,8 +76,8 @@ export const useHousehold = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'collaborators' }, 
         () => {
-          fetchCollaborators().catch(err => {
-            console.error('Error in real-time collaborators fetch:', err);
+          fetchCollaborators().catch(() => {
+            // Real-time collaborators fetch error
           });
         }
       )
@@ -95,15 +94,13 @@ export const useHousehold = () => {
 
     try {
       setError(null);
-      console.log('Fetching household for user:', user.id);
       
       // Try to use the active household from localStorage first
       let preferredHouseholdId: string | null = null;
       try {
         preferredHouseholdId = localStorage.getItem('active_household_id');
-        console.log('Active household from localStorage:', preferredHouseholdId);
       } catch (e) {
-        console.error('Error reading from localStorage:', e);
+        // Error reading from localStorage
       }
       
       let householdId: string | null = null;
@@ -118,23 +115,20 @@ export const useHousehold = () => {
           .maybeSingle();
 
         if (preferredError) {
-          console.error('Error verifying preferred household access:', preferredError);
           // Clear invalid household ID
           try {
             localStorage.removeItem('active_household_id');
           } catch (e) {
-            console.error('Error clearing localStorage:', e);
+            // Error clearing localStorage
           }
         } else if (preferredCollab) {
           householdId = preferredCollab.household_id;
-          console.log('Verified access to preferred household:', householdId);
         } else {
-          // User no longer has access to this household, clear it
-          console.log('User no longer has access to preferred household, clearing');
+          // User no longer has access
           try {
             localStorage.removeItem('active_household_id');
           } catch (e) {
-            console.error('Error clearing localStorage:', e);
+            // Error clearing localStorage
           }
         }
       }
