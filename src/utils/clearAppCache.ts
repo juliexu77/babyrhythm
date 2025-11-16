@@ -1,7 +1,9 @@
+import { supabase } from "@/integrations/supabase/client";
+
 /**
- * Clear all app-related session storage caches
+ * Clear all app-related session storage caches and database cache
  */
-export const clearAppCache = () => {
+export const clearAppCache = async (householdId?: string) => {
   try {
     console.log('🧹 Starting cache clear...');
     
@@ -41,6 +43,20 @@ export const clearAppCache = () => {
         console.log(`🗑️ Cleared localStorage: ${key}`);
       }
     });
+    
+    // Clear database cache if household ID provided
+    if (householdId) {
+      console.log('🗑️ Clearing database schedule cache...');
+      const { error } = await supabase.functions.invoke('clear-schedule-cache', {
+        body: { householdId }
+      });
+      
+      if (error) {
+        console.error('❌ Failed to clear database cache:', error);
+      } else {
+        console.log('✅ Database schedule cache cleared');
+      }
+    }
     
     console.log('✅ App cache cleared successfully - data will refresh');
     return true;

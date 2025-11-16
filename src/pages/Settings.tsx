@@ -406,31 +406,6 @@ export const Settings = () => {
                    </Select>
                   </div>
                 </SettingsRow>
-                <SettingsRow
-                  icon={<Moon className="w-5 h-5" />}
-                  title="Reset Night Sleep Window"
-                  subtitle="Reset to defaults (7 PM - 7 AM)"
-                  onClick={async () => {
-                    try {
-                      await updateUserProfile({ 
-                        night_sleep_start_hour: 19,
-                        night_sleep_start_minute: 0,
-                        night_sleep_end_hour: 7,
-                        night_sleep_end_minute: 0
-                      } as any);
-                      toast({
-                        title: "Night sleep window reset",
-                        description: "Settings reset to 7 PM - 7 AM defaults. Refresh to see changes.",
-                      });
-                    } catch (error) {
-                      console.error('Error resetting night sleep window:', error);
-                      toast({
-                        title: "Error resetting settings",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                />
               </>
             )}
           </SettingsSection>
