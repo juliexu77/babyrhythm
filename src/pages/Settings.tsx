@@ -305,20 +305,29 @@ export const Settings = () => {
                   subtitle="When overnight sleep typically begins"
                   showChevron={false}
                 >
-                  <Select
-                    value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
-                    onValueChange={async (value) => {
-                      try {
-                        const [hour, minute] = value.split(':').map(Number);
-                        await updateUserProfile({ 
-                          night_sleep_start_hour: hour,
-                          night_sleep_start_minute: minute 
-                        } as any);
-                      } catch (error) {
-                        console.error('Error updating night sleep start:', error);
-                      }
-                    }}
-                  >
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
+                      onValueChange={async (value) => {
+                        try {
+                          const [hour, minute] = value.split(':').map(Number);
+                          await updateUserProfile({ 
+                            night_sleep_start_hour: hour,
+                            night_sleep_start_minute: minute 
+                          } as any);
+                          toast({
+                            title: "Night sleep start updated",
+                            description: "Schedule will update on next refresh",
+                          });
+                        } catch (error) {
+                          console.error('Error updating night sleep start:', error);
+                          toast({
+                            title: "Error updating setting",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
                     <SelectTrigger className="w-[120px]">
                       <SelectValue />
                     </SelectTrigger>
@@ -340,8 +349,9 @@ export const Settings = () => {
                           </SelectItem>
                         );
                       }).filter(Boolean)}
-                    </SelectContent>
-                  </Select>
+                     </SelectContent>
+                   </Select>
+                  </div>
                 </SettingsRow>
                 <SettingsRow
                   icon={<Moon className="w-5 h-5" />}
@@ -349,20 +359,29 @@ export const Settings = () => {
                   subtitle="When overnight sleep typically ends"
                   showChevron={false}
                 >
-                  <Select
-                    value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
-                    onValueChange={async (value) => {
-                      try {
-                        const [hour, minute] = value.split(':').map(Number);
-                        await updateUserProfile({ 
-                          night_sleep_end_hour: hour,
-                          night_sleep_end_minute: minute 
-                        } as any);
-                      } catch (error) {
-                        console.error('Error updating night sleep end:', error);
-                      }
-                    }}
-                  >
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
+                      onValueChange={async (value) => {
+                        try {
+                          const [hour, minute] = value.split(':').map(Number);
+                          await updateUserProfile({ 
+                            night_sleep_end_hour: hour,
+                            night_sleep_end_minute: minute 
+                          } as any);
+                          toast({
+                            title: "Night sleep end updated",
+                            description: "Schedule will update on next refresh",
+                          });
+                        } catch (error) {
+                          console.error('Error updating night sleep end:', error);
+                          toast({
+                            title: "Error updating setting",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
                     <SelectTrigger className="w-[120px]">
                       <SelectValue />
                     </SelectTrigger>
@@ -384,8 +403,34 @@ export const Settings = () => {
                         );
                       }).filter(Boolean)}
                     </SelectContent>
-                  </Select>
+                   </Select>
+                  </div>
                 </SettingsRow>
+                <SettingsRow
+                  icon={<Moon className="w-5 h-5" />}
+                  title="Reset Night Sleep Window"
+                  subtitle="Reset to defaults (7 PM - 7 AM)"
+                  onClick={async () => {
+                    try {
+                      await updateUserProfile({ 
+                        night_sleep_start_hour: 19,
+                        night_sleep_start_minute: 0,
+                        night_sleep_end_hour: 7,
+                        night_sleep_end_minute: 0
+                      } as any);
+                      toast({
+                        title: "Night sleep window reset",
+                        description: "Settings reset to 7 PM - 7 AM defaults. Refresh to see changes.",
+                      });
+                    } catch (error) {
+                      console.error('Error resetting night sleep window:', error);
+                      toast({
+                        title: "Error resetting settings",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                />
               </>
             )}
           </SettingsSection>
