@@ -613,7 +613,8 @@ function generateNapSchedule(
     napCutoffHour,
     napBuffer,
     napCount,
-    nightSleepSamples: nightStarts.length
+    nightSleepSamples: nightStarts.length,
+    forceShowAllNaps
   });
   
   // Determine nap timings based on historical data or defaults
@@ -722,6 +723,12 @@ function generateNapSchedule(
     }
   }
   
+  console.log('🎯 Nap start times calculated:', {
+    napCount,
+    napStartTimes,
+    forceShowAllNaps
+  });
+  
   // Generate initial nap events, accounting for today's completed naps
   napStartTimes.forEach((minutesFromWake, index) => {
     const napNumber = index + 1;
@@ -778,6 +785,15 @@ function generateNapSchedule(
     
     const napTime = new Date(referenceTime.getTime() + minutesFromReference * 60000);
     
+    console.log(`🔍 Evaluating nap ${napNumber}:`, {
+      napTime: formatTime(napTime),
+      napTimeHour: napTime.getHours(),
+      napCutoffHour,
+      wouldSkip: napTime.getHours() >= napCutoffHour,
+      forceShowAllNaps,
+      willSkip: !forceShowAllNaps && napTime.getHours() >= napCutoffHour
+    });
+    
     // Skip naps that would interfere with bedtime (dynamic cutoff based on historical bedtime)
     // UNLESS user explicitly selected this nap count via toggle
     if (!forceShowAllNaps && napTime.getHours() >= napCutoffHour) {
@@ -828,6 +844,16 @@ function generateNapSchedule(
       confidence,
       reasoning: confidence === 'low' ? 'Nap schedule transitioning' : 'Based on typical nap timing'
     });
+    
+    console.log(`✅ Added predicted nap ${napNumber}: ${formatTime(napTime)} (${duration}min, confidence: ${confidence})`);
+  });
+  
+  console.log(`📋 Nap generation summary:`, {
+    requestedNapCount: napCount,
+    generatedNapCount: naps.length,
+    forceShowAllNaps,
+    completedNaps: completedNapTimes.length,
+    predictedNaps: naps.filter(n => !n.notes?.includes('completed')).length
   });
   
   // Calculate average total DAY sleep from historical data (all nap data)
