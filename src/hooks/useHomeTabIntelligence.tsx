@@ -350,8 +350,55 @@ export const useHomeTabIntelligence = (
   const smartSuggestions = useMemo((): SmartSuggestion[] => {
     const suggestions: SmartSuggestion[] = [];
 
-    // Suggest nap if awake for > 2 hours
-    if (currentActivity?.type === 'awake' && currentActivity.duration > 120) {
+    // Check if it's past bedtime
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+    
+    // Convert bedtime to minutes since midnight
+    const bedtimeInMinutes = nightSleepStartHour * 60;
+    
+    // Calculate minutes past bedtime (handling overnight wraparound)
+    let minutesPastBedtime = 0;
+    if (bedtimeInMinutes < 12 * 60) {
+      // Bedtime is in early morning hours (e.g., 1 AM)
+      if (currentTimeInMinutes >= bedtimeInMinutes) {
+        minutesPastBedtime = currentTimeInMinutes - bedtimeInMinutes;
+      } else if (currentTimeInMinutes < bedtimeInMinutes && currentHour >= 18) {
+        // Current time is evening, bedtime is early morning
+        minutesPastBedtime = (24 * 60 - bedtimeInMinutes) + currentTimeInMinutes;
+      }
+    } else {
+      // Normal bedtime (e.g., 7 PM, 8 PM)
+      if (currentTimeInMinutes >= bedtimeInMinutes) {
+        minutesPastBedtime = currentTimeInMinutes - bedtimeInMinutes;
+      } else if (currentHour < 12) {
+        // Past midnight, calculate from bedtime yesterday
+        minutesPastBedtime = (24 * 60 - bedtimeInMinutes) + currentTimeInMinutes;
+      }
+    }
+    
+    // Check if baby is awake past bedtime (more than 30 minutes overdue)
+    const isPastBedtime = currentActivity?.type === 'awake' && minutesPastBedtime > 30;
+    
+    if (isPastBedtime) {
+      const hoursPast = Math.floor(minutesPastBedtime / 60);
+      const minsPast = minutesPastBedtime % 60;
+      
+      suggestions.push({
+        id: 'bedtime-overdue',
+        type: 'nap',
+        title: 'Bedtime overdue',
+        subtitle: hoursPast > 0 
+          ? `${hoursPast}h ${minsPast}m past bedtime` 
+          : `${minsPast}m past bedtime`,
+        priority: 110, // Higher priority than regular nap
+        icon: <Moon className="w-4 h-4 text-primary" />,
+        onClick: () => onAddActivity?.('nap')
+      });
+    } else if (currentActivity?.type === 'awake' && currentActivity.duration > 120) {
+      // Regular daytime nap suggestion
       suggestions.push({
         id: 'nap-overdue',
         type: 'nap',
