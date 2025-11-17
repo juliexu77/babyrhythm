@@ -103,39 +103,44 @@ export function generateAdaptiveSchedule(
     }))
   });
   
-  // Check if baby woke up today - look for night sleep that ended today (local date or yesterday with AM end)
+  // Check if baby woke up today - look for night sleep that STARTED yesterday and ended today
   const todayWakeActivity = recentActivities.find(a => {
-    if (a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
-      // Treat wake as happening on END date. If the activity's local date is yesterday
-      // but the endTime is a valid morning time (4 AM–12 PM), count it as today's wake.
+    if (a.type === 'nap' && a.details?.startTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
       const activityDateLocal = getActivityEventDateString(a);
+      
+      // Check if night sleep started yesterday
+      if (activityDateLocal === yesterdayLocal) {
+        // If it has an endTime, validate it's a morning wake time
+        if (a.details.endTime) {
+          const endTimeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (endTimeMatch) {
+            let hour = parseInt(endTimeMatch[1]);
+            const period = endTimeMatch[3].toUpperCase();
+            if (period === 'PM' && hour !== 12) hour += 12;
+            if (period === 'AM' && hour === 12) hour = 0;
 
-      const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (timeMatch) {
-        let hour = parseInt(timeMatch[1]);
-        const period = timeMatch[3].toUpperCase();
-        if (period === 'PM' && hour !== 12) hour += 12;
-        if (period === 'AM' && hour === 12) hour = 0;
+            // Validate wake time is in valid morning window (4 AM to 12 PM)
+            const isValidWakeTime = hour >= 4 && hour <= 12;
 
-        // Validate wake time is in valid morning window (4 AM to 12 PM)
-        const isValidWakeTime = hour >= 4 && hour <= 12;
-
-        // Consider today's wake if:
-        // - the activity local date is today, or
-        // - it is logged as yesterday but ended in the morning window (overnight sleep crossing midnight)
-        const countsForToday = activityDateLocal === todayLocal || (activityDateLocal === yesterdayLocal && isValidWakeTime);
-
-        if (countsForToday && isValidWakeTime) {
-          console.log('✅ Found today\'s wake time:', {
-            endTime: a.details.endTime,
-            date_local: activityDateLocal,
-            todayLocal,
-            yesterdayLocal,
-            hour,
-            period
-          });
+            if (isValidWakeTime) {
+              console.log('✅ Found today\'s wake time from night sleep that started yesterday:', {
+                startTime: a.details.startTime,
+                endTime: a.details.endTime,
+                date_local: activityDateLocal,
+                yesterdayLocal,
+                hour,
+                period
+              });
+              return true;
+            }
+          }
         }
-        return countsForToday && isValidWakeTime;
+        // If night sleep started yesterday but no valid endTime, we'll fall back to average
+        console.log('⏰ Night sleep started yesterday but no valid wake time yet:', {
+          startTime: a.details.startTime,
+          endTime: a.details.endTime,
+          date_local: activityDateLocal
+        });
       }
     }
     return false;
