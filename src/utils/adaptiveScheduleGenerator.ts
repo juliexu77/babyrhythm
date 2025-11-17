@@ -103,31 +103,39 @@ export function generateAdaptiveSchedule(
     }))
   });
   
-  // Check if baby woke up today - look for night sleep that ended today (local date)
+  // Check if baby woke up today - look for night sleep that ended today (local date or yesterday with AM end)
   const todayWakeActivity = recentActivities.find(a => {
     if (a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
-      // Check if the activity's date_local matches today (wake happens on the END date)
+      // Treat wake as happening on END date. If the activity's local date is yesterday
+      // but the endTime is a valid morning time (4 AM–12 PM), count it as today's wake.
       const activityDateLocal = getActivityEventDateString(a);
-      
+
       const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (timeMatch && activityDateLocal === todayLocal) {
+      if (timeMatch) {
         let hour = parseInt(timeMatch[1]);
         const period = timeMatch[3].toUpperCase();
         if (period === 'PM' && hour !== 12) hour += 12;
         if (period === 'AM' && hour === 12) hour = 0;
-        
+
         // Validate wake time is in valid morning window (4 AM to 12 PM)
         const isValidWakeTime = hour >= 4 && hour <= 12;
-        if (isValidWakeTime) {
+
+        // Consider today's wake if:
+        // - the activity local date is today, or
+        // - it is logged as yesterday but ended in the morning window (overnight sleep crossing midnight)
+        const countsForToday = activityDateLocal === todayLocal || (activityDateLocal === yesterdayLocal && isValidWakeTime);
+
+        if (countsForToday && isValidWakeTime) {
           console.log('✅ Found today\'s wake time:', {
             endTime: a.details.endTime,
             date_local: activityDateLocal,
             todayLocal,
+            yesterdayLocal,
             hour,
             period
           });
         }
-        return isValidWakeTime;
+        return countsForToday && isValidWakeTime;
       }
     }
     return false;
