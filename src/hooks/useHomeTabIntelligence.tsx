@@ -456,7 +456,7 @@ export const useHomeTabIntelligence = (
     }
 
     return suggestions;
-  }, [activities, currentActivity, onAddActivity]);
+  }, [activities, currentActivity, onAddActivity, nightSleepStartHour]);
 
   // Calculate today's pulse deviations with intelligent analysis
   const todaysPulse = useMemo((): { deviations: DeviationData[]; biggestDeviation?: any } => {
