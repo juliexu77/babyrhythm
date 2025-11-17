@@ -437,8 +437,11 @@ export const ScheduleTimeline = ({
                   <button
                     onClick={() => {
                       // Toggle to lower nap schedule
-                      const shouldShowAlternate = lowerCount !== transitionNapCounts.current;
-                      onToggleAlternate?.(shouldShowAlternate);
+                      // If already showing lower count, don't change
+                      // Otherwise, toggle showAlternate to switch schedules
+                      if (currentDisplayedNaps !== lowerCount) {
+                        onToggleAlternate?.(!showAlternate);
+                      }
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all border-r border-border ${
                       isShowingLowerNapSchedule
@@ -451,8 +454,11 @@ export const ScheduleTimeline = ({
                   <button
                     onClick={() => {
                       // Toggle to higher nap schedule
-                      const shouldShowAlternate = higherCount !== transitionNapCounts.current;
-                      onToggleAlternate?.(shouldShowAlternate);
+                      // If already showing higher count, don't change
+                      // Otherwise, toggle showAlternate to switch schedules
+                      if (currentDisplayedNaps !== higherCount) {
+                        onToggleAlternate?.(!showAlternate);
+                      }
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all ${
                       !isShowingLowerNapSchedule
