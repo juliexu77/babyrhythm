@@ -30,14 +30,8 @@ export const getActivityEventDate = (activity: Activity): Date => {
   const loggedAt = activity.loggedAt || activity.logged_at;
   if (loggedAt) {
     const loggedDate = new Date(loggedAt);
-    
-    // If we have an offset, adjust the date
-    if (activity.details?.offset_minutes) {
-      const offsetMs = activity.details.offset_minutes * 60 * 1000;
-      return new Date(loggedDate.getTime() + offsetMs);
-    }
-    
-    // No offset, just use logged_at
+    // logged_at is stored in UTC; JS Date will present local components automatically.
+    // Do NOT apply offset_minutes here to avoid double-shifting time.
     return loggedDate;
   }
   
@@ -55,7 +49,11 @@ export const getActivityEventDateString = (activity: Activity): string => {
   }
   
   const date = getActivityEventDate(activity);
-  return date.toISOString().split('T')[0];
+  // Format using LOCAL date components to avoid UTC day shifts
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 /**

@@ -107,25 +107,48 @@ function wasLoggedToday(
   nightSleepEndHour: number = 7
 ): boolean {
   const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
+  const parseToMinutes = (timeStr: string): number | null => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return null;
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const period = match[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
   
   return activities.some(a => {
     if (a.type !== type) return false;
     
-    // CRITICAL: Check if the ACTIVITY's event date is today (not when it was logged)
-    // Use the activityDate utility which prioritizes date_local, then offset-adjusted logged_at
+    if (subType === 'morning-wake') {
+      // Treat "today" based on the WAKE (end) date, not the start date.
+      if (!(isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && !!(a.details as any)?.endTime)) return false;
+      const startDayKey = getActivityEventDateString(a);
+      const startStr = (a.details as any)?.startTime || (a.details as any)?.time_local;
+      const endStr = (a.details as any)?.endTime as string | undefined;
+      if (!startStr || !endStr) return false;
+      const startMins = parseToMinutes(startStr);
+      const endMins = parseToMinutes(endStr);
+      if (startMins == null || endMins == null) return false;
+      // Compute end date key
+      const [y, m, d] = startDayKey.split('-').map(Number);
+      const endDate = new Date(y, m - 1, d);
+      if (endMins < startMins) {
+        endDate.setDate(endDate.getDate() + 1);
+      }
+      const endKey = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+      return endKey === todayKey;
+    }
+    
+    // For other subtypes, compare using the ACTIVITY's event (start) date
     if (!isActivityOnDate(a, today)) return false;
     
-    // Check subtype using existing napClassification utilities
     if (subType === 'bedtime') {
-      // Check if any night sleep STARTED today (regardless of endTime)
       return isNightSleep(a, nightSleepStartHour, nightSleepEndHour);
-    } else if (subType === 'morning-wake') {
-      // Check if there's a completed night sleep today (has endTime)
-      return a.type === 'nap' && 
-             isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
-             !!a.details?.endTime;
     } else if (subType === 'first-nap') {
-      // Check if this is a daytime nap
       return isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour);
     }
     
