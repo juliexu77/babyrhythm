@@ -77,6 +77,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
   // Missed activity detection
+  console.log('🏠 HomeTab: Calling useMissedActivityDetection with:', {
+    activitiesCount: activities.length,
+    babyName,
+    nightSleepStartHour,
+    nightSleepEndHour,
+    householdId: household?.id
+  });
   const missedActivitySuggestion = useMissedActivityDetection(
     activities, 
     babyName,
@@ -84,6 +91,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     nightSleepEndHour,
     household?.id
   );
+  console.log('🏠 HomeTab: missedActivitySuggestion result:', missedActivitySuggestion);
   
 
   // Track visited tabs for progressive disclosure
@@ -1324,34 +1332,40 @@ const lastDiaper = displayActivities
         )}
 
         {/* Missed Activity Prompt - Show above Right Now card */}
-        {missedActivitySuggestion && (
-          <div className="px-4 mb-4">
-            <MissedActivityPrompt
-              suggestion={missedActivitySuggestion}
-              onAccept={async () => {
-                const { activityType, subType, suggestedTime } = missedActivitySuggestion;
-                
-                if (subType === 'morning-wake') {
-                  // For morning wake, end the ongoing night sleep
-                  if (ongoingNap) {
-                    onEndNap?.();
+        {(() => {
+          console.log('🎨 Rendering missed activity prompt check:', {
+            hasSuggestion: !!missedActivitySuggestion,
+            suggestion: missedActivitySuggestion
+          });
+          return missedActivitySuggestion ? (
+            <div className="px-4 mb-4">
+              <MissedActivityPrompt
+                suggestion={missedActivitySuggestion}
+                onAccept={async () => {
+                  const { activityType, subType, suggestedTime } = missedActivitySuggestion;
+                  
+                  if (subType === 'morning-wake') {
+                    // For morning wake, end the ongoing night sleep
+                    if (ongoingNap) {
+                      onEndNap?.();
+                    }
+                  } else {
+                    // For other activities, add them with suggested time
+                    await addActivity?.(activityType, { time: suggestedTime }, new Date(), suggestedTime);
                   }
-                } else {
-                  // For other activities, add them with suggested time
-                  await addActivity?.(activityType, { time: suggestedTime }, new Date(), suggestedTime);
-                }
-                
-                toast({
-                  title: "Activity logged",
-                  description: `${subType === 'morning-wake' ? 'Morning wake' : activityType} recorded at ${suggestedTime}`,
-                });
-              }}
-              onDismiss={() => {
-                // Dismissed - hook handles localStorage
-              }}
-            />
-          </div>
-        )}
+                  
+                  toast({
+                    title: "Activity logged",
+                    description: `${subType === 'morning-wake' ? 'Morning wake' : activityType} recorded at ${suggestedTime}`,
+                  });
+                }}
+                onDismiss={() => {
+                  // Dismissed - hook handles localStorage
+                }}
+              />
+            </div>
+          ) : null;
+        })()}
 
         {/* Zone 1: Right Now Status */}
         <RightNowStatus
