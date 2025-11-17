@@ -803,6 +803,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     enabled: remindersEnabled && hasTier3Data && !!adaptiveSchedule
   });
 
+  // Missed activity detection for prompts
+  const missedActivitySuggestion = useMissedActivityDetection(
+    activities,
+    household?.baby_name,
+    nightSleepStartHour,
+    nightSleepEndHour,
+    household?.id
+  );
+
   // Sync reminder state with localStorage
   useEffect(() => {
     const handleStorageChange = () => {
