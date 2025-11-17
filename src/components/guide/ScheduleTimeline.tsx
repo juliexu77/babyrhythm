@@ -436,12 +436,12 @@ export const ScheduleTimeline = ({
                 <>
                   <button
                     onClick={() => {
-                      // Check which schedule we're currently showing
-                      // We want to show the LOWER nap schedule
-                      // If the display schedule (not alternate) has lower naps, show it (showAlternate=false)
-                      // Otherwise show alternate (showAlternate=true)
-                      const displayHasLowerNaps = transitionNapCounts.current === lowerCount;
-                      onToggleAlternate?.(!displayHasLowerNaps);
+                      // Toggle to lower nap schedule
+                      // If already showing lower count, don't change
+                      // Otherwise, toggle showAlternate to switch schedules
+                      if (currentDisplayedNaps !== lowerCount) {
+                        onToggleAlternate?.(!showAlternate);
+                      }
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all border-r border-border ${
                       isShowingLowerNapSchedule
@@ -453,12 +453,12 @@ export const ScheduleTimeline = ({
                   </button>
                   <button
                     onClick={() => {
-                      // Check which schedule we're currently showing
-                      // We want to show the HIGHER nap schedule
-                      // If the display schedule (not alternate) has higher naps, show it (showAlternate=false)
-                      // Otherwise show alternate (showAlternate=true)
-                      const displayHasHigherNaps = transitionNapCounts.current === higherCount;
-                      onToggleAlternate?.(!displayHasHigherNaps);
+                      // Toggle to higher nap schedule
+                      // If already showing higher count, don't change
+                      // Otherwise, toggle showAlternate to switch schedules
+                      if (currentDisplayedNaps !== higherCount) {
+                        onToggleAlternate?.(!showAlternate);
+                      }
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all ${
                       !isShowingLowerNapSchedule

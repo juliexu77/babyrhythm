@@ -443,8 +443,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         activities.length, // Pass total activities count for "basedOn" text
         false, // forceShowAllNaps
         nightSleepStartHour,
-        nightSleepEndHour,
-        userTimezone
+        nightSleepEndHour
       );
       return schedule;
     } catch (error) {
@@ -781,14 +780,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         undefined, // totalActivitiesCount
         true, // forceShowAllNaps - user explicitly selected this nap count
         nightSleepStartHour,
-        nightSleepEndHour,
-        userTimezone
+        nightSleepEndHour
       );
       return result;
     } catch (error) {
       return null;
     }
-  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, activities, userTimezone, nightSleepStartHour, nightSleepEndHour]);
+  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, activities, userTimezone]);
   
   // Use alternate schedule when toggled during transitions
   const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 

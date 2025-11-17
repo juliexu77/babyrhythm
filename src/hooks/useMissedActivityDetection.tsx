@@ -145,8 +145,9 @@ function analyzePattern(
   
   // Filter using napClassification utilities for subtypes
   if (subType === 'bedtime') {
+    // For bedtime pattern, include all historical night sleeps (start times)
     relevantActivities = relevantActivities.filter(a => 
-      isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && !a.details?.endTime
+      isNightSleep(a, nightSleepStartHour, nightSleepEndHour)
     );
   } else if (subType === 'morning-wake') {
     // Get wake times from completed night sleeps
