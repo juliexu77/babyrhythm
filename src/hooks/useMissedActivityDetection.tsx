@@ -114,7 +114,8 @@ function wasLoggedToday(
     
     // Check subtype using existing napClassification utilities
     if (subType === 'bedtime') {
-      return isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && !a.details?.endTime;
+      // Check if any night sleep STARTED today (regardless of endTime)
+      return isNightSleep(a, nightSleepStartHour, nightSleepEndHour);
     } else if (subType === 'morning-wake') {
       // Check if there's a completed night sleep today (has endTime)
       return a.type === 'nap' && 
