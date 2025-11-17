@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { Activity } from "@/components/ActivityCard";
-import { differenceInMinutes, parseISO, startOfDay, format } from "date-fns";
+import { format } from "date-fns";
 import { isNightSleep, isDaytimeNap, parseTimeToHour } from "@/utils/napClassification";
-import { isActivityOnDate, getActivityEventDateString } from "@/utils/activityDate";
+import { isActivityOnDate, getActivityEventDateString, getActivityEventDate } from "@/utils/activityDate";
 
 export interface MissedActivitySuggestion {
   activityType: 'nap' | 'feed';
@@ -85,12 +85,15 @@ function minutesToTime(minutes: number): string {
   return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
 }
 
-// Get activities from the last N days
+// Get activities from the last N days (based on actual event date, not when logged)
 function getRecentActivities(activities: Activity[], days: number): Activity[] {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
+  cutoff.setHours(0, 0, 0, 0); // Start of day
+  
   return activities.filter(a => {
-    const activityDate = parseISO(a.loggedAt);
+    const activityDate = getActivityEventDate(a);
+    activityDate.setHours(0, 0, 0, 0); // Normalize to start of day for comparison
     return activityDate >= cutoff;
   });
 }
