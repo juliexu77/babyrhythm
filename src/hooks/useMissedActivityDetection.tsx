@@ -461,6 +461,40 @@ export function useMissedActivityDetection(
       
       console.log(`    Pattern found: ${!!pattern}, occurrences: ${pattern?.occurrenceCount}`);
       
+      // If no historical pattern for bedtime, fall back to user-configured nightSleepStartHour
+      if (!pattern && patternConfig.subType === 'bedtime') {
+        const fallbackMedian = nightSleepStartHour * 60; // e.g., 7:00 PM => 1140
+        const fallbackPattern: ActivityPattern = {
+          type: 'nap',
+          subType: 'bedtime',
+          times: [],
+          medianTime: fallbackMedian,
+          stdDev: 0,
+          occurrenceCount: 0,
+          gracePeriodMinutes: 90,
+        };
+        const shouldShowFallback = shouldShowSuggestion(fallbackPattern, currentMinutes);
+        console.log(`    Bedtime fallback check: shouldShow=${shouldShowFallback}, median=${fallbackMedian}, current=${currentMinutes}`);
+        if (shouldShowFallback) {
+          const dismissalKey = `missed-${householdId || 'household'}-nap-bedtime-${format(currentTime, 'yyyy-MM-dd')}`;
+          const isDismissed = localStorage.getItem(dismissalKey) === 'true';
+          console.log(`    Dismissed (fallback): ${isDismissed}, key: ${dismissalKey}`);
+          if (!isDismissed) {
+            const suggestedTime = minutesToTime(fallbackMedian);
+            return {
+              activityType: 'nap',
+              subType: 'bedtime',
+              suggestedTime,
+              medianTimeMinutes: fallbackMedian,
+              confidence: 0.9,
+              message: patternConfig.message(suggestedTime),
+            };
+          }
+        }
+        // No fallback suggestion to show
+        continue;
+      }
+      
       if (!pattern) continue;
       
       // Calculate confidence
