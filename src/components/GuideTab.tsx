@@ -21,6 +21,8 @@ import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generateAdaptiveSchedule, type AdaptiveSchedule, type AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
+import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
+import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
@@ -1407,6 +1409,25 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   prediction={aiPrediction}
                   loading={aiPredictionLoading}
                 />
+              )}
+              
+              {/* Missed Activity Prompt */}
+              {missedActivitySuggestion && (
+                <div className="px-2 mb-4">
+                  <MissedActivityPrompt
+                    suggestion={missedActivitySuggestion}
+                    onAccept={async () => {
+                      // Navigate to Home tab to handle the missed activity
+                      const homeTab = document.querySelector('[data-tab="home"]') as HTMLElement;
+                      if (homeTab) {
+                        homeTab.click();
+                      }
+                    }}
+                    onDismiss={() => {
+                      // Dismiss handled by the hook's localStorage tracking
+                    }}
+                  />
+                </div>
               )}
               
               {displaySchedule && (
