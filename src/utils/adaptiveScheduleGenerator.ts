@@ -1,6 +1,8 @@
 import { BabyCarePredictionEngine, type NextActionResult } from "./predictionEngine";
 import { Activity } from "@/components/ActivityCard";
 import { isNightSleep, isDaytimeNap } from "./napClassification";
+import { getActivityEventDateString } from './activityDate';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export interface ScheduleEvent {
   time: string;
@@ -54,9 +56,10 @@ export function generateAdaptiveSchedule(
   });
   
   const events: ScheduleEvent[] = [];
+  const now = new Date();
   
   // Get today's date in user's local timezone (not UTC!)
-  const todayLocal = formatInTimeZone(new Date(), timezone, 'yyyy-MM-dd');
+  const todayLocal = formatInTimeZone(now, timezone, 'yyyy-MM-dd');
   const yesterdayDate = new Date(todayLocal);
   yesterdayDate.setDate(yesterdayDate.getDate() - 1);
   const yesterdayLocal = formatInTimeZone(yesterdayDate, timezone, 'yyyy-MM-dd');
@@ -64,7 +67,8 @@ export function generateAdaptiveSchedule(
   console.log('📅 Date context:', {
     todayLocal,
     yesterdayLocal,
-    timezone
+    timezone,
+    serverUTC: now.toISOString()
   });
   
   // Filter activities by their LOCAL date (using date_local field)
