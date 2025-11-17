@@ -706,7 +706,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                     <div className="w-full h-1 bg-muted/20 rounded-full" />
                   ) : (
                     <button
-                      className="bg-gradient-nap rounded-xl w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
+                      className="bg-gradient-feed rounded-xl w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
                       style={{ height: `${(day.value / maxNapValue) * 100}%`, minHeight: '40px' }}
                       onClick={() => setSelectedDetail(selectedDetail === `nap-${index}` ? null : `nap-${index}`)}
                     >
