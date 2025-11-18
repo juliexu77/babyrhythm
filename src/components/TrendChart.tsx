@@ -375,9 +375,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     avgNapsPerDay: prevWeekStats.avgNapsPerDay,
   };
   
-  // Calculate percentage changes
+  // Calculate absolute changes
   const feedVolumeChange = prevFeedSummary.avgVolume > 0 
-    ? ((feedSummary.avgVolume - prevFeedSummary.avgVolume) / prevFeedSummary.avgVolume * 100)
+    ? (feedSummary.avgVolume - prevFeedSummary.avgVolume)
     : 0;
   
   const feedCountChange = prevFeedSummary.avgFeedsPerDay > 0
@@ -385,7 +385,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     : 0;
     
   const napDurationChange = prevNapSummary.avgDuration > 0
-    ? ((napSummary.avgDuration - prevNapSummary.avgDuration) / prevNapSummary.avgDuration * 100)
+    ? (napSummary.avgDuration - prevNapSummary.avgDuration)
     : 0;
   
   const napCountChange = prevNapSummary.avgNapsPerDay > 0
@@ -509,7 +509,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                     <TrendingDown className="w-3 h-3 text-secondary" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
-                    {feedVolumeChange > 0 ? '+' : ''}{feedVolumeChange.toFixed(1)}% vs last week
+                    {feedVolumeChange > 0 ? '+' : ''}{Math.round(feedVolumeChange)} {feedUnit} vs last week
                   </p>
                 </div>
               )}
@@ -643,7 +643,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                     <TrendingDown className="w-3 h-3 text-secondary" />
                   ) : null}
                   <p className="text-xs text-muted-foreground">
-                    {napDurationChange > 0 ? '+' : ''}{napDurationChange.toFixed(1)}% vs last week
+                    {napDurationChange > 0 ? '+' : ''}{napDurationChange.toFixed(1)}h vs last week
                   </p>
                 </div>
               )}
