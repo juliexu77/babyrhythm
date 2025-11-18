@@ -501,10 +501,11 @@ export function useMissedActivityDetection(
       
       // Calculate confidence
       const confidence = calculateConfidence(pattern);
-      console.log(`  🎯 Confidence: ${confidence.toFixed(2)} (need >= 0.70)`);
+      const requiredConfidence = (pattern.type === 'nap' && pattern.subType === 'bedtime') ? 0.55 : 0.7;
+      console.log(`  🎯 Confidence: ${confidence.toFixed(2)} (need >= ${requiredConfidence.toFixed(2)})`);
       
       // Only show high confidence suggestions
-      if (confidence < 0.7) {
+      if (confidence < requiredConfidence) {
         console.log(`  ❌ Confidence too low`);
         continue;
       }
