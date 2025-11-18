@@ -264,11 +264,11 @@
     --cta-shadow: 0 0 18px rgba(185, 159, 178, 0.4);
     
     /* Activity colors - muted for dusk */
-    --feed-color: 320 13% 58%;
-    --diaper-color: 320 12% 61%;
-    --nap-color: 320 12% 61%;
+    --feed-color: 320 25% 68%;
+    --diaper-color: 320 25% 68%;
+    --nap-color: 320 25% 68%;
     --note-color: 28 12% 70%;
-    --chat-color: 320 13% 58%;
+    --chat-color: 320 25% 68%;
     
     /* Gradients - subtle for dusk */
     --gradient-primary: linear-gradient(180deg, #6E646D 0%, #5D565E 100%);
