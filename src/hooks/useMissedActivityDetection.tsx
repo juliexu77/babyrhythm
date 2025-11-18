@@ -351,6 +351,8 @@ export function useMissedActivityDetection(
     
     // Check each pattern
     for (const patternConfig of patternsToCheck) {
+      console.log(`\n🔍 Checking pattern: ${patternConfig.type} ${patternConfig.subType || ''}`);
+      
       // Special handling for morning-wake: Check if there's an ongoing night sleep
       if (patternConfig.subType === 'morning-wake') {
         console.log('  🌅 Checking morning-wake...');
@@ -465,9 +467,10 @@ export function useMissedActivityDetection(
       
       // Skip if already logged today
       const alreadyLogged = wasLoggedToday(activities, patternConfig.type, patternConfig.subType, nightSleepStartHour, nightSleepEndHour);
-      console.log(`  Checking ${patternConfig.type} ${patternConfig.subType || ''}: alreadyLogged=${alreadyLogged}`);
+      console.log(`  ✅ Already logged today: ${alreadyLogged}`);
       
       if (alreadyLogged) {
+        console.log(`  ❌ Skipping because already logged`);
         continue;
       }
       
@@ -482,29 +485,56 @@ export function useMissedActivityDetection(
         nightSleepEndHour
       );
       
-      console.log(`    Pattern found: ${!!pattern}, occurrences: ${pattern?.occurrenceCount}`);
+      console.log(`  📊 Pattern analysis:`, {
+        found: !!pattern,
+        occurrences: pattern?.occurrenceCount,
+        medianTime: pattern ? minutesToTime(pattern.medianTime) : 'N/A',
+        medianMinutes: pattern?.medianTime,
+        stdDev: pattern?.stdDev,
+        gracePeriod: pattern?.gracePeriodMinutes
+      });
       
-      if (!pattern) continue;
+      if (!pattern) {
+        console.log(`  ❌ No pattern found (need at least 3 historical occurrences)`);
+        continue;
+      }
       
       // Calculate confidence
       const confidence = calculateConfidence(pattern);
-      console.log(`    Confidence: ${confidence}`);
+      console.log(`  🎯 Confidence: ${confidence.toFixed(2)} (need >= 0.70)`);
       
       // Only show high confidence suggestions
-      if (confidence < 0.7) continue;
+      if (confidence < 0.7) {
+        console.log(`  ❌ Confidence too low`);
+        continue;
+      }
       
       // Check if enough time has passed
       const shouldShow = shouldShowSuggestion(pattern, currentMinutes);
-      console.log(`    Should show (time check): ${shouldShow}, median: ${pattern.medianTime}, current: ${currentMinutes}`);
+      const timeSinceMedian = currentMinutes - pattern.medianTime;
+      console.log(`  ⏰ Time check:`, {
+        medianTime: minutesToTime(pattern.medianTime),
+        currentTime: minutesToTime(currentMinutes),
+        minutesSinceMedian: timeSinceMedian,
+        gracePeriod: pattern.gracePeriodMinutes,
+        shouldShow,
+        calculation: `${timeSinceMedian} >= ${pattern.gracePeriodMinutes} = ${timeSinceMedian >= pattern.gracePeriodMinutes}`
+      });
       
-      if (!shouldShow) continue;
+      if (!shouldShow) {
+        console.log(`  ❌ Not enough time passed since median`);
+        continue;
+      }
       
       // Check localStorage for dismissals
       const dismissalKey = `missed-${householdId || 'household'}-${pattern.type}-${pattern.subType || 'default'}-${format(currentTime, 'yyyy-MM-dd')}`;
       const isDismissed = localStorage.getItem(dismissalKey) === 'true';
-      console.log(`    Dismissed: ${isDismissed}, key: ${dismissalKey}`);
+      console.log(`  🚫 Dismissal check:`, { key: dismissalKey, dismissed: isDismissed });
       
-      if (isDismissed) continue;
+      if (isDismissed) {
+        console.log(`  ❌ Skipping because dismissed today`);
+        continue;
+      }
       
       // Found a valid suggestion!
       const suggestion = {
@@ -515,11 +545,11 @@ export function useMissedActivityDetection(
         confidence,
         message: patternConfig.message(minutesToTime(pattern.medianTime))
       };
-      console.log('✅ Returning suggestion:', suggestion);
+      console.log('✅✅✅ RETURNING SUGGESTION:', suggestion);
       return suggestion;
     }
     
-    console.log('No suggestion found - end of detection');
+    console.log('❌ NO SUGGESTIONS FOUND - All patterns checked, none triggered');
     return null;
   }, [activities, babyName, nightSleepStartHour, nightSleepEndHour, householdId]);
 }
