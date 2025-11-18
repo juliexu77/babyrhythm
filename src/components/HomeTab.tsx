@@ -1345,19 +1345,43 @@ const lastDiaper = displayActivities
                   const { activityType, subType, suggestedTime } = missedActivitySuggestion;
                   
                   if (subType === 'morning-wake') {
-                    // For morning wake, end the ongoing night sleep
-                    if (ongoingNap) {
-                      onEndNap?.();
+                    // For morning wake, end the ongoing night sleep with the suggested time
+                    if (ongoingNap && addActivity) {
+                      try {
+                        const { supabase } = await import('@/integrations/supabase/client');
+                        
+                        const { error } = await supabase
+                          .from('activities')
+                          .update({ details: { ...ongoingNap.details, endTime: suggestedTime } })
+                          .eq('id', ongoingNap.id);
+                        
+                        if (error) throw error;
+                        
+                        // Force a refetch by triggering activity list refresh
+                        window.dispatchEvent(new CustomEvent('refetch-activities'));
+                        
+                        toast({
+                          title: "Morning wake logged",
+                          description: `Woke up at ${suggestedTime}`,
+                        });
+                      } catch (error) {
+                        console.error('Error ending sleep:', error);
+                        toast({
+                          title: "Error",
+                          description: "Could not log wake time",
+                          variant: "destructive"
+                        });
+                      }
                     }
                   } else {
                     // For other activities, add them with suggested time
                     await addActivity?.(activityType, { time: suggestedTime }, new Date(), suggestedTime);
+                    
+                    toast({
+                      title: "Activity logged",
+                      description: `${activityType} recorded at ${suggestedTime}`,
+                    });
                   }
-                  
-                  toast({
-                    title: "Activity logged",
-                    description: `${subType === 'morning-wake' ? 'Morning wake' : activityType} recorded at ${suggestedTime}`,
-                  });
                 }}
                 onDismiss={() => {
                   // Dismissed - hook handles localStorage
