@@ -1374,13 +1374,22 @@ const lastDiaper = displayActivities
                       }
                     }
                   } else {
-                    // For other activities, add them with suggested time
-                    await addActivity?.(activityType, { time: suggestedTime }, new Date(), suggestedTime);
-                    
-                    toast({
-                      title: "Activity logged",
-                      description: `${activityType} recorded at ${suggestedTime}`,
-                    });
+                    // For other activities, add them with suggested time but ensure correct fields
+                    if (activityType === 'nap') {
+                      // Bedtime/first-nap: create nap with startTime set to the suggested time
+                      await addActivity?.('nap', { startTime: suggestedTime }, new Date(), suggestedTime);
+                      toast({
+                        title: "Nap started",
+                        description: `Start time set to ${suggestedTime}`,
+                      });
+                    } else {
+                      // Feeds and others: rely on server to set logged_at from suggestedTime
+                      await addActivity?.(activityType, {}, new Date(), suggestedTime);
+                      toast({
+                        title: "Activity logged",
+                        description: `${activityType} recorded at ${suggestedTime}`,
+                      });
+                    }
                   }
                 }}
                 onDismiss={() => {
