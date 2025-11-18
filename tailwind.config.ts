@@ -313,6 +313,20 @@ export default {
             opacity: "1"
           }
         },
+        "suggestion-float-in": {
+          "0%": { 
+            opacity: "0",
+            transform: "translateY(4px)"
+          },
+          "100%": { 
+            opacity: "1",
+            transform: "translateY(0)"
+          }
+        },
+        "suggestion-shimmer": {
+          "0%, 100%": { opacity: "0.25" },
+          "50%": { opacity: "0.4" }
+        },
         "cta-pulse": {
           "0%, 100%": {
             opacity: "1"
@@ -348,6 +362,8 @@ export default {
         "story-closure-fade": "story-closure-fade 1s ease-out forwards",
         "story-dusk-overlay": "story-dusk-overlay 1s ease-out forwards",
         "cta-pulse": "cta-pulse 1.5s ease-in-out infinite",
+        "suggestion-float-in": "suggestion-float-in 90ms ease-out forwards",
+        "suggestion-shimmer": "suggestion-shimmer 2s ease-in-out infinite",
       },
     },
   },
