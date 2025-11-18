@@ -27,14 +27,14 @@ export const MissedActivityPrompt = ({
   };
 
   return (
-    <div className="relative mx-2 mb-4 rounded-xl overflow-hidden backdrop-blur-[6px] bg-background/60 shadow-[0_2px_12px_rgba(0,0,0,0.06)] animate-suggestion-float-in dark:bg-background/40 dusk:bg-background/50">
+    <div className="relative mb-4 rounded-xl overflow-hidden backdrop-blur-[4px] bg-background/50 shadow-[0_1px_8px_rgba(0,0,0,0.04)] animate-suggestion-float-in dark:bg-background/35 dusk:bg-background/40">
       {/* Left accent bar with shimmer */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/25 animate-suggestion-shimmer dark:bg-primary/20 dusk:bg-primary/22" />
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary/20 animate-suggestion-shimmer dark:bg-primary/15 dusk:bg-primary/18" />
       
       {/* Rose-mauve tint overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-primary/5 to-transparent dark:from-primary/6 dark:via-primary/4 dusk:from-primary/7 dusk:via-primary/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-primary/3 to-transparent dark:from-primary/4 dark:via-primary/2 dusk:from-primary/5 dusk:via-primary/3" />
       
-      <div className="relative px-4 py-5">
+      <div className="relative px-6 py-4">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 mt-0.5">
             <Clock className="h-5 w-5 text-primary/70" />
