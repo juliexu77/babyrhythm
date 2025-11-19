@@ -363,43 +363,38 @@ export const useHomeTabIntelligence = (
       });
     }
 
-    // Suggest feed if > 2.5 hours since last feed
+    // Suggest feed - but only if prediction engine agrees it's within 30 minutes
     const feedActivities = activities.filter(a => a.type === 'feed' && a.loggedAt);
     
-    if (feedActivities.length > 0) {
-      // Sort by loggedAt timestamp (UTC stored in DB)
-      const sortedFeeds = [...feedActivities].sort((a, b) => {
-        const timeA = new Date(a.loggedAt!).getTime();
-        const timeB = new Date(b.loggedAt!).getTime();
-        return timeB - timeA; // Most recent first
-      });
+    if (feedActivities.length > 0 && nextPrediction) {
+      // Parse the countdown to check if feed is coming up soon
+      const countdownMatch = nextPrediction.countdown.match(/(\d+)h\s*(\d+)m/);
+      const countdownMinutes = countdownMatch 
+        ? parseInt(countdownMatch[1]) * 60 + parseInt(countdownMatch[2])
+        : 999;
       
-      const lastFeed = sortedFeeds[0];
+      // Only suggest if next prediction is a feed AND it's within 30 minutes
+      const isFeedPrediction = nextPrediction.activity.toLowerCase().includes('feed');
       
-      // Simply use loggedAt as-is - it's already in UTC and will be converted correctly
-      const lastFeedTime = new Date(lastFeed.loggedAt!);
-      const now = new Date();
-      const minutesSinceFeed = differenceInMinutes(now, lastFeedTime);
-      
-      console.log('🍼 Feed time calculation:', {
-        lastFeedId: lastFeed.id?.slice(0, 8),
-        lastFeedLoggedAt: lastFeed.loggedAt,
-        lastFeedParsed: lastFeedTime.toLocaleString(),
-        now: now.toLocaleString(),
-        minutesSinceFeed,
-        hours: Math.floor(minutesSinceFeed / 60),
-        mins: minutesSinceFeed % 60
-      });
-      
-      // Only suggest if more than 2.5 hours and less than 24 hours (sanity check)
-      if (minutesSinceFeed > 150 && minutesSinceFeed < 1440) {
+      if (isFeedPrediction && countdownMinutes <= 30) {
+        // Sort by loggedAt timestamp (UTC stored in DB)
+        const sortedFeeds = [...feedActivities].sort((a, b) => {
+          const timeA = new Date(a.loggedAt!).getTime();
+          const timeB = new Date(b.loggedAt!).getTime();
+          return timeB - timeA; // Most recent first
+        });
+        
+        const lastFeed = sortedFeeds[0];
+        const lastFeedTime = new Date(lastFeed.loggedAt!);
+        const now = new Date();
+        const minutesSinceFeed = differenceInMinutes(now, lastFeedTime);
         const hours = Math.floor(minutesSinceFeed / 60);
         const mins = minutesSinceFeed % 60;
         
         suggestions.push({
           id: 'feed-due',
           type: 'feed',
-          title: 'Feed due soon',
+          title: 'Feed time approaching',
           subtitle: `Last feed: ${hours}h ${mins}m ago`,
           priority: 90,
           icon: <Milk className="w-4 h-4 text-primary" />,
@@ -409,7 +404,7 @@ export const useHomeTabIntelligence = (
     }
 
     return suggestions;
-  }, [activities, currentActivity, onAddActivity]);
+  }, [activities, currentActivity, nextPrediction, onAddActivity]);
 
   // Calculate today's pulse deviations with intelligent analysis
   const todaysPulse = useMemo((): { deviations: DeviationData[]; biggestDeviation?: any } => {
