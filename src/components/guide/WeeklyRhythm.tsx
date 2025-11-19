@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, subDays, startOfDay } from "date-fns";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
 
 interface NapData {
   date: string;
-  naps: { startMinutes: number; durationMinutes: number }[];
+  naps: { startMinutes: number; durationMinutes: number; startTime: string; endTime: string }[];
 }
 
 interface WeeklyRhythmProps {
@@ -17,6 +18,7 @@ interface WeeklyRhythmProps {
 
 export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [selectedNap, setSelectedNap] = useState<{ startTime: string; endTime: string } | null>(null);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   // Get last 7 days of nap data
@@ -73,7 +75,12 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
           let durationMinutes = endTimeMinutes - startMinutes;
           if (durationMinutes < 0) durationMinutes += 24 * 60;
           
-          return { startMinutes, durationMinutes };
+          return { 
+            startMinutes, 
+            durationMinutes,
+            startTime: a.details.startTime,
+            endTime: a.details.endTime
+          };
         })
         .sort((a, b) => a.startMinutes - b.startMinutes);
 
@@ -160,21 +167,32 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
                         day.naps.map((nap, idx) => {
                           const leftPos = getPositionPercent(nap.startMinutes);
                           const width = getWidthPercent(nap.durationMinutes);
-                          const startHour = Math.floor(nap.startMinutes / 60);
-                          const startMin = nap.startMinutes % 60;
-                          const timeLabel = `${startHour % 12 || 12}:${startMin.toString().padStart(2, '0')}${startHour >= 12 ? 'pm' : 'am'}`;
                           
                           return (
-                            <div
-                              key={idx}
-                              className="absolute h-full bg-primary/80 rounded-full transition-all"
-                              style={{ 
-                                left: `${leftPos}%`, 
-                                width: `${width}%`,
-                                minWidth: '8px'
-                              }}
-                              title={`${timeLabel} • ${Math.round(nap.durationMinutes)} min`}
-                            />
+                            <Popover key={idx}>
+                              <PopoverTrigger asChild>
+                                <div
+                                  className="absolute h-full bg-primary/80 rounded-full transition-all cursor-pointer hover:bg-primary"
+                                  style={{ 
+                                    left: `${leftPos}%`, 
+                                    width: `${width}%`,
+                                    minWidth: '8px'
+                                  }}
+                                  onClick={() => setSelectedNap({ startTime: nap.startTime, endTime: nap.endTime })}
+                                />
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-3">
+                                <div className="text-sm">
+                                  <div className="font-medium text-foreground mb-1">Nap Time</div>
+                                  <div className="text-muted-foreground">
+                                    {nap.startTime} - {nap.endTime}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground/70 mt-1">
+                                    {Math.round(nap.durationMinutes)} minutes
+                                  </div>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           );
                         })
                       ) : (
