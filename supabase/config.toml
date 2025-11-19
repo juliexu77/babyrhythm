@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.clear-todays-schedule-caches]
 verify_jwt = false
+
+[functions.generate-rhythm-subtitle]
+verify_jwt = true
