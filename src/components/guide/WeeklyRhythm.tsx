@@ -26,18 +26,47 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
       const date = subDays(today, i);
       const dateStr = format(date, 'yyyy-MM-dd');
       
-      // Filter naps for this day
+      // Filter naps for this day using actual nap start time
       const dayNaps = activities
         .filter(a => {
-          if (a.type !== 'nap') return false;
-          const activityDate = format(new Date(a.logged_at), 'yyyy-MM-dd');
-          return activityDate === dateStr && a.details?.endTime;
+          if (a.type !== 'nap' || !a.details?.startTime || !a.details?.endTime) return false;
+          
+          // Parse the start time to get the date
+          // startTime format is like "7:30 AM" - we need to combine with logged_at date
+          const loggedDate = new Date(a.logged_at);
+          const [time, period] = a.details.startTime.split(' ');
+          const [hours, minutes] = time.split(':').map(Number);
+          let hour24 = hours;
+          if (period === 'PM' && hours !== 12) hour24 += 12;
+          if (period === 'AM' && hours === 12) hour24 = 0;
+          
+          const napStartDate = new Date(loggedDate);
+          napStartDate.setHours(hour24, minutes, 0, 0);
+          
+          const napDateStr = format(napStartDate, 'yyyy-MM-dd');
+          return napDateStr === dateStr;
         })
         .map(a => {
-          const start = new Date(a.logged_at);
-          const end = new Date(a.details.endTime);
-          const startMinutes = start.getHours() * 60 + start.getMinutes();
-          const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+          // Parse actual start time for positioning
+          const [time, period] = a.details.startTime.split(' ');
+          const [hours, minutes] = time.split(':').map(Number);
+          let hour24 = hours;
+          if (period === 'PM' && hours !== 12) hour24 += 12;
+          if (period === 'AM' && hours === 12) hour24 = 0;
+          const startMinutes = hour24 * 60 + minutes;
+          
+          // Parse end time for duration
+          const [endTime, endPeriod] = a.details.endTime.split(' ');
+          const [endHours, endMinutes] = endTime.split(':').map(Number);
+          let endHour24 = endHours;
+          if (endPeriod === 'PM' && endHours !== 12) endHour24 += 12;
+          if (endPeriod === 'AM' && endHours === 12) endHour24 = 0;
+          const endTimeMinutes = endHour24 * 60 + endMinutes;
+          
+          // Calculate duration (handle overnight naps)
+          let durationMinutes = endTimeMinutes - startMinutes;
+          if (durationMinutes < 0) durationMinutes += 24 * 60;
+          
           return { startMinutes, durationMinutes };
         })
         .sort((a, b) => a.startMinutes - b.startMinutes);
