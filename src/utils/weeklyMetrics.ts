@@ -38,7 +38,14 @@ export const calculateWeeklyMetrics = (
     const weekActivities = activities.filter(a => {
       const dateStr = a.loggedAt || a.time;
       const activityDate = parseISO(dateStr);
-      return isWithinInterval(activityDate, { start: weekStart, end: weekEnd });
+      // Exclude today - only include complete days
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const activityDay = new Date(activityDate);
+      activityDay.setHours(0, 0, 0, 0);
+      
+      return isWithinInterval(activityDate, { start: weekStart, end: weekEnd }) && 
+             activityDay < today;
     });
 
     // Calculate total sleep (both day and night) per day
@@ -57,9 +64,10 @@ export const calculateWeeklyMetrics = (
       totalSleepMinutes += duration;
     });
     
-    // Calculate average per day
-    const daysInWeek = 7;
-    totalSleepMinutes = totalSleepMinutes / daysInWeek;
+    // Calculate average per day (only complete days)
+    const completeDays = Math.max(1, Math.floor((now.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24)));
+    const actualDays = Math.min(completeDays, 7);
+    totalSleepMinutes = totalSleepMinutes / actualDays;
 
     // Count daytime naps per day
     const naps = weekActivities.filter(a => 
@@ -68,7 +76,7 @@ export const calculateWeeklyMetrics = (
       a.details?.startTime && 
       a.details?.endTime
     );
-    const napCount = naps.length / daysInWeek;
+    const napCount = naps.length / actualDays;
 
     // Calculate feed volume per day
     const feeds = weekActivities.filter(a => a.type === 'feed');
@@ -83,7 +91,7 @@ export const calculateWeeklyMetrics = (
         feedVolume += amount;
       }
     });
-    feedVolume = feedVolume / daysInWeek;
+    feedVolume = feedVolume / actualDays;
 
     // Calculate average wake windows (time between daytime naps)
     const dateMap = new Map<string, Activity[]>();
