@@ -455,7 +455,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const weeklyMetrics = calculateWeeklyMetrics(activities, nightSleepStartHour, nightSleepEndHour, 6);
 
   return (
-    <div className="space-y-4">
+    <div className="px-4 py-2.5 space-y-4">
       {/* Weekly Trends with Sparklines */}
       <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
         <div className="flex items-center justify-between pb-2 mb-4 border-b border-border/30">
@@ -467,65 +467,97 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         </div>
         
         <div className="space-y-4">
-          {/* Total Sleep */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Moon className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Total Sleep</span>
+          {weeklyMetrics.length > 0 ? (
+            <>
+              {/* Total Sleep */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">Total Sleep</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-foreground">
+                      {(weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes / 60).toFixed(1)}h/day
+                    </span>
+                    {weeklyMetrics.length > 1 && (
+                      <span className="text-xs text-muted-foreground">
+                        ({weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes > weeklyMetrics[weeklyMetrics.length - 2].totalSleepMinutes ? '↑' : '↓'}
+                        {Math.abs((weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes - weeklyMetrics[weeklyMetrics.length - 2].totalSleepMinutes) / 60).toFixed(1)}h)
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="w-full h-6">
+                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Total sleep')} />
+                </div>
               </div>
-            </div>
-            {weeklyMetrics.length > 0 && (
-              <div className="w-full h-6">
-                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Total sleep')} />
-              </div>
-            )}
-          </div>
 
-          {/* Naps */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Moon className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Naps</span>
+              {/* Naps */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">Naps</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-foreground">
+                      {weeklyMetrics[weeklyMetrics.length - 1].napCount.toFixed(1)}/day
+                    </span>
+                    {weeklyMetrics.length > 1 && (
+                      <span className="text-xs text-muted-foreground">
+                        ({weeklyMetrics[weeklyMetrics.length - 1].napCount > weeklyMetrics[weeklyMetrics.length - 2].napCount ? '↑' : '↓'}
+                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].napCount - weeklyMetrics[weeklyMetrics.length - 2].napCount).toFixed(1)})
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="w-full h-6">
+                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Naps')} />
+                </div>
               </div>
-            </div>
-            {weeklyMetrics.length > 0 && (
-              <div className="w-full h-6">
-                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Naps')} />
-              </div>
-            )}
-          </div>
 
-          {/* Feed Volume */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Milk className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Feed Volume</span>
+              {/* Feed Volume */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">Feed Volume</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-foreground">
+                      {Math.round(weeklyMetrics[weeklyMetrics.length - 1].feedVolume * 0.033814)} oz/day
+                    </span>
+                    {weeklyMetrics.length > 1 && (
+                      <span className="text-xs text-muted-foreground">
+                        ({weeklyMetrics[weeklyMetrics.length - 1].feedVolume > weeklyMetrics[weeklyMetrics.length - 2].feedVolume ? '↑' : '↓'}
+                        {Math.round(Math.abs(weeklyMetrics[weeklyMetrics.length - 1].feedVolume - weeklyMetrics[weeklyMetrics.length - 2].feedVolume) * 0.033814)}oz)
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="w-full h-6">
+                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Feed volume')} />
+                </div>
               </div>
-            </div>
-            {weeklyMetrics.length > 0 && (
-              <div className="w-full h-6">
-                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Feed volume')} />
-              </div>
-            )}
-          </div>
 
-          {/* Wake Average */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ActivityIcon className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Wake Average</span>
+              {/* Wake Average */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">Wake Average</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-foreground">
+                      {Math.floor(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg / 60)}h {weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg % 60}m
+                    </span>
+                    {weeklyMetrics.length > 1 && (
+                      <span className="text-xs text-muted-foreground">
+                        ({weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg > weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg ? '↑' : '↓'}
+                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg - weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg)}m)
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="w-full h-6">
+                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Wake average')} />
+                </div>
               </div>
-            </div>
-            {weeklyMetrics.length > 0 && (
-              <div className="w-full h-6">
-                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Wake average')} />
-              </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Not enough data yet. Log activities to see trends.
+            </p>
+          )}
         </div>
       </div>
 

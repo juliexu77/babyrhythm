@@ -698,11 +698,7 @@ const ongoingNap = (() => {
           percentile={percentile}
         />;
       case "trends":
-        return (
-          <div className="px-4 py-2.5 space-y-4">
-            <TrendChart activities={activities} />
-          </div>
-        );
+        return <TrendChart activities={activities} />;
       case "helper":
         return (
           <ErrorBoundary onRetry={() => setActiveTab("home")}>
