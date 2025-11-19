@@ -129,7 +129,18 @@ export function generateAdaptiveSchedule(
   // Check if baby woke up today - look for night sleep that STARTED yesterday and ended today
   const todayWakeActivity = recentActivities.find(a => {
     if (a.type === 'nap' && a.details?.startTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
-      const activityDateLocal = getActivityEventDateString(a);
+      // Get the activity's date in the user's timezone
+      let activityDateLocal: string;
+      if ((a.details as any)?.date_local) {
+        activityDateLocal = (a.details as any).date_local;
+      } else {
+        const loggedAt = (a as any).loggedAt || (a as any).logged_at;
+        if (loggedAt) {
+          activityDateLocal = formatInTimeZone(new Date(loggedAt), timezone, 'yyyy-MM-dd');
+        } else {
+          return false;
+        }
+      }
       
       // Check if night sleep started yesterday
       if (activityDateLocal === yesterdayLocal) {
