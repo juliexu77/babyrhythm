@@ -451,6 +451,24 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Week Insights - At the top */}
+      <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-primary/10 flex items-center justify-center">
+            <ActivityIcon className="w-4 h-4 text-primary" />
+          </div>
+          <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Week Insights</h3>
+        </div>
+        <p className="text-sm text-foreground/90 leading-relaxed">
+          {getSleepInterpretation()}
+        </p>
+      </div>
+
+      {/* Collective Pulse Section */}
+      <div>
+        <CollectivePulse babyBirthday={household?.baby_birthday} />
+      </div>
+
       {/* Context Bar - Sticky Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 -mx-4 px-4 py-3 mb-6">
         <div className="flex items-center justify-between max-w-3xl mx-auto">
@@ -679,23 +697,6 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           </div>
         </div>
 
-        {/* Week-over-week Insights */}
-        <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-primary/10 flex items-center justify-center">
-              <ActivityIcon className="w-4 h-4 text-primary" />
-            </div>
-            <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Week Insights</h3>
-          </div>
-          <p className="text-sm text-foreground/90 leading-relaxed">
-            {getSleepInterpretation()}
-          </p>
-        </div>
-      </div>
-
-      {/* Collective Pulse Section */}
-      <div className="mt-8">
-        <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
     </div>
   );
