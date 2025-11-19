@@ -21,7 +21,6 @@ import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generateAdaptiveSchedule, type AdaptiveSchedule, type AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
-import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
@@ -1393,20 +1392,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               babyName={babyName}
               babyAge={babyAgeInWeeks}
               activities={activities}
+              isTransitioning={transitionInfo?.isTransitioning}
             />
-          )}
-          
-          {/* Hero Insight Card - Only for Tier 3 */}
-          {!needsBirthdaySetup && hasTier3Data && (
-            <>
-              <HeroInsightCard 
-                insight={rhythmInsights?.heroInsight || ''}
-                confidence={rhythmInsights?.confidenceScore || 'High confidence'}
-                loading={rhythmInsightsLoading || !rhythmInsights}
-              />
-              
-              {/* Pattern Milestones Badges */}
-            </>
           )}
           
           {/* Tier 1 & 2: Simple confidence message + unlock progress */}
@@ -1503,7 +1490,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   whatToDo={hasTier3Data ? rhythmInsights?.whatToDo : undefined}
                   whatsNext={hasTier3Data ? rhythmInsights?.whatsNext : undefined}
                   prepTip={hasTier3Data ? rhythmInsights?.prepTip : undefined}
-                  whyThisMatters={hasTier3Data ? rhythmInsights?.whyThisMatters : undefined}
+                  whyThisMatters={hasTier3Data ? rhythmInsights?.heroInsight : undefined}
                   babyName={babyName}
                   loading={hasTier3Data && (rhythmInsightsLoading || !rhythmInsights)}
                 />
