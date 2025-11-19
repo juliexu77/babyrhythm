@@ -13,13 +13,13 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
   const { t } = useLanguage();
   
 const leftTabs = [
-    { id: "home", label: t('home'), icon: Home },
-    { id: "helper", label: t('guide'), icon: Activity },
+    { id: "home", label: "Home", icon: Home },
+    { id: "helper", label: "Rhythm", icon: Activity },
   ];
   
   const rightTabs = [
-    { id: "trends", label: t('trends'), icon: TrendingUp },
-    { id: "insights", label: t('log'), icon: List },
+    { id: "trends", label: "Trends", icon: TrendingUp },
+    { id: "insights", label: "Log", icon: List },
   ];
 
   return (

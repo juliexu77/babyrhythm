@@ -1260,11 +1260,11 @@ return (
             {/* Center - Tab name */}
             <div className="flex-1 flex justify-center">
               <h1 className="text-base font-sans font-bold text-foreground">
-                {activeTab === 'home' && t('home')}
-                {activeTab === 'helper' && t('guide')}
-                {activeTab === 'trends' && t('trends')}
-                {activeTab === 'insights' && t('log')}
-                {activeTab === 'settings' && t('settings')}
+                {activeTab === 'home' && 'Home'}
+                {activeTab === 'helper' && 'Rhythm'}
+                {activeTab === 'trends' && 'Trends'}
+                {activeTab === 'insights' && 'Log'}
+                {activeTab === 'settings' && 'Settings'}
               </h1>
             </div>
             
