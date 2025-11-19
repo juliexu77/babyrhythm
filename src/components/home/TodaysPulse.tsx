@@ -93,6 +93,12 @@ export const TodaysPulse = ({
     if (category === 'sleep' && isTransitioning) {
       return <Badge variant="default" className="text-xs">Transitioning</Badge>;
     }
+    
+    // More descriptive and less alarming badge for schedule deviations
+    if (category === 'schedule' && status === 'needs-attention') {
+      return <Badge variant="outline" className="text-xs border-amber-600/40 text-amber-600">Off rhythm</Badge>;
+    }
+    
     if (status === 'needs-attention') {
       return <Badge variant="destructive" className="text-xs">Needs attention</Badge>;
     }
@@ -118,7 +124,7 @@ export const TodaysPulse = ({
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            {needsAttention && (
+            {needsAttention && !deviations.every(d => d.category === 'schedule') && (
               <Badge variant="destructive" className="text-[10px] px-2 py-0 animate-pulse">
                 Review
               </Badge>
@@ -126,6 +132,11 @@ export const TodaysPulse = ({
             {hasDeviations && !needsAttention && (
               <Badge variant="default" className="text-[10px] px-2 py-0">
                 Update
+              </Badge>
+            )}
+            {needsAttention && deviations.every(d => d.category === 'schedule') && (
+              <Badge variant="outline" className="text-[10px] px-2 py-0 border-amber-600/40 text-amber-600">
+                Adjusting
               </Badge>
             )}
             {allNormalPace && (
