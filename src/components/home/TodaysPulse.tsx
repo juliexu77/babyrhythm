@@ -26,7 +26,13 @@ interface TodaysPulseProps {
   babyName: string;
   babyAge?: number;
   activities: any[];
-  isTransitioning?: boolean;
+  transitionInfo?: {
+    isTransitioning: boolean;
+    napCounts: {
+      current: number;
+      transitioning: number;
+    };
+  } | null;
 }
 
 export const TodaysPulse = ({
@@ -36,7 +42,7 @@ export const TodaysPulse = ({
   babyName,
   babyAge,
   activities,
-  isTransitioning
+  transitionInfo
 }: TodaysPulseProps) => {
   const [explanation, setExplanation] = useState<string>('');
   const [explanationLoading, setExplanationLoading] = useState(false);
@@ -90,8 +96,9 @@ export const TodaysPulse = ({
 
   const getStatusBadge = (status: DeviationData['status'], category?: string) => {
     // Show transitioning badge for sleep if nap transition is detected
-    if (category === 'sleep' && isTransitioning) {
-      return <Badge variant="default" className="text-xs">Transitioning</Badge>;
+    if (category === 'sleep' && transitionInfo?.isTransitioning && transitionInfo?.napCounts) {
+      const { current, transitioning } = transitionInfo.napCounts;
+      return <Badge variant="default" className="text-xs">Transitioning {current} &gt; {transitioning}</Badge>;
     }
     
     // More descriptive and less alarming badge for schedule deviations

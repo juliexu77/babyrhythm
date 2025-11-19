@@ -1392,7 +1392,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               babyName={babyName}
               babyAge={babyAgeInWeeks}
               activities={activities}
-              isTransitioning={transitionInfo?.isTransitioning}
+              transitionInfo={transitionInfo}
             />
           )}
           
