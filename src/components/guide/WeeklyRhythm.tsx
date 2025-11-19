@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, subDays, startOfDay } from "date-fns";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NapData {
   date: string;
@@ -19,6 +20,8 @@ interface WeeklyRhythmProps {
 export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const [selectedNap, setSelectedNap] = useState<{ startTime: string; endTime: string } | null>(null);
+  const [subtitle, setSubtitle] = useState<string>("");
+  const [subtitleLoading, setSubtitleLoading] = useState(false);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   // Get last 7 days of nap data
@@ -92,6 +95,31 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
 
   const weekData = getLast7DaysNaps();
 
+  // Generate AI subtitle when weekData changes
+  useEffect(() => {
+    const generateSubtitle = async () => {
+      if (weekData.length === 0) return;
+      
+      setSubtitleLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-rhythm-subtitle', {
+          body: { weekData, babyName }
+        });
+
+        if (error) throw error;
+        if (data?.subtitle) {
+          setSubtitle(data.subtitle);
+        }
+      } catch (error) {
+        console.error('Error generating rhythm subtitle:', error);
+      } finally {
+        setSubtitleLoading(false);
+      }
+    };
+
+    generateSubtitle();
+  }, [weekData.length, babyName]);
+
   // Timeline matches user's night sleep window (daytime window)
   const timelineStart = nightSleepEndHour * 60; // Night sleep end (e.g., 7am)
   const timelineEnd = nightSleepStartHour * 60; // Night sleep start (e.g., 7pm)
@@ -115,10 +143,18 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
         <div className="px-4 py-5 border-b border-border/30">
           <CollapsibleTrigger className="w-full" onClick={() => setIsOpen(!isOpen)}>
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                This Week&apos;s Rhythm
-              </h3>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <div className="flex-1 text-left">
+                <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                  This Week&apos;s Rhythm
+                </h3>
+                {subtitle && !subtitleLoading && (
+                  <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+                )}
+                {subtitleLoading && (
+                  <p className="text-sm text-muted-foreground/50 mt-1 italic">Analyzing patterns...</p>
+                )}
+              </div>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
             </div>
           </CollapsibleTrigger>
         </div>
