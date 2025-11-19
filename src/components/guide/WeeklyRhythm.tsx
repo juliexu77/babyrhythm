@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { format, subDays, startOfDay } from "date-fns";
-import { getDateKeyFromActivity } from "@/utils/activityDateFilters";
 
 interface NapData {
   date: string;
@@ -27,11 +26,11 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
       const date = subDays(today, i);
       const dateStr = format(date, 'yyyy-MM-dd');
       
-      // Filter naps for this day using timezone-aware date comparison
+      // Filter naps for this day
       const dayNaps = activities
         .filter(a => {
           if (a.type !== 'nap') return false;
-          const activityDate = getDateKeyFromActivity(a);
+          const activityDate = format(new Date(a.logged_at), 'yyyy-MM-dd');
           return activityDate === dateStr && a.details?.endTime;
         })
         .map(a => {
