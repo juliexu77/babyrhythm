@@ -1,4 +1,4 @@
-import { Lightbulb, CheckSquare, ArrowRight, Compass, ChevronDown } from "lucide-react";
+import { Lightbulb, CheckSquare, ArrowRight, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 
@@ -45,7 +45,7 @@ export const UnifiedInsightCard = ({
   }
 
   // If we have nothing to show, don't render
-  if (!whatToDo?.length && !whatsNext && !whyThisMatters) {
+  if (!whatToDo?.length && !whatsNext && !prepTip) {
     return null;
   }
 
@@ -58,7 +58,7 @@ export const UnifiedInsightCard = ({
       
       <div className="p-5 bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 rounded-xl border border-border/20 space-y-4 text-left">
         {/* What to Know - Collapsible with preview */}
-        {whyThisMatters && (() => {
+        {prepTip && (() => {
           const isExpanded = expandedSections.has('know');
           
           return (
@@ -75,7 +75,7 @@ export const UnifiedInsightCard = ({
                     </h4>
                     {!isExpanded && (
                       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-1 text-left">
-                        {whyThisMatters}
+                        {prepTip}
                       </p>
                     )}
                   </div>
@@ -84,7 +84,7 @@ export const UnifiedInsightCard = ({
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-2.5 pl-6 mt-3">
                 <p className="text-sm text-muted-foreground leading-relaxed text-left">
-                  {whyThisMatters}
+                  {prepTip}
                 </p>
               </CollapsibleContent>
             </Collapsible>
@@ -159,14 +159,6 @@ export const UnifiedInsightCard = ({
               <p className="text-sm text-muted-foreground leading-relaxed text-left">
                 {whatsNext}
               </p>
-              {prepTip && (
-                <div className="flex items-start gap-2.5 p-3 bg-accent/20 rounded-lg border border-border/40">
-                  <Compass className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-muted-foreground leading-relaxed text-left">
-                    <span className="font-medium text-foreground">Prep tip:</span> {prepTip}
-                  </p>
-                </div>
-              )}
             </CollapsibleContent>
           </Collapsible>
         );

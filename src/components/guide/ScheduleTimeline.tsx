@@ -384,31 +384,6 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Header */}
-      <div className="mb-3">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-            {babyName}&apos;s Predicted Schedule
-          </h3>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Based on {(() => {
-            // Extract activity count and days from basedOn string
-            const match = schedule.basedOn.match(/(\d+) activities over (\d+) days/);
-            if (match) {
-              return `${match[1]} activities over ${match[2]} days`;
-            }
-            // Fallback: try to extract just the numbers if format is different
-            const nums = schedule.basedOn.match(/\d+/g);
-            if (nums && nums.length >= 2) {
-              return `${nums[0]} activities over ${nums[1]} days`;
-            }
-            // Final fallback
-            return schedule.basedOn;
-          })()}
-        </p>
-      </div>
-      
       {/* Transition insight row - matching insights card style */}
       {transitionWindow && (
         <div className="flex items-center gap-2.5 px-5 py-2 bg-accent/30 rounded-3xl mb-3 border border-border">
