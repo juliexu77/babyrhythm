@@ -26,6 +26,7 @@ interface TodaysPulseProps {
   babyName: string;
   babyAge?: number;
   activities: any[];
+  isTransitioning?: boolean;
 }
 
 export const TodaysPulse = ({
@@ -34,7 +35,8 @@ export const TodaysPulse = ({
   onAdjustSchedule,
   babyName,
   babyAge,
-  activities
+  activities,
+  isTransitioning
 }: TodaysPulseProps) => {
   const [explanation, setExplanation] = useState<string>('');
   const [explanationLoading, setExplanationLoading] = useState(false);
@@ -86,7 +88,11 @@ export const TodaysPulse = ({
     fetchExplanation();
   }, [biggestDeviation?.description, babyName, babyAge, activities]);
 
-  const getStatusBadge = (status: DeviationData['status']) => {
+  const getStatusBadge = (status: DeviationData['status'], category?: string) => {
+    // Show transitioning badge for sleep if nap transition is detected
+    if (category === 'sleep' && isTransitioning) {
+      return <Badge variant="default" className="text-xs">Transitioning</Badge>;
+    }
     if (status === 'needs-attention') {
       return <Badge variant="destructive" className="text-xs">Needs attention</Badge>;
     }
@@ -154,7 +160,7 @@ export const TodaysPulse = ({
                       {deviation.title}
                     </span>
                   </div>
-                  {getStatusBadge(deviation.status)}
+                  {getStatusBadge(deviation.status, deviation.category)}
                 </div>
                 <p className="text-xs text-muted-foreground pl-7">
                   {deviation.details}
