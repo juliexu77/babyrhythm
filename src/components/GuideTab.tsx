@@ -28,6 +28,7 @@ import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 
 import { isNightSleep, isDaytimeNap } from "@/utils/napClassification";
+import { getActivityEventDateString } from "@/utils/activityDate";
 
 
 interface Activity {
@@ -260,9 +261,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }).reverse();
     
     const tones = last7Days.map(date => {
+      const targetDateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       const dayActivities = activities.filter(a => {
-        const activityDate = new Date(a.logged_at);
-        return activityDate.toDateString() === date.toDateString();
+        return getActivityEventDateString(a) === targetDateStr;
       });
       return getDailyTone(dayActivities, activities, household.baby_birthday);
     });
@@ -328,9 +329,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const sixtyDaysAgo = new Date();
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
     
+    const sixtyDaysAgoStr = sixtyDaysAgo.toISOString().split('T')[0];
+    const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+    
     const lastMonthActivities = activities.filter(a => {
-      const activityDate = new Date(a.logged_at);
-      return activityDate >= sixtyDaysAgo && activityDate < thirtyDaysAgo;
+      const activityDateStr = getActivityEventDateString(a);
+      return activityDateStr >= sixtyDaysAgoStr && activityDateStr < thirtyDaysAgoStr;
     });
     
     const lastMonthDays = Array.from({ length: 30 }, (_, i) => {
@@ -341,9 +345,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     });
     
     const lastMonthTones = lastMonthDays.map(date => {
+      const targetDateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       const dayActivities = lastMonthActivities.filter(a => {
-        const activityDate = new Date(a.logged_at);
-        return activityDate.toDateString() === date.toDateString();
+        return getActivityEventDateString(a) === targetDateStr;
       });
       return getDailyTone(dayActivities, activities, household.baby_birthday);
     });
@@ -655,17 +659,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     try {
       // Immediately fetch fresh prediction with current data
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
       const todayActivities = normalizedActivities.filter(a => {
-        const activityDate = new Date(a.logged_at);
-        return activityDate >= today;
+        return getActivityEventDateString(a) === todayStr;
       });
       
       const fourteenDaysAgo = new Date();
       fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+      const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().split('T')[0];
       const recentActivities = normalizedActivities.filter(a => {
-        const activityDate = new Date(a.logged_at);
-        return activityDate >= fourteenDaysAgo;
+        return getActivityEventDateString(a) >= fourteenDaysAgoStr;
       });
       
       const { data, error } = await supabase.functions.invoke('predict-daily-schedule', {
@@ -997,20 +1000,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         setAiPredictionLoading(true);
       }
       try {
-        // Get today's activities (use normalized activities with isNightSleep flag)
+        // Get today's activities (use event dates, not logged_at)
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
         const todayActivities = normalizedActivities.filter(a => {
-          const activityDate = new Date(a.logged_at);
-          return activityDate >= today;
+          return getActivityEventDateString(a) === todayStr;
         });
         
-        // Get last 14 days for pattern analysis (use normalized activities with isNightSleep flag)
+        // Get last 14 days for pattern analysis (use event dates, not logged_at)
         const fourteenDaysAgo = new Date();
         fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+        const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().split('T')[0];
         const recentActivities = normalizedActivities.filter(a => {
-          const activityDate = new Date(a.logged_at);
-          return activityDate >= fourteenDaysAgo;
+          return getActivityEventDateString(a) >= fourteenDaysAgoStr;
         });
         
         const { data, error } = await supabase.functions.invoke('predict-daily-schedule', {

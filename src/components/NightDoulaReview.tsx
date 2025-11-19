@@ -5,6 +5,7 @@ import { Heart, Moon } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
+import { getActivityEventDateString } from "@/utils/activityDate";
 
 interface Activity {
   id: string;
@@ -216,10 +217,10 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   useEffect(() => {
     const checkTrigger = () => {
       const now = new Date();
+      const nowStr = now.toISOString().split('T')[0]; // YYYY-MM-DD format
       
       const hasActivitiesToday = activities.some(activity => {
-        const activityDate = new Date(activity.logged_at);
-        return activityDate.toDateString() === now.toDateString();
+        return getActivityEventDateString(activity) === nowStr;
       });
       
       if (hasActivitiesToday && !reviewGenerated) {
@@ -259,14 +260,11 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     return { type: 'mix', description: '' };
   };
 
-  // Extract day stats with consistent date handling (same as timeline)
+  // Extract day stats with consistent date handling
   const getDayStats = (date: Date): DayStats => {
+    const targetDateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
     const activities_filtered = activities.filter(activity => {
-      const activityDate = new Date(activity.logged_at);
-      // Use same local date logic as timeline to avoid timezone issues
-      const localActivityDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
-      const localTargetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      return localActivityDate.getTime() === localTargetDate.getTime();
+      return getActivityEventDateString(activity) === targetDateStr;
     });
 
     const feeds = activities_filtered.filter(a => a.type === 'feed');
@@ -386,9 +384,10 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     
     // Naps
     if (todayStats.naps > 0) {
+      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
       const napDurations = activities
         .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && 
-                new Date(a.logged_at).toDateString() === today.toDateString())
+                getActivityEventDateString(a) === todayStr)
         .map(n => {
           if (n.details?.startTime && n.details?.endTime) {
             const start = new Date(`1970-01-01 ${n.details.startTime}`);
