@@ -96,7 +96,7 @@ export const TodaysPulse = ({
     
     // More descriptive and less alarming badge for schedule deviations
     if (category === 'schedule' && status === 'needs-attention') {
-      return <Badge variant="outline" className="text-xs border-amber-600/40 text-amber-600">Off rhythm</Badge>;
+      return <Badge variant="secondary" className="text-xs">Off rhythm</Badge>;
     }
     
     if (status === 'needs-attention') {
