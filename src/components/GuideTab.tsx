@@ -220,10 +220,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   // Get today's pulse data for deviations
-  // Map activities to include time property for useHomeTabIntelligence
+  // Map activities to include time property and fix property names for useHomeTabIntelligence
   const mappedActivities = useMemo(() => 
     activities.map(a => ({
       ...a,
+      loggedAt: a.logged_at,
       time: new Date(a.logged_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     })),
     [activities]
@@ -1383,6 +1384,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Main Content */}
           <ScrollArea className="flex-1">
         <div ref={scrollRef} className="pt-4 space-y-4">
+          {/* Today's Pulse - At the very top */}
+          {!needsBirthdaySetup && todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
+            <TodaysPulse
+              deviations={todaysPulse.deviations}
+              biggestDeviation={todaysPulse.biggestDeviation}
+              onAdjustSchedule={() => setScheduleOpen(true)}
+              babyName={babyName}
+              babyAge={babyAgeInWeeks}
+              activities={activities}
+            />
+          )}
+          
           {/* Hero Insight Card - Only for Tier 3 */}
           {!needsBirthdaySetup && hasTier3Data && (
             <>
@@ -1473,18 +1486,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                       />
                     </CollapsibleContent>
                   </Collapsible>
-
-                  {/* Today's Pulse - Below Schedule */}
-                  {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
-                    <TodaysPulse
-                      deviations={todaysPulse.deviations}
-                      biggestDeviation={todaysPulse.biggestDeviation}
-                      onAdjustSchedule={() => setScheduleOpen(true)}
-                      babyName={babyName}
-                      babyAge={babyAgeInWeeks}
-                      activities={activities}
-                    />
-                  )}
                 </>
               )}
               
