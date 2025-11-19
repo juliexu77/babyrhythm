@@ -466,21 +466,21 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Last 6 Weeks</span>
         </div>
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           {weeklyMetrics.length > 0 ? (
             <>
               {/* Total Sleep */}
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Total Sleep</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-foreground">
-                      {(weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes / 60).toFixed(1)}h/day
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-medium text-foreground">Total Sleep</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-base font-semibold text-foreground">
+                      {(weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes / 60).toFixed(1)}h
                     </span>
                     {weeklyMetrics.length > 1 && (
                       <span className="text-xs text-muted-foreground">
-                        ({weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes > weeklyMetrics[weeklyMetrics.length - 2].totalSleepMinutes ? '↑' : '↓'}
-                        {Math.abs((weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes - weeklyMetrics[weeklyMetrics.length - 2].totalSleepMinutes) / 60).toFixed(1)}h)
+                        {weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes > weeklyMetrics[weeklyMetrics.length - 2].totalSleepMinutes ? '↑' : '↓'}
+                        {Math.abs((weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes - weeklyMetrics[weeklyMetrics.length - 2].totalSleepMinutes) / 60).toFixed(1)}h
                       </span>
                     )}
                   </div>
@@ -492,16 +492,16 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
               {/* Naps */}
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Naps</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-foreground">
-                      {weeklyMetrics[weeklyMetrics.length - 1].napCount.toFixed(1)}/day
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-medium text-foreground">Naps</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-base font-semibold text-foreground">
+                      {weeklyMetrics[weeklyMetrics.length - 1].napCount.toFixed(1)}
                     </span>
                     {weeklyMetrics.length > 1 && (
                       <span className="text-xs text-muted-foreground">
-                        ({weeklyMetrics[weeklyMetrics.length - 1].napCount > weeklyMetrics[weeklyMetrics.length - 2].napCount ? '↑' : '↓'}
-                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].napCount - weeklyMetrics[weeklyMetrics.length - 2].napCount).toFixed(1)})
+                        {weeklyMetrics[weeklyMetrics.length - 1].napCount > weeklyMetrics[weeklyMetrics.length - 2].napCount ? '↑' : '↓'}
+                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].napCount - weeklyMetrics[weeklyMetrics.length - 2].napCount).toFixed(1)}
                       </span>
                     )}
                   </div>
@@ -513,16 +513,16 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
               {/* Feed Volume */}
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Feed Volume</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-foreground">
-                      {Math.round(weeklyMetrics[weeklyMetrics.length - 1].feedVolume * 0.033814)} oz/day
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-medium text-foreground">Feed Volume</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-base font-semibold text-foreground">
+                      {Math.round(weeklyMetrics[weeklyMetrics.length - 1].feedVolume * 0.033814)}oz
                     </span>
                     {weeklyMetrics.length > 1 && (
                       <span className="text-xs text-muted-foreground">
-                        ({weeklyMetrics[weeklyMetrics.length - 1].feedVolume > weeklyMetrics[weeklyMetrics.length - 2].feedVolume ? '↑' : '↓'}
-                        {Math.round(Math.abs(weeklyMetrics[weeklyMetrics.length - 1].feedVolume - weeklyMetrics[weeklyMetrics.length - 2].feedVolume) * 0.033814)}oz)
+                        {weeklyMetrics[weeklyMetrics.length - 1].feedVolume > weeklyMetrics[weeklyMetrics.length - 2].feedVolume ? '↑' : '↓'}
+                        {Math.round(Math.abs(weeklyMetrics[weeklyMetrics.length - 1].feedVolume - weeklyMetrics[weeklyMetrics.length - 2].feedVolume) * 0.033814)}oz
                       </span>
                     )}
                   </div>
@@ -534,16 +534,16 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
               {/* Wake Average */}
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Wake Average</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-sm text-foreground">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-medium text-foreground">Wake Average</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-base font-semibold text-foreground">
                       {Math.floor(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg / 60)}h {weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg % 60}m
                     </span>
                     {weeklyMetrics.length > 1 && (
                       <span className="text-xs text-muted-foreground">
-                        ({weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg > weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg ? '↑' : '↓'}
-                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg - weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg)}m)
+                        {weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg > weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg ? '↑' : '↓'}
+                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg - weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg)}m
                       </span>
                     )}
                   </div>
@@ -554,7 +554,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               </div>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-sm text-muted-foreground text-center py-4 col-span-2">
               Not enough data yet. Log activities to see trends.
             </p>
           )}
