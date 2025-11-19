@@ -566,40 +566,6 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
-      {/* Context Bar - Sticky Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 -mx-4 px-4 py-3 mb-6">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setDaysOffset(prev => Math.min(prev + 7, maxDaysBack - 7))}
-            disabled={!canGoBack}
-            className="h-9 gap-1.5 transition-all hover-scale"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">
-              {daysOffset === 0 ? 'This Week' : 'Week of'}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              · {dateRange.label}
-            </span>
-          </div>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setDaysOffset(prev => Math.max(prev - 7, 0))}
-            disabled={!canGoForward}
-            className="h-9 gap-1.5 transition-all hover-scale"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
       {/* Feeding Trends Section */}
       <div className="space-y-4">
         {/* Section Header */}
