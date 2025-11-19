@@ -58,17 +58,20 @@ export function generateAdaptiveSchedule(
   const events: ScheduleEvent[] = [];
   const now = new Date();
   
-  // Get today's date in user's local timezone (not UTC!)
+  // Get today's date in user's timezone
   const todayLocal = formatInTimeZone(now, timezone, 'yyyy-MM-dd');
-  const yesterdayDate = new Date(todayLocal);
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterdayLocal = formatInTimeZone(yesterdayDate, timezone, 'yyyy-MM-dd');
   
-  console.log('📅 Date context:', {
+  // Calculate yesterday - subtract 1 day from now before formatting
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const yesterdayLocal = formatInTimeZone(yesterday, timezone, 'yyyy-MM-dd');
+  
+  console.log('📅 Date context - CURRENT STATE:', {
     todayLocal,
     yesterdayLocal,
     timezone,
-    serverUTC: now.toISOString()
+    browserTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    serverUTC: now.toISOString(),
+    yesterdayUTC: yesterday.toISOString()
   });
   
   // Filter activities by their LOCAL date (using date_local field OR converting logged_at to user timezone)
