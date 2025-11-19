@@ -14,6 +14,8 @@ import { isDaytimeNap } from "@/utils/napClassification";
 import { calculateNapStatistics } from "@/utils/napStatistics";
 import { useHousehold } from "@/hooks/useHousehold";
 import { CollectivePulse } from "@/components/home/CollectivePulse";
+import { calculateWeeklyMetrics, getMetricSparklineData } from "@/utils/weeklyMetrics";
+import { MetricSparkline } from "@/components/insights/MetricSparkline";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -449,9 +451,85 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const avgFeedLine = (feedSummary.avgVolume / maxFeedValue) * 100;
   const avgNapLine = (napSummary.avgDuration / maxNapValue) * 100;
 
+  // Calculate weekly metrics for sparklines
+  const weeklyMetrics = calculateWeeklyMetrics(activities, nightSleepStartHour, nightSleepEndHour, 6);
+
   return (
     <div className="space-y-4">
-      {/* Week Insights - At the top */}
+      {/* Weekly Trends with Sparklines */}
+      <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+        <div className="flex items-center justify-between pb-2 mb-4 border-b border-border/30">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Weekly Trends</h3>
+          </div>
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Last 6 Weeks</span>
+        </div>
+        
+        <div className="space-y-4">
+          {/* Total Sleep */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Moon className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Total Sleep</span>
+              </div>
+            </div>
+            {weeklyMetrics.length > 0 && (
+              <div className="w-full h-6">
+                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Total sleep')} />
+              </div>
+            )}
+          </div>
+
+          {/* Naps */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Moon className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Naps</span>
+              </div>
+            </div>
+            {weeklyMetrics.length > 0 && (
+              <div className="w-full h-6">
+                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Naps')} />
+              </div>
+            )}
+          </div>
+
+          {/* Feed Volume */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Milk className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Feed Volume</span>
+              </div>
+            </div>
+            {weeklyMetrics.length > 0 && (
+              <div className="w-full h-6">
+                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Feed volume')} />
+              </div>
+            )}
+          </div>
+
+          {/* Wake Average */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ActivityIcon className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Wake Average</span>
+              </div>
+            </div>
+            {weeklyMetrics.length > 0 && (
+              <div className="w-full h-6">
+                <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Wake average')} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Week Insights */}
       <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-xl bg-gradient-primary/10 flex items-center justify-center">

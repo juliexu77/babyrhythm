@@ -9,8 +9,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
-import { calculateWeeklyMetrics, getMetricSparklineData } from "@/utils/weeklyMetrics";
-import { MetricSparkline } from "./insights/MetricSparkline";
 
 interface InsightsTabProps {
   activities: Activity[];
@@ -22,9 +20,6 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { insights } = usePatternAnalysis(activities);
   const { guideSections, loading: guideSectionsLoading } = useGuideSections(activities.length);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
-  
-  // Calculate weekly metrics for sparklines
-  const weeklyMetrics = calculateWeeklyMetrics(activities, nightSleepStartHour, nightSleepEndHour, 6);
   
   // Show loading state while household data is being fetched
   if (householdLoading || !household) {
@@ -212,74 +207,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
 return (
   <div className="space-y-4">
-    {/* Data Pulse - Show at the top */}
-    {guideSections && guideSections.data_pulse && (
-      <div className="mx-2 p-4 bg-accent/10 rounded-lg border border-border/40">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Weekly Trends</h3>
-          </div>
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Last 6 Weeks</span>
-        </div>
-        
-        <div className="space-y-3">
-          {guideSections.data_pulse.metrics.length > 0 ? (
-            guideSections.data_pulse.metrics.map((metric, idx) => {
-              const getMetricIcon = () => {
-                if (metric.name === 'Total sleep') return <Moon className="w-4 h-4 text-primary" />;
-                if (metric.name === 'Naps') return <Baby className="w-4 h-4 text-primary" />;
-                if (metric.name === 'Feed volume') return <Milk className="w-4 h-4 text-primary" />;
-                if (metric.name === 'Wake average') return <Clock className="w-4 h-4 text-primary" />;
-                if (metric.name === 'Nap duration') return <Moon className="w-4 h-4 text-primary" />;
-                return <TrendingUp className="w-4 h-4 text-primary" />;
-              };
-              
-              const getTrendIcon = () => {
-                if (metric.change.includes('+')) return <TrendingUp className="w-3 h-3 text-green-500" />;
-                if (metric.change.includes('-')) return <TrendingDown className="w-3 h-3 text-red-500" />;
-                return <Minus className="w-3 h-3 text-muted-foreground" />;
-              };
-
-              // Get sparkline data for this metric
-              const sparklineData = getMetricSparklineData(weeklyMetrics, metric.name);
-              
-              return (
-                <div key={idx} className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {getMetricIcon()}
-                      <span className="text-sm text-foreground">{metric.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {getTrendIcon()}
-                      <span className="text-sm font-medium text-foreground">
-                        {metric.change}
-                      </span>
-                    </div>
-                  </div>
-                  {sparklineData.length > 0 && (
-                    <div className="w-full h-6">
-                      <MetricSparkline data={sparklineData} />
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-2">
-              No significant changes detected
-            </p>
-          )}
-          
-          <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
-            {guideSections.data_pulse.note}
-          </p>
-        </div>
-      </div>
-    )}
-
-    {/* Age-Appropriate Guidance - NOW FIRST */}
+    {/* Age-Appropriate Guidance */}
     <div className="mx-2 bg-card rounded-xl p-4 shadow-card border border-border">
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-5 w-5 text-primary" />
