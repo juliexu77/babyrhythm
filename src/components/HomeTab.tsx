@@ -14,7 +14,6 @@ import { SmartQuickActions } from "@/components/home/SmartQuickActions";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
-import { CollectivePulse } from "@/components/home/CollectivePulse";
 import { LearningProgress } from "@/components/LearningProgress";
 import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
 import { ParentingChat } from "@/components/ParentingChat";
@@ -1485,9 +1484,6 @@ const lastDiaper = displayActivities
             activities={activities}
           />
         )}
-
-        {/* Zone 4: Collective Pulse */}
-        <CollectivePulse babyBirthday={effectiveBabyBirthday} />
 
       </div>
     </div>

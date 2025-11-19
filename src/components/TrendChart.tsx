@@ -12,6 +12,8 @@ import { getActivitiesByDate } from "@/utils/activityDateFilters";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { calculateNapStatistics } from "@/utils/napStatistics";
+import { useHousehold } from "@/hooks/useHousehold";
+import { CollectivePulse } from "@/components/home/CollectivePulse";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -20,6 +22,7 @@ interface TrendChartProps {
 export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const { t, language } = useLanguage();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+  const { household } = useHousehold();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
   const [daysOffset, setDaysOffset] = useState(0);
   const feedChartRef = useRef<HTMLDivElement>(null);
@@ -688,6 +691,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
             {getSleepInterpretation()}
           </p>
         </div>
+      </div>
+
+      {/* Collective Pulse Section */}
+      <div className="mt-8">
+        <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
     </div>
   );
