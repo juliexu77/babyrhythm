@@ -65,15 +65,6 @@ export function generateAdaptiveSchedule(
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const yesterdayLocal = formatInTimeZone(yesterday, timezone, 'yyyy-MM-dd');
   
-  console.log('📅 Date context - CURRENT STATE:', {
-    todayLocal,
-    yesterdayLocal,
-    timezone,
-    browserTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    serverUTC: now.toISOString(),
-    yesterdayUTC: yesterday.toISOString()
-  });
-  
   // Filter activities by their LOCAL date (using date_local field OR converting logged_at to user timezone)
   const recentActivities = activities.filter(a => {
     // First try date_local from details
@@ -111,24 +102,6 @@ export function generateAdaptiveSchedule(
       endTime: a.details!.endTime!
     }));
   
-  console.log('🌅 Looking for today\'s wake activity:', {
-    recentActivitiesCount: recentActivities.length,
-    todayActivitiesCount: todayActivities.length,
-    nightSleeps: recentActivities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).length,
-    completedNaps: todayCompletedNaps.length,
-    recentActivityDates: recentActivities.map(a => {
-      const loggedAt = (a as any).loggedAt || (a as any).logged_at;
-      const activityDate = (a.details as any)?.date_local || 
-        (loggedAt ? formatInTimeZone(new Date(loggedAt), timezone, 'yyyy-MM-dd') : 'unknown');
-      return {
-        type: a.type,
-        date_local: activityDate,
-        startTime: a.details?.startTime,
-        endTime: a.details?.endTime
-      };
-    })
-  });
-  
   // Check if baby woke up today - look for night sleep that STARTED yesterday and ended today
   const todayWakeActivity = recentActivities.find(a => {
     if (a.type === 'nap' && a.details?.startTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
@@ -160,24 +133,11 @@ export function generateAdaptiveSchedule(
             const isValidWakeTime = hour >= 4 && hour <= 12;
 
             if (isValidWakeTime) {
-              console.log('✅ Found today\'s wake time from night sleep that started yesterday:', {
-                startTime: a.details.startTime,
-                endTime: a.details.endTime,
-                date_local: activityDateLocal,
-                yesterdayLocal,
-                hour,
-                period
-              });
               return true;
             }
           }
         }
         // If night sleep started yesterday but no valid endTime, we'll fall back to average
-        console.log('⏰ Night sleep started yesterday but no valid wake time yet:', {
-          startTime: a.details.startTime,
-          endTime: a.details.endTime,
-          date_local: activityDateLocal
-        });
       }
     }
     return false;
@@ -202,18 +162,12 @@ export function generateAdaptiveSchedule(
       scheduleStartTime = new Date(now);
       scheduleStartTime.setHours(hour, minute, 0, 0);
       hasActualWake = true;
-      
-      console.log('🎯 Using actual wake time for schedule:', {
-        time: endTimeStr,
-        hour,
-        minute
-      });
     } else {
       scheduleStartTime = new Date(todayWakeActivity.loggedAt);
       hasActualWake = true;
     }
   } else {
-    console.log('📊 No wake activity found today, using historical average');
+    // No wake activity found today, using historical average
     // Calculate average wake time from historical data
     const recentNightSleeps = activities
       .filter(a => a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour))
