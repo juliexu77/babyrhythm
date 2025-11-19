@@ -5,7 +5,7 @@ import { Activity } from "@/components/ActivityCard";
 interface WeeklyMetrics {
   weekLabel: string;
   totalSleepMinutes: number;
-  napCount: number;
+  daytimeSleepMinutes: number; // Changed from napCount
   feedVolume: number;
   wakeWindowAvg: number;
 }
@@ -75,13 +75,22 @@ export const calculateWeeklyMetrics = (
     // Calculate average per day (only days with sleep data)
     totalSleepMinutes = daysWithSleep > 0 ? totalSleepMinutes / daysWithSleep : 0;
 
-    // Count daytime naps per day (only days with nap data)
+    // Calculate daytime sleep duration per day
     const naps = weekActivities.filter(a => 
       a.type === 'nap' && 
       isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) &&
       a.details?.startTime && 
       a.details?.endTime
     );
+    
+    let daytimeSleepMinutes = 0;
+    naps.forEach(nap => {
+      const startMinutes = parseTimeToMinutes(nap.details.startTime!);
+      const endMinutes = parseTimeToMinutes(nap.details.endTime!);
+      let duration = endMinutes - startMinutes;
+      if (duration < 0) duration += 24 * 60;
+      daytimeSleepMinutes += duration;
+    });
     
     // Count unique days with naps
     const daysWithNaps = new Set(
@@ -91,7 +100,7 @@ export const calculateWeeklyMetrics = (
       })
     ).size;
     
-    const napCount = daysWithNaps > 0 ? naps.length / daysWithNaps : 0;
+    daytimeSleepMinutes = daysWithNaps > 0 ? daytimeSleepMinutes / daysWithNaps : 0;
 
     // Calculate feed volume per day (only days with feed data)
     const feeds = weekActivities.filter(a => a.type === 'feed');
@@ -152,7 +161,7 @@ export const calculateWeeklyMetrics = (
     weeks.push({
       weekLabel: i === 0 ? 'This week' : `${i}w ago`,
       totalSleepMinutes,
-      napCount,
+      daytimeSleepMinutes,
       feedVolume,
       wakeWindowAvg
     });
@@ -169,12 +178,13 @@ export const getMetricSparklineData = (
     case 'Total sleep':
       // Convert to hours
       return weeklyMetrics.map(w => Math.round(w.totalSleepMinutes / 60 * 10) / 10);
-    case 'Naps':
-      return weeklyMetrics.map(w => w.napCount);
+    case 'Daytime sleep':
+      // Convert to hours
+      return weeklyMetrics.map(w => Math.round(w.daytimeSleepMinutes / 60 * 10) / 10);
     case 'Feed volume':
       // Convert to oz
       return weeklyMetrics.map(w => Math.round(w.feedVolume / 29.5735));
-    case 'Wake average':
+    case 'Wake windows':
       // Convert to hours
       return weeklyMetrics.map(w => Math.round(w.wakeWindowAvg / 60 * 10) / 10);
     default:

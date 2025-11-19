@@ -490,23 +490,23 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                 </div>
               </div>
 
-              {/* Naps */}
+              {/* Daytime Sleep */}
               <div className="bg-card rounded-xl p-3 border border-border/30">
                 <div className="flex flex-col gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">Naps</span>
+                  <span className="text-xs font-medium text-muted-foreground">Daytime Sleep</span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-lg font-semibold text-foreground">
-                      {weeklyMetrics[weeklyMetrics.length - 1].napCount.toFixed(1)}
+                      {(weeklyMetrics[weeklyMetrics.length - 1].daytimeSleepMinutes / 60).toFixed(1)}h
                     </span>
                     {weeklyMetrics.length > 1 && (
                       <span className="text-xs text-muted-foreground">
-                        {weeklyMetrics[weeklyMetrics.length - 1].napCount > weeklyMetrics[weeklyMetrics.length - 2].napCount ? '↑' : '↓'}
-                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].napCount - weeklyMetrics[weeklyMetrics.length - 2].napCount).toFixed(1)}
+                        {weeklyMetrics[weeklyMetrics.length - 1].daytimeSleepMinutes > weeklyMetrics[weeklyMetrics.length - 2].daytimeSleepMinutes ? '↑' : '↓'}
+                        {Math.abs((weeklyMetrics[weeklyMetrics.length - 1].daytimeSleepMinutes - weeklyMetrics[weeklyMetrics.length - 2].daytimeSleepMinutes) / 60).toFixed(1)}h
                       </span>
                     )}
                   </div>
                   <div className="w-full h-8">
-                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Naps')} />
+                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Daytime sleep')} />
                   </div>
                 </div>
               </div>
@@ -548,7 +548,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                     )}
                   </div>
                   <div className="w-full h-8">
-                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Wake average')} />
+                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Wake windows')} />
                   </div>
                 </div>
               </div>
