@@ -109,42 +109,16 @@ export const TodaysPulse = ({
   };
 
   const hasDeviations = deviations.some(d => d.hasDeviation);
-  const needsAttention = deviations.some(d => d.status === 'needs-attention');
-  const allNormalPace = deviations.every(d => d.status === 'normal');
 
   return (
     <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
-      {/* Header with status badge */}
+      {/* Header */}
       <div className="px-4 py-5 border-b border-border/30">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-              Today's Pulse
-            </h3>
-          </div>
-          <div className="flex items-center gap-2">
-            {needsAttention && !deviations.every(d => d.category === 'schedule') && (
-              <Badge variant="destructive" className="text-[10px] px-2 py-0 animate-pulse">
-                Review
-              </Badge>
-            )}
-            {hasDeviations && !needsAttention && (
-              <Badge variant="default" className="text-[10px] px-2 py-0">
-                Update
-              </Badge>
-            )}
-            {needsAttention && deviations.every(d => d.category === 'schedule') && (
-              <Badge variant="outline" className="text-[10px] px-2 py-0 border-amber-600/40 text-amber-600">
-                Adjusting
-              </Badge>
-            )}
-            {allNormalPace && (
-              <Badge variant="secondary" className="text-[10px] px-2 py-0">
-                Normal pace
-              </Badge>
-            )}
-          </div>
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-primary" />
+          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+            Today's Pulse
+          </h3>
         </div>
       </div>
 
