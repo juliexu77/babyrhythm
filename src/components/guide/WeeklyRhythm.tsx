@@ -21,6 +21,9 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
     const today = startOfDay(new Date());
     const days: NapData[] = [];
 
+    console.log('🔍 WeeklyRhythm - Total activities:', activities.length);
+    console.log('🔍 WeeklyRhythm - Sample activities:', activities.slice(0, 3));
+
     for (let i = 6; i >= 0; i--) {
       const date = subDays(today, i);
       const dateStr = format(date, 'yyyy-MM-dd');
@@ -30,7 +33,9 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
         .filter(a => {
           if (a.type !== 'nap') return false;
           const activityDate = format(new Date(a.logged_at), 'yyyy-MM-dd');
-          return activityDate === dateStr && a.details?.endTime;
+          const hasEndTime = a.details?.endTime;
+          console.log(`📊 Nap on ${activityDate}: hasEndTime=${hasEndTime}, details:`, a.details);
+          return activityDate === dateStr && hasEndTime;
         })
         .map(a => {
           const start = new Date(a.logged_at);
@@ -41,6 +46,7 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
         })
         .sort((a, b) => a.startMinutes - b.startMinutes);
 
+      console.log(`📅 ${dateStr}: ${dayNaps.length} naps`);
       days.push({ date: dateStr, naps: dayNaps });
     }
 
