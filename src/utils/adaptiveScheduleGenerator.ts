@@ -71,15 +71,33 @@ export function generateAdaptiveSchedule(
     serverUTC: now.toISOString()
   });
   
-  // Filter activities by their LOCAL date (using date_local field)
+  // Filter activities by their LOCAL date (using date_local field OR converting logged_at to user timezone)
   const recentActivities = activities.filter(a => {
-    const activityDateLocal = getActivityEventDateString(a);
-    return activityDateLocal === todayLocal || activityDateLocal === yesterdayLocal;
+    // First try date_local from details
+    if ((a.details as any)?.date_local) {
+      return (a.details as any).date_local === todayLocal || (a.details as any).date_local === yesterdayLocal;
+    }
+    // Fall back to converting logged_at to user timezone
+    const loggedAt = (a as any).loggedAt || (a as any).logged_at;
+    if (loggedAt) {
+      const activityDateInTimezone = formatInTimeZone(new Date(loggedAt), timezone, 'yyyy-MM-dd');
+      return activityDateInTimezone === todayLocal || activityDateInTimezone === yesterdayLocal;
+    }
+    return false;
   });
   
   const todayActivities = recentActivities.filter(a => {
-    const activityDateLocal = getActivityEventDateString(a);
-    return activityDateLocal === todayLocal;
+    // First try date_local from details
+    if ((a.details as any)?.date_local) {
+      return (a.details as any).date_local === todayLocal;
+    }
+    // Fall back to converting logged_at to user timezone
+    const loggedAt = (a as any).loggedAt || (a as any).logged_at;
+    if (loggedAt) {
+      const activityDateInTimezone = formatInTimeZone(new Date(loggedAt), timezone, 'yyyy-MM-dd');
+      return activityDateInTimezone === todayLocal;
+    }
+    return false;
   });
   
   // Extract today's completed naps (with end times only)
@@ -95,12 +113,17 @@ export function generateAdaptiveSchedule(
     todayActivitiesCount: todayActivities.length,
     nightSleeps: recentActivities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).length,
     completedNaps: todayCompletedNaps.length,
-    recentActivityDates: recentActivities.map(a => ({
-      type: a.type,
-      date_local: getActivityEventDateString(a),
-      startTime: a.details?.startTime,
-      endTime: a.details?.endTime
-    }))
+    recentActivityDates: recentActivities.map(a => {
+      const loggedAt = (a as any).loggedAt || (a as any).logged_at;
+      const activityDate = (a.details as any)?.date_local || 
+        (loggedAt ? formatInTimeZone(new Date(loggedAt), timezone, 'yyyy-MM-dd') : 'unknown');
+      return {
+        type: a.type,
+        date_local: activityDate,
+        startTime: a.details?.startTime,
+        endTime: a.details?.endTime
+      };
+    })
   });
   
   // Check if baby woke up today - look for night sleep that STARTED yesterday and ended today
