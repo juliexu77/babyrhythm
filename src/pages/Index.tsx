@@ -7,7 +7,6 @@ import { InsightsTab } from "@/components/InsightsTab";
 import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { GuideTab } from "@/components/GuideTab";
-import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { PediatricianReportModal } from "@/components/PediatricianReportModal";
 import { ExportCSVModal } from "@/components/ExportCSVModal";
 
