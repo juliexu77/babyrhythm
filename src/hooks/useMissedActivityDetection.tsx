@@ -391,6 +391,15 @@ export function useMissedActivityDetection(
       if (patternConfig.subType === 'morning-wake') {
         console.log('  🌅 Checking morning-wake...');
         
+        // First check if wake-up was already logged today (regardless of ongoing sleep)
+        const alreadyLogged = wasLoggedToday(activities, 'nap', 'morning-wake', nightSleepStartHour, nightSleepEndHour);
+        console.log('  Morning wake already logged today:', alreadyLogged);
+        
+        if (alreadyLogged) {
+          console.log('  ❌ Morning wake already logged, skipping prompt');
+          continue;
+        }
+        
         // Check for ongoing night sleep from yesterday or today (since night sleep spans dates)
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -398,7 +407,9 @@ export function useMissedActivityDetection(
         console.log('  Looking for ongoing night sleep...', {
           todayDate: new Date().toDateString(),
           yesterdayDate: yesterday.toDateString(),
-          nightSleepWindow: `${nightSleepStartHour}:00 - ${nightSleepEndHour}:00`
+          nightSleepWindow: `${nightSleepStartHour}:00 - ${nightSleepEndHour}:00`,
+          totalActivities: activities.length,
+          napActivities: activities.filter(a => a.type === 'nap').length
         });
         
         const ongoingNightSleep = activities.find(a => {
@@ -407,13 +418,17 @@ export function useMissedActivityDetection(
           const noEndTime = !a.details?.endTime;
           const onToday = isActivityOnDate(a, new Date());
           const onYesterday = isActivityOnDate(a, yesterday);
+          const hasEndTime = !!a.details?.endTime;
           
           console.log('    Activity check:', {
             id: a.id?.slice(0, 8),
             type: a.type,
-            loggedAt: a.loggedAt,
+            startTime: (a.details as any)?.startTime,
+            endTime: (a.details as any)?.endTime,
+            dateLocal: (a.details as any)?.date_local,
             isNap,
             isNight,
+            hasEndTime,
             noEndTime,
             onToday,
             onYesterday,
@@ -427,14 +442,6 @@ export function useMissedActivityDetection(
         
         // If there's ongoing night sleep, check if wake-up is overdue
         if (ongoingNightSleep) {
-          // First check if wake-up was already logged today
-          const alreadyLogged = wasLoggedToday(activities, 'nap', 'morning-wake', nightSleepStartHour, nightSleepEndHour);
-          console.log('  Morning wake already logged today:', alreadyLogged);
-          
-          if (alreadyLogged) {
-            console.log('  ❌ Morning wake already logged, skipping prompt');
-            continue;
-          }
           
           const sleepStartMinutes = timeToMinutes(ongoingNightSleep);
           let expectedWakeMinutes = nightSleepEndHour * 60 + 30; // Default: 30 min after night end (e.g., 7:30 AM)
