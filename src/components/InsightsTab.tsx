@@ -209,7 +209,7 @@ return (
   <div className="space-y-4">
     {/* Data Pulse - Show at the top */}
     {guideSections && guideSections.data_pulse && (
-      <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
+      <div className="mx-2 p-4 bg-accent/10 rounded-lg border border-border/40">
         <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" />
@@ -265,7 +265,7 @@ return (
     )}
 
     {/* Age-Appropriate Guidance - NOW FIRST */}
-    <div className="bg-card rounded-xl p-4 shadow-card border border-border">
+    <div className="mx-2 bg-card rounded-xl p-4 shadow-card border border-border">
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-5 w-5 text-primary" />
         <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
