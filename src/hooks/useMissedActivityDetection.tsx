@@ -140,6 +140,21 @@ function wasLoggedToday(
         endDate.setDate(endDate.getDate() + 1);
       }
       const endKey = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+      
+      console.log('    🌅 Morning-wake check:', {
+        activityId: a.id?.slice(0, 8),
+        startDayKey,
+        startStr,
+        endStr,
+        startMins,
+        endMins,
+        crossesMidnight: endMins < startMins,
+        endDate: endDate.toDateString(),
+        endKey,
+        todayKey,
+        matches: endKey === todayKey
+      });
+      
       return endKey === todayKey;
     }
     
