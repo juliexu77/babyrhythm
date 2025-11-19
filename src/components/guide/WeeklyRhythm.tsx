@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { format, subDays, startOfDay } from "date-fns";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { isDaytimeNap } from "@/utils/napClassification";
 
 interface NapData {
   date: string;
@@ -15,6 +17,7 @@ interface WeeklyRhythmProps {
 
 export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
   const [isOpen, setIsOpen] = useState(true);
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   // Get last 7 days of nap data
   const getLast7DaysNaps = (): NapData[] => {
@@ -26,10 +29,13 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
       const date = subDays(today, i);
       const dateStr = format(date, 'yyyy-MM-dd');
       
-      // Filter naps for this day using actual nap start time
+      // Filter naps for this day using actual nap start time - only show daytime naps
       const dayNaps = activities
         .filter(a => {
           if (a.type !== 'nap' || !a.details?.startTime || !a.details?.endTime) return false;
+          
+          // Only include daytime naps (exclude night sleep)
+          if (!isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)) return false;
           
           // Parse the start time to get the date
           // startTime format is like "7:30 AM" - we need to combine with logged_at date
@@ -79,9 +85,9 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
 
   const weekData = getLast7DaysNaps();
 
-  // Timeline from 6am (360 min) to 9pm (1260 min) = 900 minutes total
-  const timelineStart = 6 * 60; // 6am
-  const timelineEnd = 21 * 60; // 9pm
+  // Timeline matches user's night sleep window (daytime window)
+  const timelineStart = nightSleepEndHour * 60; // Night sleep end (e.g., 7am)
+  const timelineEnd = nightSleepStartHour * 60; // Night sleep start (e.g., 7pm)
   const timelineRange = timelineEnd - timelineStart;
 
   // Convert time in minutes to percentage position on timeline
@@ -117,12 +123,23 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
             <div className="flex items-center mb-3">
               <span className="w-12 flex-shrink-0"></span>
               <div className="flex-1 relative h-4">
-                <span className="absolute text-[9px] text-muted-foreground/60" style={{ left: '0%' }}>6am</span>
-                <span className="absolute text-[9px] text-muted-foreground/60" style={{ left: '20%' }}>9am</span>
-                <span className="absolute text-[9px] text-muted-foreground/60" style={{ left: '40%' }}>12pm</span>
-                <span className="absolute text-[9px] text-muted-foreground/60" style={{ left: '60%' }}>3pm</span>
-                <span className="absolute text-[9px] text-muted-foreground/60" style={{ left: '80%' }}>6pm</span>
-                <span className="absolute text-[9px] text-muted-foreground/60 right-0">9pm</span>
+                {[0, 0.2, 0.4, 0.6, 0.8, 1].map((pos) => {
+                  const minutes = timelineStart + (timelineRange * pos);
+                  const hour = Math.floor(minutes / 60);
+                  const displayHour = hour % 12 || 12;
+                  const period = hour >= 12 ? 'pm' : 'am';
+                  const label = `${displayHour}${period}`;
+                  
+                  return (
+                    <span
+                      key={pos}
+                      className="absolute text-[9px] text-muted-foreground/60"
+                      style={{ left: pos === 1 ? 'auto' : `${pos * 100}%`, right: pos === 1 ? '0' : 'auto' }}
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
               </div>
             </div>
 
