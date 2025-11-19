@@ -161,18 +161,6 @@ export const TodaysPulse = ({
                 </p>
               </div>
             ))}
-
-            {/* View Rhythm Button */}
-            {deviations.some(d => d.category === 'schedule' && d.hasDeviation) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onAdjustSchedule}
-                className="w-full text-xs mt-2"
-              >
-                View today's rhythm
-              </Button>
-            )}
           </div>
         </CollapsibleContent>
       </Collapsible>
