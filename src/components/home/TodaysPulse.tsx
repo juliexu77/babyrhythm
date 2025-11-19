@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Moon, Milk, Clock, ChevronDown, AlertCircle, CheckCircle, Lightbulb, BarChart3 } from "lucide-react";
+import { Moon, Milk, Clock, ChevronDown, AlertCircle, CheckCircle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DeviationData {
@@ -114,12 +114,9 @@ export const TodaysPulse = ({
     <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       {/* Header */}
       <div className="px-4 py-5 border-b border-border/30">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-primary" />
-          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-            Today's Pulse
-          </h3>
-        </div>
+        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+          Today's Pulse
+        </h3>
       </div>
 
       {/* Main Details - Open by default */}

@@ -21,7 +21,6 @@ import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generateAdaptiveSchedule, type AdaptiveSchedule, type AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
-import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
