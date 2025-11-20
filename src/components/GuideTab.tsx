@@ -920,9 +920,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const cached = localStorage.getItem('rhythmInsights');
     const todayDate = new Date().toDateString();
     
-    // Detect nap count mismatch between cached insights and AI prediction
+    // Detect nap count mismatch between cached insights and actual recent patterns
     const hasNapCountMismatch = () => {
-      if (!cached || !aiPrediction) return false;
+      if (!cached) return false;
       
       try {
         const parsed = JSON.parse(cached);
@@ -942,12 +942,40 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           }
         });
         
-        // If insights mention a different nap count than predicted, invalidate cache
-        if (mentionedCounts.size > 0 && !mentionedCounts.has(aiPrediction.total_naps_today)) {
+        if (mentionedCounts.size === 0) return false;
+        
+        // Check actual nap counts from past 3 days
+        const threeDaysAgo = new Date();
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        
+        const recentActivities = activities.filter(a => 
+          new Date(a.logged_at) >= threeDaysAgo
+        );
+        
+        // Group by day and count naps
+        const napsByDay = recentActivities
+          .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour))
+          .reduce((acc, nap) => {
+            const date = getActivityEventDateString(nap as any);
+            if (date) {
+              acc[date] = (acc[date] || 0) + 1;
+            }
+            return acc;
+          }, {} as Record<string, number>);
+        
+        const napCounts = Object.values(napsByDay);
+        if (napCounts.length === 0) return false;
+        
+        // Get the most common nap count from recent days
+        const avgNapCount = Math.round(napCounts.reduce((a, b) => a + b, 0) / napCounts.length);
+        
+        // If cached insights mention different nap count than recent pattern, invalidate
+        if (!mentionedCounts.has(avgNapCount)) {
+          console.log('🔄 Rhythm insights cache invalidated: mentioned counts', Array.from(mentionedCounts), 'but recent average is', avgNapCount);
           return true;
         }
       } catch (e) {
-        // Error handled silently
+        console.error('Error checking nap count mismatch:', e);
       }
       return false;
     };
