@@ -1,5 +1,5 @@
 import { Activity } from "@/components/ActivityCard";
-import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, startOfWeek, eachWeekOfInterval } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, startOfWeek, eachWeekOfInterval, endOfWeek } from "date-fns";
 import { useMemo } from "react";
 
 interface TimelineChartProps {
@@ -27,27 +27,39 @@ export const TimelineChart = ({
 }: TimelineChartProps) => {
   const chartData = useMemo(() => {
     const now = new Date();
-    let daysBack = 42; // 6 weeks
+    // Exclude today - go back to yesterday
+    const yesterday = startOfDay(subDays(now, 1));
     
+    let daysBack = 42; // 6 weeks
     if (timeRange === '3months') daysBack = 90;
     if (timeRange === '6months') daysBack = 180;
     
-    const startDate = startOfDay(subDays(now, daysBack));
-    const endDate = endOfDay(now);
+    const startDate = startOfDay(subDays(yesterday, daysBack));
+    const endDate = endOfDay(yesterday);
     
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    // Get all weeks in the range
+    const weeks = eachWeekOfInterval({ start: startDate, end: endDate }, { weekStartsOn: 1 });
     
-    const data = days.map(day => {
-      const value = dataExtractor(activities, day);
+    // Calculate weekly averages
+    const data = weeks.map(weekStart => {
+      const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+      const daysInWeek = eachDayOfInterval({ start: weekStart, end: weekEnd > endDate ? endDate : weekEnd });
+      
+      // Get values for each day in the week
+      const dailyValues = daysInWeek.map(day => dataExtractor(activities, day));
+      
+      // Filter out zeros and calculate average
+      const nonZeroValues = dailyValues.filter(v => v > 0);
+      const avgValue = nonZeroValues.length > 0 
+        ? nonZeroValues.reduce((sum, v) => sum + v, 0) / nonZeroValues.length 
+        : 0;
+      
       return {
-        date: day,
-        value,
-        label: format(day, 'MMM d')
+        date: weekStart,
+        value: avgValue,
+        label: format(weekStart, 'MMM d')
       };
     });
-    
-    // Get week boundaries for visual markers
-    const weeks = eachWeekOfInterval({ start: startDate, end: endDate }, { weekStartsOn: 1 });
     
     return { data, weeks, startDate, endDate };
   }, [activities, timeRange, dataExtractor]);
@@ -61,15 +73,20 @@ export const TimelineChart = ({
   const chartHeight = 240;
   const chartWidth = 100; // percentage
   
-  // Y-axis ticks
+  // Y-axis ticks - ensure unique values
   const yTicks = useMemo(() => {
     const tickCount = 5;
     const ticks = [];
+    const step = range / tickCount;
+    
     for (let i = 0; i <= tickCount; i++) {
-      const value = minValue + (range * i) / tickCount;
+      const value = minValue + (step * i);
       ticks.push(value);
     }
-    return ticks.reverse();
+    
+    // Remove duplicates and reverse (high to low)
+    const uniqueTicks = Array.from(new Set(ticks.map(t => Number(t.toFixed(2)))));
+    return uniqueTicks.reverse();
   }, [minValue, range]);
 
   const getY = (value: number) => {
@@ -200,22 +217,18 @@ export const TimelineChart = ({
                 })}
               </svg>
 
-              {/* X-Axis labels - show week starts only */}
+              {/* X-Axis labels - show every other week to avoid crowding */}
               <div className="mt-2 relative h-6">
-                {weeks.slice(0, -1).map((week, index) => {
-                  const weekIndex = data.findIndex(d => 
-                    format(d.date, 'yyyy-MM-dd') === format(week, 'yyyy-MM-dd')
-                  );
-                  if (weekIndex === -1) return null;
-                  
-                  const x = (weekIndex / (data.length - 1)) * 100;
+                {data.filter((_, index) => index % 2 === 0).map((point, displayIndex) => {
+                  const actualIndex = displayIndex * 2;
+                  const x = (actualIndex / (data.length - 1)) * 100;
                   return (
                     <div
-                      key={index}
+                      key={actualIndex}
                       className="absolute text-xs text-muted-foreground"
                       style={{ left: `${x}%`, transform: 'translateX(-50%)' }}
                     >
-                      {format(week, 'MMM d')}
+                      {format(point.date, 'MMM d')}
                     </div>
                   );
                 })}

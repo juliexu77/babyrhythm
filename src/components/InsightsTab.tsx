@@ -40,12 +40,14 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   // Calculate metrics for overview strip
   const overviewMetrics = useMemo(() => {
+    // Exclude today - use yesterday as the end date
     const now = new Date();
+    const yesterday = startOfDay(subDays(now, 1));
     
     // Get data for different time periods
     const getMetricsForPeriod = (daysBack: number) => {
-      const startDate = startOfDay(subDays(now, daysBack));
-      const days = eachDayOfInterval({ start: startDate, end: now });
+      const startDate = startOfDay(subDays(yesterday, daysBack));
+      const days = eachDayOfInterval({ start: startDate, end: yesterday });
       
       const dailyData = days.map(day => {
         const dayActivities = getActivitiesByDate(activities, day);
@@ -69,7 +71,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
         );
         
-        // Feed volume (oz)
+        // Feed volume (oz) - cap individual feeds at reasonable max (20oz per feed)
         const feeds = dayActivities.filter(a => a.type === 'feed');
         let totalVolume = 0;
         feeds.forEach(feed => {
@@ -78,7 +80,9 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
               feed.details.quantity,
               feed.details.unit
             );
-            totalVolume += normalized.value;
+            // Cap individual feed at 20oz to avoid outliers
+            const cappedValue = Math.min(normalized.value, 20);
+            totalVolume += cappedValue;
           }
         });
         
@@ -151,7 +155,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         threeMonthAvg: threeMonths.avgDayNaps.toFixed(1),
         sparklineData: getMetricsForPeriod(30).sparkline.slice(0, 14).map((_, i) => 
           getMetricsForPeriod(30).sparkline.length > i ? 
-          getActivitiesByDate(activities, subDays(now, 13 - i))
+          getActivitiesByDate(activities, subDays(yesterday, 13 - i))
             .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length 
           : 0
         ),
@@ -164,15 +168,16 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         change: calcChange(oneMonth.avgFeedVolume, threeMonths.avgFeedVolume),
         threeMonthAvg: threeMonths.avgFeedVolume.toFixed(0),
         sparklineData: eachDayOfInterval({ 
-          start: subDays(now, 13), 
-          end: now 
+          start: subDays(yesterday, 13), 
+          end: yesterday
         }).map(day => {
           const dayFeeds = getActivitiesByDate(activities, day).filter(a => a.type === 'feed');
           let total = 0;
           dayFeeds.forEach(f => {
             if (f.details?.quantity) {
               const normalized = normalizeVolume(f.details.quantity, f.details.unit);
-              total += normalized.value;
+              // Cap at 20oz per feed
+              total += Math.min(normalized.value, 20);
             }
           });
           return total;
@@ -186,8 +191,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         change: calcChange(oneMonth.avgWakeWindow, threeMonths.avgWakeWindow),
         threeMonthAvg: threeMonths.avgWakeWindow.toFixed(1),
         sparklineData: eachDayOfInterval({ 
-          start: subDays(now, 13), 
-          end: now 
+          start: subDays(yesterday, 13), 
+          end: yesterday
         }).map(day => {
           const dayNaps = getActivitiesByDate(activities, day)
             .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.startTime && a.details?.endTime);
@@ -245,7 +250,9 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           feed.details.quantity,
           feed.details.unit
         );
-        total += normalized.value;
+        // Cap individual feed at 20oz to avoid data entry errors
+        const cappedValue = Math.min(normalized.value, 20);
+        total += cappedValue;
       }
     });
     
