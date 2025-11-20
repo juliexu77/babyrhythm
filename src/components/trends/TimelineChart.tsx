@@ -167,28 +167,48 @@ export const TimelineChart = ({
       yTicks.push(...Array.from(uniqueValues).sort((a, b) => a - b));
     }
 
+    // Helper to create smooth curve through points
+    const smoothCurve = (points: {x: number, y: number}[]) => {
+      if (points.length === 0) return '';
+      if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+      
+      let path = `M ${points[0].x} ${points[0].y}`;
+      
+      for (let i = 0; i < points.length - 1; i++) {
+        const current = points[i];
+        const next = points[i + 1];
+        
+        // Control points for smooth curve
+        const controlPointX = (current.x + next.x) / 2;
+        
+        path += ` Q ${controlPointX} ${current.y}, ${controlPointX} ${(current.y + next.y) / 2}`;
+        path += ` Q ${controlPointX} ${next.y}, ${next.x} ${next.y}`;
+      }
+      
+      return path;
+    };
+
     // Generate line path - skip zero values to avoid connecting through missing data
     const pathSegments: string[] = [];
-    let currentSegment: string[] = [];
+    let currentPoints: {x: number, y: number}[] = [];
     
     chartData.forEach((d, i) => {
       if (d.value === 0) {
         // End current segment if we have one
-        if (currentSegment.length > 0) {
-          pathSegments.push(currentSegment.join(' '));
-          currentSegment = [];
+        if (currentPoints.length > 0) {
+          pathSegments.push(smoothCurve(currentPoints));
+          currentPoints = [];
         }
       } else {
         const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
         const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
-        const command = currentSegment.length === 0 ? 'M' : 'L';
-        currentSegment.push(`${command} ${x} ${y}`);
+        currentPoints.push({ x, y });
       }
     });
     
     // Add final segment if exists
-    if (currentSegment.length > 0) {
-      pathSegments.push(currentSegment.join(' '));
+    if (currentPoints.length > 0) {
+      pathSegments.push(smoothCurve(currentPoints));
     }
     
     const pathData = pathSegments.join(' ');
@@ -198,14 +218,37 @@ export const TimelineChart = ({
         <svg width="100%" height={height + 40} className="overflow-visible">
           {/* Expected range band */}
           {expectedRange && (
-            <rect
-              x={yAxisLabelWidth}
-              y={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
-              width={chartWidth}
-              height={((expectedRange.max - expectedRange.min) / (yAxisMax - yAxisMin)) * height}
-              fill="hsl(var(--primary))"
-              opacity={0.1}
-            />
+            <>
+              <rect
+                x={yAxisLabelWidth}
+                y={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
+                width={chartWidth}
+                height={((expectedRange.max - expectedRange.min) / (yAxisMax - yAxisMin)) * height}
+                fill="hsl(var(--primary))"
+                opacity={0.15}
+              />
+              {/* Top and bottom border lines for the expected range */}
+              <line
+                x1={yAxisLabelWidth}
+                y1={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
+                x2={yAxisLabelWidth + chartWidth}
+                y2={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
+                stroke="hsl(var(--primary))"
+                strokeWidth="1"
+                opacity="0.3"
+                strokeDasharray="4 2"
+              />
+              <line
+                x1={yAxisLabelWidth}
+                y1={(1 - (expectedRange.min - yAxisMin) / (yAxisMax - yAxisMin)) * height}
+                x2={yAxisLabelWidth + chartWidth}
+                y2={(1 - (expectedRange.min - yAxisMin) / (yAxisMax - yAxisMin)) * height}
+                stroke="hsl(var(--primary))"
+                strokeWidth="1"
+                opacity="0.3"
+                strokeDasharray="4 2"
+              />
+            </>
           )}
 
           {/* Y-axis labels */}
