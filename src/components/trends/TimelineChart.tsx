@@ -167,14 +167,31 @@ export const TimelineChart = ({
       yTicks.push(...Array.from(uniqueValues).sort((a, b) => a - b));
     }
 
-    // Generate line path
-    const pathData = chartData
-      .map((d, i) => {
+    // Generate line path - skip zero values to avoid connecting through missing data
+    const pathSegments: string[] = [];
+    let currentSegment: string[] = [];
+    
+    chartData.forEach((d, i) => {
+      if (d.value === 0) {
+        // End current segment if we have one
+        if (currentSegment.length > 0) {
+          pathSegments.push(currentSegment.join(' '));
+          currentSegment = [];
+        }
+      } else {
         const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
         const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
-        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-      })
-      .join(' ');
+        const command = currentSegment.length === 0 ? 'M' : 'L';
+        currentSegment.push(`${command} ${x} ${y}`);
+      }
+    });
+    
+    // Add final segment if exists
+    if (currentSegment.length > 0) {
+      pathSegments.push(currentSegment.join(' '));
+    }
+    
+    const pathData = pathSegments.join(' ');
 
     return (
       <div className="p-4">
@@ -186,8 +203,8 @@ export const TimelineChart = ({
               y={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
               width={chartWidth}
               height={((expectedRange.max - expectedRange.min) / (yAxisMax - yAxisMin)) * height}
-              fill="hsl(var(--muted))"
-              opacity={0.3}
+              fill="hsl(var(--primary))"
+              opacity={0.1}
             />
           )}
 
@@ -227,8 +244,11 @@ export const TimelineChart = ({
             strokeLinejoin="round"
           />
 
-          {/* Data points with tooltips */}
+          {/* Data points with tooltips - only show non-zero values */}
           {chartData.map((d, i) => {
+            // Skip rendering if no data
+            if (d.value === 0) return null;
+            
             const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
             const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
 
