@@ -159,8 +159,7 @@ export const TodaysPulse = ({
       </Collapsible>
 
       {/* What This Means Section - Collapsed by default */}
-      {biggestDeviation && (
-        <Collapsible open={meaningOpen} onOpenChange={setMeaningOpen}>
+      <Collapsible open={meaningOpen} onOpenChange={setMeaningOpen}>
           <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-muted/20 transition-colors border-t border-border/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -187,7 +186,6 @@ export const TodaysPulse = ({
             </div>
           </CollapsibleContent>
         </Collapsible>
-      )}
     </div>
   );
 };

@@ -638,7 +638,7 @@ export const useHomeTabIntelligence = (
       }
     ];
 
-    // Identify biggest deviation for AI explanation
+    // Always provide context for AI explanation (deviations or normal day)
     let biggestDeviation;
     const deviationsWithIssues = deviations.filter(d => d.hasDeviation);
     if (deviationsWithIssues.length > 0) {
@@ -648,6 +648,14 @@ export const useHomeTabIntelligence = (
         normal: `Expected ${priority.category === 'sleep' ? expected.naps[0] + '-' + expected.naps[1] + ' naps' : expected.feeds[0] + '-' + expected.feeds[1] + ' feeds'}`,
         actual: priority.details,
         context: `7-day average: ${priority.category === 'sleep' ? avg7DayNaps.toFixed(1) + ' naps' : avg7DayFeeds.toFixed(1) + ' feeds'}`
+      };
+    } else {
+      // Normal day - provide positive context
+      biggestDeviation = {
+        description: 'Everything is on track today',
+        normal: `Expected ${expected.naps[0]}-${expected.naps[1]} naps, ${expected.feeds[0]}-${expected.feeds[1]} feeds`,
+        actual: `${napCount} naps, ${feedCount} feeds`,
+        context: `7-day averages: ${avg7DayNaps.toFixed(1)} naps, ${avg7DayFeeds.toFixed(1)} feeds per day`
       };
     }
 
