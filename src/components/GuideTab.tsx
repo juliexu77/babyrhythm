@@ -188,14 +188,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [rhythmInsights, setRhythmInsights] = useState<{
-    heroInsight: string;
+    heroInsight?: string;
+    whatToKnow?: string[];
     whatToDo?: string[];
     whatsNext?: string;
     prepTip?: string;
-    whyThisMatters?: string;
-    confidenceScore: string;
+    baselineContext?: string;
+    currentPattern?: string;
+    confidenceScore?: number;
+    generatedAt?: Date;
   } | null>(null);
   const [rhythmInsightsLoading, setRhythmInsightsLoading] = useState(false);
+  const [rhythmInsightsRefreshing, setRhythmInsightsRefreshing] = useState(false);
   const [aiPrediction, setAiPrediction] = useState<AISchedulePrediction | null>(null);
   const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
   const [isAdjusting, setIsAdjusting] = useState(false);
@@ -864,19 +868,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         setRhythmInsightsLoading(true);
       }
       try {
-        const { data, error } = await supabase.functions.invoke('generate-rhythm-insights', {
-          body: { 
-            activities: activities.slice(-300), // Send last 300 activities
-            babyName: household.baby_name,
-            babyAge: babyAgeInWeeks,
-            babyBirthday: household.baby_birthday,
-            aiPrediction: aiPrediction || undefined, // Optional now
-            timezone: userTimezone
-          }
+        const { data, error } = await supabase.functions.invoke('generate-guide-sections', {
+          body: { timezone: userTimezone }
         });
         
         if (error) {
-          console.error('❌ Error fetching rhythm insights:', error);
+          console.error('❌ Error fetching guide sections:', error);
           if (showLoadingState) {
             setRhythmInsightsLoading(false);
           }
@@ -884,32 +881,28 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         }
         
         if (data) {
-          console.log('✅ Rhythm insights fetched:', data);
-          const todayDate = new Date().toDateString(); // Store date stamp
+          console.log('✅ Guide sections fetched:', data);
+          const todayDate = new Date().toDateString();
           const insightData = {
             ...data,
-            generatedDate: todayDate // Add date stamp to cached data
+            generatedDate: todayDate,
+            generatedAt: new Date().toISOString()
           };
           
-          // Combine whatToDo with prepTip
-          const combinedWhatToDo = [
-            ...(data.whatToDo || []),
-            ...(data.prepTip ? [data.prepTip] : [])
-          ];
-          
           setRhythmInsights({
-            heroInsight: data.heroInsight,
-            whatToDo: combinedWhatToDo,
-            whatsNext: data.whatsNext,
-            prepTip: undefined, // Don't use prepTip separately anymore
-            whyThisMatters: data.whyThisMatters,
-            confidenceScore: data.confidenceScore
+            whatToKnow: data.what_to_know,
+            whatToDo: data.what_to_do,
+            whatsNext: data.whats_next,
+            prepTip: data.prep_tip,
+            baselineContext: data.baseline_context,
+            currentPattern: data.current_pattern,
+            generatedAt: new Date()
           });
-          localStorage.setItem('rhythmInsights', JSON.stringify(insightData));
-          localStorage.setItem('rhythmInsightsLastFetch', new Date().toISOString());
+          localStorage.setItem('guideSections', JSON.stringify(insightData));
+          localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
         }
       } catch (err) {
-        // Error handled silently
+        console.error('❌ Failed to fetch guide sections:', err);
       } finally {
         if (showLoadingState) {
           setRhythmInsightsLoading(false);
@@ -917,16 +910,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     };
 
-    const cached = localStorage.getItem('rhythmInsights');
-    const todayDate = new Date().toDateString();
+    // Load cached data IMMEDIATELY if available
+    const cachedGuideSections = localStorage.getItem('guideSections');
+    const currentDate = new Date().toDateString();
     
     // Detect nap count mismatch between cached insights and actual recent patterns
-    const hasNapCountMismatch = () => {
-      if (!cached) return false;
+    const checkNapCountMismatch = () => {
+      if (!cachedGuideSections) return false;
       
       try {
-        const parsed = JSON.parse(cached);
-        const insightText = `${parsed.whyThisMatters || ''} ${parsed.heroInsight || ''}`.toLowerCase();
+        const parsed = JSON.parse(cachedGuideSections);
+        const insightText = `${parsed.what_to_know?.join(' ') || ''} ${parsed.current_pattern || ''}`.toLowerCase();
         
         // Extract nap counts mentioned in text (e.g., "2-nap", "3 naps", "two nap")
         const napPatterns = [
@@ -971,7 +965,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         // If cached insights mention different nap count than recent pattern, invalidate
         if (!mentionedCounts.has(avgNapCount)) {
-          console.log('🔄 Rhythm insights cache invalidated: mentioned counts', Array.from(mentionedCounts), 'but recent average is', avgNapCount);
+          console.log('🔄 Guide sections cache invalidated: mentioned counts', Array.from(mentionedCounts), 'but recent average is', avgNapCount);
           return true;
         }
       } catch (e) {
@@ -981,37 +975,32 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     };
     
     // Load cached data IMMEDIATELY if available
-    if (cached) {
+    if (cachedGuideSections) {
       try {
-        const parsed = JSON.parse(cached);
+        const parsed = JSON.parse(cachedGuideSections);
         const cachedDate = parsed.generatedDate;
-        const napMismatch = hasNapCountMismatch();
+        const napMismatch = checkNapCountMismatch();
         
         // Always show cached data immediately
-        // Combine whatToDo with prepTip if prepTip exists
-        const combinedWhatToDo = [
-          ...(parsed.whatToDo || []),
-          ...(parsed.prepTip ? [parsed.prepTip] : [])
-        ];
-        
         setRhythmInsights({
-          heroInsight: parsed.heroInsight,
-          whatToDo: combinedWhatToDo,
-          whatsNext: parsed.whatsNext,
-          prepTip: undefined, // Don't use prepTip separately anymore
-          whyThisMatters: parsed.whyThisMatters,
-          confidenceScore: parsed.confidenceScore
+          whatToKnow: parsed.what_to_know,
+          whatToDo: parsed.what_to_do,
+          whatsNext: parsed.whats_next,
+          prepTip: parsed.prep_tip,
+          baselineContext: parsed.baseline_context,
+          currentPattern: parsed.current_pattern,
+          generatedAt: parsed.generatedAt ? new Date(parsed.generatedAt) : undefined
         });
         setRhythmInsightsLoading(false);
         
         // Fetch fresh data in background if cache is stale or has mismatch
-        if (cachedDate !== todayDate || napMismatch) {
-          localStorage.removeItem('rhythmInsights');
+        if (cachedDate !== currentDate || napMismatch) {
+          localStorage.removeItem('guideSections');
           fetchRhythmInsights(false); // Don't show loading state
         }
         return;
       } catch (e) {
-        localStorage.removeItem('rhythmInsights');
+        localStorage.removeItem('guideSections');
       }
     }
     
@@ -1529,12 +1518,37 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               {/* AI-Generated Guidance - Personalized to your data */}
               {hasMinimumData && (
                 <UnifiedInsightCard
+                  whatToKnow={hasTier3Data ? rhythmInsights?.whatToKnow : undefined}
                   whatToDo={hasTier3Data ? rhythmInsights?.whatToDo : undefined}
                   whatsNext={hasTier3Data ? rhythmInsights?.whatsNext : undefined}
-                  prepTip={undefined}
-                  whyThisMatters={hasTier3Data ? rhythmInsights?.heroInsight : undefined}
+                  prepTip={hasTier3Data ? rhythmInsights?.prepTip : undefined}
+                  baselineContext={hasTier3Data ? rhythmInsights?.baselineContext : undefined}
+                  currentPattern={hasTier3Data ? rhythmInsights?.currentPattern : undefined}
                   babyName={babyName}
                   loading={hasTier3Data && (rhythmInsightsLoading || !rhythmInsights)}
+                  generatedAt={hasTier3Data ? rhythmInsights?.generatedAt : undefined}
+                  onRefresh={hasTier3Data ? async () => {
+                    setRhythmInsightsRefreshing(true);
+                    localStorage.removeItem('guideSections');
+                    const { data, error } = await supabase.functions.invoke('generate-guide-sections', {
+                      body: { timezone: userTimezone }
+                    });
+                    if (data && !error) {
+                      const newInsights = {
+                        whatToKnow: data.what_to_know,
+                        whatToDo: data.what_to_do,
+                        whatsNext: data.whats_next,
+                        prepTip: data.prep_tip,
+                        baselineContext: data.baseline_context,
+                        currentPattern: data.current_pattern,
+                        generatedAt: new Date()
+                      };
+                      setRhythmInsights(newInsights);
+                      localStorage.setItem('guideSections', JSON.stringify({ ...data, generatedAt: new Date().toISOString() }));
+                    }
+                    setRhythmInsightsRefreshing(false);
+                  } : undefined}
+                  refreshing={rhythmInsightsRefreshing}
                 />
               )}
             </>
