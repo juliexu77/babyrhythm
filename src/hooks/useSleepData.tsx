@@ -1,6 +1,6 @@
 import { Activity } from "@/components/ActivityCard";
 import { useHousehold } from "./useHousehold";
-import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
+import { calculateAgeInWeeks } from "@/utils/ageAppropriateBaselines";
 import { SleepDataDay, AverageDailySummary, SleepBlock } from "@/types/sleep";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getActivityEventDate } from "@/utils/activityDate";
