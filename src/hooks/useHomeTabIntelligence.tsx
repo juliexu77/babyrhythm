@@ -620,7 +620,7 @@ export const useHomeTabIntelligence = (
     }
 
     return { deviations, biggestDeviation };
-  }, [activities, currentActivity, babyBirthday]);
+  }, [activities, currentActivity, babyBirthday, nightSleepStartHour, nightSleepEndHour]);
 
   return {
     currentActivity,
