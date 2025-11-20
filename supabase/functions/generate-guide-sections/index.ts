@@ -129,11 +129,48 @@ serve(async (req) => {
     const ageWeeks = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
     const ageString = `${ageMonths}m${ageWeeks % 4}w`;
 
+    // Calculate actual nap pattern from last 3 days
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+    const recentForNapPattern = activities.filter(a => new Date(a.logged_at) >= threeDaysAgo);
+    
+    const napsByDay: Record<string, number> = {};
+    recentForNapPattern
+      .filter(a => a.type === 'nap')
+      .forEach(nap => {
+        if (!nap.details?.startTime) return;
+        const timeMatch = nap.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!timeMatch) return;
+        
+        let hours = parseInt(timeMatch[1]);
+        const period = timeMatch[3].toUpperCase();
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        // Use household's night sleep window
+        const isDaytime = hours >= nightSleepEndHour && hours < nightSleepStartHour;
+        if (!isDaytime) return;
+        
+        // Get date string
+        const activityDate = nap.details?.date_local || new Date(nap.logged_at).toISOString().split('T')[0];
+        napsByDay[activityDate] = (napsByDay[activityDate] || 0) + 1;
+      });
+    
+    const napCounts = Object.values(napsByDay);
+    const actualNapPattern = napCounts.length > 0 
+      ? Math.min(...napCounts) === Math.max(...napCounts)
+        ? `${Math.min(...napCounts)} naps consistently`
+        : `${Math.min(...napCounts)}-${Math.max(...napCounts)} naps (transitioning)`
+      : null;
+
     // Get age-appropriate baseline expectations
     const baselineSchedule = getBaselineForAge(ageWeeks);
     const baselineContext = baselineSchedule ? 
-      `Age-appropriate baseline (${ageWeeks} weeks): ${baselineSchedule.napCount} naps, ${baselineSchedule.wakeWindows}, ${baselineSchedule.totalSleep} total sleep` :
+      `Age-appropriate baseline (${ageWeeks} weeks): ${baselineSchedule.napCount}, ${baselineSchedule.wakeWindows}, ${baselineSchedule.totalSleep} total sleep` :
       null;
+    
+    const currentPatternContext = actualNapPattern 
+      ? `Current pattern (last 3 days): ${actualNapPattern}`
+      : null;
 
     // Fetch last 7 days of activities
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -266,6 +303,7 @@ serve(async (req) => {
       insights: insights,
       age: ageString,
       baseline_context: baselineContext,
+      current_pattern_context: currentPatternContext,
       context_flags: [],
       data_quality: dataQuality,
       metrics: deltas
@@ -853,6 +891,7 @@ Rules:
   const userPrompt = `Analyze this baby activity data and generate intelligent guidance:
 
 Age: ${payload.age}
+${payload.current_pattern_context ? `${payload.current_pattern_context}` : ''}
 ${payload.baseline_context ? `Developmental baseline: ${payload.baseline_context}` : ''}
 Current pattern: ${payload.tone_chip} (${payload.streak_length}-day streak)
 Data quality: ${(payload.data_quality * 100).toFixed(0)}%
@@ -866,7 +905,8 @@ ${insightsText}
 Generate:
 1. "what_to_know": 2-3 bullets explaining WHAT'S HAPPENING and WHY IT MATTERS developmentally
    - Focus on interpreting the changes in context of baby's age and development
-   - Reference the developmental baseline to provide context (e.g., "transitioning from 3 to 2 naps, typical for this age")
+   - Reference the current pattern and developmental baseline to provide accurate context
+   - If the current pattern shows a range (e.g., "2-3 naps"), acknowledge the transition is happening
    - Mention trends like "naps lengthening" or "feeding becoming more efficient" when relevant
    
 2. "what_to_do": 2-3 actionable, age-appropriate steps
@@ -879,7 +919,7 @@ Generate:
 4. "prep_tip": One concrete, anticipatory tip (≤18 words)
    - Help parents prepare for what's coming based on current trends and age-appropriate expectations
 
-Return ONLY valid JSON with these four keys. Be intelligent about which changes matter most and reference age-appropriate baselines when relevant.`;
+Return ONLY valid JSON with these four keys. Be intelligent about which changes matter most and reference the actual observed pattern when relevant.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
