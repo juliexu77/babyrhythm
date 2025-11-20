@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { differenceInWeeks, startOfWeek, format, startOfMonth, addWeeks } from "date-fns";
+import { differenceInWeeks } from "date-fns";
 import { baselineWakeWindows } from "@/utils/ageAppropriateBaselines";
 
 interface CohortRange {
@@ -9,7 +8,7 @@ interface CohortRange {
   max: number | null;
 }
 
-// Fallback to age-appropriate baselines when cohort data unavailable
+// Get age-appropriate developmental baselines from expert sources
 const getBaselineRange = (ageInWeeks: number, metricType: string) => {
   const baseline = baselineWakeWindows.find(
     b => ageInWeeks >= b.ageStart && ageInWeeks <= b.ageEnd
@@ -57,7 +56,7 @@ export const useTimelineCohortRanges = (
   metricType: 'nightSleep' | 'dayNaps' | 'feedVolume' | 'wakeWindows' | undefined
 ) => {
   return useQuery({
-    queryKey: ['timeline-cohort-ranges', babyBirthday, weeks.map(w => w.toISOString()), metricType],
+    queryKey: ['timeline-baseline-ranges', babyBirthday, weeks.map(w => w.toISOString()), metricType],
     queryFn: async (): Promise<CohortRange[]> => {
       if (!babyBirthday || !metricType || weeks.length === 0) {
         return weeks.map(w => ({ weekStart: w, min: null, max: null }));
@@ -65,8 +64,8 @@ export const useTimelineCohortRanges = (
 
       const birthDate = new Date(babyBirthday);
 
-      // For each timeline week, calculate the baby's age and find matching cohort data
-      const rangePromises = weeks.map(async (weekStart) => {
+      // For each timeline week, calculate the baby's age and use developmental baselines
+      const ranges = weeks.map((weekStart) => {
         // Calculate baby's age in weeks at this timeline point
         const ageInWeeks = differenceInWeeks(weekStart, birthDate);
         
@@ -74,91 +73,23 @@ export const useTimelineCohortRanges = (
           return { weekStart, min: null, max: null };
         }
 
-        // To find cohort data for babies of this age:
-        // We need cohort_month where (week_start_date - cohort_month) ≈ ageInWeeks
-        // So cohort_month = week_start_date - ageInWeeks
-        const targetCohortBirthDate = addWeeks(weekStart, -ageInWeeks);
-        const cohortMonth = format(startOfMonth(targetCohortBirthDate), 'yyyy-MM-dd');
-        const targetWeekStart = format(startOfWeek(weekStart, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-
-        console.log('🔍 Cohort lookup:', {
-          weekStart: format(weekStart, 'MMM d, yyyy'),
-          babyAgeWeeks: ageInWeeks,
-          babyAgeMonths: (ageInWeeks / 4.33).toFixed(1),
-          cohortMonth,
-          targetWeekStart
-        });
-
-        // Fetch cohort statistics for babies of this age
-        const { data, error } = await supabase
-          .from('cohort_statistics')
-          .select('night_sleep_hours, naps_per_day, avg_feed_volume, cohort_label')
-          .eq('cohort_month', cohortMonth)
-          .eq('week_start_date', targetWeekStart)
-          .maybeSingle();
-
-        if (error) {
-          console.error('❌ Cohort fetch error:', error);
-        }
-
-        // If no cohort data, fall back to age-appropriate baselines
-        if (!data) {
-          console.warn('⚠️ No cohort data, using baseline for age:', ageInWeeks, 'weeks');
-          const baselineRange = getBaselineRange(ageInWeeks, metricType);
-          if (baselineRange) {
-            console.log('✅ Using baseline range:', baselineRange);
-            return {
-              weekStart,
-              min: baselineRange.min,
-              max: baselineRange.max
-            };
-          }
+        // Get age-appropriate developmental baseline
+        const baselineRange = getBaselineRange(ageInWeeks, metricType);
+        
+        if (!baselineRange) {
           return { weekStart, min: null, max: null };
         }
 
-        console.log('✅ Cohort data found:', {
-          weekStart: format(weekStart, 'MMM d'),
-          cohortLabel: data.cohort_label,
-          naps: data.naps_per_day,
-          nightSleep: data.night_sleep_hours
-        });
-
-        // Extract min/max based on metric type (using ±15% of average as range)
-        let value: number | null = null;
-        if (metricType === 'nightSleep') {
-          value = data.night_sleep_hours;
-        } else if (metricType === 'dayNaps') {
-          value = data.naps_per_day;
-        } else if (metricType === 'feedVolume') {
-          value = data.avg_feed_volume;
-        }
-
-        if (value === null) {
-          // Fall back to baselines
-          const baselineRange = getBaselineRange(ageInWeeks, metricType);
-          if (baselineRange) {
-            return {
-              weekStart,
-              min: baselineRange.min,
-              max: baselineRange.max
-            };
-          }
-          return { weekStart, min: null, max: null };
-        }
-
-        // Create range: ±0.75 for naps (since it's discrete), ±15% for continuous metrics
-        const variance = metricType === 'dayNaps' ? 0.75 : value * 0.15;
         return {
           weekStart,
-          min: Math.max(0, value - variance),
-          max: value + variance
+          min: baselineRange.min,
+          max: baselineRange.max
         };
       });
 
-      return Promise.all(rangePromises);
+      return ranges;
     },
     enabled: !!babyBirthday && !!metricType && weeks.length > 0,
     staleTime: 1000 * 60 * 60, // 1 hour
-    retry: 1,
   });
 };
