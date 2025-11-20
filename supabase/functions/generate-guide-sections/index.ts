@@ -7,8 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Baseline age-appropriate expectations (source of truth: huckleberrySchedules.ts)
-// These must stay synchronized with src/utils/huckleberrySchedules.ts
+// Baseline age-appropriate expectations (source of truth: ageAppropriateBaselines.ts)
+// These must stay synchronized with src/utils/ageAppropriateBaselines.ts
+// Data compiled from: Huckleberry, Taking Cara Babies, AAP guidelines
 interface BaselineSchedule {
   ageStart: number;
   ageEnd: number;

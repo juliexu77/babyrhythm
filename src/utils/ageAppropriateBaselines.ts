@@ -1,4 +1,8 @@
-// Based on Huckleberry's age-appropriate nap schedules with detailed wake windows
+// Age-appropriate baselines compiled from multiple expert sources:
+// - Huckleberry's sleep data and research
+// - Taking Cara Babies schedules
+// - American Academy of Pediatrics sleep guidelines
+// This is the single source of truth for age-appropriate expectations
 
 export interface WakeWindowData {
   ageStart: number; // weeks
