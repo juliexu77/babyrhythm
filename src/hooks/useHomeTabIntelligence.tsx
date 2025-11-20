@@ -123,6 +123,38 @@ export const useHomeTabIntelligence = (
       };
     }
 
+    // Check if last activity is an ongoing nap/sleep (has startTime but no endTime)
+    if (lastActivity.type === 'nap' && lastActivity.details?.startTime && !lastActivity.details?.endTime) {
+      // Parse the startTime to calculate accurate duration
+      let napStartTime: Date;
+      const match = lastActivity.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        let hours = parseInt(match[1]);
+        const minutes = parseInt(match[2]);
+        const period = match[3].toUpperCase();
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        const loggedDate = new Date(lastActivity.loggedAt);
+        napStartTime = new Date(loggedDate);
+        napStartTime.setHours(hours, minutes, 0, 0);
+      } else {
+        napStartTime = lastActivityTime;
+      }
+      
+      const sleepDuration = differenceInMinutes(new Date(), napStartTime);
+      const isNightSleepActivity = isNightSleep(lastActivity, nightSleepStartHour, nightSleepEndHour);
+      const sleepType = isNightSleepActivity ? 'sleeping' : 'napping';
+      const sleepNoun = isNightSleepActivity ? 'Sleep' : 'Nap';
+      
+      return {
+        type: isNightSleepActivity ? 'sleeping' : 'napping',
+        duration: sleepDuration,
+        statusText: `${babyName}'s ${sleepType} — ${sleepNoun} in progress`,
+        startTime: napStartTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+      };
+    }
+
     // Otherwise, baby is awake
     // Use the nap with the most recent END time (handles overnight sleep and optimistic updates)
     const napsWithEnd = activities
