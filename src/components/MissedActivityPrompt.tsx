@@ -7,12 +7,14 @@ import { format } from "date-fns";
 interface MissedActivityPromptProps {
   suggestion: MissedActivitySuggestion;
   onAccept: () => void;
+  onEdit: () => void;
   onDismiss: () => void;
 }
 
 export const MissedActivityPrompt = ({ 
   suggestion, 
   onAccept, 
+  onEdit,
   onDismiss 
 }: MissedActivityPromptProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +49,16 @@ export const MissedActivityPrompt = ({
               className="bg-purple-600 hover:bg-purple-700 text-white"
             >
               {isLoading ? "Logging..." : "Yes, log it"}
+            </Button>
+            
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onEdit}
+              disabled={isLoading}
+              className="border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+            >
+              Edit
             </Button>
             
             <Button

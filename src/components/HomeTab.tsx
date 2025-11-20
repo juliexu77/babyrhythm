@@ -1394,6 +1394,17 @@ const lastDiaper = displayActivities
                     }
                   }
                 }}
+                onEdit={() => {
+                  const { activityType, subType } = missedActivitySuggestion;
+                  
+                  if (subType === 'morning-wake' && ongoingNap) {
+                    // For morning wake, open the edit modal for the ongoing nap
+                    onEditActivity(ongoingNap);
+                  } else {
+                    // For other activities, open the add activity modal
+                    onAddActivity?.(activityType);
+                  }
+                }}
                 onDismiss={() => {
                   // Dismissed - hook handles localStorage
                 }}
