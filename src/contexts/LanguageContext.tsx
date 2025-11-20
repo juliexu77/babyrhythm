@@ -346,7 +346,7 @@ const translations = {
     lowConfidence: "Low confidence",
     confidence: "confidence",
     
-    // Huckleberry schedule card
+    // Age-appropriate schedule card
     whatToExpectAt: "What to Expect at",
     weeks: "Weeks",
     newborn: "Newborn",
@@ -831,7 +831,7 @@ const translations = {
     lowConfidence: "低置信度",
     confidence: "置信度",
     
-    // Huckleberry schedule card
+    // Age-appropriate schedule card
     whatToExpectAt: "在",
     weeks: "周时的预期",
     newborn: "新生儿",

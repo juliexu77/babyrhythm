@@ -12,7 +12,7 @@ export interface WakeWindowData {
   totalSleep: string;
 }
 
-export const huckleberryWakeWindows: WakeWindowData[] = [
+export const baselineWakeWindows: WakeWindowData[] = [
   // 0-2 weeks
   { ageStart: 0, ageEnd: 2, wakeWindows: ["45min-1hr"], napCount: "6-8", totalSleep: "16-20hrs" },
   // 3-4 weeks  
@@ -59,7 +59,7 @@ export interface NapSchedule {
   totalSleep: string;
 }
 
-export const huckleberrySchedules: NapSchedule[] = [
+export const baselineSchedules: NapSchedule[] = [
   {
     ageStart: 0,
     ageEnd: 6,
@@ -122,7 +122,7 @@ export const huckleberrySchedules: NapSchedule[] = [
 ];
 
 export function getScheduleForAge(ageInWeeks: number): NapSchedule | null {
-  return huckleberrySchedules.find(
+  return baselineSchedules.find(
     schedule => ageInWeeks >= schedule.ageStart && ageInWeeks <= schedule.ageEnd
   ) || null;
 }
@@ -174,7 +174,7 @@ export function getFeedingGuidanceForAge(ageInWeeks: number) {
 }
 
 export function getWakeWindowForAge(ageInWeeks: number): WakeWindowData | null {
-  return huckleberryWakeWindows.find(
+  return baselineWakeWindows.find(
     data => ageInWeeks >= data.ageStart && ageInWeeks <= data.ageEnd
   ) || null;
 }
@@ -226,7 +226,7 @@ export function getNextNapRecommendation(
       
       return {
         nextNapTime: `${displayHour}:${nextNapMin.toString().padStart(2, '0')} ${period}`,
-        reason: `Based on Huckleberry's schedule for ${Math.floor(ageInWeeks)} week old babies`,
+        reason: `Based on age-appropriate schedule for ${Math.floor(ageInWeeks)} week old babies`,
         confidence: 0.8
       };
     }
