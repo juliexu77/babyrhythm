@@ -7,6 +7,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Baseline age-appropriate expectations (from Huckleberry data)
+interface BaselineSchedule {
+  ageStart: number;
+  ageEnd: number;
+  napCount: string;
+  wakeWindows: string;
+  totalSleep: string;
+  description: string;
+}
+
+const BASELINE_SCHEDULES: BaselineSchedule[] = [
+  { ageStart: 0, ageEnd: 6, napCount: "5-6 naps", wakeWindows: "45min-1.5hr wake windows", totalSleep: "14-17hrs", description: "newborn frequent naps" },
+  { ageStart: 7, ageEnd: 15, napCount: "3-4 naps", wakeWindows: "1.5-2.5hr wake windows", totalSleep: "12-15hrs", description: "3-nap schedule emerging" },
+  { ageStart: 16, ageEnd: 24, napCount: "3 naps", wakeWindows: "2-3hr wake windows", totalSleep: "12-15hrs", description: "established 3-nap rhythm" },
+  { ageStart: 25, ageEnd: 35, napCount: "2-3 naps", wakeWindows: "2.5-3.5hr wake windows", totalSleep: "12-14hrs", description: "2-nap transition window" },
+  { ageStart: 36, ageEnd: 52, napCount: "2 naps", wakeWindows: "3.5-4hr wake windows", totalSleep: "11-14hrs", description: "solid 2-nap pattern" },
+  { ageStart: 53, ageEnd: 64, napCount: "1-2 naps", wakeWindows: "4-5hr wake windows", totalSleep: "11-13hrs", description: "1-nap transition starting" },
+  { ageStart: 65, ageEnd: 104, napCount: "1 nap", wakeWindows: "5-6hr wake windows", totalSleep: "11-13hrs", description: "single afternoon nap" },
+  { ageStart: 105, ageEnd: 260, napCount: "0-1 naps", wakeWindows: "6hr+ wake windows", totalSleep: "10-12hrs", description: "nap becoming optional" }
+];
+
+function getBaselineForAge(ageWeeks: number): BaselineSchedule | null {
+  return BASELINE_SCHEDULES.find(b => ageWeeks >= b.ageStart && ageWeeks <= b.ageEnd) || null;
+}
+
 interface Activity {
   id: string;
   type: string;
@@ -86,12 +111,29 @@ serve(async (req) => {
       throw new Error('Baby birthday not found');
     }
 
+    // Get user's night sleep window preferences
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('night_sleep_start_hour, night_sleep_start_minute, night_sleep_end_hour, night_sleep_end_minute')
+      .eq('user_id', user.id)
+      .single();
+
+    // Default to 7 PM - 7 AM if not set
+    const nightSleepStartHour = profile?.night_sleep_start_hour ?? 19;
+    const nightSleepEndHour = profile?.night_sleep_end_hour ?? 7;
+
     // Calculate age
     const birthDate = new Date(household.baby_birthday);
     const now = new Date();
     const ageMonths = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30));
-    const ageWeeks = Math.floor(((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) % 4);
-    const ageString = `${ageMonths}m${ageWeeks}w`;
+    const ageWeeks = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+    const ageString = `${ageMonths}m${ageWeeks % 4}w`;
+
+    // Get age-appropriate baseline expectations
+    const baselineSchedule = getBaselineForAge(ageWeeks);
+    const baselineContext = baselineSchedule ? 
+      `Age-appropriate baseline (${ageWeeks} weeks): ${baselineSchedule.napCount} naps, ${baselineSchedule.wakeWindows}, ${baselineSchedule.totalSleep} total sleep` :
+      null;
 
     // Fetch last 7 days of activities
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -183,8 +225,8 @@ serve(async (req) => {
       previousActivitiesFiltered.map(a => getActivityDateString(a))
     ).size;
     
-    const recentMetrics = calculateMetrics(recentActivitiesFiltered);
-    const previousMetrics = calculateMetrics(previousActivitiesFiltered);
+    const recentMetrics = calculateMetrics(recentActivitiesFiltered, nightSleepStartHour, nightSleepEndHour);
+    const previousMetrics = calculateMetrics(previousActivitiesFiltered, nightSleepStartHour, nightSleepEndHour);
     
     // Calculate trend analysis (nap & feed durations over time)
     // Create Date objects for analyzeTrends function (convert date strings back to Date)
@@ -223,6 +265,7 @@ serve(async (req) => {
       streak_length: streakLength,
       insights: insights,
       age: ageString,
+      baseline_context: baselineContext,
       context_flags: [],
       data_quality: dataQuality,
       metrics: deltas
@@ -373,7 +416,7 @@ function filterOutliers(activities: Activity[], tz: string): Activity[] {
   return includedDays.flatMap(day => day.activities);
 }
 
-function calculateMetrics(activities: Activity[]) {
+function calculateMetrics(activities: Activity[], nightSleepStartHour: number, nightSleepEndHour: number) {
   const sleepActivities = activities.filter(a => a.type === 'nap');
   const feedActivities = activities.filter(a => a.type === 'feed');
   
@@ -416,9 +459,9 @@ function calculateMetrics(activities: Activity[]) {
   // Calculate TOTAL sleep (all naps including night sleep)
   const totalSleepMinutes = sleepActivities.reduce((sum, a) => sum + calculateSleepDuration(a), 0);
   
-  // Filter for daytime naps only (7 AM - 7 PM starts)
+  // Filter for daytime naps only (using household's night sleep window)
   const daytimeNaps = sleepActivities.filter(a => {
-    if (!a.details?.startTime) return false; // exclude if no time info
+    if (!a.details?.startTime) return false;
     const timeMatch = a.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
     if (!timeMatch) return false;
     
@@ -428,8 +471,12 @@ function calculateMetrics(activities: Activity[]) {
     if (period === 'PM' && hours !== 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
     
-    // Only include naps that start between 7 AM and 7 PM
-    return hours >= 7 && hours < 19;
+    // Use household's night sleep window (e.g., if night sleep is 7 PM - 7 AM, daytime is 7 AM - 7 PM)
+    const nightEnd = nightSleepEndHour;
+    const nightStart = nightSleepStartHour;
+    
+    // Daytime naps are those that start after night sleep ends and before night sleep starts
+    return hours >= nightEnd && hours < nightStart;
   });
   
   // Calculate daytime nap duration
@@ -806,6 +853,7 @@ Rules:
   const userPrompt = `Analyze this baby activity data and generate intelligent guidance:
 
 Age: ${payload.age}
+${payload.baseline_context ? `Developmental baseline: ${payload.baseline_context}` : ''}
 Current pattern: ${payload.tone_chip} (${payload.streak_length}-day streak)
 Data quality: ${(payload.data_quality * 100).toFixed(0)}%
 
@@ -818,6 +866,7 @@ ${insightsText}
 Generate:
 1. "what_to_know": 2-3 bullets explaining WHAT'S HAPPENING and WHY IT MATTERS developmentally
    - Focus on interpreting the changes in context of baby's age and development
+   - Reference the developmental baseline to provide context (e.g., "transitioning from 3 to 2 naps, typical for this age")
    - Mention trends like "naps lengthening" or "feeding becoming more efficient" when relevant
    
 2. "what_to_do": 2-3 actionable, age-appropriate steps
@@ -825,12 +874,12 @@ Generate:
    - Use softened language if data quality < 60%
    
 3. "whats_next": One forward-looking sentence (≤25 words) about expected progression
-   - Connect current patterns to next developmental phase
+   - Connect current patterns to next developmental phase based on typical milestones
    
 4. "prep_tip": One concrete, anticipatory tip (≤18 words)
-   - Help parents prepare for what's coming based on current trends
+   - Help parents prepare for what's coming based on current trends and age-appropriate expectations
 
-Return ONLY valid JSON with these four keys. Be intelligent about which changes matter most.`;
+Return ONLY valid JSON with these four keys. Be intelligent about which changes matter most and reference age-appropriate baselines when relevant.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
