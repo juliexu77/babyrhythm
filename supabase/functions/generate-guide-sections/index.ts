@@ -7,7 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Baseline age-appropriate expectations (from Huckleberry data)
+// Baseline age-appropriate expectations (source of truth: huckleberrySchedules.ts)
+// These must stay synchronized with src/utils/huckleberrySchedules.ts
 interface BaselineSchedule {
   ageStart: number;
   ageEnd: number;
@@ -18,14 +19,21 @@ interface BaselineSchedule {
 }
 
 const BASELINE_SCHEDULES: BaselineSchedule[] = [
-  { ageStart: 0, ageEnd: 6, napCount: "5-6 naps", wakeWindows: "45min-1.5hr wake windows", totalSleep: "14-17hrs", description: "newborn frequent naps" },
-  { ageStart: 7, ageEnd: 15, napCount: "3-4 naps", wakeWindows: "1.5-2.5hr wake windows", totalSleep: "12-15hrs", description: "3-nap schedule emerging" },
-  { ageStart: 16, ageEnd: 24, napCount: "3 naps", wakeWindows: "2-3hr wake windows", totalSleep: "12-15hrs", description: "established 3-nap rhythm" },
-  { ageStart: 25, ageEnd: 35, napCount: "2-3 naps", wakeWindows: "2.5-3.5hr wake windows", totalSleep: "12-14hrs", description: "2-nap transition window" },
-  { ageStart: 36, ageEnd: 52, napCount: "2 naps", wakeWindows: "3.5-4hr wake windows", totalSleep: "11-14hrs", description: "solid 2-nap pattern" },
-  { ageStart: 53, ageEnd: 64, napCount: "1-2 naps", wakeWindows: "4-5hr wake windows", totalSleep: "11-13hrs", description: "1-nap transition starting" },
-  { ageStart: 65, ageEnd: 104, napCount: "1 nap", wakeWindows: "5-6hr wake windows", totalSleep: "11-13hrs", description: "single afternoon nap" },
-  { ageStart: 105, ageEnd: 260, napCount: "0-1 naps", wakeWindows: "6hr+ wake windows", totalSleep: "10-12hrs", description: "nap becoming optional" }
+  { ageStart: 0, ageEnd: 2, napCount: "6-8", wakeWindows: "45min-1hr", totalSleep: "16-20hrs", description: "newborn frequent naps" },
+  { ageStart: 3, ageEnd: 4, napCount: "5-7", wakeWindows: "1-1.5hrs", totalSleep: "15-18hrs", description: "newborn rhythm emerging" },
+  { ageStart: 5, ageEnd: 8, napCount: "4-6", wakeWindows: "1.5-2hrs", totalSleep: "14-17hrs", description: "4-5 nap schedule" },
+  { ageStart: 9, ageEnd: 12, napCount: "4-5", wakeWindows: "1.5-2.5hrs", totalSleep: "14-16hrs", description: "3-4 nap schedule" },
+  { ageStart: 13, ageEnd: 16, napCount: "3-4", wakeWindows: "2-2.5hrs", totalSleep: "12-15hrs", description: "3-nap schedule emerging" },
+  { ageStart: 17, ageEnd: 20, napCount: "3", wakeWindows: "2.5-3hrs", totalSleep: "12-15hrs", description: "established 3-nap rhythm" },
+  { ageStart: 21, ageEnd: 24, napCount: "3", wakeWindows: "2.5-3.5hrs", totalSleep: "12-14hrs", description: "solid 3-nap pattern" },
+  { ageStart: 25, ageEnd: 35, napCount: "2", wakeWindows: "3-3.5hrs", totalSleep: "12-14hrs", description: "2-nap schedule" },
+  { ageStart: 36, ageEnd: 52, napCount: "2", wakeWindows: "3.5-4hrs", totalSleep: "11-14hrs", description: "stable 2-nap pattern" },
+  { ageStart: 53, ageEnd: 65, napCount: "1-2", wakeWindows: "4-5hrs", totalSleep: "11-13hrs", description: "1-nap transition" },
+  { ageStart: 66, ageEnd: 78, napCount: "1", wakeWindows: "5-6hrs", totalSleep: "11-13hrs", description: "single afternoon nap" },
+  { ageStart: 79, ageEnd: 104, napCount: "1", wakeWindows: "5-6hrs", totalSleep: "11-13hrs", description: "consistent 1-nap schedule" },
+  { ageStart: 105, ageEnd: 156, napCount: "0-1", wakeWindows: "6-7hrs", totalSleep: "10-12hrs", description: "nap becoming optional" },
+  { ageStart: 157, ageEnd: 208, napCount: "0", wakeWindows: "all day", totalSleep: "10-12hrs", description: "no naps needed" },
+  { ageStart: 209, ageEnd: 260, napCount: "0", wakeWindows: "all day", totalSleep: "10-12hrs", description: "no naps needed" }
 ];
 
 function getBaselineForAge(ageWeeks: number): BaselineSchedule | null {
