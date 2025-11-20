@@ -7,7 +7,6 @@ import { isDaytimeNap } from "@/utils/napClassification";
 import { getActivitiesByDate } from "@/utils/activityDateFilters";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { Button } from "@/components/ui/button";
-import { MetricOverviewStrip } from "@/components/trends/MetricOverviewStrip";
 import { TimelineChart } from "@/components/trends/TimelineChart";
 import { CollectivePulse } from "@/components/home/CollectivePulse";
 import { subDays, startOfDay, eachDayOfInterval } from "date-fns";
@@ -287,9 +286,9 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   return (
     <div className="space-y-4 pb-6">
-      {/* 4-Metric Overview Strip */}
-      <div className="pt-4">
-        <MetricOverviewStrip metrics={overviewMetrics} />
+      {/* Collective Pulse */}
+      <div className="pt-4 px-2">
+        <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
       {/* Time Range Switcher */}
@@ -321,6 +320,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           color="hsl(var(--secondary))"
           yAxisFormatter={(v) => `${v.toFixed(0)}h`}
           tooltipFormatter={(v) => v.toFixed(1)}
+          babyBirthday={household?.baby_birthday}
+          metricType="nightSleep"
         />
 
         <TimelineChart
@@ -333,6 +334,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           color="hsl(var(--secondary))"
           yAxisFormatter={(v) => v.toFixed(0)}
           tooltipFormatter={(v) => v.toFixed(0)}
+          babyBirthday={household?.baby_birthday}
+          metricType="dayNaps"
         />
 
         <TimelineChart
@@ -345,6 +348,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           color="hsl(var(--secondary))"
           yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
           tooltipFormatter={(v) => v.toFixed(0)}
+          babyBirthday={household?.baby_birthday}
+          metricType="feedVolume"
         />
 
         <TimelineChart
@@ -357,12 +362,9 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           color="hsl(var(--secondary))"
           yAxisFormatter={(v) => `${v.toFixed(1)}h`}
           tooltipFormatter={(v) => v.toFixed(1)}
+          babyBirthday={household?.baby_birthday}
+          metricType="wakeWindows"
         />
-      </div>
-
-      {/* Collective Pulse */}
-      <div className="pt-2">
-        <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
     </div>
   );

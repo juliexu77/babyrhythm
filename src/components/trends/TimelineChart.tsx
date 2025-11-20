@@ -1,6 +1,8 @@
 import { Activity } from "@/components/ActivityCard";
-import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, startOfWeek, eachWeekOfInterval, endOfWeek } from "date-fns";
-import { useMemo } from "react";
+import { format, subDays, startOfDay, endOfDay, startOfWeek, eachWeekOfInterval, endOfWeek, differenceInWeeks, eachDayOfInterval } from "date-fns";
+import { useMemo, useState } from "react";
+import { baselineWakeWindows } from "@/utils/ageAppropriateBaselines";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface TimelineChartProps {
   title: string;
@@ -12,6 +14,8 @@ interface TimelineChartProps {
   color: string;
   yAxisFormatter?: (value: number) => string;
   tooltipFormatter?: (value: number) => string;
+  babyBirthday?: string;
+  metricType?: 'nightSleep' | 'dayNaps' | 'feedVolume' | 'wakeWindows';
 }
 
 export const TimelineChart = ({
@@ -23,8 +27,65 @@ export const TimelineChart = ({
   unit,
   color,
   yAxisFormatter = (v) => v.toFixed(1),
-  tooltipFormatter = (v) => v.toFixed(1)
+  tooltipFormatter = (v) => v.toFixed(1),
+  babyBirthday,
+  metricType
 }: TimelineChartProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Calculate expected range based on baby's age
+  const expectedRange = useMemo(() => {
+    if (!babyBirthday || !metricType) return null;
+    
+    const birthDate = new Date(babyBirthday);
+    const ageInWeeks = differenceInWeeks(new Date(), birthDate);
+    
+    // Find matching baseline
+    const baseline = baselineWakeWindows.find(
+      b => ageInWeeks >= b.ageStart && ageInWeeks <= b.ageEnd
+    );
+    
+    if (!baseline) return null;
+    
+    // Parse ranges based on metric type
+    if (metricType === 'nightSleep') {
+      // Parse totalSleep "14-17hrs" -> extract just night portion (rough estimate: 70% of total)
+      const match = baseline.totalSleep.match(/(\d+)-(\d+)/);
+      if (match) {
+        const min = parseInt(match[1]) * 0.6; // Rough night sleep portion
+        const max = parseInt(match[2]) * 0.75;
+        return { min, max };
+      }
+    } else if (metricType === 'dayNaps') {
+      // Parse napCount "3-4" or "3"
+      const match = baseline.napCount.match(/(\d+)(?:-(\d+))?/);
+      if (match) {
+        const min = parseInt(match[1]);
+        const max = match[2] ? parseInt(match[2]) : min;
+        return { min, max };
+      }
+    } else if (metricType === 'wakeWindows') {
+      // Parse wakeWindows "2-2.5hrs"
+      const ww = baseline.wakeWindows[0];
+      const match = ww.match(/(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)/);
+      if (match) {
+        const min = parseFloat(match[1]);
+        const max = parseFloat(match[2]);
+        return { min, max };
+      }
+    } else if (metricType === 'feedVolume') {
+      // Age-based estimates (oz per day)
+      if (ageInWeeks < 4) return { min: 18, max: 26 };
+      if (ageInWeeks < 8) return { min: 22, max: 30 };
+      if (ageInWeeks < 16) return { min: 24, max: 32 };
+      if (ageInWeeks < 24) return { min: 26, max: 34 };
+      if (ageInWeeks < 52) return { min: 24, max: 32 };
+      return { min: 20, max: 28 };
+    }
+    
+    return null;
+  }, [babyBirthday, metricType]);
+
   const chartData = useMemo(() => {
     const now = new Date();
     // Exclude today - go back to yesterday
@@ -51,192 +112,190 @@ export const TimelineChart = ({
       // Filter out zeros and calculate average
       const nonZeroValues = dailyValues.filter(v => v > 0);
       const avgValue = nonZeroValues.length > 0 
-        ? nonZeroValues.reduce((sum, v) => sum + v, 0) / nonZeroValues.length 
+        ? nonZeroValues.reduce((sum, v) => sum + v, 0) / nonZeroValues.length
         : 0;
       
       return {
-        date: weekStart,
-        value: avgValue,
-        label: format(weekStart, 'MMM d')
+        label: format(weekStart, 'M/d'),
+        value: avgValue
       };
     });
     
-    return { data, weeks, startDate, endDate };
+    return data;
   }, [activities, timeRange, dataExtractor]);
 
-  const { data, weeks } = chartData;
-  
-  // Calculate chart dimensions
-  const maxValue = Math.max(...data.map(d => d.value), 1);
-  const minValue = 0;
-  const range = maxValue - minValue;
-  const chartHeight = 240;
-  const chartWidth = 100; // percentage
-  
-  // Y-axis ticks - ensure unique values
-  const yTicks = useMemo(() => {
-    const tickCount = 5;
-    const ticks = [];
-    const step = range / tickCount;
-    
-    for (let i = 0; i <= tickCount; i++) {
-      const value = minValue + (step * i);
-      ticks.push(value);
-    }
-    
-    // Remove duplicates and reverse (high to low)
-    const uniqueTicks = Array.from(new Set(ticks.map(t => Number(t.toFixed(2)))));
-    return uniqueTicks.reverse();
-  }, [minValue, range]);
+  const renderChart = (height: number) => {
+    const chartHeight = height;
+    const yAxisLabelWidth = 35;
+    const chartWidth = 280;
 
-  const getY = (value: number) => {
-    return ((maxValue - value) / range) * (chartHeight - 40) + 20;
+    if (chartData.length === 0) {
+      return (
+        <div className="p-4 text-center text-sm text-muted-foreground">
+          No data available for this time period
+        </div>
+      );
+    }
+
+    const minValue = Math.min(...chartData.map(d => d.value));
+    const maxValue = Math.max(...chartData.map(d => d.value));
+    const valueRange = maxValue - minValue;
+    
+    // Include expected range in axis calculation if available
+    const rangeMin = expectedRange ? Math.min(minValue, expectedRange.min) : minValue;
+    const rangeMax = expectedRange ? Math.max(maxValue, expectedRange.max) : maxValue;
+    const fullRange = rangeMax - rangeMin;
+    
+    const yAxisMin = Math.max(0, rangeMin - fullRange * 0.15);
+    const yAxisMax = rangeMax + fullRange * 0.15;
+    
+    // Generate Y-axis ticks - ensure unique values and integer spacing for naps
+    const yTicks = [];
+    if (metricType === 'dayNaps') {
+      // For naps, use integer increments
+      const minTick = Math.floor(yAxisMin);
+      const maxTick = Math.ceil(yAxisMax);
+      for (let i = minTick; i <= maxTick; i++) {
+        yTicks.push(i);
+      }
+    } else {
+      const tickCount = 4;
+      const uniqueValues = new Set<number>();
+      for (let i = 0; i <= tickCount; i++) {
+        const value = yAxisMin + (yAxisMax - yAxisMin) * (i / tickCount);
+        uniqueValues.add(value);
+      }
+      yTicks.push(...Array.from(uniqueValues).sort((a, b) => a - b));
+    }
+
+    // Generate line path
+    const pathData = chartData
+      .map((d, i) => {
+        const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
+        const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
+        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+      })
+      .join(' ');
+
+    return (
+      <div className="p-4">
+        <svg width="100%" height={height + 40} className="overflow-visible">
+          {/* Expected range band */}
+          {expectedRange && (
+            <rect
+              x={yAxisLabelWidth}
+              y={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
+              width={chartWidth}
+              height={((expectedRange.max - expectedRange.min) / (yAxisMax - yAxisMin)) * height}
+              fill="hsl(var(--muted))"
+              opacity={0.3}
+            />
+          )}
+
+          {/* Y-axis labels */}
+          {yTicks.map((tick, i) => {
+            const y = (1 - (tick - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
+            return (
+              <g key={`y-${i}`}>
+                <text
+                  x={yAxisLabelWidth - 8}
+                  y={y + 4}
+                  textAnchor="end"
+                  className="text-[10px] fill-muted-foreground"
+                >
+                  {yAxisFormatter(tick)}
+                </text>
+                <line
+                  x1={yAxisLabelWidth}
+                  y1={y}
+                  x2={yAxisLabelWidth + chartWidth}
+                  y2={y}
+                  stroke="hsl(var(--border))"
+                  strokeWidth="1"
+                  opacity="0.3"
+                />
+              </g>
+            );
+          })}
+
+          {/* Data line */}
+          <path
+            d={pathData}
+            fill="none"
+            stroke={color}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Data points with tooltips */}
+          {chartData.map((d, i) => {
+            const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
+            const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
+
+            return (
+              <g key={`point-${i}`}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="4"
+                  fill={color}
+                  stroke="hsl(var(--background))"
+                  strokeWidth="2"
+                  className="cursor-pointer hover:r-6 transition-all"
+                />
+                <title>
+                  {d.label}: {tooltipFormatter(d.value)}{unit}
+                </title>
+              </g>
+            );
+          })}
+
+          {/* X-axis labels - show every other week */}
+          {chartData.map((d, i) => {
+            if (i % 2 !== 0) return null;
+            const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
+            return (
+              <text
+                key={`x-${i}`}
+                x={x}
+                y={height + 25}
+                textAnchor="middle"
+                className="text-[10px] fill-muted-foreground"
+              >
+                {d.label}
+              </text>
+            );
+          })}
+        </svg>
+      </div>
+    );
   };
 
-  // Create line path
-  const linePath = useMemo(() => {
-    if (data.length === 0) return '';
-    
-    const points = data.map((point, index) => {
-      const x = (index / (data.length - 1)) * chartWidth;
-      const y = getY(point.value);
-      return `${x},${y}`;
-    });
-    
-    return `M ${points.join(' L ')}`;
-  }, [data, chartWidth, range]);
-
   return (
-    <div className="mx-2 bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-border/30">
-        <div className="flex items-center gap-2">
+    <>
+      <div 
+        className="mx-2 rounded-xl bg-card shadow-sm border border-border overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+        onClick={() => setIsExpanded(true)}
+      >
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
           {icon}
-          <h3 className="text-sm font-medium text-foreground">{title}</h3>
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         </div>
+        {renderChart(180)}
       </div>
 
-      {/* Chart */}
-      <div className="px-6 py-6">
-        {data.length === 0 ? (
-          <div className="h-[240px] flex items-center justify-center text-muted-foreground text-sm">
-            No data available for this time range
-          </div>
-        ) : (
-          <div className="relative">
-            {/* Y-Axis */}
-            <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-muted-foreground pr-2">
-              {yTicks.map((tick, index) => (
-                <div key={index} className="text-right">
-                  {yAxisFormatter(tick)}
-                </div>
-              ))}
-            </div>
-
-            {/* Chart Area */}
-            <div className="ml-14">
-              <svg 
-                className="w-full" 
-                viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                preserveAspectRatio="none"
-                style={{ height: `${chartHeight}px` }}
-              >
-                {/* Week boundary lines */}
-                {weeks.map((week, index) => {
-                  const weekIndex = data.findIndex(d => 
-                    format(d.date, 'yyyy-MM-dd') === format(week, 'yyyy-MM-dd')
-                  );
-                  if (weekIndex === -1) return null;
-                  
-                  const x = (weekIndex / (data.length - 1)) * chartWidth;
-                  return (
-                    <line
-                      key={index}
-                      x1={x}
-                      y1={20}
-                      x2={x}
-                      y2={chartHeight - 20}
-                      stroke="hsl(var(--border))"
-                      strokeWidth="0.3"
-                      strokeDasharray="2,2"
-                      opacity="0.5"
-                    />
-                  );
-                })}
-
-                {/* Horizontal grid lines */}
-                {yTicks.map((tick, index) => (
-                  <line
-                    key={index}
-                    x1={0}
-                    y1={getY(tick)}
-                    x2={chartWidth}
-                    y2={getY(tick)}
-                    stroke="hsl(var(--border))"
-                    strokeWidth="0.2"
-                    opacity="0.3"
-                  />
-                ))}
-
-                {/* Data line */}
-                <path
-                  d={linePath}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
-                />
-
-                {/* Data points */}
-                {data.map((point, index) => {
-                  const x = (index / (data.length - 1)) * chartWidth;
-                  const y = getY(point.value);
-                  
-                  return (
-                    <g key={index}>
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r="1.5"
-                        fill={color}
-                        vectorEffect="non-scaling-stroke"
-                      />
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r="4"
-                        fill="transparent"
-                        className="cursor-pointer hover:fill-primary/10 transition-colors"
-                      >
-                        <title>{`${point.label}: ${tooltipFormatter(point.value)}${unit}`}</title>
-                      </circle>
-                    </g>
-                  );
-                })}
-              </svg>
-
-              {/* X-Axis labels - show every other week to avoid crowding */}
-              <div className="mt-2 relative h-6">
-                {data.filter((_, index) => index % 2 === 0).map((point, displayIndex) => {
-                  const actualIndex = displayIndex * 2;
-                  const x = (actualIndex / (data.length - 1)) * 100;
-                  return (
-                    <div
-                      key={actualIndex}
-                      className="absolute text-xs text-muted-foreground"
-                      style={{ left: `${x}%`, transform: 'translateX(-50%)' }}
-                    >
-                      {format(point.date, 'MMM d')}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+        <DialogContent className="max-w-[95vw] max-h-[90vh] p-0">
+          <DialogHeader className="px-4 py-3 border-b border-border">
+            <DialogTitle className="flex items-center gap-2">
+              {icon}
+              {title}
+            </DialogTitle>
+          </DialogHeader>
+          {renderChart(400)}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
