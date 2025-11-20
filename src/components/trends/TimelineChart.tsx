@@ -1,7 +1,13 @@
 import { Activity } from "@/components/ActivityCard";
 import { format, subDays, startOfDay, endOfDay, startOfWeek, eachWeekOfInterval, endOfWeek, differenceInWeeks, eachDayOfInterval } from "date-fns";
-import { useMemo } from "react";
-import { baselineWakeWindows } from "@/utils/ageAppropriateBaselines";
+import { useMemo, useState } from "react";
+import { useTimelineCohortRanges } from "@/hooks/useTimelineCohortRanges";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TimelineChartProps {
   title: string;
@@ -30,62 +36,9 @@ export const TimelineChart = ({
   babyBirthday,
   metricType
 }: TimelineChartProps) => {
-  
+  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
 
-  // Calculate expected range based on baby's age
-  const expectedRange = useMemo(() => {
-    if (!babyBirthday || !metricType) return null;
-    
-    const birthDate = new Date(babyBirthday);
-    const ageInWeeks = differenceInWeeks(new Date(), birthDate);
-    
-    // Find matching baseline
-    const baseline = baselineWakeWindows.find(
-      b => ageInWeeks >= b.ageStart && ageInWeeks <= b.ageEnd
-    );
-    
-    if (!baseline) return null;
-    
-    // Parse ranges based on metric type
-    if (metricType === 'nightSleep') {
-      // Parse totalSleep "14-17hrs" -> extract just night portion (rough estimate: 70% of total)
-      const match = baseline.totalSleep.match(/(\d+)-(\d+)/);
-      if (match) {
-        const min = parseInt(match[1]) * 0.6; // Rough night sleep portion
-        const max = parseInt(match[2]) * 0.75;
-        return { min, max };
-      }
-    } else if (metricType === 'dayNaps') {
-      // Parse napCount "3-4" or "3"
-      const match = baseline.napCount.match(/(\d+)(?:-(\d+))?/);
-      if (match) {
-        const min = parseInt(match[1]);
-        const max = match[2] ? parseInt(match[2]) : min;
-        return { min, max };
-      }
-    } else if (metricType === 'wakeWindows') {
-      // Parse wakeWindows "2-2.5hrs"
-      const ww = baseline.wakeWindows[0];
-      const match = ww.match(/(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)/);
-      if (match) {
-        const min = parseFloat(match[1]);
-        const max = parseFloat(match[2]);
-        return { min, max };
-      }
-    } else if (metricType === 'feedVolume') {
-      // Age-based estimates (oz per day)
-      if (ageInWeeks < 4) return { min: 18, max: 26 };
-      if (ageInWeeks < 8) return { min: 22, max: 30 };
-      if (ageInWeeks < 16) return { min: 24, max: 32 };
-      if (ageInWeeks < 24) return { min: 26, max: 34 };
-      if (ageInWeeks < 52) return { min: 24, max: 32 };
-      return { min: 20, max: 28 };
-    }
-    
-    return null;
-  }, [babyBirthday, metricType]);
-
-  const chartData = useMemo(() => {
+  const { chartData, weeks } = useMemo(() => {
     const now = new Date();
     // Exclude today - go back to yesterday
     const yesterday = startOfDay(subDays(now, 1));
@@ -120,8 +73,11 @@ export const TimelineChart = ({
       };
     });
     
-    return data;
+    return { chartData: data, weeks };
   }, [activities, timeRange, dataExtractor]);
+
+  // Fetch cohort ranges for the timeline
+  const { data: cohortRanges } = useTimelineCohortRanges(babyBirthday, weeks, metricType);
 
   const renderChart = (height: number) => {
     const chartHeight = height;
@@ -138,11 +94,13 @@ export const TimelineChart = ({
 
     const minValue = Math.min(...chartData.map(d => d.value));
     const maxValue = Math.max(...chartData.map(d => d.value));
-    const valueRange = maxValue - minValue;
     
-    // Include expected range in axis calculation if available
-    const rangeMin = expectedRange ? Math.min(minValue, expectedRange.min) : minValue;
-    const rangeMax = expectedRange ? Math.max(maxValue, expectedRange.max) : maxValue;
+    // Include cohort ranges in axis calculation if available
+    const cohortMin = cohortRanges?.reduce((min, r) => Math.min(min, r.min || Infinity), Infinity) || minValue;
+    const cohortMax = cohortRanges?.reduce((max, r) => Math.max(max, r.max || -Infinity), -Infinity) || maxValue;
+    
+    const rangeMin = Math.min(minValue, cohortMin);
+    const rangeMax = Math.max(maxValue, cohortMax);
     const fullRange = rangeMax - rangeMin;
     
     const yAxisMin = Math.max(0, rangeMin - fullRange * 0.15);
@@ -213,43 +171,64 @@ export const TimelineChart = ({
     
     const pathData = pathSegments.join(' ');
 
+    // Generate cohort range paths
+    const cohortRangePath = cohortRanges && cohortRanges.length > 0 ? (() => {
+      const validRanges = cohortRanges.filter(r => r.min !== null && r.max !== null);
+      if (validRanges.length === 0) return null;
+
+      // Create top line (max values) and bottom line (min values)
+      const topPoints: {x: number, y: number}[] = [];
+      const bottomPoints: {x: number, y: number}[] = [];
+
+      validRanges.forEach((range, i) => {
+        const dataIndex = cohortRanges.indexOf(range);
+        const x = yAxisLabelWidth + (dataIndex / (chartData.length - 1)) * chartWidth;
+        const yMax = (1 - ((range.max || 0) - yAxisMin) / (yAxisMax - yAxisMin)) * height;
+        const yMin = (1 - ((range.min || 0) - yAxisMin) / (yAxisMax - yAxisMin)) * height;
+        
+        topPoints.push({ x, y: yMax });
+        bottomPoints.push({ x, y: yMin });
+      });
+
+      // Create filled area path
+      const topPath = smoothCurve(topPoints);
+      const bottomPath = smoothCurve([...bottomPoints].reverse());
+      
+      return { topPath, bottomPath, topPoints, bottomPoints };
+    })() : null;
+
     return (
-      <div className="p-4">
-        <svg width="100%" height={height + 40} className="overflow-visible">
-          {/* Expected range band */}
-          {expectedRange && (
-            <>
-              <rect
-                x={yAxisLabelWidth}
-                y={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
-                width={chartWidth}
-                height={((expectedRange.max - expectedRange.min) / (yAxisMax - yAxisMin)) * height}
-                fill="hsl(var(--primary))"
-                opacity={0.15}
-              />
-              {/* Top and bottom border lines for the expected range */}
-              <line
-                x1={yAxisLabelWidth}
-                y1={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
-                x2={yAxisLabelWidth + chartWidth}
-                y2={(1 - (expectedRange.max - yAxisMin) / (yAxisMax - yAxisMin)) * height}
-                stroke="hsl(var(--primary))"
-                strokeWidth="1"
-                opacity="0.3"
-                strokeDasharray="4 2"
-              />
-              <line
-                x1={yAxisLabelWidth}
-                y1={(1 - (expectedRange.min - yAxisMin) / (yAxisMax - yAxisMin)) * height}
-                x2={yAxisLabelWidth + chartWidth}
-                y2={(1 - (expectedRange.min - yAxisMin) / (yAxisMax - yAxisMin)) * height}
-                stroke="hsl(var(--primary))"
-                strokeWidth="1"
-                opacity="0.3"
-                strokeDasharray="4 2"
-              />
-            </>
-          )}
+      <TooltipProvider>
+        <div className="p-4">
+          <svg width="100%" height={height + 40} className="overflow-visible">
+            {/* Cohort range filled area */}
+            {cohortRangePath && (
+              <>
+                <path
+                  d={`${cohortRangePath.topPath} L ${cohortRangePath.bottomPoints[cohortRangePath.bottomPoints.length - 1].x} ${cohortRangePath.bottomPoints[cohortRangePath.bottomPoints.length - 1].y} ${cohortRangePath.bottomPath.replace('M', 'L')} Z`}
+                  fill="hsl(var(--primary))"
+                  opacity={0.15}
+                />
+                {/* Top line */}
+                <path
+                  d={cohortRangePath.topPath}
+                  fill="none"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="1.5"
+                  opacity="0.4"
+                  strokeDasharray="4 2"
+                />
+                {/* Bottom line */}
+                <path
+                  d={smoothCurve(cohortRangePath.bottomPoints)}
+                  fill="none"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="1.5"
+                  opacity="0.4"
+                  strokeDasharray="4 2"
+                />
+              </>
+            )}
 
           {/* Y-axis labels */}
           {yTicks.map((tick, i) => {
@@ -294,22 +273,32 @@ export const TimelineChart = ({
             
             const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
             const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
+            const isHovered = hoveredPoint === i;
 
             return (
-              <g key={`point-${i}`}>
-                <circle
-                  cx={x}
-                  cy={y}
-                  r="4"
-                  fill={color}
-                  stroke="hsl(var(--background))"
-                  strokeWidth="2"
-                  className="cursor-pointer hover:r-6 transition-all"
-                />
-                <title>
-                  {d.label}: {tooltipFormatter(d.value)}{unit}
-                </title>
-              </g>
+              <Tooltip key={`point-${i}`} open={isHovered}>
+                <TooltipTrigger asChild>
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={isHovered ? "6" : "4"}
+                    fill={color}
+                    stroke="hsl(var(--background))"
+                    strokeWidth="2"
+                    className="cursor-pointer transition-all"
+                    onMouseEnter={() => setHoveredPoint(i)}
+                    onMouseLeave={() => setHoveredPoint(null)}
+                    onClick={() => setHoveredPoint(isHovered ? null : i)}
+                    style={{ pointerEvents: 'all' }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="text-sm">
+                    <div className="font-semibold">{d.label}</div>
+                    <div>{tooltipFormatter(d.value)} {unit}</div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             );
           })}
 
@@ -331,6 +320,7 @@ export const TimelineChart = ({
           })}
         </svg>
       </div>
+      </TooltipProvider>
     );
   };
 
