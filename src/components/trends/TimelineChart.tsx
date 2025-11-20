@@ -1,8 +1,7 @@
 import { Activity } from "@/components/ActivityCard";
 import { format, subDays, startOfDay, endOfDay, startOfWeek, eachWeekOfInterval, endOfWeek, differenceInWeeks, eachDayOfInterval } from "date-fns";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { baselineWakeWindows } from "@/utils/ageAppropriateBaselines";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface TimelineChartProps {
   title: string;
@@ -31,7 +30,7 @@ export const TimelineChart = ({
   babyBirthday,
   metricType
 }: TimelineChartProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  
 
   // Calculate expected range based on baby's age
   const expectedRange = useMemo(() => {
@@ -273,29 +272,12 @@ export const TimelineChart = ({
   };
 
   return (
-    <>
-      <div 
-        className="mx-2 rounded-xl bg-card shadow-sm border border-border overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-        onClick={() => setIsExpanded(true)}
-      >
-        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-          {icon}
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        </div>
-        {renderChart(180)}
+    <div className="mx-2 rounded-xl bg-card shadow-sm border border-border overflow-hidden">
+      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+        {icon}
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
       </div>
-
-      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-        <DialogContent className="max-w-[95vw] max-h-[90vh] p-0">
-          <DialogHeader className="px-4 py-3 border-b border-border">
-            <DialogTitle className="flex items-center gap-2">
-              {icon}
-              {title}
-            </DialogTitle>
-          </DialogHeader>
-          {renderChart(400)}
-        </DialogContent>
-      </Dialog>
-    </>
+      {renderChart(180)}
+    </div>
   );
 };
