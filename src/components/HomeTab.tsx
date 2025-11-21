@@ -1395,7 +1395,12 @@ const lastDiaper = displayActivities
                   }
                 }}
                 onDismiss={() => {
-                  // Dismissed - hook handles localStorage
+                  const { activityType, subType } = missedActivitySuggestion;
+                  const dismissalKey = `missed-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
+                  localStorage.setItem(dismissalKey, 'true');
+                  
+                  // Force re-render to hide the prompt
+                  window.dispatchEvent(new CustomEvent('refetch-activities'));
                 }}
               />
             </div>
