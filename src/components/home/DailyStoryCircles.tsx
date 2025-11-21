@@ -35,13 +35,19 @@ export const DailyStoryCircles = ({
   }
 
   return (
-    <div className="px-4 pb-2">
+    <div className="px-6 pb-2">
       <button 
         onClick={() => onSelectDay(todayStr, todayActivities)}
-        className="group relative w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card/50 hover:bg-card/60 transition-all duration-300 border border-primary/20 overflow-hidden backdrop-blur-sm"
+        className="group relative w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card/50 hover:bg-card/60 transition-all duration-300 overflow-hidden backdrop-blur-sm"
       >
-        {/* Subtle shimmer border effect */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-50" style={{ backgroundSize: '200% 100%' }} />
+        {/* Rainbow shimmer border effect */}
+        <div className="absolute inset-0 rounded-2xl opacity-60 animate-rainbow-shimmer" 
+          style={{
+            background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--accent)), hsl(280 65% 60%), transparent)',
+            backgroundSize: '200% 100%'
+          }} 
+        />
+        <div className="absolute inset-[1px] rounded-2xl bg-card/50 backdrop-blur-sm" />
         
         {/* Icon - photo if available from today, otherwise ambient gradient */}
         {hasPhotoFromToday ? (

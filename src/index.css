@@ -1095,6 +1095,15 @@
     0%, 100% { opacity: 0.3; }
     50% { opacity: 0.6; }
   }
+  
+  @keyframes rainbow-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
 
   .animate-story-shimmer {
     animation: story-shimmer 3s ease-in-out infinite;
@@ -1106,6 +1115,10 @@
 
   .animate-story-breathe {
     animation: story-breathe 3s ease-in-out infinite;
+  }
+  
+  .animate-rainbow-shimmer {
+    animation: rainbow-shimmer 3s linear infinite;
   }
 
   .animate-story-fade-in {
