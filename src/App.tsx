@@ -17,7 +17,6 @@ import BabySetup from "./pages/BabySetup";
 import VillageInvite from "./pages/VillageInvite";
 import NotFound from "./pages/NotFound";
 import WeeklyReport from "./pages/WeeklyReport";
-import BabyProfile from "./pages/BabyProfile";
 
 const queryClient = new QueryClient();
 
@@ -48,7 +47,6 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/login" element={<Auth />} />
                     <Route path="/invite/:code" element={<InviteAccept />} />
-                    <Route path="/baby-profile" element={<BabyProfile />} />
                     <Route path="/report/weekly" element={<WeeklyReport />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />

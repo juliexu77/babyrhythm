@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, Ruler, Scale, Moon } from "lucide-react";
+import { Calendar, Ruler, Scale, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -66,8 +65,7 @@ const calculatePercentile = (
   return 97;
 };
 
-export const BabyProfile = () => {
-  const navigate = useNavigate();
+export const BabyProfile = ({ onClose }: { onClose?: () => void }) => {
   const { household, updateHousehold } = useHousehold();
   const { userProfile, updateUserProfile } = useUserProfile();
   const { activities } = useActivities();
@@ -144,20 +142,11 @@ export const BabyProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-y-auto">
       <div className="max-w-md mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="p-2"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
           <h1 className="text-h2 text-foreground">Baby Profile</h1>
-          <div className="w-10" /> {/* Spacer for center alignment */}
         </div>
 
         {/* Baby Photo */}

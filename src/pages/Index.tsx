@@ -38,6 +38,8 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { BabyProfile } from "@/pages/BabyProfile";
  
 const Index = () => {
   const { user, loading } = useAuth();
@@ -370,6 +372,7 @@ const ongoingNap = (() => {
   const [showPediatricianReport, setShowPediatricianReport] = useState(false);
   const [showCSVExport, setShowCSVExport] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [showBabyProfile, setShowBabyProfile] = useState(false);
   const [recentCollaboratorActivity, setRecentCollaboratorActivity] = useState<{
     userName: string;
     activityType: string;
@@ -1244,7 +1247,7 @@ return (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => navigate('/baby-profile')}
+                onClick={() => setShowBabyProfile(true)}
                 className="p-0 rounded-full h-10 w-10"
               >
                 <Avatar className="h-10 w-10">
@@ -1610,6 +1613,13 @@ return (
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Baby Profile Drawer */}
+        <Sheet open={showBabyProfile} onOpenChange={setShowBabyProfile}>
+          <SheetContent side="left" className="w-full sm:max-w-md p-0">
+            <BabyProfile onClose={() => setShowBabyProfile(false)} />
+          </SheetContent>
+        </Sheet>
 
       </div>
     </ErrorBoundary>
