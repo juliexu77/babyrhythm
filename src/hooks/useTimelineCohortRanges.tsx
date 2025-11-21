@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { differenceInWeeks } from "date-fns";
-import { baselineWakeWindows } from "@/utils/ageAppropriateBaselines";
+import { baselineWakeWindows, getFeedingGuidanceForAge } from "@/utils/ageAppropriateBaselines";
 
 interface CohortRange {
   weekStart: Date;
@@ -39,12 +39,19 @@ const getBaselineRange = (ageInWeeks: number, metricType: string) => {
       return { min, max };
     }
   } else if (metricType === 'feedVolume') {
-    if (ageInWeeks < 4) return { min: 18, max: 26 };
-    if (ageInWeeks < 8) return { min: 22, max: 30 };
-    if (ageInWeeks < 16) return { min: 24, max: 32 };
-    if (ageInWeeks < 24) return { min: 26, max: 34 };
-    if (ageInWeeks < 52) return { min: 24, max: 32 };
-    return { min: 20, max: 28 };
+    // Get feeding guidance from expert sources
+    const guidance = getFeedingGuidanceForAge(ageInWeeks);
+    
+    // Parse the amount range (e.g., "4-6 oz (120-180ml)")
+    const match = guidance.amount.match(/(\d+)-(\d+)\s*oz/);
+    if (match) {
+      const min = parseInt(match[1]);
+      const max = parseInt(match[2]);
+      return { min, max };
+    }
+    
+    // Fallback if parsing fails
+    return { min: 4, max: 8 };
   }
   
   return null;
