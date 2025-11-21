@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Activity } from "@/components/ActivityCard";
 import { format } from "date-fns";
 import { isNightSleep, isDaytimeNap, parseTimeToHour } from "@/utils/napClassification";
@@ -351,6 +351,17 @@ export function useMissedActivityDetection(
   nightSleepEndHour: number = 7,
   householdId?: string
 ): MissedActivitySuggestion | null {
+  const [currentTimeKey, setCurrentTimeKey] = useState(() => new Date().toISOString());
+
+  // Re-check every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTimeKey(new Date().toISOString());
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   return useMemo(() => {
     const currentTime = new Date();
     const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
@@ -642,5 +653,5 @@ export function useMissedActivityDetection(
     
     console.log('❌ NO SUGGESTIONS FOUND - All patterns checked, none triggered');
     return null;
-  }, [activities, babyName, nightSleepStartHour, nightSleepEndHour, householdId]);
+  }, [activities, babyName, nightSleepStartHour, nightSleepEndHour, householdId, currentTimeKey]);
 }
