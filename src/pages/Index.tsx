@@ -24,7 +24,8 @@ import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, User, Undo2, Filter, Share, X, Sun, Bell } from "lucide-react";
+import { Calendar, User, Undo2, Filter, Share, X, Sun, Bell, Settings } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -32,7 +33,7 @@ import {
   DropdownMenuCheckboxItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useLanguage } from "@/contexts/LanguageContext";
+
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -40,7 +41,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
  
 const Index = () => {
   const { user, loading } = useAuth();
-  const { t } = useLanguage();
+  
   const { userProfile } = useUserProfile();
   const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   const {
@@ -744,7 +745,7 @@ const ongoingNap = (() => {
               <div className="space-y-4 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>{t('noActivitiesStartAdding')}</p>
+                    <p>No activities yet. Start adding activities to see your timeline!</p>
                   </div>
                 ) : (
                   (() => {
@@ -846,9 +847,9 @@ const ongoingNap = (() => {
                           
                           let displayDate;
                           if (dateKey === todayKey) {
-                            displayDate = t('today');
+                            displayDate = 'Today';
                           } else if (dateKey === yesterdayKey) {
-                            displayDate = t('yesterday');
+                            displayDate = 'Yesterday';
                           } else {
                             displayDate = date.toLocaleDateString("en-US", { 
                               weekday: "long", 
@@ -1160,7 +1161,7 @@ const ongoingNap = (() => {
                                 onClick={() => setShowFullTimeline(!showFullTimeline)}
                                 className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
                               >
-                                {`${t('showMoreDays')} ${sortedDates.length - visibleDates.length} ${t('moreDays')}`}
+                                {`Show ${sortedDates.length - visibleDates.length} more days`}
                               </button>
                             </div>
                           </div>
@@ -1173,7 +1174,7 @@ const ongoingNap = (() => {
                               onClick={() => setShowFullTimeline(false)}
                               className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
                             >
-                              {t('showLess')}
+                              Show less
                             </button>
                           </div>
                         )}
@@ -1226,9 +1227,9 @@ const ongoingNap = (() => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center space-y-4">
-          <h2 className="text-xl font-semibold">{t('noHouseholdFound')}</h2>
-          <p className="text-muted-foreground">{t('letsSetupHousehold')}</p>
-          <Button onClick={() => navigate('/onboarding')}>{t('goToOnboarding')}</Button>
+          <h2 className="text-xl font-semibold">No Household Found</h2>
+          <p className="text-muted-foreground">Let's set up your household</p>
+          <Button onClick={() => navigate('/onboarding')}>Go to Onboarding</Button>
         </div>
       </div>
     );
@@ -1238,17 +1239,20 @@ return (
       <div className="min-h-screen bg-background pb-16 overflow-x-hidden w-full">
         <div className={`sticky top-0 z-30 bg-background border-b border-background pt-12 pb-3 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
-            {/* Left side - Notification bell */}
+            {/* Left side - Baby avatar */}
             <div className="flex items-center gap-2 w-20">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => {
-                  // TODO: Implement notifications panel
-                }}
-                className="p-2"
+                onClick={() => navigate('/baby-profile')}
+                className="p-0 rounded-full h-10 w-10"
               >
-                <Bell className="h-5 w-5" />
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={household?.baby_photo_url || undefined} />
+                  <AvatarFallback className="text-sm font-semibold">
+                    {household?.baby_name?.charAt(0).toUpperCase() || '?'}
+                  </AvatarFallback>
+                </Avatar>
               </Button>
             </div>
             
@@ -1263,24 +1267,22 @@ return (
               </h1>
             </div>
             
-            {/* Right side - User/Settings button */}
+            {/* Right side - Settings gear */}
             <div className="flex items-center gap-2 w-20 justify-end">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => {
                   if (activeTab === "settings") {
-                    // If we're already in settings, go back to previous tab
                     setActiveTab(previousTab);
                   } else {
-                    // Going to settings, save current tab as previous
                     setPreviousTab(activeTab);
                     setActiveTab("settings");
                   }
                 }}
                 className="p-2"
               >
-                <User className="h-5 w-5" />
+                <Settings className="h-5 w-5" />
               </Button>
             </div>
           </div>

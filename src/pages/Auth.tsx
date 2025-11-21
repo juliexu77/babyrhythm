@@ -3,12 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Baby, Heart, Mail, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);

@@ -1,13 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { shareInviteLink } from "@/utils/nativeShare";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
@@ -15,26 +11,19 @@ import {
   Key,
   Share,
   Users,
-  Baby,
-  Globe,
-  Calendar,
-  Moon,
   Bell
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
 import { EmailInvite } from "@/components/EmailInvite";
 import { ProfileEditModal } from "@/components/settings/ProfileEditModal";
-import { BabyEditModal } from "@/components/settings/BabyEditModal";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
+import { shareInviteLink } from "@/utils/nativeShare";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { household, generateInviteLink, switchHousehold, getUserHouseholds } = useHousehold();
-  const { userProfile, updateUserProfile } = useUserProfile();
-  const { t } = useLanguage();
+  const { household, generateInviteLink } = useHousehold();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -42,18 +31,10 @@ export const Settings = () => {
   const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
-  const [showBabyEdit, setShowBabyEdit] = useState(false);
-  const [userHouseholds, setUserHouseholds] = useState<any[]>([]);
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
     const stored = localStorage.getItem('smartRemindersEnabled');
-    return stored !== null ? stored === 'true' : true; // Default enabled
+    return stored !== null ? stored === 'true' : true;
   });
-
-  useEffect(() => {
-    if (user) {
-      getUserHouseholds().then(setUserHouseholds);
-    }
-  }, [user, household]);
 
   // Sync reminder state with localStorage changes
   useEffect(() => {
@@ -79,14 +60,14 @@ export const Settings = () => {
       if (error) throw error;
       
       toast({
-        title: t('passwordChangeEmailSent'),
-        description: t('checkEmailForInstructions')
+        title: "Password reset email sent",
+        description: "Check your email for instructions"
       });
     } catch (error) {
       console.error('Error sending password change email:', error);
       toast({
-        title: t('errorSendingEmail'),
-        description: t('failedToSendEmail'),
+        title: "Error sending email",
+        description: "Failed to send password reset email",
         variant: "destructive"
       });
     }
@@ -106,61 +87,31 @@ export const Settings = () => {
         
         if (shared) {
           toast({
-            title: t('inviteShared'),
-            description: t('shareDialogOpened'),
+            title: "Invite shared",
+            description: "Share dialog opened",
           });
         } else {
-          // Fallback to clipboard copy
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
           
           toast({
-            title: t('inviteLinkCopied'),
-            description: t('shareWithPartner'),
+            title: "Invite link copied",
+            description: "Share with your partner",
           });
         }
       }
     } catch (err) {
       toast({
-        title: t('failedToCreateInvite'),
-        description: t('pleaseRetryInvite'),
+        title: "Failed to create invite",
+        description: "Please try again",
         variant: "destructive",
       });
     }
   };
 
   const getUserDisplayName = () => {
-    const name = userProfile?.full_name || user?.user_metadata?.full_name;
-    return name || user?.email?.split('@')[0] || "User";
-  };
-
-  const getBabyDisplayName = () => {
-    return household?.baby_name || t('enterBabyName');
-  };
-
-  const getBabyAge = () => {
-    if (!household?.baby_birthday) return "";
-    
-    const birthDate = new Date(household.baby_birthday);
-    const today = new Date();
-    
-    // Calculate months, checking if the day of the month has passed
-    let ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
-    
-    // If the current day of the month is before the birth day, subtract 1 month
-    if (today.getDate() < birthDate.getDate()) {
-      ageInMonths = Math.max(0, ageInMonths - 1);
-    }
-    
-    // Calculate weeks from the last full month boundary
-    const lastMonthDate = new Date(birthDate);
-    lastMonthDate.setMonth(birthDate.getMonth() + ageInMonths);
-    const daysSinceLastMonth = Math.floor((today.getTime() - lastMonthDate.getTime()) / (1000 * 60 * 60 * 24));
-    const weeks = Math.floor(daysSinceLastMonth / 7);
-    
-    return ageInMonths === 0 
-      ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` 
-      : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
+    const email = user?.email;
+    return email?.split('@')[0] || "User";
   };
 
   const handleReminderToggle = () => {
@@ -186,9 +137,7 @@ export const Settings = () => {
         <div className="max-w-md mx-auto px-4 py-8 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-h2 text-foreground">
-              {t('profileSettings')}
-            </h1>
+            <h1 className="text-h2 text-foreground">Settings</h1>
             <ThemeToggle showText={false} />
           </div>
 
@@ -206,79 +155,32 @@ export const Settings = () => {
             <SettingsSection>
               <SettingsRow
                 icon={<User className="w-5 h-5" />}
-                title={t('signIn')}
-                subtitle={t('signInToSave')}
+                title="Sign In"
+                subtitle="Sign in to save your data"
                 onClick={() => navigate("/auth")}
               />
             </SettingsSection>
           )}
 
-          {/* Baby Details Section */}
-          <SettingsSection title={t('babyDetails')}>
-            <SettingsRow
-              icon={<Baby className="w-5 h-5" />}
-              title={getBabyDisplayName()}
-              subtitle={getBabyAge()}
-              onClick={() => setShowBabyEdit(true)}
-            />
-            {user && userHouseholds.length > 1 && (
-              <SettingsRow
-                icon={<Users className="w-5 h-5" />}
-                title="Switch Household"
-                subtitle={`${userHouseholds.length} households available`}
-                showChevron={false}
-              >
-                <Select
-                  value={household?.id}
-                  onValueChange={async (value) => {
-                    try {
-                      await switchHousehold(value);
-                      toast({
-                        title: "Household switched",
-                        description: "You're now viewing a different household",
-                      });
-                    } catch (error) {
-                      toast({
-                        title: "Error switching household",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userHouseholds.map((h) => (
-                      <SelectItem key={h.id} value={h.id}>
-                        {h.baby_name || h.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </SettingsRow>
-            )}
-          </SettingsSection>
-
           {/* Caregivers Section */}
           {user && (
-            <SettingsSection title={t('caregivers')}>
+            <SettingsSection title="Caregivers">
               <SettingsRow
                 icon={<Share className="w-5 h-5" />}
-                title={t('shareInviteLink')}
-                subtitle={t('shareTrackingWith')}
+                title="Share Invite Link"
+                subtitle="Share tracking with caregivers"
                 onClick={handleInviteClick}
               />
               <SettingsRow
                 icon={<Users className="w-5 h-5" />}
-                title={t('manageCaregivers')}
+                title="Manage Caregivers"
                 onClick={() => setShowCaregiverManagement(true)}
               />
             </SettingsSection>
           )}
 
           {/* App Preferences Section */}
-          <SettingsSection title={t('appPreferences')}>
+          <SettingsSection title="App Preferences">
             <SettingsRow
               icon={<Bell className="w-5 h-5" />}
               title="Smart Reminders"
@@ -290,138 +192,19 @@ export const Settings = () => {
                 onCheckedChange={handleReminderToggle}
               />
             </SettingsRow>
-            <SettingsRow
-              icon={<Globe className="w-5 h-5" />}
-              title={t('language')}
-              showChevron={false}
-            >
-              <LanguageToggle />
-            </SettingsRow>
-            {user && (
-              <>
-                <SettingsRow
-                  icon={<Moon className="w-5 h-5" />}
-                  title="Night Sleep Start"
-                  subtitle="When overnight sleep typically begins"
-                  showChevron={false}
-                >
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
-                      onValueChange={async (value) => {
-                        try {
-                          const [hour, minute] = value.split(':').map(Number);
-                          await updateUserProfile({ 
-                            night_sleep_start_hour: hour,
-                            night_sleep_start_minute: minute 
-                          } as any);
-                          toast({
-                            title: "Night sleep start updated",
-                            description: "Schedule will update on next refresh",
-                          });
-                        } catch (error) {
-                          console.error('Error updating night sleep start:', error);
-                          toast({
-                            title: "Error updating setting",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                    >
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {/* Evening hours: 6 PM to 11:45 PM in 15-min increments */}
-                      {Array.from({ length: 24 }, (_, i) => {
-                        const totalMinutes = (18 * 60) + (i * 15); // Start at 6 PM (18:00)
-                        const hour = Math.floor(totalMinutes / 60);
-                        const minute = totalMinutes % 60;
-                        if (hour >= 24) return null; // Stop at 11:45 PM
-                        
-                        const displayHour = hour > 12 ? hour - 12 : hour;
-                        const minuteStr = minute.toString().padStart(2, '0');
-                        const label = `${displayHour}:${minuteStr} PM`;
-                        
-                        return (
-                          <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
-                            {label}
-                          </SelectItem>
-                        );
-                      }).filter(Boolean)}
-                     </SelectContent>
-                   </Select>
-                  </div>
-                </SettingsRow>
-                <SettingsRow
-                  icon={<Moon className="w-5 h-5" />}
-                  title="Night Sleep End"
-                  subtitle="When overnight sleep typically ends"
-                  showChevron={false}
-                >
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
-                      onValueChange={async (value) => {
-                        try {
-                          const [hour, minute] = value.split(':').map(Number);
-                          await updateUserProfile({ 
-                            night_sleep_end_hour: hour,
-                            night_sleep_end_minute: minute 
-                          } as any);
-                          toast({
-                            title: "Night sleep end updated",
-                            description: "Schedule will update on next refresh",
-                          });
-                        } catch (error) {
-                          console.error('Error updating night sleep end:', error);
-                          toast({
-                            title: "Error updating setting",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                    >
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {/* Morning hours: 5 AM to 10 AM in 15-min increments */}
-                      {Array.from({ length: 21 }, (_, i) => {
-                        const totalMinutes = (5 * 60) + (i * 15); // Start at 5 AM
-                        const hour = Math.floor(totalMinutes / 60);
-                        const minute = totalMinutes % 60;
-                        if (hour > 10) return null; // Stop at 10 AM
-                        
-                        const minuteStr = minute.toString().padStart(2, '0');
-                        const label = `${hour}:${minuteStr} AM`;
-                        
-                        return (
-                          <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
-                            {label}
-                          </SelectItem>
-                        );
-                      }).filter(Boolean)}
-                    </SelectContent>
-                   </Select>
-                  </div>
-                </SettingsRow>
-              </>
-            )}
           </SettingsSection>
-
 
           {/* Account Section */}
           {user && (
-            <SettingsSection title={t('account')}>
+            <SettingsSection title="Account">
               <SettingsRow
                 icon={<Key className="w-5 h-5" />}
-                title={t('changePassword')}
+                title="Change Password"
                 onClick={handleChangePassword}
               />
               <SettingsRow
                 icon={<LogOut className="w-5 h-5" />}
-                title={t('signOut')}
+                title="Sign Out"
                 onClick={signOut}
               />
             </SettingsSection>
@@ -443,10 +226,6 @@ export const Settings = () => {
       <ProfileEditModal 
         open={showProfileEdit} 
         onOpenChange={setShowProfileEdit} 
-      />
-      <BabyEditModal 
-        open={showBabyEdit} 
-        onOpenChange={setShowBabyEdit} 
       />
     </>
   );

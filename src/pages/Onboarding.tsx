@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 
-
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
   const { user, loading: authLoading } = useAuth();
   const { household, loading: householdLoading } = useHousehold();
+  
   // Redirect returning users with households to main app
   useEffect(() => {
     if (authLoading || householdLoading) return;
