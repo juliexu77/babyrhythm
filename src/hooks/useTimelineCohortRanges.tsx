@@ -17,12 +17,13 @@ const getBaselineRange = (ageInWeeks: number, metricType: string) => {
   if (!baseline) return null;
 
   if (metricType === 'nightSleep') {
-    const match = baseline.totalSleep.match(/(\d+)-(\d+)/);
-    if (match) {
-      const min = parseInt(match[1]) * 0.6;
-      const max = parseInt(match[2]) * 0.75;
-      return { min, max };
-    }
+    // Night sleep typically represents 60-75% of total sleep depending on age
+    // Based on Taking Cara Babies and AAP guidelines:
+    // Newborns: 8-10hrs, 3mo: 9-11hrs, 6mo: 10-12hrs, 12mo+: 10-12hrs
+    if (ageInWeeks < 8) return { min: 8, max: 10 };
+    if (ageInWeeks < 16) return { min: 9, max: 11 };
+    if (ageInWeeks < 52) return { min: 10, max: 12 };
+    return { min: 10, max: 12 };
   } else if (metricType === 'dayNaps') {
     const match = baseline.napCount.match(/(\d+)(?:-(\d+))?/);
     if (match) {
@@ -32,6 +33,20 @@ const getBaselineRange = (ageInWeeks: number, metricType: string) => {
     }
   } else if (metricType === 'wakeWindows') {
     const ww = baseline.wakeWindows[0];
+    
+    // Handle special cases like "All day"
+    if (ww === "All day") return { min: 10, max: 14 };
+    
+    // Handle minute-based wake windows (e.g., "45min-1hr")
+    if (ww.includes('min')) {
+      const minMatch = ww.match(/(\d+)min/);
+      const hrMatch = ww.match(/(\d+(?:\.\d+)?)hr/);
+      if (minMatch && hrMatch) {
+        return { min: parseInt(minMatch[1]) / 60, max: parseFloat(hrMatch[1]) };
+      }
+    }
+    
+    // Handle hour-based wake windows (e.g., "1.5-2.5hrs")
     const match = ww.match(/(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)/);
     if (match) {
       const min = parseFloat(match[1]);
