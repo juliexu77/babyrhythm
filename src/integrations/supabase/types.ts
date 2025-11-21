@@ -210,10 +210,14 @@ export type Database = {
           feed_unit: string | null
           household_id: string
           id: string
+          illness_notes: string | null
+          illness_severity: string | null
+          is_sick: boolean | null
           measurements: Json | null
           nap_count: number | null
           nap_details: Json | null
           summary_date: string
+          symptoms: Json | null
           total_feed_volume: number | null
           total_nap_minutes: number | null
           updated_at: string | null
@@ -228,10 +232,14 @@ export type Database = {
           feed_unit?: string | null
           household_id: string
           id?: string
+          illness_notes?: string | null
+          illness_severity?: string | null
+          is_sick?: boolean | null
           measurements?: Json | null
           nap_count?: number | null
           nap_details?: Json | null
           summary_date: string
+          symptoms?: Json | null
           total_feed_volume?: number | null
           total_nap_minutes?: number | null
           updated_at?: string | null
@@ -246,10 +254,14 @@ export type Database = {
           feed_unit?: string | null
           household_id?: string
           id?: string
+          illness_notes?: string | null
+          illness_severity?: string | null
+          is_sick?: boolean | null
           measurements?: Json | null
           nap_count?: number | null
           nap_details?: Json | null
           summary_date?: string
+          symptoms?: Json | null
           total_feed_volume?: number | null
           total_nap_minutes?: number | null
           updated_at?: string | null
