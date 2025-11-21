@@ -514,8 +514,18 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                 </div>
               </div>
             ) : (
-              // No photo fallback
-              <div className="relative w-full h-full bg-gradient-to-br from-accent/20 to-accent/5" />
+              // No photo fallback - ambient gradient matching theme
+              <div className="relative w-full h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/15 to-primary/10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-background/30 to-transparent" />
+                
+                {/* Date subtitle for no-photo state */}
+                <div className="absolute top-8 left-6 right-6">
+                  <p className="text-sm font-medium text-foreground/80 uppercase tracking-[0.25em] animate-story-headline-fade-up">
+                    {todayDate}
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
