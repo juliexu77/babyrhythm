@@ -1476,6 +1476,7 @@ const lastDiaper = displayActivities
         <DailyStoryCircles
           activities={activities}
           babyName={babyName}
+          babyPhotoUrl={household?.baby_photo_url}
           onSelectDay={(date, dayActivities) => {
             setSelectedStoryDate(date);
             setSelectedStoryActivities(dayActivities);
