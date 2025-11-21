@@ -1516,7 +1516,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               )}
               
               {/* AI-Generated Guidance - Personalized to your data */}
-              {hasMinimumData && (
+              {hasTier3Data && (
                 <UnifiedInsightCard
                   whatToKnow={hasTier3Data ? rhythmInsights?.whatToKnow : undefined}
                   whatToDo={hasTier3Data ? rhythmInsights?.whatToDo : undefined}
