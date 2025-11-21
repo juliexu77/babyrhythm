@@ -1,6 +1,6 @@
 import { Activity } from "./ActivityCard";
 import { useState, useMemo } from "react";
-import { Moon, Milk, Clock, Sun } from "lucide-react";
+import { Moon, Milk, Clock, Sun, TrendingUp, Info } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
@@ -306,6 +306,28 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             {range === '6months' && '6 Months'}
           </Button>
         ))}
+      </div>
+
+      {/* Chart Legend */}
+      <div className="mx-2 rounded-lg bg-muted/30 border border-border/40 p-3">
+        <div className="flex items-start gap-2 mb-2">
+          <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <h4 className="text-xs font-semibold text-foreground">Chart Guide</h4>
+        </div>
+        <div className="space-y-2 ml-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-0.5 bg-secondary rounded-full" />
+            <span className="text-xs text-muted-foreground">Your baby's weekly average</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-0.5 border-t-2 border-primary/50" />
+              <div className="w-4 h-3 bg-primary/15 border-y border-primary/50" />
+              <div className="w-3 h-0.5 border-t-2 border-primary/50" />
+            </div>
+            <span className="text-xs text-muted-foreground">Age-appropriate baseline range</span>
+          </div>
+        </div>
       </div>
 
       {/* Timeline Charts */}
