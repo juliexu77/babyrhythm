@@ -1249,17 +1249,6 @@ const lastDiaper = displayActivities
     <div className="pb-24">
       <div className="pt-3 space-y-2">
 
-        {/* Daily Story Circles - full width container */}
-        <DailyStoryCircles
-          activities={activities}
-          babyName={babyName}
-          onSelectDay={(date, dayActivities) => {
-            setSelectedStoryDate(date);
-            setSelectedStoryActivities(dayActivities);
-            setShowTodaysStory(true);
-          }}
-        />
-
         {/* Today's Story Modal */}
         <TodaysStoryModal
           isOpen={showTodaysStory}
@@ -1483,6 +1472,16 @@ const lastDiaper = displayActivities
             }
           />
 
+        {/* Today's Story - moved to bottom */}
+        <DailyStoryCircles
+          activities={activities}
+          babyName={babyName}
+          onSelectDay={(date, dayActivities) => {
+            setSelectedStoryDate(date);
+            setSelectedStoryActivities(dayActivities);
+            setShowTodaysStory(true);
+          }}
+        />
 
       </div>
     </div>
