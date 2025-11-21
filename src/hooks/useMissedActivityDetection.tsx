@@ -200,7 +200,6 @@ function wasLoggedToday(
   });
 }
 
-// Analyze patterns for a specific activity type
 function analyzePattern(
   activities: Activity[], 
   type: 'nap' | 'feed',
@@ -212,14 +211,35 @@ function analyzePattern(
 ): ActivityPattern | null {
   const recent = getRecentActivities(activities, 14); // Last 14 days
   
+  console.log(`  🔍 analyzePattern called:`, {
+    type,
+    subType,
+    recentActivitiesCount: recent.length,
+    nightSleepWindow: `${nightSleepStartHour}:00-${nightSleepEndHour}:00`
+  });
+  
   let relevantActivities = recent.filter(a => a.type === type);
   
   // Filter using napClassification utilities for subtypes
   if (subType === 'bedtime') {
     // For bedtime pattern, include all historical night sleeps (start times)
-    relevantActivities = relevantActivities.filter(a => 
+    const nightSleeps = relevantActivities.filter(a => 
       isNightSleep(a, nightSleepStartHour, nightSleepEndHour)
     );
+    
+    console.log(`  🛏️ BEDTIME pattern search:`, {
+      totalNaps: relevantActivities.length,
+      nightSleepsFound: nightSleeps.length,
+      nightSleepDetails: nightSleeps.slice(0, 10).map(a => ({
+        date: getActivityEventDateString(a),
+        startTime: (a.details as any)?.startTime,
+        endTime: (a.details as any)?.endTime,
+        minutes: timeToMinutes(a),
+        readable: minutesToTime(timeToMinutes(a))
+      }))
+    });
+    
+    relevantActivities = nightSleeps;
   } else if (subType === 'morning-wake') {
     // Get wake times from completed night sleeps
     relevantActivities = relevantActivities.filter(a => 
@@ -385,14 +405,30 @@ export function useMissedActivityDetection(
       return false;
     };
     
-    console.log('🔍 MISSED ACTIVITY DETECTION START:', {
+    console.log('🛏️🛏️🛏️ MISSED BEDTIME DETECTION START 🛏️🛏️🛏️', {
       currentTime: currentTime.toLocaleTimeString(),
       currentMinutes,
+      currentTimeKey,
       totalActivities: activities.length,
       nightSleepStartHour,
       nightSleepEndHour,
-      babyName
+      babyName,
+      householdId
     });
+    
+    // Log all recent nap activities for debugging
+    const recentNaps = activities
+      .filter(a => a.type === 'nap')
+      .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())
+      .slice(0, 20);
+    
+    console.log('📊 Recent nap activities (last 20):', recentNaps.map(a => ({
+      date: getActivityEventDateString(a),
+      startTime: (a.details as any)?.startTime,
+      endTime: (a.details as any)?.endTime,
+      isNightSleep: isNightSleep(a, nightSleepStartHour, nightSleepEndHour),
+      isDaytimeNap: isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
+    })));
     
     // Define patterns to monitor in priority order (using user's night sleep settings)
     const patternsToCheck: Array<{
@@ -562,10 +598,15 @@ export function useMissedActivityDetection(
       
       // Skip if already logged today
       const alreadyLogged = wasLoggedToday(activities, patternConfig.type, patternConfig.subType, nightSleepStartHour, nightSleepEndHour);
-      console.log(`  ✅ Already logged today: ${alreadyLogged}`);
+      console.log(`  📝 Already logged today check:`, {
+        type: patternConfig.type,
+        subType: patternConfig.subType,
+        alreadyLogged,
+        nightSleepActivities: activities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).length
+      });
       
       if (alreadyLogged) {
-        console.log(`  ❌ Skipping because already logged`);
+        console.log(`  ❌ BEDTIME: Skipping because already logged tonight`);
         continue;
       }
       
@@ -580,17 +621,27 @@ export function useMissedActivityDetection(
         nightSleepEndHour
       );
       
-      console.log(`  📊 Pattern analysis:`, {
+      console.log(`  📊 BEDTIME Pattern analysis:`, {
+        type: patternConfig.type,
+        subType: patternConfig.subType,
         found: !!pattern,
         occurrences: pattern?.occurrenceCount,
         medianTime: pattern ? minutesToTime(pattern.medianTime) : 'N/A',
         medianMinutes: pattern?.medianTime,
         stdDev: pattern?.stdDev,
-        gracePeriod: pattern?.gracePeriodMinutes
+        gracePeriod: pattern?.gracePeriodMinutes,
+        historicalBedtimes: activities
+          .filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour))
+          .slice(0, 7)
+          .map(a => ({
+            date: getActivityEventDateString(a),
+            startTime: (a.details as any)?.startTime,
+            minutes: timeToMinutes(a)
+          }))
       });
       
       if (!pattern) {
-        console.log(`  ❌ No pattern found (need at least 3 historical occurrences)`);
+        console.log(`  ❌ BEDTIME: No pattern found (need at least 3 historical bedtimes in last 14 days)`);
         continue;
       }
       
@@ -625,10 +676,14 @@ export function useMissedActivityDetection(
       // Check localStorage for dismissals
       const dismissalKey = `missed-${householdId || 'household'}-${pattern.type}-${pattern.subType || 'default'}-${format(currentTime, 'yyyy-MM-dd')}`;
       const isDismissed = localStorage.getItem(dismissalKey) === 'true';
-      console.log(`  🚫 Dismissal check:`, { key: dismissalKey, dismissed: isDismissed });
+      console.log(`  🚫 BEDTIME Dismissal check:`, { 
+        key: dismissalKey, 
+        dismissed: isDismissed,
+        allKeys: Object.keys(localStorage).filter(k => k.includes('missed-'))
+      });
       
       if (isDismissed) {
-        console.log(`  ❌ Skipping because dismissed today`);
+        console.log(`  ❌ BEDTIME: Skipping because dismissed today`);
         continue;
       }
       
