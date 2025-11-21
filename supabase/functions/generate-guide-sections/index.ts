@@ -138,6 +138,30 @@ serve(async (req) => {
     const ageWeeks = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
     const ageString = `${ageMonths}m${ageWeeks % 4}w`;
 
+    // Fetch last 7 days of activities
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const { data: activities } = await supabase
+      .from('activities')
+      .select('*')
+      .eq('household_id', collaborator.household_id)
+      .gte('logged_at', sevenDaysAgo.toISOString())
+      .order('logged_at', { ascending: false });
+
+    if (!activities || activities.length === 0) {
+      return new Response(JSON.stringify({
+        data_pulse: {
+          metrics: [],
+          note: "Not enough data yet to show trends."
+        },
+        what_to_know: ["Not enough data yet — log activities to see personalized insights."],
+        what_to_do: ["Start tracking sleep, feeds, and diapers to build your rhythm profile."],
+        whats_next: "Patterns will emerge after a few days of consistent logging.",
+        prep_tip: "Set reminders to log activities in real-time for better accuracy."
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Calculate actual nap pattern from last 3 days
     const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
     const recentForNapPattern = activities.filter(a => new Date(a.logged_at) >= threeDaysAgo);
@@ -180,30 +204,6 @@ serve(async (req) => {
     const currentPatternContext = actualNapPattern 
       ? `Current pattern (last 3 days): ${actualNapPattern}`
       : null;
-
-    // Fetch last 7 days of activities
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const { data: activities } = await supabase
-      .from('activities')
-      .select('*')
-      .eq('household_id', collaborator.household_id)
-      .gte('logged_at', sevenDaysAgo.toISOString())
-      .order('logged_at', { ascending: false });
-
-    if (!activities || activities.length === 0) {
-      return new Response(JSON.stringify({
-        data_pulse: {
-          metrics: [],
-          note: "Not enough data yet to show trends."
-        },
-        what_to_know: ["Not enough data yet — log activities to see personalized insights."],
-        what_to_do: ["Start tracking sleep, feeds, and diapers to build your rhythm profile."],
-        whats_next: "Patterns will emerge after a few days of consistent logging.",
-        prep_tip: "Set reminders to log activities in real-time for better accuracy."
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
 
     // Use the timezone passed from the frontend (user's browser timezone)
     const tz = timezone;
