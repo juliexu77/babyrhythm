@@ -22,7 +22,6 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [timeRange, setTimeRange] = useState<TimeRange>('6weeks');
-  const [showBaseline, setShowBaseline] = useState(false);
   const [expandedCharts, setExpandedCharts] = useState<Record<string, boolean>>({});
 
   // Helper to parse time to minutes
@@ -332,8 +331,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </div>
       </div>
 
-      {/* Time Range Switcher + Baseline Toggle */}
-      <div className="mx-2 space-y-2">
+      {/* Time Range Switcher */}
+      <div className="mx-2">
         <div className="flex justify-center gap-2">
         {(['6weeks', '3months', '6months'] as TimeRange[]).map((range) => (
           <Button
@@ -349,43 +348,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           </Button>
         ))}
         </div>
-        
-        {/* Baseline Toggle */}
-        <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowBaseline(!showBaseline)}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            {showBaseline ? '✓ ' : ''}Show typical range
-          </Button>
-        </div>
       </div>
-
-      {/* Chart Legend - Only show when baseline is visible */}
-      {showBaseline && (
-        <div className="mx-2 rounded-lg bg-muted/30 border border-border/40 p-3">
-        <div className="flex items-start gap-2 mb-2">
-          <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-          <h4 className="text-xs font-semibold text-foreground">Chart Guide</h4>
-        </div>
-        <div className="space-y-2 ml-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-0.5 bg-secondary rounded-full" />
-            <span className="text-xs text-muted-foreground">Your baby's weekly average</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-0.5 border-t-2 border-primary/50" />
-              <div className="w-4 h-3 bg-primary/15 border-y border-primary/50" />
-              <div className="w-3 h-0.5 border-t-2 border-primary/50" />
-            </div>
-            <span className="text-xs text-muted-foreground">Age-appropriate baseline range</span>
-          </div>
-        </div>
-        </div>
-      )}
 
       {/* Collapsible Chart Sections */}
       <div className="space-y-3 px-2">
@@ -422,7 +385,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 tooltipFormatter={(v) => v.toFixed(1)}
                 babyBirthday={household?.baby_birthday}
                 metricType="nightSleep"
-                showBaseline={showBaseline}
+                showBaseline={false}
               />
             </div>
           )}
@@ -461,7 +424,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 tooltipFormatter={(v) => v.toFixed(0)}
                 babyBirthday={household?.baby_birthday}
                 metricType="dayNaps"
-                showBaseline={showBaseline}
+                showBaseline={false}
               />
             </div>
           )}
@@ -500,7 +463,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 tooltipFormatter={(v) => v.toFixed(0)}
                 babyBirthday={household?.baby_birthday}
                 metricType="feedVolume"
-                showBaseline={showBaseline}
+                showBaseline={false}
               />
             </div>
           )}
@@ -539,7 +502,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 tooltipFormatter={(v) => v.toFixed(1)}
                 babyBirthday={household?.baby_birthday}
                 metricType="wakeWindows"
-                showBaseline={showBaseline}
+                showBaseline={false}
               />
             </div>
           )}
