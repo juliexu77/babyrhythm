@@ -44,7 +44,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
   const { isNightTime, nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
@@ -193,18 +193,6 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       {/* Expandable Content */}
       {isExpanded && (
         <>
-          {/* Regression Awareness Banner */}
-          {regressionInfo && (
-            <div className="px-4 pt-4">
-              <Alert className="bg-amber-500/10 border-amber-500/30">
-                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <AlertDescription className="text-xs text-foreground/90 leading-relaxed">
-                  <span className="font-semibold">{regressionInfo.name} regression window.</span> {regressionInfo.description}
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-
           {/* Content */}
           <div className="px-4 py-5 space-y-3">
         {/* Micro Stats */}
@@ -238,8 +226,22 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
             )}
           </div>
         </div>
+          </div>
 
-            {/* Insight Text */}
+          {/* Regression Awareness Banner */}
+          {regressionInfo && (
+            <div className="px-4 pb-3">
+              <Alert className="bg-amber-500/10 border-amber-500/30">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="text-xs text-foreground/90 leading-relaxed">
+                  <span className="font-semibold">{regressionInfo.name} regression window.</span> {regressionInfo.description}
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
+          {/* Insight Text */}
+          <div className="px-4 pb-5">
             <p className="text-sm text-muted-foreground leading-relaxed">
               {cohortStats.insight_text}
             </p>
