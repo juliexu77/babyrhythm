@@ -114,7 +114,8 @@ export const useHomeTabIntelligence = (
     const duration = differenceInMinutes(new Date(), lastActivityTime);
 
     // Check if last activity is an ongoing feed (no endTime = still feeding)
-    if (lastActivity.type === 'feed' && duration < 30 && !lastActivity.details?.endTime) {
+    // Only show "in progress" for nursing feeds, not bottle feeds
+    if (lastActivity.type === 'feed' && duration < 30 && !lastActivity.details?.endTime && lastActivity.details?.feedType === 'nursing') {
       return {
         type: 'feeding',
         duration,
