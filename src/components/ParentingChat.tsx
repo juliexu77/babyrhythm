@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/utils/logger";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -178,7 +179,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
           setHasHistory(false);
         }
       } catch (error) {
-        console.error('Error loading chat history:', error);
+        logError('Load chat history', error);
       }
     };
 
@@ -200,11 +201,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
       const chipsText = chipsMatch[1];
       const chips = chipsText.split('|').map(c => c.trim()).filter(c => c.length > 0);
       const content = text.replace(/CHIPS:\s*.+$/m, '').trim();
-      console.log('Parsed chips from AI:', chips);
-      console.log('Content excerpt:', content.substring(0, 100) + '...');
       return { content, chips };
     }
-    console.log('No chips found in AI response');
     return { content: text, chips: [] };
   };
 
@@ -263,7 +261,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error saving message to database:', error);
+      logError('Save message to database', error);
     }
   };
 
@@ -465,7 +463,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         savedGreetingRef.current = true;
       }
     } catch (error) {
-      console.error("Chat error:", error);
+      logError('Chat', error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",

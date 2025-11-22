@@ -13,6 +13,7 @@ import { VoiceRecorder } from "./VoiceRecorder";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from "@/utils/logger";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   DropdownMenu,
@@ -111,7 +112,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Load last used settings and handle editing
   useEffect(() => {
     if (editingActivity) {
-      console.log('Modal received editing activity:', editingActivity);
       // Populate form with editing activity data
       setActivityType(editingActivity.type);
       
@@ -344,17 +344,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   const uploadPhoto = async (file: File): Promise<string | null> => {
     try {
-      console.log('Starting photo upload:', { 
-        fileName: file.name, 
-        fileSize: file.size, 
-        fileType: file.type,
-        householdId,
-        householdIdExists: !!householdId
-      });
-
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('Upload failed: User not authenticated');
+        logError('Photo upload', new Error('User not authenticated'));
         toast({
           title: t('authenticationRequired'),
           description: t('pleaseLogInToUpload'),
@@ -364,7 +356,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       }
       
       if (!householdId) {
-        console.error('Upload failed: Household ID missing');
+        logError('Photo upload', new Error('Household ID missing'));
         toast({
           title: "Household not found",
           description: "Unable to upload photo. Please try reloading the page.",
@@ -375,14 +367,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${householdId}/${Date.now()}.${fileExt}`;
-      console.log('Generated file path:', fileName);
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('baby-photos')
         .upload(fileName, file);
 
       if (uploadError) {
-        console.error('Storage upload error:', uploadError);
+        logError('Storage upload', uploadError);
         toast({
           title: "Upload failed",
           description: uploadError.message || "Storage error occurred.",
@@ -391,16 +382,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         throw uploadError;
       }
 
-      console.log('Upload successful:', uploadData);
-
       const { data: { publicUrl } } = supabase.storage
         .from('baby-photos')
         .getPublicUrl(fileName);
 
-      console.log('Generated public URL:', publicUrl);
       return publicUrl;
     } catch (error) {
-      console.error('Error uploading photo:', error);
+      logError('Photo upload', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo';
       
       // Only show toast if we haven't already shown one
@@ -603,7 +591,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         setInternalOpen(false);
       }
     } catch (error) {
-      console.error('Error saving activity:', error);
+      logError('Save activity', error);
       toast({
         title: "Save failed",
         description: "Please try again.",
@@ -1246,7 +1234,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           await onDeleteActivity(editingActivity.id);
                           if (onClose) onClose();
                         } catch (err) {
-                          console.error('Delete failed:', err);
+                          logError('Delete activity', err);
                           toast({
                             title: 'Error deleting activity',
                             description: 'Please sign in and try again.',

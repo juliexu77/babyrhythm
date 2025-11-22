@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
+import { logger, logError } from "@/utils/logger";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generateAdaptiveSchedule, type AdaptiveSchedule, type AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
@@ -568,9 +569,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           body: { householdId: household.id }
         }).then(({ error }) => {
           if (error) {
-            console.error('Failed to clear schedule cache:', error);
-          } else {
-            console.log('✅ Schedule cache cleared after morning wake');
+            logError('Clear schedule cache', error);
           }
         });
       }
@@ -873,7 +872,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         });
         
         if (error) {
-          console.error('❌ Error fetching guide sections:', error);
+          logError('Fetch guide sections', error);
           if (showLoadingState) {
             setRhythmInsightsLoading(false);
           }
@@ -881,7 +880,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         }
         
         if (data) {
-          console.log('✅ Guide sections fetched:', data);
           const todayDate = new Date().toDateString();
           const insightData = {
             ...data,
@@ -902,7 +900,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
         }
       } catch (err) {
-        console.error('❌ Failed to fetch guide sections:', err);
+        logError('Fetch guide sections', err);
       } finally {
         if (showLoadingState) {
           setRhythmInsightsLoading(false);
@@ -965,11 +963,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         // If cached insights mention different nap count than recent pattern, invalidate
         if (!mentionedCounts.has(avgNapCount)) {
-          console.log('🔄 Guide sections cache invalidated: mentioned counts', Array.from(mentionedCounts), 'but recent average is', avgNapCount);
+          logger.debug('Guide cache invalidated', { mentionedCounts: Array.from(mentionedCounts), avgNapCount });
           return true;
         }
       } catch (e) {
-        console.error('Error checking nap count mismatch:', e);
+        logError('Check nap count mismatch', e);
       }
       return false;
     };

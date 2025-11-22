@@ -11,6 +11,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { UserPlus, Trash2, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { logError } from "@/utils/logger";
 import { formatDistanceToNow } from "date-fns";
 
 interface Collaborator {
@@ -41,9 +42,6 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
   const [isInviting, setIsInviting] = useState(false);
   const [selectedCollaborator, setSelectedCollaborator] = useState<Collaborator | null>(null);
   const { toast } = useToast();
-
-  console.log('CaregiverManagement - household:', household);
-  console.log('CaregiverManagement - collaborators:', collaborators);
 
   const getInitials = (name: string) => {
     if (!name) return "??";
@@ -92,7 +90,7 @@ const handleAddCaregiver = async () => {
         });
       }
     } catch (error) {
-      console.error('Error generating invite:', error);
+      logError('Generate invite', error);
       toast({
         title: "Error copying link",
         description: "Please try again.",
@@ -150,7 +148,7 @@ const handleAddCaregiver = async () => {
         setEmailInvite("");
       }
     } catch (error) {
-      console.error('Error sending invite:', error);
+      logError('Send invite', error);
       toast({
         title: "Error sending invite",
         description: "Please try again.",
@@ -173,7 +171,7 @@ const handleAddCaregiver = async () => {
         description: `Role changed to ${nextRole}`
       });
     } catch (error) {
-      console.error('Error updating role:', error);
+      logError('Update role', error);
       toast({
         title: "Error updating role",
         description: "Please try again.",

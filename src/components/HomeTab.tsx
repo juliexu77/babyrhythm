@@ -22,6 +22,7 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
 import { useHousehold } from "@/hooks/useHousehold";
+import { logError } from "@/utils/logger";
 import { TodaysStory } from "@/components/home/TodaysStory";
 import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
 import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
@@ -75,13 +76,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
   // Missed activity detection
-  console.log('🏠 HomeTab: Calling useMissedActivityDetection with:', {
-    activitiesCount: activities.length,
-    babyName,
-    nightSleepStartHour,
-    nightSleepEndHour,
-    householdId: household?.id
-  });
   const missedActivitySuggestion = useMissedActivityDetection(
     activities, 
     babyName,
@@ -89,7 +83,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     nightSleepEndHour,
     household?.id
   );
-  console.log('🏠 HomeTab: missedActivitySuggestion result:', missedActivitySuggestion);
   
 
   // Track visited tabs for progressive disclosure
@@ -1319,12 +1312,7 @@ const lastDiaper = displayActivities
         )}
 
         {/* Missed Activity Prompt - Show above Right Now card */}
-        {(() => {
-          console.log('🎨 Rendering missed activity prompt check:', {
-            hasSuggestion: !!missedActivitySuggestion,
-            suggestion: missedActivitySuggestion
-          });
-          return missedActivitySuggestion ? (
+        {missedActivitySuggestion && (
             <div className="px-4">
               <MissedActivityPrompt
                 suggestion={missedActivitySuggestion}
@@ -1356,7 +1344,7 @@ const lastDiaper = displayActivities
                           description: `Woke up at ${suggestedTime}`,
                         });
                       } catch (error) {
-                        console.error('Error ending sleep:', error);
+                        logError('End sleep', error);
                         toast({
                           title: "Error",
                           description: "Could not log wake time",
@@ -1404,8 +1392,7 @@ const lastDiaper = displayActivities
                 }}
               />
             </div>
-          ) : null;
-        })()}
+        )}
 
         {/* Zone 1: Right Now Status */}
         <RightNowStatus
