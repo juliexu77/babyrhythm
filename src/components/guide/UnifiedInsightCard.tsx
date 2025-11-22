@@ -48,11 +48,17 @@ export const UnifiedInsightCard = ({
 
   if (loading) {
     return (
-      <div className="mx-2 p-5 bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 rounded-xl border border-border/20 animate-pulse space-y-4">
-        <div className="h-5 w-48 bg-muted rounded"></div>
-        <div className="h-4 w-full bg-muted rounded"></div>
-        <div className="h-4 w-5/6 bg-muted rounded"></div>
-        <div className="h-4 w-4/6 bg-muted rounded"></div>
+      <div className="mx-2">
+        <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
+          <div className="px-4 py-4 border-b border-border/30">
+            <div className="h-4 w-48 bg-muted rounded"></div>
+          </div>
+          <div className="p-5 space-y-4 animate-pulse">
+            <div className="h-4 w-full bg-muted rounded"></div>
+            <div className="h-4 w-5/6 bg-muted rounded"></div>
+            <div className="h-4 w-4/6 bg-muted rounded"></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -73,42 +79,43 @@ export const UnifiedInsightCard = ({
   };
 
   return (
-    <div className="mx-2 space-y-4">
-      {/* Section Title with Refresh Button */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-          Understanding {babyName}&apos;s Rhythm
-        </h3>
-        {onRefresh && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRefresh}
-            disabled={refreshing}
-            className="h-7 px-2 text-xs"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        )}
-      </div>
-
-      {/* Baseline Context Banner - Prominent at top */}
-      {(baselineContext || currentPattern) && (
-        <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg space-y-1.5">
-          {currentPattern && (
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-foreground font-medium">{currentPattern}</p>
-            </div>
-          )}
-          {baselineContext && (
-            <p className="text-xs text-muted-foreground pl-6">{baselineContext}</p>
+    <div className="mx-2">
+      <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
+        {/* Header */}
+        <div className="px-4 py-4 border-b border-border/30 flex items-center justify-between">
+          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+            Understanding {babyName}&apos;s Rhythm
+          </h3>
+          {onRefresh && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onRefresh}
+              disabled={refreshing}
+              className="h-7 px-2 text-xs"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           )}
         </div>
-      )}
-      
-      <div className="p-5 bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 rounded-xl border border-border/20 space-y-4 text-left">
+
+        {/* Content */}
+        <div className="p-5 space-y-4">
+          {/* Baseline Context Banner - Prominent at top */}
+          {(baselineContext || currentPattern) && (
+            <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg space-y-1.5">
+              {currentPattern && (
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-foreground font-medium">{currentPattern}</p>
+                </div>
+              )}
+              {baselineContext && (
+                <p className="text-xs text-muted-foreground pl-6">{baselineContext}</p>
+              )}
+            </div>
+          )}
         {/* What to Know - Expanded by default, observational insights */}
         {whatToKnow && whatToKnow.length > 0 && (() => {
           const isExpanded = expandedSections.has('know');
@@ -241,6 +248,7 @@ export const UnifiedInsightCard = ({
             </p>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
