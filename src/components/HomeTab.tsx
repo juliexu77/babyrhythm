@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
+import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -1249,7 +1249,7 @@ const lastDiaper = displayActivities
               <h2 className="font-semibold text-foreground">
                 {babyName}
               </h2>
-              <Clock className="w-3 h-3 text-muted-foreground/50" />
+              <HeartPulse className="w-3 h-3 text-muted-foreground/50" />
               <p className="text-muted-foreground text-xs">
                 {babyAge.months > 0 && `${babyAge.months} ${babyAge.months === 1 ? 'month' : 'months'}`}
                 {babyAge.months > 0 && babyAge.weeks > 0 && ', '}
