@@ -91,15 +91,15 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         <div className="px-4 py-4 border-b border-border/30">
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-primary" />
-            <div>
-              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                Collective Pulse
-              </h3>
-              <p className="text-[10px] text-muted-foreground">
-                Loading...
-              </p>
-            </div>
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              Collective Pulse
+            </h3>
           </div>
+        </div>
+        <div className="px-4 py-3">
+          <p className="text-[10px] text-muted-foreground">
+            Loading...
+          </p>
         </div>
       </div>
     );
@@ -115,14 +115,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         >
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-primary" />
-            <div className="text-left">
-              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                Collective Pulse
-              </h3>
-              <p className="text-[10px] text-muted-foreground">
-                Big-picture view
-              </p>
-            </div>
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              Collective Pulse
+            </h3>
           </div>
           {isExpanded ? (
             <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -174,14 +169,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       >
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-primary" />
-          <div className="text-left">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-              Collective Pulse
-            </h3>
-            <p className="text-[10px] text-muted-foreground">
-              Based on aggregated BabyRhythm data{cohortStats?.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
-            </p>
-          </div>
+          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+            Collective Pulse
+          </h3>
         </div>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -193,8 +183,15 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       {/* Expandable Content */}
       {isExpanded && (
         <>
-          {/* Insight Text at Top */}
-          <div className="px-4 pt-4">
+          {/* Subtitle */}
+          <div className="px-4 pt-3">
+            <p className="text-[10px] text-muted-foreground">
+              Based on aggregated BabyRhythm data{cohortStats?.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
+            </p>
+          </div>
+
+          {/* Insight Text */}
+          <div className="px-4 pt-3">
             <p className="text-sm text-muted-foreground leading-relaxed">
               {cohortStats.insight_text}
             </p>
