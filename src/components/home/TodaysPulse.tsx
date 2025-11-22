@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Moon, Milk, Clock, ChevronDown, AlertCircle, CheckCircle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { differenceInWeeks } from "date-fns";
 
 interface DeviationData {
   category: 'sleep' | 'feeding' | 'schedule';
@@ -34,35 +33,7 @@ interface TodaysPulseProps {
       transitioning: number;
     };
   } | null;
-  babyBirthday?: string;
 }
-
-// Known regression windows (in weeks)
-const REGRESSION_WINDOWS = [
-  { name: '4-month', startWeek: 13, endWeek: 18, description: 'Sleep patterns may shift as brain development accelerates' },
-  { name: '8-month', startWeek: 29, endWeek: 34, description: 'New mobility and separation awareness can disrupt sleep' },
-  { name: '12-month', startWeek: 47, endWeek: 54, description: 'Walking and language development may affect sleep routines' },
-  { name: '18-month', startWeek: 71, endWeek: 78, description: 'Independence and new skills can temporarily impact rest' },
-  { name: '24-month', startWeek: 95, endWeek: 104, description: 'Imagination and big emotions may influence sleep' }
-];
-
-const getRegressionInfo = (babyBirthday: string | undefined) => {
-  if (!babyBirthday) return null;
-  
-  const ageInWeeks = differenceInWeeks(new Date(), new Date(babyBirthday));
-  
-  for (const window of REGRESSION_WINDOWS) {
-    if (ageInWeeks >= window.startWeek && ageInWeeks <= window.endWeek) {
-      return {
-        name: window.name,
-        description: window.description,
-        ageInWeeks
-      };
-    }
-  }
-  
-  return null;
-};
 
 export const TodaysPulse = ({
   deviations,
@@ -71,15 +42,12 @@ export const TodaysPulse = ({
   babyName,
   babyAge,
   activities,
-  transitionInfo,
-  babyBirthday
+  transitionInfo
 }: TodaysPulseProps) => {
   const [explanation, setExplanation] = useState<string>('');
   const [explanationLoading, setExplanationLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(true); // Open by default
   const [meaningOpen, setMeaningOpen] = useState(false); // Collapsed by default
-  
-  const regressionInfo = getRegressionInfo(babyBirthday);
 
   // Fetch AI explanation for biggest deviation
   useEffect(() => {
@@ -203,20 +171,7 @@ export const TodaysPulse = ({
           </CollapsibleTrigger>
           
           <CollapsibleContent>
-            <div className="px-4 pb-5 pt-3 space-y-4">
-              {/* Regression Window Message (if applicable) */}
-              {regressionInfo && (
-                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30">
-                  <p className="text-sm text-amber-900 dark:text-amber-100 font-medium mb-1">
-                    {regressionInfo.name} regression window
-                  </p>
-                  <p className="text-sm text-amber-800 dark:text-amber-200">
-                    Your baby is in the {regressionInfo.name} regression window, where {regressionInfo.description.toLowerCase()}
-                  </p>
-                </div>
-              )}
-              
-              {/* AI Explanation */}
+            <div className="px-4 pb-5 pt-3">
               {explanationLoading ? (
                 <div className="space-y-2 animate-pulse">
                   <div className="h-3 w-full bg-muted rounded"></div>

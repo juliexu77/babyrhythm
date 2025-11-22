@@ -274,18 +274,55 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
     return windows.length > 0 ? windows.reduce((a, b) => a + b, 0) / windows.length / 60 : 0;
   };
 
-  // Generate summary narrative - condensed to one sentence
+  // Generate summary narrative
   const generateSummary = () => {
     const nightSleep = overviewMetrics[0];
     const naps = overviewMetrics[1];
+    const feedVolume = overviewMetrics[2];
     const wakeWindows = overviewMetrics[3];
     
     const babyName = household?.baby_name || 'your baby';
-    const nightValue = parseFloat(nightSleep.currentValue);
-    const napsValue = parseFloat(naps.currentValue);
-    const wakeValue = parseFloat(wakeWindows.currentValue);
+    let narrative = '';
     
-    return `${babyName} is averaging ${nightValue}h night sleep, ${napsValue} naps per day, and ${wakeValue}h wake windows.`;
+    // Analyze night sleep trend
+    const nightValue = parseFloat(nightSleep.currentValue);
+    const nightChange = nightSleep.change;
+    if (Math.abs(nightChange) < 3) {
+      narrative += `${babyName}'s night sleep has been consistent at around ${nightValue}h. `;
+    } else if (nightChange > 0) {
+      narrative += `${babyName}'s night sleep has improved by ${Math.abs(nightChange).toFixed(1)} hours to ${nightValue}h. `;
+    } else {
+      narrative += `${babyName}'s night sleep has decreased slightly by ${Math.abs(nightChange).toFixed(1)} hours to ${nightValue}h. `;
+    }
+    
+    // Analyze naps trend
+    const napsValue = parseFloat(naps.currentValue);
+    const napsChange = naps.change;
+    if (Math.abs(napsChange) < 5) {
+      narrative += `Naps remain steady at ${napsValue} per day. `;
+    } else if (napsChange < 0) {
+      narrative += `Nap frequency is consolidating (down ${Math.abs(napsChange).toFixed(1)} naps), a typical developmental shift. `;
+    } else {
+      narrative += `Nap frequency has increased to ${napsValue} per day. `;
+    }
+    
+    // Analyze wake windows
+    const wakeValue = parseFloat(wakeWindows.currentValue);
+    const wakeChange = wakeWindows.change;
+    if (wakeChange > 5) {
+      narrative += `Wake windows are lengthening to ${wakeValue}h as ${babyName} matures. `;
+    } else if (Math.abs(wakeChange) < 5) {
+      narrative += `Wake windows are holding steady at ${wakeValue}h. `;
+    }
+    
+    // Add contextual ending
+    if (Math.abs(nightChange) < 5 && Math.abs(napsChange) < 10) {
+      narrative += `Overall rhythm is stable—no adjustments needed.`;
+    } else {
+      narrative += `These changes are normal developmental progressions.`;
+    }
+    
+    return narrative;
   };
 
   const toggleChart = (chartId: string) => {

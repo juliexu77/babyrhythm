@@ -267,29 +267,9 @@ const ongoingNap = (() => {
   };
   
   const candidates = activities.filter(a => {
-    const shouldExclude = a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId;
-    if (a.type === 'nap') {
-      console.log('🛏️  Nap candidate check:', {
-        id: a.id,
-        hasStartTime: !!a.details?.startTime,
-        hasEndTime: !!a.details?.endTime,
-        isJustEnded: a.id === justEndedNapId,
-        willExclude: shouldExclude
-      });
-    }
-    if (shouldExclude) {
+    if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId) {
       return false;
     }
-    
-    // Exclude naps older than 2 days (likely data errors from incomplete logging)
-    const loggedAtDate = new Date(a.loggedAt!);
-    const twoDaysAgo = new Date(todayStart);
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-    if (loggedAtDate < twoDaysAgo) {
-      console.log('🗑️ Excluding old incomplete nap:', { id: a.id, loggedAt: a.loggedAt });
-      return false;
-    }
-    
     // Determine the activity's local date from details if available
     const dateLocal = (a.details as any).date_local as string | undefined;
     const baseLocalDate = dateLocal ? dateLocal : (() => {

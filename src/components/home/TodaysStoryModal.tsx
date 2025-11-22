@@ -267,27 +267,6 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
       return;
     }
 
-    // Check if it's past bedtime for today's story
-    // Only restrict generation for today (not past dates)
-    const now = new Date();
-    const isToday = format(now, 'yyyy-MM-dd') === dateKey;
-    
-    if (isToday) {
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-      const currentTotalMinutes = currentHour * 60 + currentMinute;
-      const bedtimeTotalMinutes = nightSleepStartHour * 60;
-      
-      // Don't generate story until bedtime
-      if (currentTotalMinutes < bedtimeTotalMinutes) {
-        console.log('⏰ Story generation blocked - not bedtime yet:', {
-          currentTime: `${currentHour}:${currentMinute}`,
-          bedtime: `${nightSleepStartHour}:00`
-        });
-        return;
-      }
-    }
-
     // Otherwise generate new headline if not already loading
     if (isLoadingHeadline || aiHeadline) return;
 

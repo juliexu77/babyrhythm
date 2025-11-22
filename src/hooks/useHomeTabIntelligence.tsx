@@ -56,13 +56,6 @@ export const useHomeTabIntelligence = (
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   // Calculate current activity state
   const currentActivity = useMemo((): CurrentActivityState | null => {
-    console.log('🔍 Current activity check:', {
-      ongoingNapExists: !!ongoingNap,
-      ongoingNapId: ongoingNap?.id,
-      ongoingNapHasEndTime: ongoingNap?.details?.endTime,
-      totalActivities: activities.length
-    });
-    
     if (ongoingNap) {
       // For naps, use the actual startTime from details if available (user may log retroactively)
       // Otherwise fall back to loggedAt
@@ -121,8 +114,7 @@ export const useHomeTabIntelligence = (
     const duration = differenceInMinutes(new Date(), lastActivityTime);
 
     // Check if last activity is an ongoing feed (no endTime = still feeding)
-    // Only show "in progress" for nursing feeds, not bottle feeds
-    if (lastActivity.type === 'feed' && duration < 30 && !lastActivity.details?.endTime && lastActivity.details?.feedType === 'nursing') {
+    if (lastActivity.type === 'feed' && duration < 30 && !lastActivity.details?.endTime) {
       return {
         type: 'feeding',
         duration,
@@ -168,14 +160,6 @@ export const useHomeTabIntelligence = (
     const ongoingSleep = sortedActivities.find(a => 
       a.type === 'nap' && a.details?.startTime && !a.details?.endTime
     );
-    
-    console.log('🛌 Checking for ongoing sleep:', {
-      found: !!ongoingSleep,
-      ongoingSleepId: ongoingSleep?.id,
-      details: ongoingSleep?.details,
-      totalNaps: sortedActivities.filter(a => a.type === 'nap').length,
-      napsWithEndTime: sortedActivities.filter(a => a.type === 'nap' && a.details?.endTime).length
-    });
     
     if (ongoingSleep) {
       // There's an ongoing sleep session - baby is sleeping, not awake
@@ -619,25 +603,17 @@ export const useHomeTabIntelligence = (
     let scheduleDetails = 'On track';
     let scheduleHasDeviation = false;
 
-    // Check wake window ONLY if baby is currently awake (not sleeping/napping)
+    // Check wake window if baby is currently awake
     if (currentActivity?.type === 'awake' && currentActivity.duration) {
       const currentWakeMinutes = currentActivity.duration;
       const expectedMaxWake = expected.wakeWindow[1];
       
-      // Additional check: ensure currentActivity is truly awake and not a stale calculation
-      // If there's an ongoing sleep activity today, don't flag long awake times
-      const ongoingSleepToday = todayActivities.find(a => 
-        a.type === 'nap' && a.details?.startTime && !a.details?.endTime
-      );
-      
-      if (!ongoingSleepToday) {
-        if (currentWakeMinutes > expectedMaxWake + 30) {
-          scheduleStatus = 'needs-attention';
-          scheduleDetails = `Awake ${Math.floor(currentWakeMinutes / 60)}h ${currentWakeMinutes % 60}m — longer than typical`;
-          scheduleHasDeviation = true;
-        } else if (currentWakeMinutes > expectedMaxWake) {
-          scheduleDetails = `Approaching nap window`;
-        }
+      if (currentWakeMinutes > expectedMaxWake + 30) {
+        scheduleStatus = 'needs-attention';
+        scheduleDetails = `Awake ${Math.floor(currentWakeMinutes / 60)}h ${currentWakeMinutes % 60}m — longer than typical`;
+        scheduleHasDeviation = true;
+      } else if (currentWakeMinutes > expectedMaxWake) {
+        scheduleDetails = `Approaching nap window`;
       }
     }
 

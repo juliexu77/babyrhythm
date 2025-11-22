@@ -52,12 +52,6 @@ export const RightNowStatus = ({
   nightSleepStartHour,
   nightSleepEndHour
 }: RightNowStatusProps) => {
-  console.log('🟡 RightNowStatus render', { 
-    currentActivity, 
-    onWokeEarlyDefined: !!onWokeEarly,
-    hasOnWokeEarly: typeof onWokeEarly === 'function'
-  });
-  
   const topSuggestions = suggestions
     .sort((a, b) => b.priority - a.priority)
     .slice(0, 3);
@@ -166,14 +160,7 @@ export const RightNowStatus = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  console.log('🔵 Woke up early clicked', { 
-                    onWokeEarly, 
-                    onWokeEarlyDefined: !!onWokeEarly,
-                    currentActivity 
-                  });
-                  onWokeEarly?.();
-                }}
+                onClick={onWokeEarly}
                 className="flex-1 text-sm border-0"
               >
                 {currentActivity.isPastAnticipatedWake ? 'Mark as awake' : 'Woke up early'}
