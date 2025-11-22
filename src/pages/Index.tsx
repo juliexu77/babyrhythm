@@ -38,7 +38,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { BabyProfile } from "@/pages/BabyProfile";
  
 const Index = () => {
@@ -1615,11 +1615,11 @@ return (
         </Dialog>
 
         {/* Baby Profile Drawer */}
-        <Sheet open={showBabyProfile} onOpenChange={setShowBabyProfile}>
-          <SheetContent side="left" className="w-full sm:max-w-md p-0">
+        <Drawer open={showBabyProfile} onOpenChange={setShowBabyProfile}>
+          <DrawerContent className="fixed left-0 top-0 bottom-0 w-[85vw] max-w-md rounded-r-2xl p-0 mt-0">
             <BabyProfile onClose={() => setShowBabyProfile(false)} />
-          </SheetContent>
-        </Sheet>
+          </DrawerContent>
+        </Drawer>
 
       </div>
     </ErrorBoundary>
