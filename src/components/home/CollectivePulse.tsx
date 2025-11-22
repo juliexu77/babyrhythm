@@ -124,9 +124,6 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     );
   };
 
-  // Use insight text as-is (regression info now shown in Rhythm tab)
-  const enhancedInsightText = cohortStats.insight_text;
-
   return (
     <div className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       {/* Header - Always visible and clickable */}
@@ -148,21 +145,14 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       {isExpanded && (
         <>
           {/* Subtitle */}
-          <div className="px-4 pt-3">
+          <div className="px-4 pt-3 pb-2">
             <p className="text-xs text-muted-foreground">
               Based on aggregated BabyRhythm data{cohortStats?.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
             </p>
           </div>
 
-          {/* Insight Text */}
-          <div className="px-4 pt-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {enhancedInsightText}
-            </p>
-          </div>
-
           {/* Content */}
-          <div className="px-4 py-5 space-y-3">
+          <div className="px-4 pb-5 space-y-3">
         {/* Micro Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-lg p-3">
