@@ -1249,7 +1249,7 @@ const lastDiaper = displayActivities
               <h2 className="font-semibold text-foreground">
                 {babyName}
               </h2>
-              <span className="text-muted-foreground">•</span>
+              <Clock className="w-3 h-3 text-muted-foreground/50" />
               <p className="text-muted-foreground text-xs">
                 {babyAge.months > 0 && `${babyAge.months} ${babyAge.months === 1 ? 'month' : 'months'}`}
                 {babyAge.months > 0 && babyAge.weeks > 0 && ', '}
