@@ -51,6 +51,9 @@ const translations: Record<string, string> = {
   'shareWithPartner': 'Share with your partner',
   'failedToCreateInvite': 'Failed to create invite',
   'pleaseRetryInvite': 'Please try again',
+  // User role translations
+  'parentFamily': 'Parent/Family',
+  'caregiverNanny': 'Caregiver/Nanny',
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
