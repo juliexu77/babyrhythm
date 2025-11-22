@@ -1245,10 +1245,11 @@ const lastDiaper = displayActivities
         {/* Baby Info Header */}
         {babyName && babyAge && (
           <div className="px-4 py-3">
-            <div className="flex flex-col items-start gap-0.5 text-sm">
+            <div className="flex flex-row items-center gap-2 text-sm">
               <h2 className="font-semibold text-foreground">
                 {babyName}
               </h2>
+              <span className="text-muted-foreground">•</span>
               <p className="text-muted-foreground text-xs">
                 {babyAge.months > 0 && `${babyAge.months} ${babyAge.months === 1 ? 'month' : 'months'}`}
                 {babyAge.months > 0 && babyAge.weeks > 0 && ', '}
