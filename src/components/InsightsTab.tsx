@@ -1,6 +1,6 @@
 import { Activity } from "./ActivityCard";
 import { useState, useMemo } from "react";
-import { Moon, Milk, Clock, Sun, TrendingUp, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Moon, Milk, Clock, Sun, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
@@ -276,21 +276,51 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   // Generate summary narrative
   const generateSummary = () => {
-    const recentMetrics = overviewMetrics;
-    const nightSleep = recentMetrics[0];
-    const naps = recentMetrics[1];
+    const nightSleep = overviewMetrics[0];
+    const naps = overviewMetrics[1];
+    const feedVolume = overviewMetrics[2];
+    const wakeWindows = overviewMetrics[3];
     
-    let narrative = `Over the past couple months, ${household?.baby_name || 'your baby'}'s rhythm has been `;
+    const babyName = household?.baby_name || 'your baby';
+    let narrative = '';
     
-    // Analyze trends
-    const nightTrend = Math.abs(nightSleep.change) < 5 ? 'steady' : nightSleep.change > 0 ? 'improving' : 'adjusting';
-    const napsTrend = Math.abs(naps.change) < 10 ? 'stable' : 'consolidating';
+    // Analyze night sleep trend
+    const nightValue = parseFloat(nightSleep.currentValue);
+    const nightChange = nightSleep.change;
+    if (Math.abs(nightChange) < 3) {
+      narrative += `${babyName}'s night sleep has been consistent at around ${nightValue}h. `;
+    } else if (nightChange > 0) {
+      narrative += `${babyName}'s night sleep has improved by ${Math.abs(nightChange).toFixed(1)}% to ${nightValue}h. `;
+    } else {
+      narrative += `${babyName}'s night sleep has decreased slightly by ${Math.abs(nightChange).toFixed(1)}% to ${nightValue}h. `;
+    }
     
-    narrative += `${nightTrend === 'steady' ? 'settling' : 'evolving'}. `;
-    narrative += `Night sleep has been ${nightTrend}, `;
-    narrative += `naps are gradually ${napsTrend}, `;
-    narrative += `and wake windows are lengthening — all expected for this age. `;
-    narrative += `Nothing here suggests anything you need to fix.`;
+    // Analyze naps trend
+    const napsValue = parseFloat(naps.currentValue);
+    const napsChange = naps.change;
+    if (Math.abs(napsChange) < 5) {
+      narrative += `Naps remain steady at ${napsValue} per day. `;
+    } else if (napsChange < 0) {
+      narrative += `Nap frequency is consolidating (down ${Math.abs(napsChange).toFixed(0)}%), a typical developmental shift. `;
+    } else {
+      narrative += `Nap frequency has increased to ${napsValue} per day. `;
+    }
+    
+    // Analyze wake windows
+    const wakeValue = parseFloat(wakeWindows.currentValue);
+    const wakeChange = wakeWindows.change;
+    if (wakeChange > 5) {
+      narrative += `Wake windows are lengthening to ${wakeValue}h as ${babyName} matures. `;
+    } else if (Math.abs(wakeChange) < 5) {
+      narrative += `Wake windows are holding steady at ${wakeValue}h. `;
+    }
+    
+    // Add contextual ending
+    if (Math.abs(nightChange) < 5 && Math.abs(napsChange) < 10) {
+      narrative += `Overall rhythm is stable—no adjustments needed.`;
+    } else {
+      narrative += `These changes are normal developmental progressions.`;
+    }
     
     return narrative;
   };
@@ -318,16 +348,19 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
-      {/* Evolution Summary */}
-      <div className="px-2">
-        <div className="rounded-xl bg-gradient-to-b from-card to-card/50 shadow-sm border border-border/40 p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            How things have been evolving
-          </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {generateSummary()}
-          </p>
+      {/* Long Term Trends Summary */}
+      <div className="mx-2">
+        <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
+          <div className="px-4 py-4 border-b border-border/30">
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              Long Term Trends
+            </h3>
+          </div>
+          <div className="px-4 py-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {generateSummary()}
+            </p>
+          </div>
         </div>
       </div>
 
