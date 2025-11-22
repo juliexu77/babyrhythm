@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useHousehold } from "./useHousehold";
 import { useToast } from "./use-toast";
+import { logger, logActivity, logError } from "@/utils/logger";
 
 export interface DatabaseActivity {
   id: string;
@@ -224,7 +225,7 @@ export function useActivities() {
       // For PST (UTC-8), this returns +480
       const offsetMinutes = now.getTimezoneOffset();
       
-      console.log('📤 Client sending to server:', {
+      logger.debug('Creating activity - timezone info', {
         dateLocal,
         timeLocal,
         timezone,
@@ -248,9 +249,10 @@ export function useActivities() {
       if (error) throw error;
       if (!data?.data) throw new Error('No data returned from server');
 
+      logActivity('created', { type: activity.type, id: data.data.id });
       return data.data;
     } catch (error) {
-      console.error('Error adding activity:', error);
+      logError('Failed to add activity', error);
       toast({
         title: "Error adding activity",
         description: "Please try again",
@@ -282,6 +284,7 @@ export function useActivities() {
 
       if (error) throw error;
 
+      logActivity('updated', { id: activityId });
       toast({
         title: "Activity updated",
         description: "Changes have been saved"
@@ -289,7 +292,7 @@ export function useActivities() {
 
       return data;
     } catch (error) {
-      console.error('Error updating activity:', error);
+      logError('Failed to update activity', error);
       toast({
         title: "Error updating activity",
         description: "Please try again",
@@ -327,12 +330,13 @@ export function useActivities() {
       // Immediately refetch to ensure UI is in sync with database
       await fetchActivities();
 
+      logActivity('deleted', { id: activityId });
       toast({
         title: 'Activity deleted',
         description: 'Activity has been removed'
       });
     } catch (error: any) {
-      console.error('Error deleting activity:', error);
+      logError('Failed to delete activity', error);
       toast({
         title: 'Could not delete activity',
         description: error?.message || 'Please try again',

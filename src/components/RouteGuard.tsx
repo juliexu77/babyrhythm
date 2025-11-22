@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { logger } from "@/utils/logger";
 
 export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    console.log('🔒 RouteGuard:', { loading, hasUser: !!user, pathname: location.pathname });
+    logger.debug('RouteGuard check', { loading, hasUser: !!user, pathname: location.pathname });
     
     if (loading) return;
 
@@ -18,14 +19,14 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
 
     // Redirect authenticated users away from auth/login pages
     if (user && isPublicPath) {
-      console.log('🔄 Redirecting authenticated user from', location.pathname, 'to /');
+      logger.info('Auth redirect', { from: location.pathname, to: '/', reason: 'already authenticated' });
       navigate("/", { replace: true });
       return;
     }
 
     // Redirect unauthenticated users to auth page
     if (!user && !isPublicPath) {
-      console.log('🔒 Redirecting unauthenticated user to /auth');
+      logger.info('Auth redirect', { from: location.pathname, to: '/auth', reason: 'not authenticated' });
       navigate("/auth", { replace: true });
       return;
     }
