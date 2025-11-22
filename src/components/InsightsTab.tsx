@@ -314,18 +314,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   return (
     <div className="space-y-4 pb-6">
-      {/* Reassurance Banner */}
-      <div className="pt-4 px-2">
-        <Alert className="bg-primary/5 border-primary/20">
-          <Info className="h-4 w-4 text-primary" />
-          <AlertDescription className="text-sm text-foreground/90 leading-relaxed">
-            Long-term view: Babies change gradually over months. Ups and downs are normal — this isn't a scorecard.
-          </AlertDescription>
-        </Alert>
-      </div>
-
       {/* Collective Pulse */}
-      <div className="px-2">
+      <div className="pt-4 px-2">
         <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
