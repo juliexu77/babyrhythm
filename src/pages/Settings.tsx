@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
@@ -11,19 +12,24 @@ import {
   Key,
   Share,
   Users,
-  Bell
+  Bell,
+  Baby,
+  Moon
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
 import { EmailInvite } from "@/components/EmailInvite";
 import { ProfileEditModal } from "@/components/settings/ProfileEditModal";
+import { BabyEditModal } from "@/components/settings/BabyEditModal";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { shareInviteLink } from "@/utils/nativeShare";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
   const { household, generateInviteLink } = useHousehold();
+  const { userProfile, updateUserProfile } = useUserProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -31,6 +37,7 @@ export const Settings = () => {
   const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [showBabyEdit, setShowBabyEdit] = useState(false);
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
     const stored = localStorage.getItem('smartRemindersEnabled');
     return stored !== null ? stored === 'true' : true;
@@ -141,6 +148,125 @@ export const Settings = () => {
             <ThemeToggle showText={false} />
           </div>
 
+          {/* Baby Profile Section */}
+          {user && household && (
+            <SettingsSection title="Baby Profile">
+              <SettingsRow
+                icon={<Baby className="w-5 h-5" />}
+                title={household.baby_name || "Baby's Name"}
+                subtitle={household.baby_birthday ? `Birthday: ${new Date(household.baby_birthday).toLocaleDateString()}` : "Set birthday"}
+                onClick={() => setShowBabyEdit(true)}
+              />
+            </SettingsSection>
+          )}
+
+          {/* Sleep Schedule Section */}
+          {user && (
+            <SettingsSection title="Sleep Schedule">
+              <SettingsRow
+                icon={<Moon className="w-5 h-5" />}
+                title="Night starts"
+                subtitle="When sleep begins"
+                showChevron={false}
+              >
+                <Select
+                  value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
+                  onValueChange={async (value) => {
+                    try {
+                      const [hour, minute] = value.split(':').map(Number);
+                      await updateUserProfile({ 
+                        night_sleep_start_hour: hour,
+                        night_sleep_start_minute: minute 
+                      } as any);
+                      toast({
+                        title: "Updated",
+                        description: "Night sleep start time saved",
+                      });
+                    } catch (error) {
+                      console.error('Error updating night sleep start:', error);
+                      toast({
+                        title: "Error",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[110px] h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 24 }, (_, i) => {
+                      const totalMinutes = (18 * 60) + (i * 15);
+                      const hour = Math.floor(totalMinutes / 60);
+                      const minute = totalMinutes % 60;
+                      if (hour >= 24) return null;
+                      
+                      const displayHour = hour > 12 ? hour - 12 : hour;
+                      const minuteStr = minute.toString().padStart(2, '0');
+                      const label = `${displayHour}:${minuteStr} PM`;
+                      
+                      return (
+                        <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
+                          {label}
+                        </SelectItem>
+                      );
+                    }).filter(Boolean)}
+                  </SelectContent>
+                </Select>
+              </SettingsRow>
+              <SettingsRow
+                icon={<Moon className="w-5 h-5" />}
+                title="Night ends"
+                subtitle="When sleep ends"
+                showChevron={false}
+              >
+                <Select
+                  value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
+                  onValueChange={async (value) => {
+                    try {
+                      const [hour, minute] = value.split(':').map(Number);
+                      await updateUserProfile({ 
+                        night_sleep_end_hour: hour,
+                        night_sleep_end_minute: minute 
+                      } as any);
+                      toast({
+                        title: "Updated",
+                        description: "Night sleep end time saved",
+                      });
+                    } catch (error) {
+                      console.error('Error updating night sleep end:', error);
+                      toast({
+                        title: "Error",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[110px] h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 21 }, (_, i) => {
+                      const totalMinutes = (5 * 60) + (i * 15);
+                      const hour = Math.floor(totalMinutes / 60);
+                      const minute = totalMinutes % 60;
+                      if (hour > 10) return null;
+                      
+                      const minuteStr = minute.toString().padStart(2, '0');
+                      const label = `${hour}:${minuteStr} AM`;
+                      
+                      return (
+                        <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
+                          {label}
+                        </SelectItem>
+                      );
+                    }).filter(Boolean)}
+                  </SelectContent>
+                </Select>
+              </SettingsRow>
+            </SettingsSection>
+          )}
+
           {/* User Profile Section */}
           {user ? (
             <SettingsSection>
@@ -226,6 +352,10 @@ export const Settings = () => {
       <ProfileEditModal 
         open={showProfileEdit} 
         onOpenChange={setShowProfileEdit} 
+      />
+      <BabyEditModal 
+        open={showBabyEdit} 
+        onOpenChange={setShowBabyEdit} 
       />
     </>
   );

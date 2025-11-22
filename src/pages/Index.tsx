@@ -38,8 +38,6 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { BabyProfile } from "@/pages/BabyProfile";
  
 const Index = () => {
   const { user, loading } = useAuth();
@@ -372,7 +370,6 @@ const ongoingNap = (() => {
   const [showPediatricianReport, setShowPediatricianReport] = useState(false);
   const [showCSVExport, setShowCSVExport] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
-  const [showBabyProfile, setShowBabyProfile] = useState(false);
   const [recentCollaboratorActivity, setRecentCollaboratorActivity] = useState<{
     userName: string;
     activityType: string;
@@ -1242,21 +1239,8 @@ return (
       <div className="min-h-screen bg-background pb-16 overflow-x-hidden w-full">
         <div className={`sticky top-0 z-30 bg-background border-b border-background pt-12 pb-3 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
-            {/* Left side - Baby avatar */}
+            {/* Left side - Empty */}
             <div className="flex items-center gap-2 w-20">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowBabyProfile(true)}
-                className="p-0 rounded-full h-10 w-10"
-              >
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={household?.baby_photo_url || undefined} />
-                  <AvatarFallback className="text-sm font-semibold">
-                    {household?.baby_name?.charAt(0).toUpperCase() || '?'}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
             </div>
             
             {/* Center - Tab name */}
@@ -1613,13 +1597,6 @@ return (
             </div>
           </DialogContent>
         </Dialog>
-
-        {/* Baby Profile Drawer */}
-        <Drawer direction="left" open={showBabyProfile} onOpenChange={setShowBabyProfile}>
-          <DrawerContent className="fixed left-0 top-0 bottom-0 w-[85vw] max-w-md rounded-r-2xl p-0 mt-0">
-            <BabyProfile onClose={() => setShowBabyProfile(false)} />
-          </DrawerContent>
-        </Drawer>
 
       </div>
     </ErrorBoundary>
