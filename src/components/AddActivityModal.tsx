@@ -655,7 +655,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               {[
                 { type: "feed", icon: Baby, label: t('feeding') },
                 { type: "diaper", icon: Droplet, label: t('diaper') },
-                { type: "note", icon: StickyNote, label: t('noteText') },
+                { type: "note", icon: StickyNote, label: t('note') },
                 { type: "nap", icon: Moon, label: t('sleep') },
                 { type: "measure", icon: Ruler, label: t('measure') },
                 { type: "photo", icon: Camera, label: t('photo') }

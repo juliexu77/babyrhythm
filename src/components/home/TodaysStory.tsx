@@ -21,10 +21,10 @@ export function TodaysStory({ onClick }: TodaysStoryProps) {
   return (
     <button 
       onClick={handleClick}
-      className="group inline-flex items-center gap-0 px-1 py-0 rounded-full bg-[hsl(320_40%_92%)] dark:bg-[hsl(320_40%_25%)] hover:bg-[hsl(320_40%_88%)] dark:hover:bg-[hsl(320_40%_30%)] transition-all duration-300 animate-story-breathe"
+      className="group inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[hsl(320_40%_92%)] dark:bg-[hsl(320_40%_25%)] hover:bg-[hsl(320_40%_88%)] dark:hover:bg-[hsl(320_40%_30%)] transition-all duration-300 animate-story-breathe"
     >
-      <Sparkles className={`w-2 h-2 text-[hsl(320_45%_55%)] dark:text-[hsl(320_60%_70%)] ${!hasClicked ? 'animate-story-shimmer' : ''}`} />
-      <span className="text-[9px] font-medium text-[hsl(320_45%_40%)] dark:text-[hsl(320_60%_85%)] animate-story-fade-in">
+      <Sparkles className={`w-2.5 h-2.5 text-[hsl(320_45%_55%)] dark:text-[hsl(320_60%_70%)] ${!hasClicked ? 'animate-story-shimmer' : ''}`} />
+      <span className="text-[10px] font-medium text-[hsl(320_45%_40%)] dark:text-[hsl(320_60%_85%)] animate-story-fade-in leading-none">
         Today's Story
       </span>
     </button>
