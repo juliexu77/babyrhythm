@@ -1,14 +1,14 @@
 import { Activity } from "./ActivityCard";
 import { useState, useMemo } from "react";
-import { Moon, Milk, Clock, Sun, TrendingUp, Info } from "lucide-react";
+import { Moon, Milk, Clock, Sun } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { getActivitiesByDate } from "@/utils/activityDateFilters";
 import { normalizeVolume } from "@/utils/unitConversion";
-import { Button } from "@/components/ui/button";
 import { TimelineChart } from "@/components/trends/TimelineChart";
 import { CollectivePulse } from "@/components/home/CollectivePulse";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { subDays, startOfDay, eachDayOfInterval } from "date-fns";
 
 interface InsightsTabProps {
@@ -294,127 +294,149 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </p>
       </div>
 
-      {/* Collective Pulse - Collapsible */}
+      {/* Reassurance Banner */}
+      <div className="mx-2 rounded-lg bg-muted/30 border border-border/40 p-3">
+        <p className="text-sm text-foreground/80 text-center">
+          Long-term view: Babies change gradually over months. Ups and downs are normal — this isn't a scorecard.
+        </p>
+      </div>
+
+      {/* Collective Pulse - Expanded by default */}
       <div className="px-2">
-        <CollectivePulse babyBirthday={household?.baby_birthday} />
+        <CollectivePulse babyBirthday={household?.baby_birthday} defaultOpen={true} />
       </div>
 
-      {/* Time Range Switcher + Baseline Toggle */}
-      <div className="mx-2 space-y-2">
-        <div className="flex justify-center gap-2">
-        {(['6weeks', '3months', '6months'] as TimeRange[]).map((range) => (
-          <Button
-            key={range}
-            variant={timeRange === range ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange(range)}
-            className="text-xs"
-          >
-            {range === '6weeks' && '6 Weeks'}
-            {range === '3months' && '3 Months'}
-            {range === '6months' && '6 Months'}
-          </Button>
-        ))}
-        </div>
-        
-        {/* Baseline Toggle */}
-        <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowBaseline(!showBaseline)}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            {showBaseline ? '✓ ' : ''}Show typical range
-          </Button>
-        </div>
+      {/* Summary Card - "How things have been evolving" */}
+      <div className="mx-2 rounded-lg bg-card border border-border p-4">
+        <h3 className="text-sm font-medium text-foreground mb-2">How things have been evolving</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Over the past couple months, your baby's rhythm has been settling. Night sleep has been steady, 
+          naps are gradually consolidating, and wake windows are lengthening — all expected for this age. 
+          Nothing here suggests anything you need to fix.
+        </p>
       </div>
 
-      {/* Chart Legend - Only show when baseline is visible */}
-      {showBaseline && (
-        <div className="mx-2 rounded-lg bg-muted/30 border border-border/40 p-3">
-        <div className="flex items-start gap-2 mb-2">
-          <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-          <h4 className="text-xs font-semibold text-foreground">Chart Guide</h4>
-        </div>
-        <div className="space-y-2 ml-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-0.5 bg-secondary rounded-full" />
-            <span className="text-xs text-muted-foreground">Your baby's weekly average</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-0.5 border-t-2 border-primary/50" />
-              <div className="w-4 h-3 bg-primary/15 border-y border-primary/50" />
-              <div className="w-3 h-0.5 border-t-2 border-primary/50" />
+      {/* Collapsible Chart Sections */}
+      <div className="space-y-2 px-2">
+        <Collapsible>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between w-full p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <Moon className="w-4 h-4 text-foreground/70" />
+                <div className="text-left">
+                  <h4 className="text-sm font-medium text-foreground">Night Sleep →</h4>
+                  <p className="text-xs text-muted-foreground">See how night sleep has shifted over time.</p>
+                </div>
+              </div>
             </div>
-            <span className="text-xs text-muted-foreground">Age-appropriate baseline range</span>
-          </div>
-        </div>
-        </div>
-      )}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <TimelineChart
+              title="Night Sleep"
+              icon={<Moon className="w-4 h-4 text-foreground/70" />}
+              activities={activities}
+              timeRange={timeRange}
+              dataExtractor={extractNightSleep}
+              unit="h"
+              color="hsl(var(--secondary))"
+              yAxisFormatter={(v) => `${v.toFixed(0)}h`}
+              tooltipFormatter={(v) => v.toFixed(1)}
+              babyBirthday={household?.baby_birthday}
+              metricType="nightSleep"
+              showBaseline={showBaseline}
+            />
+          </CollapsibleContent>
+        </Collapsible>
 
-      {/* Timeline Charts */}
-      <div className="space-y-4">
-        <TimelineChart
-          title="Night Sleep"
-          icon={<Moon className="w-4 h-4 text-foreground/70" />}
-          activities={activities}
-          timeRange={timeRange}
-          dataExtractor={extractNightSleep}
-          unit="h"
-          color="hsl(var(--secondary))"
-          yAxisFormatter={(v) => `${v.toFixed(0)}h`}
-          tooltipFormatter={(v) => v.toFixed(1)}
-          babyBirthday={household?.baby_birthday}
-          metricType="nightSleep"
-          showBaseline={showBaseline}
-        />
+        <Collapsible>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between w-full p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <Sun className="w-4 h-4 text-foreground/70" />
+                <div className="text-left">
+                  <h4 className="text-sm font-medium text-foreground">Day Naps →</h4>
+                  <p className="text-xs text-muted-foreground">See the gradual consolidation that happens with age.</p>
+                </div>
+              </div>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <TimelineChart
+              title="Day Naps"
+              icon={<Sun className="w-4 h-4 text-foreground/70" />}
+              activities={activities}
+              timeRange={timeRange}
+              dataExtractor={extractDayNaps}
+              unit=" naps"
+              color="hsl(var(--secondary))"
+              yAxisFormatter={(v) => v.toFixed(0)}
+              tooltipFormatter={(v) => v.toFixed(0)}
+              babyBirthday={household?.baby_birthday}
+              metricType="dayNaps"
+              showBaseline={showBaseline}
+            />
+          </CollapsibleContent>
+        </Collapsible>
 
-        <TimelineChart
-          title="Day Naps"
-          icon={<Sun className="w-4 h-4 text-foreground/70" />}
-          activities={activities}
-          timeRange={timeRange}
-          dataExtractor={extractDayNaps}
-          unit=" naps"
-          color="hsl(var(--secondary))"
-          yAxisFormatter={(v) => v.toFixed(0)}
-          tooltipFormatter={(v) => v.toFixed(0)}
-          babyBirthday={household?.baby_birthday}
-          metricType="dayNaps"
-          showBaseline={showBaseline}
-        />
+        <Collapsible>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between w-full p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <Milk className="w-4 h-4 text-foreground/70" />
+                <div className="text-left">
+                  <h4 className="text-sm font-medium text-foreground">Feed Volume →</h4>
+                  <p className="text-xs text-muted-foreground">Feeding amounts stabilize naturally in the mid-months.</p>
+                </div>
+              </div>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <TimelineChart
+              title="Feed Volume"
+              icon={<Milk className="w-4 h-4 text-foreground/70" />}
+              activities={activities}
+              timeRange={timeRange}
+              dataExtractor={extractFeedVolume}
+              unit="oz"
+              color="hsl(var(--secondary))"
+              yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
+              tooltipFormatter={(v) => v.toFixed(0)}
+              babyBirthday={household?.baby_birthday}
+              metricType="feedVolume"
+              showBaseline={showBaseline}
+            />
+          </CollapsibleContent>
+        </Collapsible>
 
-        <TimelineChart
-          title="Feed Volume"
-          icon={<Milk className="w-4 h-4 text-foreground/70" />}
-          activities={activities}
-          timeRange={timeRange}
-          dataExtractor={extractFeedVolume}
-          unit="oz"
-          color="hsl(var(--secondary))"
-          yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
-          tooltipFormatter={(v) => v.toFixed(0)}
-          babyBirthday={household?.baby_birthday}
-          metricType="feedVolume"
-          showBaseline={showBaseline}
-        />
-
-        <TimelineChart
-          title="Wake Windows"
-          icon={<Clock className="w-4 h-4 text-foreground/70" />}
-          activities={activities}
-          timeRange={timeRange}
-          dataExtractor={extractWakeWindows}
-          unit="h"
-          color="hsl(var(--secondary))"
-          yAxisFormatter={(v) => `${v.toFixed(1)}h`}
-          tooltipFormatter={(v) => v.toFixed(1)}
-          babyBirthday={household?.baby_birthday}
-          metricType="wakeWindows"
-          showBaseline={showBaseline}
-        />
+        <Collapsible>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between w-full p-4 rounded-lg bg-card border border-border hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <Clock className="w-4 h-4 text-foreground/70" />
+                <div className="text-left">
+                  <h4 className="text-sm font-medium text-foreground">Wake Windows →</h4>
+                  <p className="text-xs text-muted-foreground">Wake times stretch as babies grow.</p>
+                </div>
+              </div>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <TimelineChart
+              title="Wake Windows"
+              icon={<Clock className="w-4 h-4 text-foreground/70" />}
+              activities={activities}
+              timeRange={timeRange}
+              dataExtractor={extractWakeWindows}
+              unit="h"
+              color="hsl(var(--secondary))"
+              yAxisFormatter={(v) => `${v.toFixed(1)}h`}
+              tooltipFormatter={(v) => v.toFixed(1)}
+              babyBirthday={household?.baby_birthday}
+              metricType="wakeWindows"
+              showBaseline={showBaseline}
+            />
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
