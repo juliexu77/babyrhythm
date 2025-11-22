@@ -290,9 +290,9 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
     if (Math.abs(nightChange) < 3) {
       narrative += `${babyName}'s night sleep has been consistent at around ${nightValue}h. `;
     } else if (nightChange > 0) {
-      narrative += `${babyName}'s night sleep has improved by ${Math.abs(nightChange).toFixed(1)}% to ${nightValue}h. `;
+      narrative += `${babyName}'s night sleep has improved by ${Math.abs(nightChange).toFixed(1)} hours to ${nightValue}h. `;
     } else {
-      narrative += `${babyName}'s night sleep has decreased slightly by ${Math.abs(nightChange).toFixed(1)}% to ${nightValue}h. `;
+      narrative += `${babyName}'s night sleep has decreased slightly by ${Math.abs(nightChange).toFixed(1)} hours to ${nightValue}h. `;
     }
     
     // Analyze naps trend
@@ -301,7 +301,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
     if (Math.abs(napsChange) < 5) {
       narrative += `Naps remain steady at ${napsValue} per day. `;
     } else if (napsChange < 0) {
-      narrative += `Nap frequency is consolidating (down ${Math.abs(napsChange).toFixed(0)}%), a typical developmental shift. `;
+      narrative += `Nap frequency is consolidating (down ${Math.abs(napsChange).toFixed(1)} naps), a typical developmental shift. `;
     } else {
       narrative += `Nap frequency has increased to ${napsValue} per day. `;
     }
@@ -343,13 +343,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   return (
     <div className="space-y-4 pb-6">
-      {/* Collective Pulse */}
-      <div className="pt-4 px-2">
-        <CollectivePulse babyBirthday={household?.baby_birthday} />
-      </div>
-
       {/* Long Term Trends Summary */}
-      <div className="mx-2">
+      <div className="mx-2 pt-4">
         <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
           <div className="px-4 py-4 border-b border-border/30">
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
@@ -362,6 +357,11 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Collective Pulse */}
+      <div className="px-2">
+        <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
       {/* Time Range Switcher */}
