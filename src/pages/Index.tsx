@@ -1615,7 +1615,7 @@ return (
         </Dialog>
 
         {/* Baby Profile Drawer */}
-        <Drawer open={showBabyProfile} onOpenChange={setShowBabyProfile}>
+        <Drawer direction="left" open={showBabyProfile} onOpenChange={setShowBabyProfile}>
           <DrawerContent className="fixed left-0 top-0 bottom-0 w-[85vw] max-w-md rounded-r-2xl p-0 mt-0">
             <BabyProfile onClose={() => setShowBabyProfile(false)} />
           </DrawerContent>
