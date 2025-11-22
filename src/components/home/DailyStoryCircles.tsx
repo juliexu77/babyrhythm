@@ -35,7 +35,7 @@ export const DailyStoryCircles = ({
   }
 
   return (
-    <div className="px-6 pb-2">
+    <div className="px-4 pb-2">
       <button 
         onClick={() => onSelectDay(todayStr, todayActivities)}
         className="group relative w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card/50 hover:bg-card/60 transition-all duration-300 overflow-hidden backdrop-blur-sm"
