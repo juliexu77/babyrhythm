@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
 import { useCollectivePulse } from "@/hooks/useCollectivePulse";
-import { format, subDays, startOfDay, differenceInWeeks } from "date-fns";
+import { format, subDays, startOfDay } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
@@ -11,33 +11,6 @@ import { useState } from "react";
 interface CollectivePulseProps {
   babyBirthday?: string;
 }
-
-// Known regression windows (in weeks)
-const REGRESSION_WINDOWS = [
-  { name: '4-month', startWeek: 13, endWeek: 18, description: 'Sleep patterns may shift as brain development accelerates' },
-  { name: '8-month', startWeek: 29, endWeek: 34, description: 'New mobility and separation awareness can disrupt sleep' },
-  { name: '12-month', startWeek: 47, endWeek: 54, description: 'Walking and language development may affect sleep routines' },
-  { name: '18-month', startWeek: 71, endWeek: 78, description: 'Independence and new skills can temporarily impact rest' },
-  { name: '24-month', startWeek: 95, endWeek: 104, description: 'Imagination and big emotions may influence sleep' }
-];
-
-const getRegressionInfo = (babyBirthday: string | undefined) => {
-  if (!babyBirthday) return null;
-  
-  const ageInWeeks = differenceInWeeks(new Date(), new Date(babyBirthday));
-  
-  for (const window of REGRESSION_WINDOWS) {
-    if (ageInWeeks >= window.startWeek && ageInWeeks <= window.endWeek) {
-      return {
-        name: window.name,
-        description: window.description,
-        ageInWeeks
-      };
-    }
-  }
-  
-  return null;
-};
 
 export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
@@ -151,11 +124,8 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     );
   };
 
-  const regressionInfo = getRegressionInfo(babyBirthday);
-
-  // Combine insight text with regression info if applicable
-  const enhancedInsightText = cohortStats.insight_text + 
-    (regressionInfo ? ` Note: Your baby is in the ${regressionInfo.name} regression window, where ${regressionInfo.description.toLowerCase()}` : '');
+  // Use insight text as-is (regression info now shown in Rhythm tab)
+  const enhancedInsightText = cohortStats.insight_text;
 
   return (
     <div className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
