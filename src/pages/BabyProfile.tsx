@@ -165,26 +165,27 @@ export const BabyProfile = ({ onClose }: { onClose?: () => void }) => {
         {/* Baby Photo & Name Section */}
         <div className="px-6 pt-8 pb-6 border-b border-border">
           <div className="flex flex-col items-center gap-4">
-            <Avatar className="h-24 w-24 ring-2 ring-border ring-offset-2 ring-offset-background">
-              <AvatarImage src={household?.baby_photo_url || undefined} />
-              <AvatarFallback className="text-3xl">
-                {household?.baby_name?.charAt(0).toUpperCase() || '?'}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-24 w-24 ring-2 ring-border ring-offset-2 ring-offset-background">
+                <AvatarImage src={household?.baby_photo_url || undefined} />
+                <AvatarFallback className="text-3xl">
+                  {household?.baby_name?.charAt(0).toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <PhotoUpload
+                currentPhotoUrl={household?.baby_photo_url || null}
+                bucketName="baby-photos"
+                folder={household?.id || 'default'}
+                onPhotoUpdate={handleBabyPhotoUpdate}
+                fallbackIcon="baby"
+                size="sm"
+              />
+            </div>
             
             <div className="text-center">
               <h2 className="text-2xl font-bold">{household?.baby_name || 'Baby'}</h2>
               <p className="text-muted-foreground mt-1">{getBabyAge() || 'Age not set'}</p>
             </div>
-            
-            <PhotoUpload
-              currentPhotoUrl={household?.baby_photo_url || null}
-              bucketName="baby-photos"
-              folder={household?.id || 'default'}
-              onPhotoUpdate={handleBabyPhotoUpdate}
-              fallbackIcon="baby"
-              size="sm"
-            />
           </div>
         </div>
 
