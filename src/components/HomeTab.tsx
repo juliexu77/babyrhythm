@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
+import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -1415,6 +1415,7 @@ const lastDiaper = displayActivities
             suggestions={smartSuggestions}
             onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
             activities={activities}
+            addActivity={addActivity}
             chatComponent={
               <ParentingChat
                 activities={activities.map(a => ({
@@ -1432,6 +1433,49 @@ const lastDiaper = displayActivities
               />
             }
           />
+
+        {/* Sick Day Banner */}
+        {todayActivities.some(a => a.type === 'note' && (a.details as any)?.isSickDay) && (
+          <div className="mx-2 mb-4 p-3 rounded-lg bg-background/30 border border-border/20">
+            <div className="flex items-center gap-2 mb-1">
+              <Thermometer className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Under the weather</span>
+            </div>
+            {todayActivities
+              .filter(a => a.type === 'note' && (a.details as any)?.isSickDay)
+              .map(sickActivity => {
+                const symptoms = ((sickActivity.details as any)?.symptoms || []) as string[];
+                const symptomLabels = symptoms.map((id: string) => {
+                  const symptomMap: Record<string, string> = {
+                    fever: '🌡️ Fever',
+                    congested: '🤧 Congested',
+                    cough: '😷 Cough',
+                    tummy: '🤢 Tummy upset',
+                    teething: '🦷 Teething',
+                    shots: '💉 Shots',
+                  };
+                  return symptomMap[id];
+                }).filter(Boolean);
+
+                const noteText = (sickActivity.details as any)?.noteText;
+
+                return (
+                  <div key={sickActivity.id} className="text-xs text-muted-foreground">
+                    {symptomLabels.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-1">
+                        {symptomLabels.map((label, idx) => (
+                          <span key={idx}>{label}</span>
+                        ))}
+                      </div>
+                    )}
+                    {noteText && !noteText.startsWith('Under the weather:') && (
+                      <p className="text-foreground/70 mt-1">{noteText}</p>
+                    )}
+                  </div>
+                );
+              })[0]}
+          </div>
+        )}
 
         {/* Today's Story - moved to bottom */}
         <DailyStoryCircles
