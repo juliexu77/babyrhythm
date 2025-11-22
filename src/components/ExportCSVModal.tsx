@@ -177,10 +177,8 @@ export const ExportCSVModal = ({ open, onOpenChange, activities, babyName }: Exp
             notes = activity.details?.note || '';
             break;
           case 'solids':
-            const foodType = (activity.details as any)?.foodType || 'purees';
             const allergensList = ((activity.details as any)?.allergens || []) as string[];
             let solidsDetails = activity.details?.solidDescription || '';
-            solidsDetails += ` (${foodType === 'finger-foods' ? 'Finger foods' : 'Purees'})`;
             if (allergensList.length > 0) {
               solidsDetails += ` Allergens: ${allergensList.join(', ')}`;
             }

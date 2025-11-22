@@ -105,7 +105,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   
   // Solids state
   const [solidsDescription, setSolidsDescription] = useState("");
-  const [foodType, setFoodType] = useState<"purees" | "finger-foods">("purees");
   const [allergens, setAllergens] = useState<string[]>([]);
 
   // Load last used settings and handle editing
@@ -178,7 +177,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       } else if (editingActivity.type === "solids") {
         const details = editingActivity.details;
         setSolidsDescription(details.solidDescription || "");
-        setFoodType((details as any).foodType || "purees");
         setAllergens((details as any).allergens || []);
       } else if (editingActivity.type === "photo") {
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
@@ -292,7 +290,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setIsTimerActive(false);
     setTimerStart(null);
     setSolidsDescription("");
-    setFoodType("purees");
     setAllergens([]);
     setNote("");
   };
@@ -511,7 +508,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         break;
       case "solids":
         if (solidsDescription) details.solidDescription = solidsDescription;
-        details.foodType = foodType;
         if (allergens.length > 0) details.allergens = allergens;
         break;
       case "photo":
@@ -1026,29 +1022,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   onDateChange={setSelectedDate}
                   label={t('time')} 
                 />
-
-                {/* Food Type Selector */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Food Type</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      variant={foodType === "purees" ? "default" : "outline"}
-                      onClick={() => setFoodType("purees")}
-                      className="w-full"
-                    >
-                      Purees
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={foodType === "finger-foods" ? "default" : "outline"}
-                      onClick={() => setFoodType("finger-foods")}
-                      className="w-full"
-                    >
-                      Finger Foods
-                    </Button>
-                  </div>
-                </div>
 
                 {/* What did they eat */}
                 <div>

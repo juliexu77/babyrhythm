@@ -171,7 +171,6 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
     case "note":
       return activity.details.note || `${babyName} ${t('note')}`;
     case "solids":
-      const foodTypeLabel = (activity.details as any)?.foodType === 'finger-foods' ? 'Finger foods' : 'Purees';
       const allergensArray = (activity.details as any)?.allergens || [];
       let solidsText = activity.details.solidDescription 
         ? `${babyName} ${t('ate')}: ${activity.details.solidDescription}`
@@ -192,9 +191,7 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
           };
           return allergenMap[id] || id;
         }).join(', ');
-        solidsText += ` • ${foodTypeLabel} • Allergens: ${allergenLabels}`;
-      } else {
-        solidsText += ` • ${foodTypeLabel}`;
+        solidsText += ` • Allergens: ${allergenLabels}`;
       }
       return solidsText;
     case "photo":
