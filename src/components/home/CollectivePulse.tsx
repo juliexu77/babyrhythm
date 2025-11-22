@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronDown, ChevronUp } from "lucide-react";
 import { useCollectivePulse } from "@/hooks/useCollectivePulse";
 import { format, subDays, startOfDay, differenceInWeeks } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { calculateNapStatistics } from "@/utils/napStatistics";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 
 interface CollectivePulseProps {
@@ -154,6 +153,10 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   const regressionInfo = getRegressionInfo(babyBirthday);
 
+  // Combine insight text with regression info if applicable
+  const enhancedInsightText = cohortStats.insight_text + 
+    (regressionInfo ? ` Note: Your baby is in the ${regressionInfo.name} regression window, where ${regressionInfo.description.toLowerCase()}` : '');
+
   return (
     <div className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       {/* Header - Always visible and clickable */}
@@ -184,7 +187,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
           {/* Insight Text */}
           <div className="px-4 pt-3">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {cohortStats.insight_text}
+              {enhancedInsightText}
             </p>
           </div>
 
@@ -222,18 +225,6 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
           </div>
         </div>
           </div>
-
-          {/* Regression Awareness Banner */}
-          {regressionInfo && (
-            <div className="px-4 pb-3">
-              <Alert className="bg-amber-500/10 border-amber-500/30">
-                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <AlertDescription className="text-xs text-foreground/90 leading-relaxed">
-                  <span className="font-semibold">{regressionInfo.name} regression window.</span> {regressionInfo.description}
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
 
         </>
       )}
