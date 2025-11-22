@@ -1242,6 +1242,22 @@ const lastDiaper = displayActivities
     <div className="pb-24">
       <div className="pt-3 space-y-2">
 
+        {/* Baby Info Header */}
+        {babyName && babyAge && (
+          <div className="px-4 pb-1">
+            <div className="flex items-center justify-between text-sm">
+              <h2 className="font-semibold text-foreground">
+                {babyName}
+              </h2>
+              <p className="text-muted-foreground">
+                {babyAge.months > 0 && `${babyAge.months} ${babyAge.months === 1 ? 'month' : 'months'}`}
+                {babyAge.months > 0 && babyAge.weeks > 0 && ', '}
+                {babyAge.weeks > 0 && `${babyAge.weeks} ${babyAge.weeks === 1 ? 'week' : 'weeks'}`}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Today's Story Modal */}
         <TodaysStoryModal
           isOpen={showTodaysStory}
