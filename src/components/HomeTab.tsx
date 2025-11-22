@@ -694,67 +694,19 @@ const lastDiaper = displayActivities
     return 97;
   };
 
-  // Get latest measurement from all activities - using activity time
-  const getLatestMeasurement = () => {
-    const measurements = activities
-      .filter(a => a.type === 'measure')
+  // Get latest solids from all activities
+  const getLatestSolids = () => {
+    const solids = activities
+      .filter(a => a.type === 'solids')
       .sort((a, b) => getComparableTime(b) - getComparableTime(a));
     
-    if (measurements.length === 0) return null;
+    if (solids.length === 0) return null;
     
-    const latest = measurements[0];
-    const details = latest.details || {};
-    const weightLbs = parseFloat(details.weightLbs || '0');
-    const weightOz = parseFloat(details.weightOz || '0');
-    const weightKg = (weightLbs * 0.453592) + (weightOz * 0.0283495);
-    const heightInches = parseFloat(details.heightInches || '0');
-    const heightCm = heightInches * 2.54;
-    const headCirc = parseFloat(details.headCircumference || '0');
-    
-    const result: any = { date: latest.loggedAt };
-    
-    if (weightKg > 0 && babyAgeMonths !== null) {
-      result.weight = {
-        display: `${weightLbs}lb ${weightOz}oz`,
-        percentile: calculatePercentile(weightKg, babyAgeMonths, 'weight')
-      };
-    }
-    if (heightCm > 0 && babyAgeMonths !== null) {
-      result.length = {
-        display: `${heightInches}"`,
-        percentile: calculatePercentile(heightCm, babyAgeMonths, 'length')
-      };
-    }
-    if (headCirc > 0 && babyAgeMonths !== null) {
-      result.headCirc = {
-        display: `${headCirc}"`,
-        percentile: calculatePercentile(headCirc, babyAgeMonths, 'headCirc')
-      };
-    }
-    
-    // Generate contextual summary
-    if (result.weight || result.length) {
-      const avgPercentile = [
-        result.weight?.percentile,
-        result.length?.percentile
-      ].filter(p => p !== undefined).reduce((a, b) => a! + b!, 0)! / 
-        [result.weight?.percentile, result.length?.percentile].filter(p => p !== undefined).length;
-      
-      let summary = '';
-      if (avgPercentile >= 85) {
-        summary = 'Growing strong — tracking above average';
-      } else if (avgPercentile >= 50) {
-        summary = 'Gaining steadily — right on track for his age';
-      } else if (avgPercentile >= 25) {
-        summary = 'Growing at his own pace — steady and healthy';
-      } else {
-        summary = 'Following his own growth curve — consistent progress';
-      }
-      
-      result.summary = summary;
-    }
-    
-    return Object.keys(result).length > 1 ? result : null;
+    const latest = solids[0];
+    return {
+      date: latest.loggedAt,
+      description: latest.details?.solidDescription || 'Solids'
+    };
   };
 
   // Activity summary data
@@ -762,9 +714,9 @@ const lastDiaper = displayActivities
     const feedCount = displayActivities.filter(a => a.type === 'feed').length;
     const napCount = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length;
     const diaperCount = displayActivities.filter(a => a.type === 'diaper').length;
-    const measureCount = displayActivities.filter(a => a.type === 'measure').length;
+    const solidsCount = displayActivities.filter(a => a.type === 'solids').length;
 
-    return { feedCount, napCount, diaperCount, measureCount };
+    return { feedCount, napCount, diaperCount, solidsCount };
   };
 
   // Get age-appropriate expectations
@@ -1080,7 +1032,7 @@ const lastDiaper = displayActivities
   const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
 
   const summary = getDailySummary();
-  const latestMeasurement = getLatestMeasurement();
+  const latestSolids = getLatestSolids();
   const awakeTime = getAwakeTime();
   const sleepStatus = getSleepStatus();
   const sentiment = getDailySentiment();

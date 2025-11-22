@@ -24,7 +24,7 @@ export const ExportCSVModal = ({ open, onOpenChange, activities, babyName }: Exp
   const [range, setRange] = useState<"this-week" | "last-7-days" | "custom">("this-week");
   const [customStartDate, setCustomStartDate] = useState<Date>();
   const [customEndDate, setCustomEndDate] = useState<Date>();
-  const [selectedTypes, setSelectedTypes] = useState<string[]>(['feed', 'nap', 'diaper', 'note', 'measure']);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(['feed', 'nap', 'diaper', 'note', 'solids']);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const getDateRange = () => {
@@ -176,18 +176,8 @@ export const ExportCSVModal = ({ open, onOpenChange, activities, babyName }: Exp
           case 'note':
             notes = activity.details?.note || '';
             break;
-          case 'measure':
-            const measurements = [];
-            if (activity.details?.weightLbs || activity.details?.weightOz) {
-              measurements.push(`Weight: ${activity.details.weightLbs || 0}lb ${activity.details.weightOz || 0}oz`);
-            }
-            if (activity.details?.heightInches) {
-              measurements.push(`Height: ${activity.details.heightInches}"`);
-            }
-            if (activity.details?.headCircumference) {
-              measurements.push(`Head: ${activity.details.headCircumference}"`);
-            }
-            details = measurements.join(', ');
+          case 'solids':
+            details = activity.details?.solidDescription || '';
             notes = activity.details?.note || '';
             break;
         }
@@ -343,7 +333,7 @@ export const ExportCSVModal = ({ open, onOpenChange, activities, babyName }: Exp
                 { id: 'nap', label: 'Naps' },
                 { id: 'diaper', label: 'Diapers' },
                 { id: 'note', label: 'Notes' },
-                { id: 'measure', label: 'Measurements' }
+                { id: 'solids', label: 'Solids' }
               ].map(type => (
                 <div key={type.id} className="flex items-center space-x-2">
                   <Checkbox

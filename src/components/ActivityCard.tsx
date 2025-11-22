@@ -1,11 +1,11 @@
-import { Clock, Baby, Droplet, Moon, StickyNote, Ruler, Camera } from "lucide-react";
+import { Clock, Baby, Droplet, Moon, StickyNote, Carrot, Camera } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface Activity {
   id: string;
-  type: "feed" | "diaper" | "nap" | "note" | "measure" | "photo";
+  type: "feed" | "diaper" | "nap" | "note" | "solids" | "photo";
   time: string;
   loggedAt?: string; // The original logged timestamp
   timezone?: string; // IANA timezone name where activity was logged
@@ -26,11 +26,6 @@ export interface Activity {
     startTime?: string;
     endTime?: string;
     isNightSleep?: boolean;
-    // Measure details
-    weightLbs?: string;
-    weightOz?: string;
-    heightInches?: string;
-    headCircumference?: string;
     // Photo details
     photoUrl?: string;
     // General
@@ -56,8 +51,8 @@ const getActivityIcon = (type: string) => {
       return <Moon className="h-4 w-4" />;
     case "note":
       return <StickyNote className="h-4 w-4" />;
-    case "measure":
-      return <Ruler className="h-4 w-4" />;
+    case "solids":
+      return <Carrot className="h-4 w-4" />;
     case "photo":
       return <Camera className="h-4 w-4" />;
     default:
@@ -75,7 +70,7 @@ const getActivityGradient = (type: string) => {
       return "bg-gradient-nap";
     case "note":
       return "bg-gradient-note";
-    case "measure":
+    case "solids":
       return "bg-gradient-primary";
     case "photo":
       return "bg-gradient-primary";
@@ -175,20 +170,10 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
       return `${babyName} ${t('tookANap')}`;
     case "note":
       return activity.details.note || `${babyName} ${t('note')}`;
-    case "measure":
-      const measurements = [];
-      if (activity.details.weightLbs || activity.details.weightOz) {
-        measurements.push(`${activity.details.weightLbs || 0}lb ${activity.details.weightOz || 0}oz`);
-      }
-      if (activity.details.heightInches) {
-        measurements.push(`${activity.details.heightInches}" ${t('tall')}`);
-      }
-      if (activity.details.headCircumference) {
-        measurements.push(`${activity.details.headCircumference}" ${t('head')}`);
-      }
-      return measurements.length > 0 
-        ? `${babyName} ${t('measured')}: ${measurements.join(", ")}`
-        : `${babyName} ${t('measurementsTaken')}`;
+    case "solids":
+      return activity.details.solidDescription 
+        ? `${babyName} ${t('ate')}: ${activity.details.solidDescription}`
+        : `${babyName} ${t('ateSolids')}`;
     case "photo":
       return activity.details.note || `${babyName} ${t('photo')}`;
     default:

@@ -41,7 +41,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
-  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "measure" | "photo" | "">(""); 
+  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "solids" | "photo" | "">(""); 
   
   // Helper function to get exact current time
   const getCurrentTime = (date: Date = new Date()) => {
@@ -103,11 +103,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [selectedEndDate, setSelectedEndDate] = useState<Date>(new Date()); // Separate date for sleep end time
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   
-  // Measure state
-  const [weightLbs, setWeightLbs] = useState("");
-  const [weightOz, setWeightOz] = useState("");
-  const [heightInches, setHeightInches] = useState("");
-  const [headCircumference, setHeadCircumference] = useState("");
+  // Solids state
+  const [solidsDescription, setSolidsDescription] = useState("");
 
   // Load last used settings and handle editing
   useEffect(() => {
@@ -176,12 +173,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       } else if (editingActivity.type === "note") {
         setNote(editingActivity.details.note || "");
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
-      } else if (editingActivity.type === "measure") {
+      } else if (editingActivity.type === "solids") {
         const details = editingActivity.details;
-        setWeightLbs(details.weightLbs || "");
-        setWeightOz(details.weightOz || "");
-        setHeightInches(details.heightInches || "");
-        setHeadCircumference(details.headCircumference || "");
+        setSolidsDescription(details.solidDescription || "");
         setNote(details.note || "");
       } else if (editingActivity.type === "photo") {
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
@@ -294,14 +288,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setHasEndTime(true); // Reset to default (end time included)
     setIsTimerActive(false);
     setTimerStart(null);
+    setSolidsDescription("");
     setNote("");
-    setPhoto(null);
-    setPhotoUrl(null);
-    setShowKeypad(false);
-    setWeightLbs("");
-    setWeightOz("");
-    setHeightInches("");
-    setHeadCircumference("");
   };
 
   const startNapTimer = async () => {
@@ -516,11 +504,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           details.photoUrl = photoUrl;
         }
         break;
-      case "measure":
-        if (weightLbs) details.weightLbs = weightLbs;
-        if (weightOz) details.weightOz = weightOz;
-        if (heightInches) details.heightInches = heightInches;
-        if (headCircumference) details.headCircumference = headCircumference;
+      case "solids":
+        if (solidsDescription) details.solidDescription = solidsDescription;
         if (note) details.note = note;
         break;
       case "photo":
@@ -558,7 +543,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         // Update existing activity
         const updatedActivity: Activity = {
           ...editingActivity,
-          type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
+          type: activityType as "feed" | "diaper" | "nap" | "note" | "solids" | "photo",
           time: activityType === "nap" ? startTime : time,
           details,
         };
@@ -567,7 +552,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       } else {
         // Create new activity
         const newActivity: Omit<Activity, "id"> = {
-          type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
+          type: activityType as "feed" | "diaper" | "nap" | "note" | "solids" | "photo",
           time: activityType === "nap" ? startTime : time,
           details,
         };
@@ -608,7 +593,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       case "diaper": return <Droplet className="h-4 w-4" />;
       case "nap": return <Moon className="h-4 w-4" />;
       case "note": return <StickyNote className="h-4 w-4" />;
-      case "measure": return <Ruler className="h-4 w-4" />;
+      case "solids": return <Carrot className="h-4 w-4" />;
       case "photo": return <Camera className="h-4 w-4" />;
       default: return null;
     }
@@ -657,7 +642,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 { type: "diaper", icon: Droplet, label: t('diaper') },
                 { type: "note", icon: StickyNote, label: t('note') },
                 { type: "nap", icon: Moon, label: t('sleep') },
-                { type: "measure", icon: Ruler, label: t('measure') },
+                { type: "solids", icon: Carrot, label: t('solids') },
                 { type: "photo", icon: Camera, label: t('photo') }
               ].map(({ type, icon: Icon, label }) => (
                 <Button
@@ -1025,8 +1010,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               </div>
             )}
 
-            {/* Measure Details */}
-            {activityType === "measure" && (
+            {/* Solids Details */}
+            {activityType === "solids" && (
               <div className="space-y-4">
                 <TimeScrollPicker 
                   value={time} 
@@ -1037,62 +1022,24 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 />
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">{t('weight')}</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">{t('pounds')}</Label>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        value={weightLbs}
-                        onChange={(e) => setWeightLbs(e.target.value)}
-                        className="text-center"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">{t('ounces')}</Label>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        value={weightOz}
-                        onChange={(e) => setWeightOz(e.target.value)}
-                        className="text-center"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">{t('heightInches')}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="0.0"
-                    value={heightInches}
-                    onChange={(e) => setHeightInches(e.target.value)}
-                    className="text-center"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">{t('headCircumferenceInches')}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    placeholder="0.0"
-                    value={headCircumference}
-                    onChange={(e) => setHeadCircumference(e.target.value)}
-                    className="text-center"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="measure-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
+                  <Label htmlFor="solids-description" className="text-sm font-medium mb-2 block">{t('whatDidTheyEat')}</Label>
                   <Textarea
-                    id="measure-note"
+                    id="solids-description"
+                    value={solidsDescription}
+                    onChange={(e) => setSolidsDescription(e.target.value)}
+                    placeholder={t('describeSolidFood')}
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="solids-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
+                  <Textarea
+                    id="solids-note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder={t('doctorVisitGrowthCheck')}
+                    placeholder={t('anyAdditionalNotes')}
                     rows={3}
                     className="resize-none"
                   />

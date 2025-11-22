@@ -94,7 +94,7 @@ const Index = () => {
 
         return {
           id: dbActivity.id,
-          type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo',
+          type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note' | 'solids' | 'photo',
           time: displayTime,
           loggedAt: dbActivity.logged_at, // Preserve the original timestamp
           timezone: dbActivity.timezone,   // Preserve the IANA timezone
@@ -361,11 +361,11 @@ const ongoingNap = (() => {
   const [quickAddType, setQuickAddType] = useState<'feed' | 'nap' | 'diaper' | null>(null);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
-  const [pendingActivityTypes, setPendingActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
+  const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'solids', 'photo']);
+  const [pendingActivityTypes, setPendingActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'solids', 'photo']);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   
-  const allActivityTypes = ['feed', 'diaper', 'nap', 'note', 'measure', 'photo'];
+  const allActivityTypes = ['feed', 'diaper', 'nap', 'note', 'solids', 'photo'];
   const hasActiveFilters = selectedActivityTypes.length !== allActivityTypes.length;
   const [showPediatricianReport, setShowPediatricianReport] = useState(false);
   const [showCSVExport, setShowCSVExport] = useState(false);
@@ -426,7 +426,7 @@ const ongoingNap = (() => {
                 diaper: 'changed',
                 nap: 'logged a nap for',
                 note: 'added a note about',
-                measure: 'measured',
+                solids: 'fed solids to',
                 photo: 'added a photo of'
               };
               
@@ -934,14 +934,14 @@ const ongoingNap = (() => {
                             Note
                           </DropdownMenuCheckboxItem>
                           <DropdownMenuCheckboxItem
-                            checked={pendingActivityTypes.includes('measure')}
+                            checked={pendingActivityTypes.includes('solids')}
                             onCheckedChange={(checked) => {
                               setPendingActivityTypes(prev => 
-                                checked ? [...prev, 'measure'] : prev.filter(t => t !== 'measure')
+                                checked ? [...prev, 'solids'] : prev.filter(t => t !== 'solids')
                               );
                             }}
                           >
-                            Measure
+                            Solids
                           </DropdownMenuCheckboxItem>
                           <DropdownMenuCheckboxItem
                             checked={pendingActivityTypes.includes('photo')}

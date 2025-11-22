@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 export interface Activity {
   id: string;
-  type: "feed" | "diaper" | "nap" | "note" | "measure" | "photo";
+  type: "feed" | "diaper" | "nap" | "note" | "solids" | "photo";
   time: string;
   loggedAt?: string;
   timezone?: string;
