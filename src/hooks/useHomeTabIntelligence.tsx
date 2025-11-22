@@ -603,17 +603,25 @@ export const useHomeTabIntelligence = (
     let scheduleDetails = 'On track';
     let scheduleHasDeviation = false;
 
-    // Check wake window if baby is currently awake
+    // Check wake window ONLY if baby is currently awake (not sleeping/napping)
     if (currentActivity?.type === 'awake' && currentActivity.duration) {
       const currentWakeMinutes = currentActivity.duration;
       const expectedMaxWake = expected.wakeWindow[1];
       
-      if (currentWakeMinutes > expectedMaxWake + 30) {
-        scheduleStatus = 'needs-attention';
-        scheduleDetails = `Awake ${Math.floor(currentWakeMinutes / 60)}h ${currentWakeMinutes % 60}m — longer than typical`;
-        scheduleHasDeviation = true;
-      } else if (currentWakeMinutes > expectedMaxWake) {
-        scheduleDetails = `Approaching nap window`;
+      // Additional check: ensure currentActivity is truly awake and not a stale calculation
+      // If there's an ongoing sleep activity today, don't flag long awake times
+      const ongoingSleepToday = todayActivities.find(a => 
+        a.type === 'nap' && a.details?.startTime && !a.details?.endTime
+      );
+      
+      if (!ongoingSleepToday) {
+        if (currentWakeMinutes > expectedMaxWake + 30) {
+          scheduleStatus = 'needs-attention';
+          scheduleDetails = `Awake ${Math.floor(currentWakeMinutes / 60)}h ${currentWakeMinutes % 60}m — longer than typical`;
+          scheduleHasDeviation = true;
+        } else if (currentWakeMinutes > expectedMaxWake) {
+          scheduleDetails = `Approaching nap window`;
+        }
       }
     }
 
