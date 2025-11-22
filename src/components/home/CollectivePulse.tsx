@@ -1,4 +1,4 @@
-import { Globe, TrendingUp, TrendingDown, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useCollectivePulse } from "@/hooks/useCollectivePulse";
 import { format, subDays, startOfDay, differenceInWeeks } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -89,12 +89,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     return (
       <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
         <div className="px-4 py-4 border-b border-border/30">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-              Collective Pulse
-            </h3>
-          </div>
+          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+            Collective Pulse
+          </h3>
         </div>
         <div className="px-4 py-3">
           <p className="text-xs text-muted-foreground">
@@ -113,12 +110,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full px-4 py-4 border-b border-border/30 flex items-center justify-between hover:bg-muted/20 transition-colors"
         >
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-              Collective Pulse
-            </h3>
-          </div>
+          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+            Collective Pulse
+          </h3>
           {isExpanded ? (
             <ChevronUp className="w-4 h-4 text-muted-foreground" />
           ) : (
@@ -167,12 +161,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-4 py-4 border-b border-border/30 flex items-center justify-between hover:bg-muted/20 transition-colors"
       >
-        <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4 text-primary" />
-          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-            Collective Pulse
-          </h3>
-        </div>
+        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+          Collective Pulse
+        </h3>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-muted-foreground" />
         ) : (
