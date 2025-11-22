@@ -1,4 +1,4 @@
-import { Globe, TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import { Globe, TrendingUp, TrendingDown, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useCollectivePulse } from "@/hooks/useCollectivePulse";
 import { format, subDays, startOfDay, differenceInWeeks } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { calculateNapStatistics } from "@/utils/napStatistics";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
 
 interface CollectivePulseProps {
   babyBirthday?: string;
@@ -43,6 +44,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
   const { isNightTime, nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
@@ -85,17 +87,19 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden animate-pulse">
-        <div className="px-4 py-5 border-b border-border/30">
-          <div className="h-4 bg-muted rounded w-32 mb-2" />
-          <div className="h-3 bg-muted rounded w-40" />
-        </div>
-        <div className="px-4 py-5 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-card rounded-lg p-3 border border-border h-20" />
-            <div className="bg-card rounded-lg p-3 border border-border h-20" />
+      <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="px-4 py-4 border-b border-border/30">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-primary" />
+            <div>
+              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                Collective Pulse
+              </h3>
+              <p className="text-[10px] text-muted-foreground">
+                Loading...
+              </p>
+            </div>
           </div>
-          <div className="h-16 bg-muted rounded" />
         </div>
       </div>
     );
@@ -105,22 +109,34 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   if (!cohortStats) {
     return (
       <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="px-4 py-5 border-b border-border/30">
-          <div className="flex items-center gap-2 mb-1">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full px-4 py-4 border-b border-border/30 flex items-center justify-between hover:bg-muted/20 transition-colors"
+        >
+          <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-              Collective Pulse
-            </h3>
+            <div className="text-left">
+              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                Collective Pulse
+              </h3>
+              <p className="text-[10px] text-muted-foreground">
+                Big-picture view
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground font-medium">
-            {babyBirthday ? format(new Date(babyBirthday), 'MMMM yyyy') + ' Babies' : 'Coming Soon'}
-          </p>
-        </div>
-        <div className="px-4 py-5">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            We're gathering insights from families with babies your age. Check back soon for cohort statistics.
-          </p>
-        </div>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
+        </button>
+        {isExpanded && (
+          <div className="px-4 py-5">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              We're gathering insights from families with babies your age. Check back soon for cohort statistics.
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -151,33 +167,46 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   return (
     <div className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-5 border-b border-border/30">
-        <div className="flex items-center gap-2 mb-1">
+      {/* Header - Always visible and clickable */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full px-4 py-4 border-b border-border/30 flex items-center justify-between hover:bg-muted/20 transition-colors"
+      >
+        <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-primary" />
-          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-            Collective Pulse
-          </h3>
+          <div className="text-left">
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              Collective Pulse
+            </h3>
+            <p className="text-[10px] text-muted-foreground">
+              Big-picture view
+            </p>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground font-medium">
-          {cohortStats.cohort_label}
-        </p>
-      </div>
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        )}
+      </button>
 
-      {/* Regression Awareness Banner */}
-      {regressionInfo && (
-        <div className="px-4 pt-4">
-          <Alert className="bg-amber-500/10 border-amber-500/30">
-            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="text-xs text-foreground/90 leading-relaxed">
-              <span className="font-semibold">{regressionInfo.name} regression window.</span> {regressionInfo.description}
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
+      {/* Expandable Content */}
+      {isExpanded && (
+        <>
+          {/* Regression Awareness Banner */}
+          {regressionInfo && (
+            <div className="px-4 pt-4">
+              <Alert className="bg-amber-500/10 border-amber-500/30">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertDescription className="text-xs text-foreground/90 leading-relaxed">
+                  <span className="font-semibold">{regressionInfo.name} regression window.</span> {regressionInfo.description}
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
 
-      {/* Content */}
-      <div className="px-4 py-5 space-y-3">
+          {/* Content */}
+          <div className="px-4 py-5 space-y-3">
         {/* Micro Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-lg p-3">
@@ -210,18 +239,20 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
           </div>
         </div>
 
-        {/* Insight Text */}
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {cohortStats.insight_text}
-        </p>
-      </div>
+            {/* Insight Text */}
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {cohortStats.insight_text}
+            </p>
+          </div>
 
-      {/* Footer */}
-      <div className="px-4 pb-3">
-        <p className="text-[10px] text-muted-foreground/70 italic">
-          Based on aggregated BabyRhythm data{cohortStats.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
-        </p>
-      </div>
+          {/* Footer */}
+          <div className="px-4 pb-3">
+            <p className="text-[10px] text-muted-foreground/70 italic">
+              Based on aggregated BabyRhythm data{cohortStats.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 };

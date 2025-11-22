@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTimelineCohortRanges } from "@/hooks/useTimelineCohortRanges";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { TimelineDetailModal } from "./TimelineDetailModal";
+import { baselineWakeWindows, getFeedingGuidanceForAge } from "@/utils/ageAppropriateBaselines";
 import {
   Tooltip,
   TooltipContent,
@@ -23,7 +24,58 @@ interface TimelineChartProps {
   tooltipFormatter?: (value: number) => string;
   babyBirthday?: string;
   metricType?: 'nightSleep' | 'dayNaps' | 'feedVolume' | 'wakeWindows';
+  showBaseline?: boolean;
 }
+
+// Helper to get warm, natural language explanation for each chart
+const getChartExplanation = (
+  metricType: string | undefined, 
+  babyBirthday: string | undefined
+): string => {
+  if (!babyBirthday || !metricType) return '';
+  
+  const birthDate = new Date(babyBirthday);
+  const ageInWeeks = differenceInWeeks(new Date(), birthDate);
+  
+  if (metricType === 'nightSleep') {
+    const baseline = baselineWakeWindows.find(b => ageInWeeks >= b.ageStart && ageInWeeks <= b.ageEnd);
+    if (!baseline) return '';
+    
+    if (ageInWeeks < 8) {
+      return `Night sleep is usually around 8-10 hours at this age. Every baby is different.`;
+    } else if (ageInWeeks < 16) {
+      return `Night sleep typically settles around 9-11 hours now. You're doing great.`;
+    } else if (ageInWeeks < 52) {
+      return `Most babies sleep 10-12 hours at night by this age. Trust the rhythm you're building.`;
+    }
+    return `Night sleep is usually 10-12 hours at this age. Your routine is working.`;
+  }
+  
+  if (metricType === 'dayNaps') {
+    const baseline = baselineWakeWindows.find(b => ageInWeeks >= b.ageStart && ageInWeeks <= b.ageEnd);
+    if (!baseline) return '';
+    
+    return `Most babies take ${baseline.napCount} naps at this age, but every baby's different.`;
+  }
+  
+  if (metricType === 'feedVolume') {
+    const guidance = getFeedingGuidanceForAge(ageInWeeks);
+    return `Babies usually take ${guidance.dailyTotal.split(' ')[0]} feeds per day at this age. You're on track.`;
+  }
+  
+  if (metricType === 'wakeWindows') {
+    const baseline = baselineWakeWindows.find(b => ageInWeeks >= b.ageStart && ageInWeeks <= b.ageEnd);
+    if (!baseline) return '';
+    
+    const ww = baseline.wakeWindows[0];
+    if (ww === "All day") {
+      return `Wake windows expand throughout the day now. Follow your baby's cues.`;
+    }
+    return `Wake windows are usually ${ww} at this age. Watch for sleepy cues.`;
+  }
+  
+  return '';
+};
 
 export const TimelineChart = ({
   title,
@@ -36,7 +88,8 @@ export const TimelineChart = ({
   yAxisFormatter = (v) => v.toFixed(1),
   tooltipFormatter = (v) => v.toFixed(1),
   babyBirthday,
-  metricType
+  metricType,
+  showBaseline = false
 }: TimelineChartProps) => {
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState<number | null>(null);
@@ -205,8 +258,8 @@ export const TimelineChart = ({
       <TooltipProvider>
         <div className="p-4">
           <svg width="100%" height={height + 40} className="overflow-visible">
-            {/* Cohort range filled area */}
-            {cohortRangePath && (
+            {/* Cohort range filled area - only show if showBaseline is true */}
+            {showBaseline && cohortRangePath && (
               <>
                 <path
                   d={`${cohortRangePath.topPath} L ${cohortRangePath.bottomPoints[cohortRangePath.bottomPoints.length - 1].x} ${cohortRangePath.bottomPoints[cohortRangePath.bottomPoints.length - 1].y} ${cohortRangePath.bottomPath.replace('M', 'L')} Z`}
@@ -328,6 +381,9 @@ export const TimelineChart = ({
 
   const selectedWeek = selectedWeekIndex !== null ? weeks[selectedWeekIndex] : null;
   const selectedWeekEnd = selectedWeek ? endOfWeek(selectedWeek, { weekStartsOn: 1 }) : null;
+  
+  // Get warm explanation
+  const explanation = getChartExplanation(metricType, babyBirthday);
 
   return (
     <>
@@ -337,6 +393,15 @@ export const TimelineChart = ({
           <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         </div>
         {renderChart(180)}
+        
+        {/* Warm explanation */}
+        {explanation && (
+          <div className="px-4 py-2 border-t border-border/50 bg-muted/20">
+            <p className="text-xs text-muted-foreground italic text-center">
+              {explanation}
+            </p>
+          </div>
+        )}
       </div>
       
       {selectedWeek && selectedWeekEnd && (

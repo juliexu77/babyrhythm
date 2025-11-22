@@ -21,6 +21,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [timeRange, setTimeRange] = useState<TimeRange>('6weeks');
+  const [showBaseline, setShowBaseline] = useState(false);
 
   // Helper to parse time to minutes
   const parseTimeToMinutes = (timeStr: string) => {
@@ -286,13 +287,21 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   return (
     <div className="space-y-4 pb-6">
-      {/* Collective Pulse */}
+      {/* Purpose Statement */}
       <div className="pt-4 px-2">
+        <p className="text-sm text-muted-foreground text-center">
+          Here's how {household?.baby_name || 'your baby'}'s rhythm has been evolving over the past few weeks.
+        </p>
+      </div>
+
+      {/* Collective Pulse - Collapsible */}
+      <div className="px-2">
         <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
-      {/* Time Range Switcher */}
-      <div className="mx-2 flex justify-center gap-2">
+      {/* Time Range Switcher + Baseline Toggle */}
+      <div className="mx-2 space-y-2">
+        <div className="flex justify-center gap-2">
         {(['6weeks', '3months', '6months'] as TimeRange[]).map((range) => (
           <Button
             key={range}
@@ -306,10 +315,24 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             {range === '6months' && '6 Months'}
           </Button>
         ))}
+        </div>
+        
+        {/* Baseline Toggle */}
+        <div className="flex justify-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowBaseline(!showBaseline)}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            {showBaseline ? '✓ ' : ''}Show typical range
+          </Button>
+        </div>
       </div>
 
-      {/* Chart Legend */}
-      <div className="mx-2 rounded-lg bg-muted/30 border border-border/40 p-3">
+      {/* Chart Legend - Only show when baseline is visible */}
+      {showBaseline && (
+        <div className="mx-2 rounded-lg bg-muted/30 border border-border/40 p-3">
         <div className="flex items-start gap-2 mb-2">
           <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
           <h4 className="text-xs font-semibold text-foreground">Chart Guide</h4>
@@ -328,7 +351,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             <span className="text-xs text-muted-foreground">Age-appropriate baseline range</span>
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Timeline Charts */}
       <div className="space-y-4">
@@ -344,6 +368,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           tooltipFormatter={(v) => v.toFixed(1)}
           babyBirthday={household?.baby_birthday}
           metricType="nightSleep"
+          showBaseline={showBaseline}
         />
 
         <TimelineChart
@@ -358,6 +383,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           tooltipFormatter={(v) => v.toFixed(0)}
           babyBirthday={household?.baby_birthday}
           metricType="dayNaps"
+          showBaseline={showBaseline}
         />
 
         <TimelineChart
@@ -372,6 +398,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           tooltipFormatter={(v) => v.toFixed(0)}
           babyBirthday={household?.baby_birthday}
           metricType="feedVolume"
+          showBaseline={showBaseline}
         />
 
         <TimelineChart
@@ -386,6 +413,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           tooltipFormatter={(v) => v.toFixed(1)}
           babyBirthday={household?.baby_birthday}
           metricType="wakeWindows"
+          showBaseline={showBaseline}
         />
       </div>
     </div>
