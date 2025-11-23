@@ -22,7 +22,6 @@ import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generateAdaptiveSchedule, type AdaptiveSchedule, type AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
-import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
@@ -1447,14 +1446,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Predicted Schedule - Show for Tier 1+ */}
           {hasMinimumData && (
             <>
-              {/* Only show transition detection for Tier 2+ */}
-              {hasTier2Data && (
-                <TodayAtGlance 
-                  prediction={aiPrediction}
-                  loading={aiPredictionLoading}
-                />
-              )}
-              
               {/* This Week's Rhythm - Nap Barcode Visualization */}
               {activities.length > 0 && (
                 <WeeklyRhythm 

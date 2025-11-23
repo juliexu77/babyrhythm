@@ -52,22 +52,6 @@ interface Activity {
   details?: any;
 }
 
-interface MetricDelta {
-  name: string;
-  change: string;
-  rawDelta?: number;
-  priority?: number;
-  context?: string;
-}
-
-interface Insight {
-  type: string;
-  delta: string;
-  rawValue?: number;
-  priority?: number;
-  context?: string;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -149,10 +133,6 @@ serve(async (req) => {
 
     if (!activities || activities.length === 0) {
       return new Response(JSON.stringify({
-        data_pulse: {
-          metrics: [],
-          note: "Not enough data yet to show trends."
-        },
         what_to_know: ["Not enough data yet — log activities to see personalized insights."],
         what_to_do: ["Start tracking sleep, feeds, and diapers to build your rhythm profile."],
         whats_next: "Patterns will emerge after a few days of consistent logging.",
@@ -328,21 +308,8 @@ serve(async (req) => {
 
     const guideSections = await generateGuideSections(lovableApiKey, geminiPayload, dataQuality);
 
-    // Build complete response with Data Pulse
-    const response = {
-      data_pulse: {
-        metrics: deltas.slice(0, 3).map(d => ({ // Top 3 only
-          name: d.name,
-          change: d.change
-        })),
-        note: dataQuality < 0.6 
-          ? "Data incomplete — trends may be approximate."
-          : ""
-      },
-      ...guideSections
-    };
-
-    return new Response(JSON.stringify(response), {
+    // Return guide sections
+    return new Response(JSON.stringify(guideSections), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
@@ -350,10 +317,6 @@ serve(async (req) => {
     console.error('Error in generate-guide-sections:', error);
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : 'Unknown error',
-      data_pulse: {
-        metrics: [],
-        note: "Unable to calculate metrics right now."
-      },
       what_to_know: ["Unable to generate insights right now."],
       what_to_do: ["Continue logging activities as usual."],
       whats_next: "Insights will be available once data processing resumes.",
