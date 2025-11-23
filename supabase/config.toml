@@ -6,12 +6,6 @@ verify_jwt = true
 [functions.parenting-chat]
 verify_jwt = true
 
-[functions.night-doula]
-verify_jwt = true
-
-[functions.parse-schedule]
-verify_jwt = true
-
 [functions.generate-pediatrician-report]
 verify_jwt = false
 
@@ -21,17 +15,8 @@ verify_jwt = true
 [functions.generate-guide-sections]
 verify_jwt = true
 
-[functions.generate-rhythm-insights]
-verify_jwt = true
-
 [functions.generate-home-insights]
 verify_jwt = true
-
-[functions.predict-daily-schedule]
-verify_jwt = true
-
-[functions.compute-cohort-stats]
-verify_jwt = false
 
 [functions.delete-household]
 verify_jwt = false
@@ -39,13 +24,7 @@ verify_jwt = false
 [functions.generate-story-headline]
 verify_jwt = true
 
-[functions.debug-sleep-calc]
-verify_jwt = false
-
 [functions.clear-schedule-cache]
-verify_jwt = false
-
-[functions.clear-todays-schedule-caches]
 verify_jwt = false
 
 [functions.generate-rhythm-subtitle]
