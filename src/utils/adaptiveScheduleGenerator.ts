@@ -1,7 +1,5 @@
-import { BabyCarePredictionEngine, type NextActionResult } from "./predictionEngine";
 import { Activity } from "@/components/ActivityCard";
 import { isNightSleep, isDaytimeNap } from "./napClassification";
-import { getActivityEventDateString } from './activityDate';
 import { formatInTimeZone } from 'date-fns-tz';
 import { getScheduleForAge, calculateAgeInWeeks } from './ageAppropriateBaselines';
 
@@ -34,16 +32,17 @@ export interface AdaptiveSchedule {
 }
 
 /**
- * Generate an adaptive schedule using nap count analysis + age-appropriate patterns
- * Uses actual wake time when available, recent nap count from data,
- * but age-appropriate wake windows and nap durations for timing
+ * Generate an adaptive schedule using:
+ * - Actual wake time (when available) or historical average
+ * - Recent nap count from data
+ * - Age-appropriate wake windows and nap durations
  */
 export function generateAdaptiveSchedule(
   activities: Activity[],
   babyBirthday?: string,
   napCountAnalysis?: NapCountAnalysis,
   totalActivitiesCount?: number,
-  forceShowAllNaps?: boolean, // When true, show all naps regardless of bedtime proximity
+  forceShowAllNaps?: boolean,
   nightSleepStartHour: number = 19,
   nightSleepEndHour: number = 7,
   timezone: string = 'America/New_York'
@@ -66,7 +65,7 @@ export function generateAdaptiveSchedule(
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const yesterdayLocal = formatInTimeZone(yesterday, timezone, 'yyyy-MM-dd');
   
-  // Filter activities by their LOCAL date (using date_local field OR converting logged_at to user timezone)
+  // Filter activities by their LOCAL date
   const recentActivities = activities.filter(a => {
     // First try date_local from details
     if ((a.details as any)?.date_local) {
@@ -82,11 +81,9 @@ export function generateAdaptiveSchedule(
   });
   
   const todayActivities = recentActivities.filter(a => {
-    // First try date_local from details
     if ((a.details as any)?.date_local) {
       return (a.details as any).date_local === todayLocal;
     }
-    // Fall back to converting logged_at to user timezone
     const loggedAt = (a as any).loggedAt || (a as any).logged_at;
     if (loggedAt) {
       const activityDateInTimezone = formatInTimeZone(new Date(loggedAt), timezone, 'yyyy-MM-dd');
@@ -95,22 +92,13 @@ export function generateAdaptiveSchedule(
     return false;
   });
   
-  // Extract today's completed naps (with end times only)
-  const todayCompletedNaps = todayActivities
-    .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.startTime && a.details?.endTime)
-    .map(a => ({
-      startTime: a.details!.startTime!,
-      endTime: a.details!.endTime!
-    }));
-  
-  // Check if baby woke up today - find night sleep that STARTED yesterday (based on date_local)
+  // Check if baby woke up today - find night sleep that STARTED yesterday
   const todayWakeActivity = recentActivities.find(a => {
     if (a.type === 'nap' && a.details?.startTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
-      // ONLY use date_local - this is the date the sleep STARTED
       const activityDateLocal = (a.details as any)?.date_local;
       
       if (!activityDateLocal) {
-        return false; // Skip activities without date_local
+        return false;
       }
       
       // Night sleep should have started yesterday
@@ -154,8 +142,7 @@ export function generateAdaptiveSchedule(
       hasActualWake = true;
     }
   } else {
-    // No wake activity found today, using historical average
-    // Calculate average wake time from historical data
+    // No wake activity found today, use historical average
     const recentNightSleeps = activities
       .filter(a => a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour))
       .slice(0, 14);
@@ -298,14 +285,12 @@ export function generateAdaptiveSchedule(
     currentTime = napEndTime;
   }
   
-  
   // Calculate bedtime using historical average
   let computedBedtime: Date | null = null;
   let bedtimeConfidence: 'high' | 'medium' | 'low' = 'medium';
   let bedtimeReason = '';
   
   // Historical average: average of night sleep start times over last 7 days
-  // Detect night sleep by TIMING (6 PM - midnight) not just the isNightSleep flag
   const sevenDaysAgo = new Date(scheduleStartTime);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const nightStarts: number[] = activities
@@ -331,7 +316,6 @@ export function generateAdaptiveSchedule(
     bedtimeReason = `Based on ${nightStarts.length} nights of historical data`;
   } else if (ageBasedSchedule) {
     // Use age-appropriate bedtime from baselines
-    // Parse bedtime like "7:00-8:00 PM" → use midpoint
     const bedtimeStr = ageBasedSchedule.bedtime;
     const timeMatch = bedtimeStr.match(/(\d+):(\d+)/);
     if (timeMatch) {
@@ -385,7 +369,7 @@ export function generateAdaptiveSchedule(
     reasoning: bedtimeReason
   });
   
-  // Use analysis confidence if available, otherwise determine from data stability
+  // Use analysis confidence if available
   let overallConfidence: 'high' | 'medium' | 'low';
   if (napCountAnalysis) {
     overallConfidence = napCountAnalysis.confidence;
@@ -400,7 +384,7 @@ export function generateAdaptiveSchedule(
     }
   }
   
-  // Use total activities count if provided, otherwise use filtered count
+  // Use total activities count if provided
   const displayActivitiesCount = totalActivitiesCount ?? activities.length;
   const daysOfData = Math.ceil(displayActivitiesCount / 8);
   const basedOn = `${displayActivitiesCount} activities over ${daysOfData} days`;
@@ -408,7 +392,6 @@ export function generateAdaptiveSchedule(
   const adjustmentNote = napCountAnalysis?.is_transitioning 
     ? napCountAnalysis.transition_note 
     : undefined;
-  
   
   // Calculate accuracy score by comparing with today's activities
   let accuracyScore: number | undefined = undefined;
@@ -471,442 +454,7 @@ export function generateAdaptiveSchedule(
   };
 }
 
-function detectNapTransition(napCountsPerDay: number[]): boolean {
-  if (napCountsPerDay.length < 5) return false;
-  
-  // Look at last 7 days
-  const recent = napCountsPerDay.slice(0, 7);
-  const uniqueCounts = new Set(recent);
-  
-  // If we see 2+ different nap counts in recent days, likely transitioning
-  if (uniqueCounts.size >= 2) {
-    // Check if there's a trend (decreasing nap count over time)
-    const older = recent.slice(3, 7);
-    const newer = recent.slice(0, 3);
-    
-    const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
-    const newerAvg = newer.reduce((a, b) => a + b, 0) / newer.length;
-    
-    // Transitioning if newer average is lower
-    return newerAvg < olderAvg;
-  }
-  
-  return false;
-}
-
-function getMostCommonValue(arr: number[]): number | null {
-  if (arr.length === 0) return null;
-  
-  const counts = new Map<number, number>();
-  arr.forEach(val => counts.set(val, (counts.get(val) || 0) + 1));
-  
-  let maxCount = 0;
-  let mostCommon = arr[0];
-  
-  counts.forEach((count, value) => {
-    if (count > maxCount) {
-      maxCount = count;
-      mostCommon = value;
-    }
-  });
-  
-  return mostCommon;
-}
-
-function generateNapSchedule(
-  wakeTime: Date,
-  napCount: number,
-  napDurationsByPosition: Map<number, number[]>,
-  timingsFromWake: number[],
-  isInTransition: boolean,
-  transitioningToCount: number | null,
-  babyAgeMonths: number | null,
-  napsByDay: Map<string, Array<{ time: Date, duration: number }>>,
-  daysWithWakeAndNaps: Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>,
-  todayCompletedNaps: Array<{ startTime: string, endTime: string }>,
-  forceShowAllNaps?: boolean // When true, skip bedtime proximity filtering
-): ScheduleEvent[] {
-  const naps: ScheduleEvent[] = [];
-  
-  // Parse today's completed naps to get actual times
-  const completedNapTimes = todayCompletedNaps.map(nap => {
-    const start = parseTimeString(nap.startTime);
-    const end = parseTimeString(nap.endTime);
-    return start && end ? { start, end } : null;
-  }).filter((n): n is { start: Date, end: Date } => n !== null);
-  
-  console.log('✅ Today\'s completed naps:', {
-    count: completedNapTimes.length,
-    times: completedNapTimes.map(n => `${formatTime(n.start)} - ${formatTime(n.end)}`)
-  });
-  
-  // Calculate predicted bedtime first to use as cutoff for naps
-  const sevenDaysAgo = new Date(wakeTime);
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const nightStarts: number[] = napsByDay 
-    ? Array.from(napsByDay.values())
-        .map(naps => {
-          // Find the last nap of the day which might be close to bedtime
-          if (naps.length === 0) return null;
-          const lastNap = naps[naps.length - 1];
-          const napHour = lastNap.time.getHours();
-          // Only use if it's in evening timeframe (after 4 PM)
-          if (napHour >= 16) {
-            return lastNap.time.getHours() * 60 + lastNap.time.getMinutes();
-          }
-          return null;
-        })
-        .filter((t): t is number => t !== null && t >= 18 * 60) // Only evening times (after 6 PM)
-    : [];
-
-  // Calculate average bedtime from historical data
-  let bedtimeCutoffHour = 19; // Default 7 PM
-  if (nightStarts.length > 0) {
-    const avgMinutes = Math.round(nightStarts.reduce((a,b)=>a+b,0)/nightStarts.length);
-    bedtimeCutoffHour = Math.floor(avgMinutes / 60);
-  }
-  
-  // Use bedtime minus appropriate buffer based on nap count
-  // For 3+ naps, allow naps closer to bedtime; for 2 or fewer, keep 1 hour buffer
-  const napBuffer = napCount >= 3 ? 0.5 : 1; // 30 min buffer for 3+ naps, 1 hour for others
-  const napCutoffHour = Math.max(16, bedtimeCutoffHour - napBuffer); // Minimum 4 PM
-  
-  console.log('⏰ Nap cutoff calculation:', {
-    bedtimeHour: bedtimeCutoffHour,
-    napCutoffHour,
-    napBuffer,
-    napCount,
-    nightSleepSamples: nightStarts.length,
-    forceShowAllNaps
-  });
-  
-  // Determine nap timings based on historical data or defaults
-  let napStartTimes: number[] = []; // Minutes from wake
-  
-  // CRITICAL: Only use timing data from days with matching nap count
-  const matchingNapCountDays = Array.from(daysWithWakeAndNaps.values()).filter(day => day.naps.length === napCount);
-  const timingsFromMatchingDays: number[] = [];
-  
-  matchingNapCountDays.forEach(day => {
-    day.naps.forEach(nap => {
-      const minutesFromWake = (nap.time.getTime() - day.wakeTime.getTime()) / 60000;
-      if (minutesFromWake > 0 && minutesFromWake < 720) {
-        timingsFromMatchingDays.push(minutesFromWake);
-      }
-    });
-  });
-  
-  console.log(`⏱️ Nap timing data for ${napCount}-nap days:`, {
-    requestedNapCount: napCount,
-    matchingDays: matchingNapCountDays.length,
-    timingSamples: timingsFromMatchingDays.length,
-    minRequired: napCount * 2 // Need at least 2 days of data
-  });
-  
-  if (timingsFromMatchingDays.length >= napCount * 2) {
-    // Have enough data from matching nap count days - use real timings
-    const sorted = [...timingsFromMatchingDays].sort((a, b) => a - b);
-    
-    // Simple clustering: divide the day into nap periods
-    if (napCount === 1) {
-      napStartTimes = [median(sorted)];
-    } else if (napCount === 2) {
-      const mid = Math.floor(sorted.length / 2);
-      napStartTimes = [
-        median(sorted.slice(0, mid)),
-        median(sorted.slice(mid))
-      ];
-    } else if (napCount === 3) {
-      const third = Math.floor(sorted.length / 3);
-      napStartTimes = [
-        median(sorted.slice(0, third)),
-        median(sorted.slice(third, third * 2)),
-        median(sorted.slice(third * 2))
-      ];
-    } else if (napCount === 4) {
-      const quarter = Math.floor(sorted.length / 4);
-      napStartTimes = [
-        median(sorted.slice(0, quarter)),
-        median(sorted.slice(quarter, quarter * 2)),
-        median(sorted.slice(quarter * 2, quarter * 3)),
-        median(sorted.slice(quarter * 3))
-      ];
-    }
-    console.log(`✅ Using historical timings from ${matchingNapCountDays.length} matching days`);
-  } else {
-    // Not enough matching data - try absolute-time clustering from matching nap-count days
-    console.log(`⚠️ Insufficient ${napCount}-nap day data (${matchingNapCountDays.length} days), trying absolute-time clustering before age defaults`);
-
-    const minutesOfDay = (d: Date) => d.getHours() * 60 + d.getMinutes();
-    const todaysWakeMinutes = wakeTime.getHours() * 60 + wakeTime.getMinutes();
-
-    const matchingDaysByPos: number[][] = Array.from({ length: napCount }, () => []);
-    Array.from(napsByDay.values())
-      .filter(n => n.length === napCount)
-      .forEach(naps => {
-        naps.forEach((nap, pos) => matchingDaysByPos[pos].push(minutesOfDay(nap.time)));
-      });
-
-    const haveEnoughAbsolute = matchingDaysByPos.every(arr => arr.length >= 2);
-
-    if (haveEnoughAbsolute) {
-      napStartTimes = matchingDaysByPos.map(arr => {
-        const absMinutes = Math.round(median(arr)); // absolute minutes of day
-        // convert to minutes from today's wake (ensure positive)
-        let fromWake = absMinutes - todaysWakeMinutes;
-        if (fromWake < 30) fromWake = Math.max(30, fromWake + 24 * 60); // handle late wake edge cases
-        return fromWake;
-      });
-      console.log(`✅ Using absolute-time clustering from ${matchingDaysByPos[0].length}+ matching days`);
-    } else {
-      // Fallback to age-appropriate defaults based on wake windows
-      console.log(`ℹ️ Absolute-time samples insufficient, using age-based defaults`);
-      // Age-appropriate wake windows (in minutes)
-      const getAgeWakeWindow = (months: number | null): number => {
-        if (months === null) return 120; // 2 hours default
-        if (months <= 2) return 60;   // 1 hour
-        if (months <= 4) return 90;   // 1.5 hours
-        if (months <= 6) return 120;  // 2 hours
-        if (months <= 9) return 150;  // 2.5 hours
-        if (months <= 12) return 180; // 3 hours
-        return 210; // 3.5 hours for 12+ months
-      };
-
-      const wakeWindow = getAgeWakeWindow(babyAgeMonths);
-
-      if (napCount === 1) {
-        napStartTimes = [wakeWindow * 2]; // Single nap in middle of day
-      } else if (napCount === 2) {
-        napStartTimes = [wakeWindow, wakeWindow * 3]; // Morning and afternoon
-      } else if (napCount === 3) {
-        napStartTimes = [wakeWindow, wakeWindow * 2, wakeWindow * 3]; // Evenly spaced
-      } else if (napCount === 4) {
-        napStartTimes = [wakeWindow, wakeWindow * 1.75, wakeWindow * 2.5, wakeWindow * 3.25];
-      }
-    }
-  }
-  
-  console.log('🎯 Nap start times calculated:', {
-    napCount,
-    napStartTimes,
-    forceShowAllNaps
-  });
-  
-  // Generate initial nap events, accounting for today's completed naps
-  napStartTimes.forEach((minutesFromWake, index) => {
-    const napNumber = index + 1;
-    
-    // CRITICAL: Only use actual times for the FIRST nap
-    // All subsequent naps should remain predicted based on wake windows
-    const completedNap = index === 0 ? completedNapTimes[0] : null;
-    
-    if (completedNap) {
-      // Use actual logged nap
-      const startMinutes = completedNap.start.getHours() * 60 + completedNap.start.getMinutes();
-      const endMinutes = completedNap.end.getHours() * 60 + completedNap.end.getMinutes();
-      const duration = endMinutes - startMinutes;
-      
-      naps.push({
-        time: formatTime(completedNap.start),
-        type: 'nap',
-        duration: formatDuration(duration),
-        notes: `Nap ${napNumber} (completed)`,
-        confidence: 'high',
-        reasoning: 'Actual logged nap'
-      });
-      
-      console.log(`✅ Using actual completed nap ${napNumber}: ${formatTime(completedNap.start)} - ${formatTime(completedNap.end)}`);
-      return;
-    }
-    
-    // For remaining naps, calculate from last completed nap or wake time
-    let referenceTime = wakeTime;
-    let minutesFromReference = minutesFromWake;
-    
-    if (completedNapTimes.length > 0) {
-      // Use last completed nap's end time as reference
-      const lastCompleted = completedNapTimes[completedNapTimes.length - 1];
-      referenceTime = lastCompleted.end;
-      
-      // Calculate typical wake window after this position
-      const remainingIndex = index - completedNapTimes.length;
-      
-      // Use historical wake windows or age-appropriate defaults
-      const getAgeWakeWindow = (months: number | null) => {
-        if (!months) return 120; // 2 hours default
-        if (months <= 3) return 90;   // 1.5 hours
-        if (months <= 6) return 120;  // 2 hours
-        if (months <= 9) return 150;  // 2.5 hours
-        if (months <= 12) return 180; // 3 hours
-        return 210; // 3.5 hours for 12+ months
-      };
-      
-      const wakeWindow = getAgeWakeWindow(babyAgeMonths);
-      minutesFromReference = wakeWindow * (remainingIndex + 1);
-      
-      console.log(`🔄 Calculating remaining nap ${napNumber} from last completed nap end (${formatTime(lastCompleted.end)}), wake window: ${wakeWindow}min`);
-    }
-    
-    const napTime = new Date(referenceTime.getTime() + minutesFromReference * 60000);
-    
-    console.log(`🔍 Evaluating nap ${napNumber}:`, {
-      napTime: formatTime(napTime),
-      napTimeHour: napTime.getHours(),
-      napCutoffHour,
-      wouldSkip: napTime.getHours() >= napCutoffHour,
-      forceShowAllNaps,
-      willSkip: !forceShowAllNaps && napTime.getHours() >= napCutoffHour
-    });
-    
-    // Skip naps that would interfere with bedtime (dynamic cutoff based on historical bedtime)
-    // UNLESS user explicitly selected this nap count via toggle
-    if (!forceShowAllNaps && napTime.getHours() >= napCutoffHour) {
-      console.log(`⏭️ Skipping nap ${napNumber} scheduled at ${formatTime(napTime)} (after ${napCutoffHour}:00 cutoff, bedtime typically at ${bedtimeCutoffHour}:00)`);
-      return;
-    }
-    
-    // Use actual average duration for this nap position, or fall back to 90 minutes
-    const positionDurations = napDurationsByPosition.get(index);
-    
-    console.log(`📊 Nap ${napNumber} duration lookup:`, {
-      napPosition: index,
-      napNumber,
-      hasData: !!positionDurations,
-      sampleCount: positionDurations?.length || 0,
-      samples: positionDurations?.map(d => Math.round(d)),
-      allPositionsAvailable: Array.from(napDurationsByPosition.keys()),
-      allPositionsSummary: Array.from(napDurationsByPosition.entries()).map(([pos, durs]) => ({
-        pos,
-        count: durs.length,
-        avg: Math.round(durs.reduce((a,b)=>a+b,0)/durs.length)
-      }))
-    });
-    
-    const duration = positionDurations && positionDurations.length > 0
-      ? Math.round(positionDurations.reduce((a, b) => a + b, 0) / positionDurations.length)
-      : 90;
-    
-    console.log(`⏱️ Nap ${napNumber} FINAL DECISION: ${duration}min (${positionDurations && positionDurations.length > 0 ? 'from ' + positionDurations.length + ' historical samples' : 'DEFAULT 90min - no data found'})`);
-    
-    // Determine if this specific nap is uncertain
-    let confidence: 'high' | 'medium' | 'low' = 'medium';
-    let notes = `Nap ${napNumber}`;
-    
-    if (isInTransition) {
-      // Last nap in the schedule is the transitional one
-      if (napNumber === napStartTimes.length && transitioningToCount && transitioningToCount < napCount) {
-        confidence = 'low';
-        notes = `Nap ${napNumber} (might not happen — transitioning to ${transitioningToCount} ${transitioningToCount === 1 ? 'nap' : 'naps'})`;
-      }
-    }
-    
-    naps.push({
-      time: formatTime(napTime),
-      type: 'nap',
-      duration: formatDuration(duration),
-      notes,
-      confidence,
-      reasoning: confidence === 'low' ? 'Nap schedule transitioning' : 'Based on typical nap timing'
-    });
-    
-    console.log(`✅ Added predicted nap ${napNumber}: ${formatTime(napTime)} (${duration}min, confidence: ${confidence})`);
-  });
-  
-  console.log(`📋 Nap generation summary:`, {
-    requestedNapCount: napCount,
-    generatedNapCount: naps.length,
-    forceShowAllNaps,
-    completedNaps: completedNapTimes.length,
-    predictedNaps: naps.filter(n => !n.notes?.includes('completed')).length
-  });
-  
-  // Calculate average total DAY sleep from historical data (all nap data)
-  const historicalDailySleepTotals: number[] = [];
-  napsByDay.forEach(naps => {
-    // naps contains all daytime naps (night sleep already filtered out)
-    const totalDayMinutes = naps.reduce((sum, nap) => sum + nap.duration, 0);
-    if (totalDayMinutes > 0 && totalDayMinutes < 600) { // Sanity check: 0-10 hours
-      historicalDailySleepTotals.push(totalDayMinutes);
-    }
-  });
-  
-  // Use historical average as the target, with age-based fallback
-  let recommendedMinutes: number;
-  if (historicalDailySleepTotals.length >= 3) {
-    // Use historical average from last 3+ days
-    recommendedMinutes = Math.round(
-      historicalDailySleepTotals.reduce((a, b) => a + b, 0) / historicalDailySleepTotals.length
-    );
-    console.log('💤 Using historical day sleep average:', {
-      days: historicalDailySleepTotals.length,
-      avgHours: (recommendedMinutes / 60).toFixed(1),
-      samples: historicalDailySleepTotals.map(m => (m / 60).toFixed(1))
-    });
-  } else {
-    // Fallback to age-appropriate defaults if insufficient data
-    const getDefaultDaySleep = (months: number | null): number => {
-      if (months === null) return 3.5;
-      if (months <= 3) return 5.0;
-      if (months <= 6) return 4.0;
-      if (months <= 9) return 3.5;
-      if (months <= 12) return 3.0;
-      if (months <= 18) return 2.5;
-      return 2.0;
-    };
-    recommendedMinutes = getDefaultDaySleep(babyAgeMonths) * 60;
-    console.log('💤 Using age-based fallback for day sleep:', {
-      ageMonths: babyAgeMonths,
-      hours: (recommendedMinutes / 60).toFixed(1),
-      reason: `Only ${historicalDailySleepTotals.length} days of data`
-    });
-  }
-  
-  const parseDurationToMinutes = (dur: string): number => {
-    const match = dur.match(/(?:(\d+)h)?\s*(?:(\d+)m)?/i);
-    if (!match) return 90;
-    const h = match[1] ? parseInt(match[1]) : 0;
-    const m = match[2] ? parseInt(match[2]) : 0;
-    return h * 60 + m;
-  };
-  
-  const totalDaySleepMinutes = naps.reduce((sum, nap) => sum + parseDurationToMinutes(nap.duration || '90m'), 0);
-  
-  console.log('💤 Day sleep validation:', {
-    recommendedHours: (recommendedMinutes / 60).toFixed(1),
-    scheduledHours: (totalDaySleepMinutes / 60).toFixed(1),
-    napCount: naps.length,
-    source: historicalDailySleepTotals.length >= 3 ? 'historical' : 'age-based'
-  });
-  
-  // If total exceeds historical average by more than 30 minutes, shorten last nap
-  if (totalDaySleepMinutes > recommendedMinutes + 30 && naps.length > 0) {
-    const excess = totalDaySleepMinutes - recommendedMinutes;
-    const lastNap = naps[naps.length - 1];
-    const lastNapMinutes = parseDurationToMinutes(lastNap.duration || '90m');
-    const newLastNapMinutes = Math.max(30, lastNapMinutes - excess); // Minimum 30 min nap
-    
-    naps[naps.length - 1] = {
-      ...lastNap,
-      duration: formatDuration(newLastNapMinutes),
-      notes: lastNap.notes // Keep original notes, adjustment is transparent
-    };
-    
-    console.log('🔧 Shortened last nap:', {
-      from: formatDuration(lastNapMinutes),
-      to: formatDuration(newLastNapMinutes),
-      reason: `Exceeded typical day sleep by ${Math.round(excess)}m`
-    });
-  }
-  
-  return naps;
-}
-
-function median(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-}
+// Helper functions
 
 function parseTimeString(timeStr: string): Date | null {
   const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -922,21 +470,6 @@ function parseTimeString(timeStr: string): Date | null {
   const date = new Date();
   date.setHours(hour, minute, 0, 0);
   return date;
-}
-
-function parseDisplayTime(displayTime: string, baseDate: Date): Date {
-  // Handle "Sleep by X:XX AM/PM" format
-  const sleepByMatch = displayTime.match(/Sleep by (.+)/);
-  if (sleepByMatch) {
-    displayTime = sleepByMatch[1];
-  }
-  
-  const parsed = parseTimeString(displayTime);
-  if (!parsed) return baseDate;
-  
-  const result = new Date(baseDate);
-  result.setHours(parsed.getHours(), parsed.getMinutes(), 0, 0);
-  return result;
 }
 
 function formatTime(date: Date): string {
