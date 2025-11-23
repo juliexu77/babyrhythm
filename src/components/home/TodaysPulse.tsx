@@ -77,6 +77,17 @@ export const TodaysPulse = ({
 
         if (error) {
           console.error('Error fetching deviation explanation:', error);
+          setExplanation('Unable to generate insights at this time. Please check your AI credits or try again later.');
+          return;
+        }
+
+        if (data?.error) {
+          console.error('AI error:', data.error);
+          if (data.error.includes('credits') || data.error.includes('payment')) {
+            setExplanation('💳 AI insights require credits. Please add credits to your workspace to enable personalized explanations.');
+          } else {
+            setExplanation('Unable to generate insights at this time. Please try again later.');
+          }
           return;
         }
 
@@ -86,6 +97,7 @@ export const TodaysPulse = ({
         }
       } catch (err) {
         console.error('Failed to fetch deviation explanation:', err);
+        setExplanation('Unable to generate insights at this time. Please try again later.');
       } finally {
         setExplanationLoading(false);
       }
