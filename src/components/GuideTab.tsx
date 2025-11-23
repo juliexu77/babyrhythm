@@ -30,6 +30,7 @@ import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 
 import { isNightSleep, isDaytimeNap } from "@/utils/napClassification";
 import { getActivityEventDateString } from "@/utils/activityDate";
+import { predictDailySchedule } from "@/utils/simpleSchedulePredictor";
 
 
 interface Activity {
@@ -674,24 +675,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         return getActivityEventDateString(a) >= fourteenDaysAgoStr;
       });
       
-      const { data, error } = await supabase.functions.invoke('predict-daily-schedule', {
-        body: { 
-          recentActivities,
-          todayActivities,
-          babyBirthday: household?.baby_birthday,
-          householdId: household?.id,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          aiPrediction: null // Force fresh prediction
-        }
-      });
+      // Use simple calculation-based prediction instead of AI
+      const prediction = predictDailySchedule(
+        recentActivities,
+        todayActivities,
+        household?.baby_birthday,
+        Intl.DateTimeFormat().resolvedOptions().timeZone
+      );
       
-      if (error) {
-        // Error handled silently
-      } else if (data) {
-        setAiPrediction(data);
-        localStorage.setItem('aiPrediction', JSON.stringify(data));
-        localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
-      }
+      setAiPrediction(prediction);
+      localStorage.setItem('aiPrediction', JSON.stringify(prediction));
+      localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
     } catch (err) {
       // Error handled silently
     } finally {
@@ -1030,26 +1024,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           return getActivityEventDateString(a) >= fourteenDaysAgoStr;
         });
         
-        const { data, error } = await supabase.functions.invoke('predict-daily-schedule', {
-          body: { 
-            recentActivities,
-            todayActivities,
-            babyBirthday: household?.baby_birthday,
-            householdId: household?.id,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            aiPrediction: aiPrediction // Pass existing prediction for consistency
-          }
-        });
+        // Use simple calculation-based prediction instead of AI
+        const prediction = predictDailySchedule(
+          recentActivities,
+          todayActivities,
+          household?.baby_birthday,
+          Intl.DateTimeFormat().resolvedOptions().timeZone
+        );
         
-        if (error) {
-          return;
-        }
-        
-        if (data) {
-          setAiPrediction(data);
-          localStorage.setItem('aiPrediction', JSON.stringify(data));
-          localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
-        }
+        setAiPrediction(prediction);
+        localStorage.setItem('aiPrediction', JSON.stringify(prediction));
+        localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
       } catch (err) {
         // Error handled silently
       } finally {
