@@ -157,9 +157,31 @@ export const useHomeTabIntelligence = (
 
     // Otherwise, baby is awake
     // First check: Is there ANY ongoing sleep in activities? (catches case where ongoingNap prop isn't set)
-    const ongoingSleep = sortedActivities.find(a => 
-      a.type === 'nap' && a.details?.startTime && !a.details?.endTime
-    );
+    // But exclude stale sleep entries (>12 hours old)
+    const ongoingSleep = sortedActivities.find(a => {
+      if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime) return false;
+      
+      // Parse the sleep start time
+      let napStartTime: Date;
+      const match = a.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        let hours = parseInt(match[1]);
+        const minutes = parseInt(match[2]);
+        const period = match[3].toUpperCase();
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        const loggedDate = new Date(a.loggedAt);
+        napStartTime = new Date(loggedDate);
+        napStartTime.setHours(hours, minutes, 0, 0);
+      } else {
+        napStartTime = new Date(a.loggedAt);
+      }
+      
+      // Only consider it ongoing if it's less than 12 hours old
+      const hoursElapsed = differenceInMinutes(new Date(), napStartTime) / 60;
+      return hoursElapsed < 12;
+    });
     
     if (ongoingSleep) {
       // There's an ongoing sleep session - baby is sleeping, not awake

@@ -91,6 +91,9 @@ const translations: Record<string, string> = {
   'activity': 'activity',
   'authenticationRequired': 'Authentication Required',
   'pleaseLogInToUpload': 'Please log in to upload photos',
+  'addActivity': 'Add Activity',
+  'editActivity': 'Edit Activity',
+  'voiceInput': 'Voice Input',
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
