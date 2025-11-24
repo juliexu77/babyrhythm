@@ -73,6 +73,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
+  const [scheduleRefreshKey, setScheduleRefreshKey] = useState(0);
   const [napCountAnalysis, setNapCountAnalysis] = useState<NapCountAnalysis | null>(null);
   
   // New home tab intelligence hook
@@ -256,7 +257,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     } catch (error) {
       return null;
     }
-  }, [activities, effectiveBabyBirthday, userTimezone, nightSleepStartHour, nightSleepEndHour]);
+  }, [activities, effectiveBabyBirthday, userTimezone, nightSleepStartHour, nightSleepEndHour, scheduleRefreshKey]);
 
   // Combined transition detection
   const transitionInfo = useMemo(() => {
@@ -1591,7 +1592,13 @@ const lastDiaper = displayActivities
                 <ScheduleTimeline
                   schedule={activeDisplaySchedule}
                   babyName={babyName || 'Baby'}
-                  onRecalculate={() => {}}
+                  onRecalculate={() => {
+                    setScheduleRefreshKey(prev => prev + 1);
+                    toast({
+                      title: "Schedule updated",
+                      description: "Prediction refreshed based on latest activities",
+                    });
+                  }}
                   isTransitioning={transitionInfo?.isTransitioning}
                   transitionNapCounts={transitionInfo?.napCounts}
                   showAlternate={showAlternateSchedule}
@@ -1602,6 +1609,11 @@ const lastDiaper = displayActivities
                     } else if (desiredNapCount === mainScheduleNapCount) {
                       setShowAlternateSchedule(false);
                     }
+                    // Provide feedback even if already on that schedule
+                    toast({
+                      title: `Showing ${desiredNapCount}-nap schedule`,
+                      description: "Predicted schedule updated",
+                    });
                   }}
                   mainScheduleNapCount={mainScheduleNapCount}
                   alternateScheduleNapCount={alternateScheduleNapCount}
