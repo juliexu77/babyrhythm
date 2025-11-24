@@ -26,6 +26,7 @@ import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
+import { ParentingChat } from "@/components/ParentingChat";
 
 import { isNightSleep, isDaytimeNap } from "@/utils/napClassification";
 import { getActivityEventDateString } from "@/utils/activityDate";
@@ -215,6 +216,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
   const babyName = household?.baby_name || 'Baby';
@@ -1500,29 +1502,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   currentPattern={hasTier3Data ? rhythmInsights?.currentPattern : undefined}
                   babyName={babyName}
                   loading={hasTier3Data && (rhythmInsightsLoading || !rhythmInsights)}
-                  generatedAt={hasTier3Data ? rhythmInsights?.generatedAt : undefined}
-                  onRefresh={hasTier3Data ? async () => {
-                    setRhythmInsightsRefreshing(true);
-                    localStorage.removeItem('guideSections');
-                    const { data, error } = await supabase.functions.invoke('generate-guide-sections', {
-                      body: { timezone: userTimezone }
-                    });
-                    if (data && !error) {
-                      const newInsights = {
-                        whatToKnow: data.what_to_know,
-                        whatToDo: data.what_to_do,
-                        whatsNext: data.whats_next,
-                        prepTip: data.prep_tip,
-                        baselineContext: data.baseline_context,
-                        currentPattern: data.current_pattern,
-                        generatedAt: new Date()
-                      };
-                      setRhythmInsights(newInsights);
-                      localStorage.setItem('guideSections', JSON.stringify({ ...data, generatedAt: new Date().toISOString() }));
-                    }
-                    setRhythmInsightsRefreshing(false);
-                  } : undefined}
-                  refreshing={rhythmInsightsRefreshing}
+                  chatComponent={
+                    <button
+                      onClick={() => setIsChatOpen(true)}
+                      className="w-full text-center group"
+                    >
+                      <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
+                        Ask Me Anything →
+                      </span>
+                    </button>
+                  }
                 />
               )}
             </>
@@ -1532,6 +1521,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
         </div>
       </ScrollArea>
+
+      {/* Chat Modal */}
+      <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+        <DialogContent className="max-w-2xl h-[600px] flex flex-col p-0">
+          <DialogHeader className="p-4 pb-3 border-b">
+            <DialogTitle>Parenting Coach</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <ParentingChat
+              activities={activities}
+              babyName={babyName}
+              babyAgeInWeeks={babyAgeInWeeks}
+              babySex={household?.baby_sex || undefined}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
         </>
       )}
     </div>

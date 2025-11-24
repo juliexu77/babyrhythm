@@ -1,4 +1,4 @@
-import { Lightbulb, CheckSquare, ArrowRight, ChevronDown, RefreshCw, Info } from "lucide-react";
+import { Lightbulb, CheckSquare, ArrowRight, ChevronDown, Info } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,9 +13,7 @@ interface UnifiedInsightCardProps {
   currentPattern?: string;
   babyName?: string;
   loading?: boolean;
-  generatedAt?: Date;
-  onRefresh?: () => void;
-  refreshing?: boolean;
+  chatComponent?: React.ReactNode;
 }
 
 export const UnifiedInsightCard = ({
@@ -27,12 +25,10 @@ export const UnifiedInsightCard = ({
   currentPattern,
   babyName = "Your baby",
   loading,
-  generatedAt,
-  onRefresh,
-  refreshing = false
+  chatComponent
 }: UnifiedInsightCardProps) => {
-  // Show "What to Know" expanded by default, others collapsed
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['know']));
+  // All sections collapsed by default
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -82,22 +78,10 @@ export const UnifiedInsightCard = ({
     <div className="mx-2">
       <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
         {/* Header */}
-        <div className="px-4 py-4 border-b border-border/30 flex items-center justify-between">
+        <div className="px-4 py-4 border-b border-border/30">
           <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
             Understanding {babyName}&apos;s Rhythm
           </h3>
-          {onRefresh && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRefresh}
-              disabled={refreshing}
-              className="h-7 px-2 text-xs"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          )}
         </div>
 
         {/* Content */}
@@ -240,12 +224,10 @@ export const UnifiedInsightCard = ({
           </div>
         )}
 
-        {/* Timestamp footer */}
-        {generatedAt && (
-          <div className="pt-3 border-t border-border/20 flex items-center justify-between">
-            <p className="text-[10px] text-muted-foreground/60">
-              Updated {formatTimestamp(generatedAt)}
-            </p>
+        {/* Ask Me Anything Button */}
+        {chatComponent && (
+          <div className="pt-3 border-t border-border/20">
+            {chatComponent}
           </div>
         )}
         </div>
