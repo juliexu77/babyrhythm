@@ -33,7 +33,9 @@ interface ScheduleTimelineProps {
   isTransitioning?: boolean;
   transitionNapCounts?: { current: number; transitioning: number };
   showAlternate?: boolean;
-  onToggleAlternate?: (show: boolean) => void;
+  onToggleAlternate?: (desiredNapCount: number) => void;
+  mainScheduleNapCount?: number;
+  alternateScheduleNapCount?: number;
   isAdjusting?: boolean;
   adjustmentContext?: string;
   transitionWindow?: { from: number; to: number; label: string } | null;
@@ -59,6 +61,8 @@ export const ScheduleTimeline = ({
   transitionNapCounts,
   showAlternate,
   onToggleAlternate,
+  mainScheduleNapCount,
+  alternateScheduleNapCount,
   isAdjusting,
   adjustmentContext,
   transitionWindow,
@@ -411,11 +415,9 @@ export const ScheduleTimeline = ({
                 <>
                   <button
                     onClick={() => {
-                      // Toggle to lower nap schedule
-                      // If already showing lower count, don't change
-                      // Otherwise, toggle showAlternate to switch schedules
+                      // Click on lower nap count button - request that specific count
                       if (currentDisplayedNaps !== lowerCount) {
-                        onToggleAlternate?.(!showAlternate);
+                        onToggleAlternate?.(lowerCount);
                       }
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all border-r border-border ${
@@ -428,11 +430,9 @@ export const ScheduleTimeline = ({
                   </button>
                   <button
                     onClick={() => {
-                      // Toggle to higher nap schedule
-                      // If already showing higher count, don't change
-                      // Otherwise, toggle showAlternate to switch schedules
+                      // Click on higher nap count button - request that specific count
                       if (currentDisplayedNaps !== higherCount) {
-                        onToggleAlternate?.(!showAlternate);
+                        onToggleAlternate?.(higherCount);
                       }
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all ${
