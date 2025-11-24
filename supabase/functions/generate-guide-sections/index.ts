@@ -878,12 +878,20 @@ ${payload.metrics.slice(0, 3).map((m: any, i: number) => `${i + 1}. ${m.name}: $
 Key insights with context:
 ${insightsText}
 
+CRITICAL AGE-APPROPRIATENESS RULES:
+- ONLY discuss nap transitions that match the baby's age based on the developmental baseline above
+- For 6-9 month babies: 3-to-2 nap transition is relevant
+- For 15-18 month babies: 2-to-1 nap transition is relevant
+- DO NOT mention any nap transitions outside the baby's current developmental stage
+- Stay strictly within age-appropriate milestones and expectations
+
 Generate:
 1. "what_to_know": 2-3 bullets explaining WHAT'S HAPPENING and WHY IT MATTERS developmentally
    - Focus on interpreting the changes in context of baby's age and development
    - Reference the current pattern and developmental baseline to provide accurate context
    - If the current pattern shows a range (e.g., "2-3 naps"), acknowledge the transition is happening
    - Mention trends like "naps lengthening" or "feeding becoming more efficient" when relevant
+   - ONLY discuss transitions appropriate for this specific age
    
 2. "what_to_do": 2-3 actionable, age-appropriate steps
    - Prioritize actions that support the detected developmental transitions
