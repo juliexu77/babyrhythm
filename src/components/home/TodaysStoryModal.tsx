@@ -36,36 +36,17 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     return d;
   })();
   
-  console.log('📖 Story Modal - Filtering Debug:', {
-    totalActivitiesReceived: activities.length,
-    selectedDayMidnight: dayStart.toISOString(),
-    allActivities: activities.map(a => ({
-      type: a.type,
-      loggedAt: a.loggedAt,
-      loggedAtParsed: a.loggedAt ? new Date(a.loggedAt).toISOString() : 'null',
-      details: a.details
-    }))
+  // ALWAYS filter activities by the target date for consistency
+  const todayActivities = activities.filter(activity => {
+    if (!activity.loggedAt) {
+      return false;
+    }
+    const activityDate = new Date(activity.loggedAt);
+    const activityDateMidnight = new Date(activityDate);
+    activityDateMidnight.setHours(0, 0, 0, 0);
+    return activityDateMidnight.getTime() === dayStart.getTime();
   });
-  
-  // If viewing a past day, activities are pre-filtered by caller
-  const todayActivities = targetDate
-    ? activities
-    : activities.filter(activity => {
-        if (!activity.loggedAt) {
-          console.log('❌ Activity missing loggedAt:', activity);
-          return false;
-        }
-        const activityDate = new Date(activity.loggedAt);
-        const activityDateMidnight = new Date(activityDate);
-        activityDateMidnight.setHours(0, 0, 0, 0);
-        return activityDateMidnight.getTime() === dayStart.getTime();
-      });
 
-  console.log('📖 Story Modal Debug:', {
-    totalActivities: activities.length,
-    todayActivities: todayActivities.length,
-    activities: todayActivities.map(a => ({ type: a.type, time: a.loggedAt, details: a.details }))
-  });
 
   const todayDate = format(dayStart, "MMM d");
 
@@ -133,7 +114,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     }))
     .sort((a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime());
   
-  console.log('📖 Naps with times for wake window:', napsWithTimes);
+  
 
   // Calculate longest wake window (in minutes)
   let longestWakeWindowMinutes = 0;
@@ -293,8 +274,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     // Wait for fade out (250ms) before navigating
     setTimeout(() => {
       if (direction === 'prev') {
+        // Don't close - just ignore if at boundary
         if (isOldestDate) {
-          onClose(); // Close if at oldest day
+          setNavigationDirection(null);
           return;
         }
         const prevDate = availableDates[currentIndex - 1];
@@ -306,8 +288,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
           onNavigate(prevDate, dayActivities);
         }
       } else {
+        // Don't close - just ignore if at boundary
         if (isNewestDate) {
-          onClose(); // Close if at today
+          setNavigationDirection(null);
           return;
         }
         const nextDate = availableDates[currentIndex + 1];
@@ -396,11 +379,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     if (!isOpen) {
       setAnimationPhase('act1');
       setImageLoaded(false);
+      setNavigationDirection(null);
       return;
     }
 
-    // Reset image loaded state when date changes
+    // Reset image loaded state and animation phase when date changes
     setImageLoaded(false);
+    setAnimationPhase('act1');
 
     // Act 1: 0-1.0s (photo blur in + headline types in)
     const timer1 = setTimeout(() => {

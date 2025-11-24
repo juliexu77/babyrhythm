@@ -8,7 +8,7 @@ import { logger, logActivity, logError } from "@/utils/logger";
 export interface DatabaseActivity {
   id: string;
   household_id: string;
-  type: 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo';
+  type: 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo' | 'solids';
   logged_at: string;
   timezone?: string; // IANA timezone name (e.g., "America/Los_Angeles")
   details: {
@@ -24,6 +24,9 @@ export interface DatabaseActivity {
     startTime?: string;
     endTime?: string;
     duration?: string;
+    // Solids details
+    solidDescription?: string;
+    allergens?: string[];
     // General
     note?: string;
     displayTime?: string; // Store the original selected time for consistent display
@@ -172,7 +175,7 @@ export function useActivities() {
   };
 
   const addActivity = async (activity: {
-    type: 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo';
+    type: 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo' | 'solids';
     time: string;
     details: any;
   }) => {
