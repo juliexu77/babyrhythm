@@ -20,7 +20,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger, logError } from "@/utils/logger";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generateAdaptiveSchedule, type AdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
-import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
@@ -215,7 +214,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const stored = localStorage.getItem('patternMilestones');
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
-  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -483,9 +481,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       return null;
     }
   }, [activities, household?.baby_birthday, hasTier1Data, userTimezone, napCountAnalysis, hasTier3Data, activities.length, todayKeyEvents]);
-
-  // Use adaptive schedule directly
-  const displaySchedule = adaptiveSchedule;
   
   // Calculate baby age for anticipatory transition windows
   const babyAgeInDays = useMemo(() => {
@@ -649,57 +644,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [activities.length, hasTier3Data, nightSleepStartHour, nightSleepEndHour]); // Trigger when activities array length changes
   
-  // Recalculate schedule function - for manual midday adjustments
-  const handleRecalculateSchedule = async () => {
-    // Trigger adjustment animation
-    setIsAdjusting(true);
-    setAdjustmentContext("Adjusting today's rhythm…");
-    
-    // Clear cached prediction
-    localStorage.removeItem('napCountAnalysis');
-    localStorage.removeItem('napCountAnalysisLastFetch');
-    setNapCountAnalysis(null);
-    setNapCountAnalysisLoading(true);
-    
-    try {
-      // Immediately fetch fresh prediction with current data
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-      const todayActivities = normalizedActivities.filter(a => {
-        return getActivityEventDateString(a) === todayStr;
-      });
-      
-      const fourteenDaysAgo = new Date();
-      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-      const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().split('T')[0];
-      const recentActivities = normalizedActivities.filter(a => {
-        return getActivityEventDateString(a) >= fourteenDaysAgoStr;
-      });
-      
-      // Use simple calculation-based prediction instead of AI
-      const prediction = predictDailySchedule(
-        recentActivities,
-        todayActivities,
-        household?.baby_birthday,
-        Intl.DateTimeFormat().resolvedOptions().timeZone
-      );
-      
-      setNapCountAnalysis(prediction);
-      localStorage.setItem('napCountAnalysis', JSON.stringify(prediction));
-      localStorage.setItem('napCountAnalysisLastFetch', new Date().toISOString());
-    } catch (err) {
-      // Error handled silently
-    } finally {
-      setNapCountAnalysisLoading(false);
-    }
-    
-    // Clear adjustment animation after 1.8 seconds
-    setTimeout(() => {
-      setIsAdjusting(false);
-      setAdjustmentContext("");
-    }, 1800);
-  };
-  
   // Detect nap transition and get nap counts - DON'T presume which will happen
   const transitionInfo = useMemo(() => {
     // Check if analysis detects transition OR baby is in age-based window
@@ -735,109 +679,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
     return null;
   }, [napCountAnalysis, transitionWindow]);
-  
-  // Generate alternate schedule for transitions - default to showing higher nap count
-  const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
-  
-  // Initialize to show higher nap count by default when transitioning
-  useEffect(() => {
-    if (transitionInfo && transitionInfo.napCounts && napCountAnalysis) {
-      const displayNapCount = napCountAnalysis.total_naps_today;
-      const alternateNapCount = transitionInfo.napCounts.current === displayNapCount
-        ? transitionInfo.napCounts.transitioning
-        : transitionInfo.napCounts.current;
-      
-      // Show alternate if it has MORE naps than display
-      const shouldShowAlternate = alternateNapCount > displayNapCount;
-      setShowAlternateSchedule(shouldShowAlternate);
-    }
-  }, [transitionInfo?.napCounts?.current, transitionInfo?.napCounts?.transitioning, napCountAnalysis?.total_naps_today]);
-  
-  // Reset toggle when transition ends
-  useEffect(() => {
-    if (!transitionInfo) {
-      setShowAlternateSchedule(false);
-      localStorage.removeItem('guide-schedule-preference');
-    }
-  }, [transitionInfo]);
-  
-  // Calculate today's actual nap count
-  const todayActualNapCount = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayNaps = normalizedActivities.filter(a => {
-      const actDate = new Date(a.logged_at);
-      return actDate >= today && a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.endTime;
-    });
-    return todayNaps.length;
-  }, [normalizedActivities]);
-  
-  const alternateSchedule = useMemo(() => {
-    if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !napCountAnalysis) return null;
-    
-    try {
-      // Get the nap count that's NOT in the display schedule
-      const displayNapCount = napCountAnalysis.total_naps_today;
-      const alternateNapCount = transitionInfo.napCounts.current === displayNapCount
-        ? transitionInfo.napCounts.transitioning
-        : transitionInfo.napCounts.current;
-      
-      // Only generate if different from current
-      if (alternateNapCount === displayNapCount) {
-        return null;
-      }
-      
-      const alternateNapCountAnalysis: NapCountAnalysis = {
-        total_naps_today: alternateNapCount,
-        confidence: napCountAnalysis.confidence,
-        is_transitioning: true,
-        reasoning: `Alternative ${alternateNapCount}-nap schedule`
-      };
-      
-      const activitiesForEngine = activities.map(a => ({
-        id: a.id,
-        type: a.type as any,
-        time: a.details?.displayTime || new Date(a.logged_at).toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        }),
-        loggedAt: a.logged_at,
-        timezone: userTimezone,
-        details: a.details
-      }));
-      
-      const result = generateAdaptiveSchedule(
-        activitiesForEngine, 
-        household.baby_birthday, 
-        alternateNapCountAnalysis,
-        undefined, // totalActivitiesCount
-        true, // forceShowAllNaps - user explicitly selected this nap count
-        nightSleepStartHour,
-        nightSleepEndHour,
-        userTimezone // Pass user's timezone for accurate date filtering
-      );
-      return result;
-    } catch (error) {
-      return null;
-    }
-  }, [transitionInfo, hasTier3Data, household?.baby_birthday, napCountAnalysis, activities, userTimezone]);
-  
-  
-  // Helper to count naps in a schedule
-  const countNapsInSchedule = (schedule: any) => {
-    if (!schedule?.events) return 0;
-    return schedule.events.filter((e: any) => e.type === 'nap').length;
-  };
-
-  // Calculate nap counts for both schedules
-  const mainScheduleNapCount = useMemo(() => countNapsInSchedule(displaySchedule), [displaySchedule]);
-  const alternateScheduleNapCount = useMemo(() => countNapsInSchedule(alternateSchedule), [alternateSchedule]);
-
-  // Use alternate schedule when toggled during transitions
-  const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
-    ? alternateSchedule 
-    : displaySchedule;
   
   // Enable smart reminders - only when we have adaptive schedule
   useSmartReminders({ 
@@ -1416,7 +1257,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             <TodaysPulse
               deviations={todaysPulse.deviations}
               biggestDeviation={todaysPulse.biggestDeviation}
-              onAdjustSchedule={() => setScheduleOpen(true)}
               babyName={babyName}
               babyAge={babyAgeInWeeks}
               activities={activities}
@@ -1465,48 +1305,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   activities={activities}
                   babyName={babyName}
                 />
-              )}
-              
-              {/* Predicted Schedule Card */}
-              {displaySchedule && (
-                <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
-                  <Collapsible open={scheduleOpen} onOpenChange={setScheduleOpen}>
-                    <CollapsibleTrigger className="w-full px-4 py-5 border-b border-border/30 hover:bg-muted/20 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                          {babyName}&apos;s Predicted Schedule
-                        </h3>
-                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <div className="px-4 pb-5 pt-3">
-                        <ScheduleTimeline
-                          schedule={activeDisplaySchedule} 
-                          babyName={babyName}
-                          onRecalculate={handleRecalculateSchedule}
-                          isTransitioning={transitionInfo?.isTransitioning}
-                          transitionNapCounts={transitionInfo?.napCounts}
-                          showAlternate={showAlternateSchedule}
-                          onToggleAlternate={(desiredNapCount: number) => {
-                            // Determine which schedule to show based on desired nap count
-                            if (desiredNapCount === alternateScheduleNapCount) {
-                              setShowAlternateSchedule(true);
-                            } else if (desiredNapCount === mainScheduleNapCount) {
-                              setShowAlternateSchedule(false);
-                            }
-                          }}
-                          mainScheduleNapCount={mainScheduleNapCount}
-                          alternateScheduleNapCount={alternateScheduleNapCount}
-                          isAdjusting={isAdjusting}
-                          adjustmentContext={adjustmentContext}
-                          transitionWindow={transitionWindow}
-                          todayActualNapCount={todayActualNapCount}
-                        />
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
               )}
               
               {/* AI-Generated Guidance - Personalized to your data */}
