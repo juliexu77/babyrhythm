@@ -212,16 +212,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
           </div>
 
           {/* Subtitle */}
-          <div className="px-4 pb-2">
+          <div className="px-4 pb-4">
             <p className="text-xs text-muted-foreground">
               Based on aggregated BabyRhythm data{cohortStats?.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
-            </p>
-          </div>
-
-          {/* Insight Text */}
-          <div className="px-4 pb-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {enhancedInsightText}
             </p>
           </div>
         </>
