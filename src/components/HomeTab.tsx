@@ -1219,9 +1219,9 @@ const lastDiaper = displayActivities
             setSelectedStoryDate(null);
             setSelectedStoryActivities([]);
           }}
-          activities={selectedStoryDate ? selectedStoryActivities : activities}
+          activities={activities}
           babyName={babyName}
-          targetDate={selectedStoryDate || undefined}
+          targetDate={selectedStoryDate || format(new Date(), 'yyyy-MM-dd')}
           availableDates={(() => {
             // Generate 5 days: today and 4 prior days (sorted oldest to newest)
             const dates: string[] = [];
@@ -1235,7 +1235,6 @@ const lastDiaper = displayActivities
           })()}
           onNavigate={(newDate, dayActivities) => {
             setSelectedStoryDate(newDate);
-            setSelectedStoryActivities(dayActivities);
           }}
           allActivities={activities}
         />

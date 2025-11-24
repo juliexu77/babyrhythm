@@ -28,6 +28,8 @@ export interface Activity {
     isNightSleep?: boolean;
     // Photo details
     photoUrl?: string;
+    // Solids details
+    allergens?: string[];
     // General
     note?: string;
     displayTime?: string; // Store the original selected time for consistent display
