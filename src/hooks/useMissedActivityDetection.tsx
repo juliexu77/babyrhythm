@@ -406,6 +406,7 @@ export function useMissedActivityDetection(
     
     // Check each pattern
     for (const patternConfig of patternsToCheck) {
+      console.log(`🔍 Checking pattern: ${patternConfig.type} ${patternConfig.subType || ''}`);
       
       // Special handling for morning-wake: Check if there's an ongoing night sleep
       if (patternConfig.subType === 'morning-wake') {
@@ -486,6 +487,7 @@ export function useMissedActivityDetection(
       const alreadyLogged = wasLoggedToday(activities, patternConfig.type, patternConfig.subType, nightSleepStartHour, nightSleepEndHour);
       
       if (alreadyLogged) {
+        console.log(`✓ Already logged today`);
         continue;
       }
       
@@ -502,22 +504,36 @@ export function useMissedActivityDetection(
       
       
       if (!pattern) {
+        console.log(`✗ No pattern found (need at least 3 occurrences)`);
         continue;
       }
+      
+      console.log(`📊 Pattern found:`, {
+        medianTime: minutesToTime(pattern.medianTime),
+        occurrences: pattern.occurrenceCount,
+        stdDev: pattern.stdDev.toFixed(1),
+        gracePeriod: pattern.gracePeriodMinutes
+      });
       
       // Calculate confidence
       const confidence = calculateConfidence(pattern);
       const requiredConfidence = (pattern.type === 'nap' && pattern.subType === 'bedtime') ? 0.55 : 0.7;
       
+      console.log(`🎯 Confidence: ${confidence.toFixed(2)} (required: ${requiredConfidence})`);
+      
       // Only show high confidence suggestions
       if (confidence < requiredConfidence) {
+        console.log(`✗ Confidence too low`);
         continue;
       }
       
       // Check if enough time has passed
       const shouldShow = shouldShowSuggestion(pattern, currentMinutes);
       
+      console.log(`⏰ Current time: ${minutesToTime(currentMinutes)}, Should show: ${shouldShow}`);
+      
       if (!shouldShow) {
+        console.log(`✗ Not enough time passed (grace period: ${pattern.gracePeriodMinutes}min)`);
         continue;
       }
       
@@ -526,12 +542,14 @@ export function useMissedActivityDetection(
       const isDismissed = localStorage.getItem(dismissalKey) === 'true';
       
       if (isDismissed) {
+        console.log(`✗ Already dismissed today`);
         continue;
       }
       
       // Found a valid suggestion!
       // Check for recent acceptance before showing
       if (checkRecentAcceptance(pattern.type, pattern.subType)) {
+        console.log(`✗ Recently accepted`);
         continue;
       }
       
@@ -543,6 +561,8 @@ export function useMissedActivityDetection(
         confidence,
         message: patternConfig.message(minutesToTime(pattern.medianTime))
       };
+      
+      console.log(`✅ Showing missed activity prompt:`, suggestion.message);
       return suggestion;
     }
     

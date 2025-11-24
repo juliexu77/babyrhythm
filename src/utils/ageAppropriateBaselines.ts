@@ -70,7 +70,7 @@ export const baselineSchedules: NapSchedule[] = [
       { start: "3:00 PM", end: "4:30 PM", duration: "30m-2h" },
       { start: "5:30 PM", end: "6:30 PM", duration: "15m-45m" }
     ],
-    wakeWindows: ["45m-1h"],
+    wakeWindows: ["45m-1h", "45m-1h", "45m-1h", "45m-1h", "1-1.5h"], // Progressive wake windows
     bedtime: "7:00-8:00 PM",
     totalSleep: "14-17 hours"
   },
@@ -83,7 +83,7 @@ export const baselineSchedules: NapSchedule[] = [
       { start: "1:00 PM", end: "2:30 PM", duration: "1-2h" },
       { start: "4:30 PM", end: "5:30 PM", duration: "30m-1h" }
     ],
-    wakeWindows: ["1.5-2.5h"],
+    wakeWindows: ["2-2.5h", "2.5-3h", "2.5-3h"], // Progressive: shorter first, longer later
     bedtime: "7:00-8:00 PM", 
     totalSleep: "12-15 hours"
   },
@@ -95,7 +95,7 @@ export const baselineSchedules: NapSchedule[] = [
       { start: "9:30 AM", end: "11:00 AM", duration: "1-1.5h" },
       { start: "2:00 PM", end: "3:30 PM", duration: "1-2h" }
     ],
-    wakeWindows: ["2.5-3.5h"],
+    wakeWindows: ["3-3.5h", "3.5-4h"], // Progressive: longer in afternoon
     bedtime: "7:00-8:00 PM",
     totalSleep: "11-14 hours"
   },
@@ -106,7 +106,7 @@ export const baselineSchedules: NapSchedule[] = [
     napWindows: [
       { start: "1:00 PM", end: "3:00 PM", duration: "1-2h" }
     ],
-    wakeWindows: ["5-6h"],
+    wakeWindows: ["5-6h", "5-6h"], // Morning to nap, nap to bedtime
     bedtime: "7:00-8:00 PM",
     totalSleep: "10-13 hours"
   },

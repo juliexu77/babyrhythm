@@ -222,23 +222,32 @@ export function generateAdaptiveSchedule(
     console.log('📊 Using default nap count:', napCount);
   }
   
-  // Parse age-appropriate wake window (e.g., "2.5-3hrs" → use midpoint)
-  let wakeWindowMinutes = 150; // default 2.5 hours
-  if (ageBasedSchedule && ageBasedSchedule.wakeWindows.length > 0) {
-    const wwStr = ageBasedSchedule.wakeWindows[0];
+  // Parse age-appropriate wake window for each nap position
+  // Helper function to parse wake window string
+  const parseWakeWindow = (wwStr: string): number => {
     const match = wwStr.match(/(\d+(?:\.\d+)?)/g); // Extract numbers
     if (match && match.length > 0) {
       const firstNum = parseFloat(match[0]);
       const lastNum = match.length > 1 ? parseFloat(match[match.length - 1]) : firstNum;
       const avgHours = (firstNum + lastNum) / 2;
-      wakeWindowMinutes = Math.round(avgHours * 60);
+      return Math.round(avgHours * 60);
     }
-  }
+    return 150; // default 2.5 hours
+  };
   
-  // Generate naps using age-appropriate patterns
+  // Generate naps using age-appropriate patterns with progressive wake windows
   let currentTime = new Date(scheduleStartTime);
   
   for (let napIndex = 0; napIndex < napCount; napIndex++) {
+    // Get wake window for this specific nap position
+    let wakeWindowMinutes = 150; // default 2.5 hours
+    if (ageBasedSchedule && ageBasedSchedule.wakeWindows.length > napIndex) {
+      wakeWindowMinutes = parseWakeWindow(ageBasedSchedule.wakeWindows[napIndex]);
+    } else if (ageBasedSchedule && ageBasedSchedule.wakeWindows.length > 0) {
+      // Fallback to last defined wake window if we don't have enough
+      wakeWindowMinutes = parseWakeWindow(ageBasedSchedule.wakeWindows[ageBasedSchedule.wakeWindows.length - 1]);
+    }
+    
     // Add wake window
     currentTime = new Date(currentTime.getTime() + wakeWindowMinutes * 60000);
     
@@ -278,7 +287,7 @@ export function generateAdaptiveSchedule(
       notes: `Nap ${napIndex + 1}`,
       confidence: 'medium',
       reasoning: ageBasedSchedule 
-        ? `Age-appropriate wake window: ${ageBasedSchedule.wakeWindows[0]}`
+        ? `Age-appropriate wake window: ${ageBasedSchedule.wakeWindows[Math.min(napIndex, ageBasedSchedule.wakeWindows.length - 1)]}`
         : 'Standard wake window for age'
     });
     
