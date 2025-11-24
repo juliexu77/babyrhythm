@@ -823,6 +823,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [transitionInfo, hasTier3Data, household?.baby_birthday, napCountAnalysis, activities, userTimezone]);
   
+  
+  // Helper to count naps in a schedule
+  const countNapsInSchedule = (schedule: any) => {
+    if (!schedule?.events) return 0;
+    return schedule.events.filter((e: any) => e.type === 'nap').length;
+  };
+
+  // Calculate nap counts for both schedules
+  const mainScheduleNapCount = useMemo(() => countNapsInSchedule(displaySchedule), [displaySchedule]);
+  const alternateScheduleNapCount = useMemo(() => countNapsInSchedule(alternateSchedule), [alternateSchedule]);
+
   // Use alternate schedule when toggled during transitions
   const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
     ? alternateSchedule 
@@ -1477,9 +1488,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                           isTransitioning={transitionInfo?.isTransitioning}
                           transitionNapCounts={transitionInfo?.napCounts}
                           showAlternate={showAlternateSchedule}
-                          onToggleAlternate={(show) => {
-                            setShowAlternateSchedule(show);
+                          onToggleAlternate={(desiredNapCount: number) => {
+                            // Determine which schedule to show based on desired nap count
+                            if (desiredNapCount === alternateScheduleNapCount) {
+                              setShowAlternateSchedule(true);
+                            } else if (desiredNapCount === mainScheduleNapCount) {
+                              setShowAlternateSchedule(false);
+                            }
                           }}
+                          mainScheduleNapCount={mainScheduleNapCount}
+                          alternateScheduleNapCount={alternateScheduleNapCount}
                           isAdjusting={isAdjusting}
                           adjustmentContext={adjustmentContext}
                           transitionWindow={transitionWindow}

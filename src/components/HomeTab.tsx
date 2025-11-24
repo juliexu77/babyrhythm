@@ -302,6 +302,16 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
   }, [transitionInfo, effectiveBabyBirthday, activities, userTimezone, nightSleepStartHour, nightSleepEndHour]);
 
+  // Helper to count naps in a schedule
+  const countNapsInSchedule = (schedule: any) => {
+    if (!schedule?.events) return 0;
+    return schedule.events.filter((e: any) => e.type === 'nap').length;
+  };
+
+  // Calculate nap counts for both schedules
+  const mainScheduleNapCount = useMemo(() => countNapsInSchedule(adaptiveSchedule), [adaptiveSchedule]);
+  const alternateScheduleNapCount = useMemo(() => countNapsInSchedule(alternateSchedule), [alternateSchedule]);
+
   // Active display schedule
   const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
     ? alternateSchedule 
@@ -1585,7 +1595,16 @@ const lastDiaper = displayActivities
                   isTransitioning={transitionInfo?.isTransitioning}
                   transitionNapCounts={transitionInfo?.napCounts}
                   showAlternate={showAlternateSchedule}
-                  onToggleAlternate={setShowAlternateSchedule}
+                  onToggleAlternate={(desiredNapCount: number) => {
+                    // Determine which schedule to show based on desired nap count
+                    if (desiredNapCount === alternateScheduleNapCount) {
+                      setShowAlternateSchedule(true);
+                    } else if (desiredNapCount === mainScheduleNapCount) {
+                      setShowAlternateSchedule(false);
+                    }
+                  }}
+                  mainScheduleNapCount={mainScheduleNapCount}
+                  alternateScheduleNapCount={alternateScheduleNapCount}
                   transitionWindow={transitionWindow}
                   todayActualNapCount={todayActualNapCount}
                 />
