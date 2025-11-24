@@ -343,29 +343,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   return (
     <div className="space-y-4 pb-6">
-      {/* Long Term Trends Summary */}
-      <div className="mx-2 pt-4">
-        <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
-          <div className="px-4 py-4 border-b border-border/30">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-              Long Term Trends
-            </h3>
-          </div>
-          <div className="px-4 py-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {generateSummary()}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Collective Pulse */}
-      <div className="px-2">
-        <CollectivePulse babyBirthday={household?.baby_birthday} />
-      </div>
-
       {/* Time Range Switcher */}
-      <div className="mx-2">
+      <div className="mx-2 pt-4">
         <div className="flex justify-center gap-2">
         {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
           <Button
@@ -451,7 +430,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 activities={activities}
                 timeRange={timeRange}
                 dataExtractor={extractDayNaps}
-                unit=" naps"
+                unit="naps"
                 color="hsl(var(--secondary))"
                 yAxisFormatter={(v) => v.toFixed(0)}
                 tooltipFormatter={(v) => v.toFixed(0)}
@@ -539,6 +518,27 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
               />
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Collective Pulse */}
+      <div className="px-2">
+        <CollectivePulse babyBirthday={household?.baby_birthday} />
+      </div>
+
+      {/* Long Term Trends Summary */}
+      <div className="mx-2">
+        <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
+          <div className="px-4 py-4 border-b border-border/30">
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              Long Term Trends
+            </h3>
+          </div>
+          <div className="px-4 py-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {generateSummary()}
+            </p>
+          </div>
         </div>
       </div>
     </div>
