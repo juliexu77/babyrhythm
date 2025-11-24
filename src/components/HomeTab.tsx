@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -29,6 +29,10 @@ import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
 import { FirstActivityCelebration } from "@/components/FirstActivityCelebration";
 import { SchedulePreview } from "@/components/home/SchedulePreview";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
+import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
+import { generateAdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -67,6 +71,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showFirstActivityCelebration, setShowFirstActivityCelebration] = useState(false);
   const [firstActivityType, setFirstActivityType] = useState<'feed' | 'nap' | 'diaper'>('feed');
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
+  const [napCountAnalysis, setNapCountAnalysis] = useState<NapCountAnalysis | null>(null);
   
   // New home tab intelligence hook
   const { 
@@ -187,6 +194,119 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   
   const babyAgeInWeeks = getBabyAgeInWeeks();
 
+  // Get user's timezone
+  const userTimezone = useMemo(() => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }, []);
+
+  // Calculate baby age in days for transition detection
+  const babyAgeInDays = useMemo(() => {
+    if (!effectiveBabyBirthday) return null;
+    const birthDate = new Date(effectiveBabyBirthday);
+    const today = new Date();
+    return Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24));
+  }, [effectiveBabyBirthday]);
+
+  // Age-based transition window detection
+  const transitionWindow = useMemo(() => {
+    if (!babyAgeInDays) return null;
+    
+    if (babyAgeInDays >= 90 && babyAgeInDays <= 120) {
+      return { from: 4, to: 3, label: "3-4 month transition" };
+    }
+    if (babyAgeInDays >= 180 && babyAgeInDays <= 270) {
+      return { from: 3, to: 2, label: "6-9 month transition" };
+    }
+    if (babyAgeInDays >= 365 && babyAgeInDays <= 547) {
+      return { from: 2, to: 1, label: "12-18 month transition" };
+    }
+    return null;
+  }, [babyAgeInDays]);
+
+  // Memoized adaptive schedule
+  const adaptiveSchedule = useMemo(() => {
+    const hasAnyNap = activities.filter(a => a.type === 'nap').length >= 1;
+    const hasTier1Data = activities.length >= 1;
+    
+    if (!hasTier1Data || !hasAnyNap || !effectiveBabyBirthday) {
+      return null;
+    }
+    
+    try {
+      const activitiesForEngine = activities.map(a => ({
+        id: a.id,
+        type: a.type as any,
+        time: a.time,
+        loggedAt: a.loggedAt,
+        timezone: a.timezone || userTimezone,
+        details: a.details
+      }));
+      
+      const schedule = generateAdaptiveSchedule(
+        activitiesForEngine, 
+        effectiveBabyBirthday, 
+        null,
+        activities.length,
+        false,
+        nightSleepStartHour,
+        nightSleepEndHour,
+        userTimezone
+      );
+      return schedule;
+    } catch (error) {
+      return null;
+    }
+  }, [activities, effectiveBabyBirthday, userTimezone, nightSleepStartHour, nightSleepEndHour]);
+
+  // Combined transition detection
+  const transitionInfo = useMemo(() => {
+    if (transitionWindow) {
+      return {
+        isTransitioning: true,
+        napCounts: {
+          current: transitionWindow.from,
+          transitioning: transitionWindow.to
+        }
+      };
+    }
+    return null;
+  }, [transitionWindow]);
+
+  // Generate alternate schedule for transitions
+  const alternateSchedule = useMemo(() => {
+    if (!transitionInfo || !effectiveBabyBirthday) return null;
+    
+    try {
+      const activitiesForEngine = activities.map(a => ({
+        id: a.id,
+        type: a.type as any,
+        time: a.time,
+        loggedAt: a.loggedAt,
+        timezone: a.timezone || userTimezone,
+        details: a.details
+      }));
+      
+      const result = generateAdaptiveSchedule(
+        activitiesForEngine,
+        effectiveBabyBirthday,
+        null,
+        activities.length,
+        true, // forceShowAllNaps for alternate
+        nightSleepStartHour,
+        nightSleepEndHour,
+        userTimezone
+      );
+      return result;
+    } catch (error) {
+      return null;
+    }
+  }, [transitionInfo, effectiveBabyBirthday, activities, userTimezone, nightSleepStartHour, nightSleepEndHour]);
+
+  // Active display schedule
+  const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
+    ? alternateSchedule 
+    : adaptiveSchedule;
+
   // Update current time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -210,6 +330,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get today's and yesterday's activities using shared utility
   const todayActivities = getTodayActivities(activities);
   const yesterdayActivities = getYesterdayActivities(activities);
+
+  // Calculate today's actual nap count
+  const todayActualNapCount = useMemo(() => {
+    const todayNaps = todayActivities.filter(a => 
+      a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
+    );
+    return todayNaps.length;
+  }, [todayActivities, nightSleepStartHour, nightSleepEndHour]);
 
   // Use yesterday's data as context if nothing logged today
   const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
@@ -1432,6 +1560,39 @@ const lastDiaper = displayActivities
               />
             }
           />
+
+        {/* Predicted Schedule - Collapsible */}
+        {adaptiveSchedule && activeDisplaySchedule && (
+          <Collapsible
+            open={scheduleOpen}
+            onOpenChange={setScheduleOpen}
+            className="mx-2 mb-4 rounded-xl bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/20 overflow-hidden"
+          >
+            <CollapsibleTrigger asChild>
+              <button className="w-full px-4 py-3 flex items-center justify-between hover:bg-background/10 transition-colors">
+                <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                  {babyName}&apos;s Predicted Schedule
+                </h3>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="px-4 pb-5 pt-1">
+                <ScheduleTimeline
+                  schedule={activeDisplaySchedule}
+                  babyName={babyName || 'Baby'}
+                  onRecalculate={() => {}}
+                  isTransitioning={transitionInfo?.isTransitioning}
+                  transitionNapCounts={transitionInfo?.napCounts}
+                  showAlternate={showAlternateSchedule}
+                  onToggleAlternate={setShowAlternateSchedule}
+                  transitionWindow={transitionWindow}
+                  todayActualNapCount={todayActualNapCount}
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         {/* Sick Day Banner */}
         {todayActivities.some(a => a.type === 'note' && (a.details as any)?.isSickDay) && (
