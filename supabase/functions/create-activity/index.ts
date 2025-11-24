@@ -18,8 +18,8 @@ function validateInput(data: any): ValidationError[] {
     errors.push({ field: 'household_id', message: 'household_id is required' });
   }
 
-  if (!data.type || !['feed', 'diaper', 'nap', 'note', 'measure', 'photo'].includes(data.type)) {
-    errors.push({ field: 'type', message: 'type must be one of: feed, diaper, nap, note, measure, photo' });
+  if (!data.type || !['feed', 'diaper', 'nap', 'note', 'measure', 'photo', 'solids'].includes(data.type)) {
+    errors.push({ field: 'type', message: 'type must be one of: feed, diaper, nap, note, measure, photo, solids' });
   }
 
   if (!data.date_local || typeof data.date_local !== 'string') {
