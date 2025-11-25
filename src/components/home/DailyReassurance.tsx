@@ -4,7 +4,7 @@ import { getTodayActivities } from "@/utils/activityDateFilters";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { differenceInMinutes } from "date-fns";
-import { Eye } from "lucide-react";
+import { Brain } from "lucide-react";
 
 interface DailyReassuranceProps {
   activities: Activity[];
@@ -362,11 +362,20 @@ export const DailyReassurance = ({
   }, [activities, babyName, nightSleepStartHour, nightSleepEndHour]);
 
   return (
-    <div className="mx-6 mb-4 flex items-start gap-2">
-      <Eye className="w-4 h-4 text-muted-foreground/60 mt-0.5 flex-shrink-0" />
-      <p className="text-sm text-foreground/60 leading-relaxed italic">
-        {reassuranceMessage}
-      </p>
+    <div className="mx-2 mb-4">
+      <div className="px-3 py-2.5 rounded-xl bg-gradient-to-b from-primary/8 via-primary/5 to-primary/3 border border-border/10">
+        <div className="flex items-start gap-2">
+          <Brain className="w-3.5 h-3.5 text-primary/60 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-medium text-foreground/50 uppercase tracking-wider mb-0.5">
+              Today's Overview
+            </p>
+            <p className="text-xs text-foreground/70 leading-relaxed">
+              {reassuranceMessage}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
