@@ -399,34 +399,37 @@ export const ScheduleTimeline = ({
       )}
       
       {/* Transition toggle - unified button with two sides */}
-      {isTransitioning && transitionNapCounts && (
+      {isTransitioning && transitionNapCounts && onToggleAlternate && (
         <div className="flex items-center justify-between mb-3">
           <div className="inline-flex rounded-lg overflow-hidden border border-border">
             {(() => {
-              // Use actual nap count from displayed schedule, not transitionNapCounts
-              const currentDisplayedNaps = napCount;
               const lowerCount = Math.min(transitionNapCounts.current, transitionNapCounts.transitioning);
               const higherCount = Math.max(transitionNapCounts.current, transitionNapCounts.transitioning);
               
-              // Determine which schedule is currently shown based on displayed nap count
-              const isShowingLowerNapSchedule = currentDisplayedNaps === lowerCount;
+              // Determine active button based on showAlternate prop and which count is alternate
+              // If alternateScheduleNapCount matches lowerCount, then showAlternate=true means lower is active
+              const isLowerActive = alternateScheduleNapCount === lowerCount ? showAlternate : !showAlternate;
+              const isHigherActive = !isLowerActive;
+              
+              console.log('🔘 Toggle render state:', {
+                lowerCount,
+                higherCount,
+                showAlternate,
+                alternateScheduleNapCount,
+                mainScheduleNapCount,
+                isLowerActive,
+                isHigherActive
+              });
               
               return (
                 <>
                   <button
                     onClick={() => {
-                      console.log('🔘 Toggle clicked - Lower nap count:', {
-                        lowerCount,
-                        currentDisplayedNaps,
-                        willToggle: currentDisplayedNaps !== lowerCount
-                      });
-                      // Click on lower nap count button - request that specific count
-                      if (currentDisplayedNaps !== lowerCount) {
-                        onToggleAlternate?.(lowerCount);
-                      }
+                      console.log('🔘 Lower button clicked:', lowerCount);
+                      onToggleAlternate(lowerCount);
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all border-r border-border ${
-                      isShowingLowerNapSchedule
+                      isLowerActive
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
@@ -435,18 +438,11 @@ export const ScheduleTimeline = ({
                   </button>
                   <button
                     onClick={() => {
-                      console.log('🔘 Toggle clicked - Higher nap count:', {
-                        higherCount,
-                        currentDisplayedNaps,
-                        willToggle: currentDisplayedNaps !== higherCount
-                      });
-                      // Click on higher nap count button - request that specific count
-                      if (currentDisplayedNaps !== higherCount) {
-                        onToggleAlternate?.(higherCount);
-                      }
+                      console.log('🔘 Higher button clicked:', higherCount);
+                      onToggleAlternate(higherCount);
                     }}
                     className={`px-4 py-2 text-xs font-medium transition-all ${
-                      !isShowingLowerNapSchedule
+                      isHigherActive
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
