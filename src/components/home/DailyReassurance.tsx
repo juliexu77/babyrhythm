@@ -24,8 +24,72 @@ export const DailyReassurance = ({
     const todayActivities = getTodayActivities(activities);
     
     if (todayActivities.length === 0) {
-      return `Start logging activities to see how ${babyName}'s day is unfolding.`;
+      return `Start logging to see how today unfolds.`;
     }
+
+    // Random selection helper
+    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+    // Message libraries
+    const messages = {
+      napShorter: [
+        "Nap was shorter than usual today.",
+        "Shorter nap than usual.",
+        "Morning nap ran a bit short.",
+        "Naps are trending shorter today."
+      ],
+      napLonger: [
+        "Longer nap than usual this morning.",
+        "Nap stretched longer than usual.",
+        "Started the day with a longer nap.",
+        "Today's nap ran a bit long."
+      ],
+      napEarlier: ["First nap started earlier than usual."],
+      napLater: ["First nap started a little later today."],
+      wakeWindowsLonger: [
+        "Wake windows are running long today.",
+        "Longer awake periods than usual.",
+        `${babyName} is staying up longer today.`
+      ],
+      wakeWindowsShorter: [
+        "Wake windows are shorter than usual.",
+        `${babyName} is getting sleepy sooner today.`
+      ],
+      clusterFeeding: [
+        "Feeds are coming closer together today.",
+        "More frequent feeds than usual."
+      ],
+      feedsLighter: [
+        "Feeds have been a little lighter today.",
+        `${babyName} is taking slightly smaller feeds so far.`
+      ],
+      feedsHeavier: [
+        `${babyName} is eating a bit more than usual today.`,
+        "Feeds are running slightly larger today."
+      ],
+      feedEarlier: ["First feed came earlier than usual."],
+      feedLater: ["First feed started later than usual."],
+      nightShorter: ["Last night ran shorter than usual."],
+      nightLonger: ["Last night's sleep was a bit longer."],
+      earlyWake: [`${babyName} woke earlier than usual this morning.`],
+      lateWake: [`${babyName} slept in a little this morning.`],
+      aligned: [
+        `Today is lining up with ${babyName}'s usual rhythm.`,
+        "Today looks typical so far.",
+        "Everything is tracking normally today.",
+        `A very usual day for ${babyName} so far.`,
+        "Today's pattern looks steady and familiar."
+      ],
+      growthSpurt: [
+        "Today looks like a growth-spurt pattern.",
+        `${babyName} seems hungrier and sleepier than usual.`
+      ],
+      fallback: [
+        "Today looks typical so far.",
+        `Everything looks normal for ${babyName} today.`,
+        `A very usual day so far.`
+      ]
+    };
 
     // Get recent 3-7 days for comparison (excluding today)
     const now = new Date();
@@ -58,12 +122,14 @@ export const DailyReassurance = ({
     );
     
     const todayNapDurations: number[] = [];
+    const todayNapStartTimes: number[] = [];
     todayNaps.forEach(nap => {
       if (nap.details?.startTime && nap.details?.endTime) {
         const start = parseTimeToMinutes(nap.details.startTime);
         let end = parseTimeToMinutes(nap.details.endTime);
         if (end < start) end += 24 * 60;
         todayNapDurations.push(end - start);
+        todayNapStartTimes.push(start);
       }
     });
 
@@ -72,12 +138,14 @@ export const DailyReassurance = ({
     );
     
     const recentNapDurations: number[] = [];
+    const recentNapStartTimes: number[] = [];
     recentNaps.forEach(nap => {
       if (nap.details?.startTime && nap.details?.endTime) {
         const start = parseTimeToMinutes(nap.details.startTime);
         let end = parseTimeToMinutes(nap.details.endTime);
         if (end < start) end += 24 * 60;
         recentNapDurations.push(end - start);
+        recentNapStartTimes.push(start);
       }
     });
 
@@ -87,6 +155,10 @@ export const DailyReassurance = ({
     
     const avgRecentNapDuration = recentNapDurations.length > 0 
       ? recentNapDurations.reduce((sum, d) => sum + d, 0) / recentNapDurations.length 
+      : 0;
+
+    const avgRecentFirstNapStart = recentNapStartTimes.length > 0
+      ? recentNapStartTimes.slice(0, 7).reduce((sum, t) => sum + t, 0) / Math.min(7, recentNapStartTimes.length)
       : 0;
 
     // Analyze feeds
@@ -102,8 +174,8 @@ export const DailyReassurance = ({
     });
 
     let recentTotalVolume = 0;
-    let recentDaysWithFeeds = 0;
     const recentDailyVolumes: Record<string, number> = {};
+    const recentFirstFeedTimes: number[] = [];
     
     recentFeeds.forEach(feed => {
       if (feed.details?.quantity) {
@@ -113,10 +185,28 @@ export const DailyReassurance = ({
       }
     });
 
+    // Get first feed times by day for recent days
+    const recentFeedsByDay: Record<string, any[]> = {};
+    recentFeeds.forEach(feed => {
+      const dateStr = new Date(feed.loggedAt || feed.time).toISOString().split('T')[0];
+      if (!recentFeedsByDay[dateStr]) recentFeedsByDay[dateStr] = [];
+      recentFeedsByDay[dateStr].push(feed);
+    });
+
+    Object.values(recentFeedsByDay).forEach(dayFeeds => {
+      if (dayFeeds.length > 0) {
+        const sorted = dayFeeds.sort((a, b) => 
+          new Date(a.loggedAt || a.time).getTime() - new Date(b.loggedAt || b.time).getTime()
+        );
+        const firstFeed = sorted[0];
+        const feedTime = new Date(firstFeed.loggedAt || firstFeed.time);
+        recentFirstFeedTimes.push(feedTime.getHours() * 60 + feedTime.getMinutes());
+      }
+    });
+
     const dailyVolumes = Object.values(recentDailyVolumes);
     if (dailyVolumes.length > 0) {
       recentTotalVolume = dailyVolumes.reduce((sum, v) => sum + v, 0) / dailyVolumes.length;
-      recentDaysWithFeeds = dailyVolumes.length;
     }
 
     // Check for cluster feeding (3+ feeds within 4 hours)
@@ -130,7 +220,7 @@ export const DailyReassurance = ({
         const firstFeed = new Date(sortedTodayFeeds[i].loggedAt || sortedTodayFeeds[i].time);
         const thirdFeed = new Date(sortedTodayFeeds[i + 2].loggedAt || sortedTodayFeeds[i + 2].time);
         const minutesApart = differenceInMinutes(thirdFeed, firstFeed);
-        if (minutesApart <= 240) { // 4 hours
+        if (minutesApart <= 240) {
           isClusterFeeding = true;
           break;
         }
@@ -176,72 +266,95 @@ export const DailyReassurance = ({
       ? recentWakeWindows.reduce((sum, w) => sum + w, 0) / recentWakeWindows.length 
       : 0;
 
-    // Decision logic - detect specific observable patterns
+    // Decision logic - prioritize most notable pattern
     
-    // Check cluster feeding (3+ feeds within 4 hours)
+    // Check cluster feeding first
     if (isClusterFeeding) {
-      return "Three feeds within 4 hours — cluster feeding pattern.";
+      return pick(messages.clusterFeeding);
     }
 
-    // Check first nap specifically if it was short
+    // Check first nap timing (earlier/later)
+    if (todayNapStartTimes.length > 0 && recentNapStartTimes.length >= 3 && avgRecentFirstNapStart > 0) {
+      const firstNapToday = todayNapStartTimes[0];
+      if (firstNapToday < avgRecentFirstNapStart - 30) {
+        return pick(messages.napEarlier);
+      }
+      if (firstNapToday > avgRecentFirstNapStart + 30) {
+        return pick(messages.napLater);
+      }
+    }
+
+    // Check first nap duration (shorter/longer)
     if (todayNapDurations.length > 0 && recentNapDurations.length >= 5) {
       const firstNap = todayNapDurations[0];
-      if (firstNap < avgRecentNapDuration * 0.7 && firstNap < 45) {
-        return "First nap was shorter than usual this morning.";
+      if (firstNap < avgRecentNapDuration * 0.7 && firstNap < 50) {
+        return pick(messages.napShorter);
       }
-      
-      // Check if first nap was long
       if (firstNap > avgRecentNapDuration * 1.3) {
-        return "Started the day with a longer nap than usual.";
+        return pick(messages.napLonger);
       }
     }
 
-    // Check for significantly increased intake
-    if (todayFeeds.length >= 2 && recentDaysWithFeeds >= 3 && todayTotalVolume > recentTotalVolume * 1.2) {
-      return `${babyName} is eating more than usual today.`;
+    // Check first feed timing
+    if (sortedTodayFeeds.length > 0 && recentFirstFeedTimes.length >= 3) {
+      const firstFeedToday = new Date(sortedTodayFeeds[0].loggedAt || sortedTodayFeeds[0].time);
+      const firstFeedTodayMins = firstFeedToday.getHours() * 60 + firstFeedToday.getMinutes();
+      const avgRecentFirstFeed = recentFirstFeedTimes.reduce((sum, t) => sum + t, 0) / recentFirstFeedTimes.length;
+      
+      if (firstFeedTodayMins < avgRecentFirstFeed - 45) {
+        return pick(messages.feedEarlier);
+      }
+      if (firstFeedTodayMins > avgRecentFirstFeed + 45) {
+        return pick(messages.feedLater);
+      }
+    }
+
+    // Check for heavier feeds
+    if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume > recentTotalVolume * 1.25) {
+      return pick(messages.feedsHeavier);
     }
 
     // Check for lighter feeds
-    if (todayFeeds.length >= 2 && recentDaysWithFeeds >= 3 && todayTotalVolume < recentTotalVolume * 0.75) {
-      return "Feeds have been lighter than usual so far.";
+    if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume < recentTotalVolume * 0.7) {
+      return pick(messages.feedsLighter);
     }
 
-    // Check longest wake window specifically
-    if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3) {
-      const longestToday = Math.max(...todayWakeWindows);
-      const avgRecent = avgRecentWakeWindow;
-      
-      if (longestToday > avgRecent * 1.25) {
-        const hours = Math.floor(longestToday / 60);
-        const mins = longestToday % 60;
-        return `Longest wake window today: ${hours > 0 ? `${hours}h ${mins}m` : `${mins}m`}.`;
-      }
+    // Check wake windows longer
+    if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow > avgRecentWakeWindow * 1.25) {
+      return pick(messages.wakeWindowsLonger);
     }
 
-    // Check short wake windows
-    if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow < avgRecentWakeWindow * 0.8) {
-      return "Wake windows are running shorter today.";
+    // Check wake windows shorter
+    if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow < avgRecentWakeWindow * 0.75) {
+      return pick(messages.wakeWindowsShorter);
     }
 
-    // Check all naps short
+    // Check all naps shorter
     if (todayNapDurations.length >= 2 && recentNapDurations.length >= 5 && avgTodayNapDuration < avgRecentNapDuration * 0.75) {
-      return "Naps are running shorter today.";
+      return pick(messages.napShorter);
+    }
+
+    // Check growth spurt pattern (more feeds + longer naps)
+    if (todayFeeds.length >= recentFeeds.length / 7 * 1.4 && 
+        todayNapDurations.length > 0 && 
+        avgTodayNapDuration > avgRecentNapDuration * 1.15) {
+      return pick(messages.growthSpurt);
     }
 
     // Check schedule alignment (everything within normal ranges)
     const napAligned = todayNapDurations.length > 0 && recentNapDurations.length >= 5 && 
-      Math.abs(avgTodayNapDuration - avgRecentNapDuration) / avgRecentNapDuration < 0.15;
+      Math.abs(avgTodayNapDuration - avgRecentNapDuration) / avgRecentNapDuration < 0.2;
     
-    const feedAligned = todayFeeds.length >= 2 && recentDaysWithFeeds >= 3 && 
-      Math.abs(todayTotalVolume - recentTotalVolume) / recentTotalVolume < 0.15;
+    const feedAligned = todayFeeds.length >= 2 && dailyVolumes.length >= 3 && 
+      Math.abs(todayTotalVolume - recentTotalVolume) / recentTotalVolume < 0.2;
 
     if (napAligned && feedAligned) {
-      return `Following ${babyName}'s usual rhythm today.`;
+      return pick(messages.aligned);
     }
 
-    // Default - typical day
+    // Default fallback
     if (todayNaps.length > 0 || todayFeeds.length > 0) {
-      return `${babyName}'s day is unfolding normally so far.`;
+      return pick(messages.fallback);
     }
 
     return `Start logging to see how today unfolds.`;
