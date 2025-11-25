@@ -33,6 +33,8 @@ import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { generateAdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { OnboardingTutorial } from "@/components/onboarding/OnboardingTutorial";
+import { QuickLogBar } from "@/components/home/QuickLogBar";
 import { ChevronDown } from "lucide-react";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
@@ -76,7 +78,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
   const [scheduleRefreshKey, setScheduleRefreshKey] = useState(0);
-  const [napCountAnalysis, setNapCountAnalysis] = useState<NapCountAnalysis | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isQuickLogging, setIsQuickLogging] = useState(false);
   
   // New home tab intelligence hook
   const { 
@@ -150,6 +153,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       setFirstActivityType(firstActivity.type as 'feed' | 'nap' | 'diaper');
       setShowFirstActivityCelebration(true);
       localStorage.setItem('first_activity_celebrated', 'true');
+    }
+  }, [activities.length]);
+  
+  // Show onboarding for new users (before any activities)
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('onboarding_completed') === 'true';
+    if (!hasSeenOnboarding && activities.length === 0) {
+      setShowOnboarding(true);
     }
   }, [activities.length]);
   
@@ -1544,6 +1555,34 @@ const lastDiaper = displayActivities
           ageBasedWakeWindow="2–2.5 hours"
         />
 
+        {/* Quick Log Bar */}
+        <QuickLogBar
+          onLogActivity={async (type, time) => {
+            setIsQuickLogging(true);
+            try {
+              if (type === 'nap') {
+                await addActivity?.('nap', { startTime: time }, new Date(), time);
+                toast({ title: "Nap started", description: `Started at ${time}` });
+              } else if (type === 'feed') {
+                await addActivity?.('feed', {}, new Date(), time);
+                toast({ title: "Feeding logged", description: `Logged at ${time}` });
+              } else if (type === 'diaper') {
+                await addActivity?.('diaper', {}, new Date(), time);
+                toast({ title: "Diaper change logged", description: `Logged at ${time}` });
+              }
+            } catch (error) {
+              toast({ 
+                title: "Error", 
+                description: "Could not log activity", 
+                variant: "destructive" 
+              });
+            } finally {
+              setIsQuickLogging(false);
+            }
+          }}
+          isLoading={isQuickLogging}
+        />
+
         {/* Zone 2: Smart Quick Actions */}
           <SmartQuickActions
             suggestions={smartSuggestions}
@@ -1619,6 +1658,16 @@ const lastDiaper = displayActivities
         />
 
       </div>
+
+      {/* Onboarding Tutorial */}
+      <OnboardingTutorial
+        isOpen={showOnboarding}
+        onComplete={() => {
+          setShowOnboarding(false);
+          localStorage.setItem('onboarding_completed', 'true');
+        }}
+        babyName={babyName}
+      />
     </div>
   );
 };

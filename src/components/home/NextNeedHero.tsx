@@ -34,10 +34,10 @@ export const NextNeedHero = ({
   
   const firstName = babyName?.split(' ')[0] || 'Baby';
   
-  // Generate contextual middle line based on current state
+    // Generate contextual middle line based on current state
   const getContextLine = () => {
     if (!currentActivity) {
-      return "Log an activity to get personalized insights about what your baby needs next.";
+      return "Start logging activities to see helpful predictions about what comes next.";
     }
 
     if (currentActivity.type === 'awake' && nextPrediction?.activity.toLowerCase().includes('nap')) {
@@ -47,22 +47,25 @@ export const NextNeedHero = ({
         ? `${awakeDurationHours}h ${awakeDurationMins}m` 
         : `${awakeDurationMins}m`;
       
-      return `Most babies this age get sleepy after around ${ageBasedWakeWindow} awake. ${firstName}'s been up ${awakeDisplay}, so they may be ready for a nap soon.`;
+      return `Most babies this age get sleepy after about ${ageBasedWakeWindow}. ${firstName} has been awake for ${awakeDisplay}, so they might be ready for a nap soon.`;
     }
 
     if (currentActivity.type === 'napping' || currentActivity.type === 'sleeping') {
-      return `${firstName} is ${currentActivity.type === 'napping' ? 'napping' : 'sleeping'} right now. They've been asleep for ${Math.floor(currentActivity.duration / 60)}h ${currentActivity.duration % 60}m.`;
+      const sleepHours = Math.floor(currentActivity.duration / 60);
+      const sleepMins = currentActivity.duration % 60;
+      const sleepDisplay = sleepHours > 0 ? `${sleepHours}h ${sleepMins}m` : `${sleepMins}m`;
+      return `${firstName} is sleeping right now (${sleepDisplay} so far). No need to do anything—just let them rest!`;
     }
 
     if (currentActivity.type === 'feeding') {
-      return `${firstName} is feeding right now. Once done, they'll likely need some awake time.`;
+      return `${firstName} is eating right now. After feeding, they'll probably want some awake time or might get sleepy.`;
     }
 
     if (nextPrediction?.activity.toLowerCase().includes('feed')) {
-      return `Based on recent patterns, ${firstName} typically feeds ${nextPrediction.timeRange.toLowerCase()}.`;
+      return `Based on what we've seen, ${firstName} usually gets hungry ${nextPrediction.timeRange.toLowerCase()}.`;
     }
 
-    return `${firstName} is doing great. Keep tracking activities to see personalized predictions.`;
+    return `${firstName} is doing great! Keep logging activities and we'll learn their rhythm together.`;
   };
 
   const isAwake = currentActivity?.type === 'awake';
@@ -76,7 +79,7 @@ export const NextNeedHero = ({
           <div className="px-4 py-5">
             {/* Top line */}
             <h2 className="text-sm font-semibold text-foreground/90 mb-3">
-              Here's what your baby likely needs next.
+              What your baby probably needs next
             </h2>
 
             {/* Middle line */}
@@ -93,7 +96,7 @@ export const NextNeedHero = ({
                 className="w-full mb-3"
               >
                 <Moon className="w-4 h-4 mr-2" />
-                Log nap now
+                Start nap
               </Button>
             )}
 
@@ -105,7 +108,7 @@ export const NextNeedHero = ({
                 className="w-full mb-3"
               >
                 <Milk className="w-4 h-4 mr-2" />
-                Log feed now
+                Log feeding
               </Button>
             )}
 
@@ -134,13 +137,13 @@ export const NextNeedHero = ({
                   <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
                     <div className="flex items-center gap-2 mb-2">
                       <Clock className="w-4 h-4 text-primary" />
-                      <p className="text-xs font-medium text-foreground/80">Awake Timer</p>
+                      <p className="text-xs font-medium text-foreground/80">Time awake</p>
                     </div>
                     <p className="text-2xl font-bold text-foreground">
                       {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Since {currentActivity.startTime}
+                      Awake since {currentActivity.startTime}
                     </p>
                   </div>
                 )}
@@ -174,10 +177,10 @@ export const NextNeedHero = ({
                   <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
                     <div className="flex items-center gap-2 mb-2">
                       <Milk className="w-4 h-4 text-primary" />
-                      <p className="text-xs font-medium text-foreground/80">Expected Next Feed</p>
+                      <p className="text-xs font-medium text-foreground/80">Next feeding</p>
                     </div>
                     <p className="text-sm text-foreground">
-                      {nextPrediction.timeRange}
+                      Usually around {nextPrediction.timeRange}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {nextPrediction.countdown}
