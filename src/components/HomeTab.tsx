@@ -151,13 +151,18 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       setShowFirstActivityCelebration(true);
       localStorage.setItem('first_activity_celebrated', 'true');
     }
+  }, [activities.length]);
+  
+  // Offer prefill after celebration closes
+  useEffect(() => {
+    const hasShownPrefill = localStorage.getItem('prefill_offered') === 'true';
+    const hasShownCelebration = localStorage.getItem('first_activity_celebrated') === 'true';
     
-    // Offer prefill after first activity celebration closes
-    if (!hasShownPrefill && activities.length === 1 && !showFirstActivityCelebration) {
+    if (!hasShownPrefill && hasShownCelebration && activities.length >= 1 && !showFirstActivityCelebration) {
       setShowPrefillModal(true);
       localStorage.setItem('prefill_offered', 'true');
     }
-  }, [activities.length, showFirstActivityCelebration]);
+  }, [showFirstActivityCelebration, activities.length]);
 
   // P4: Pulse Guide tab after first nap
   useEffect(() => {

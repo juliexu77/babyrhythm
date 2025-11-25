@@ -87,21 +87,6 @@ export const PrefillDayModal = ({
       });
     }
     
-    // Add a few diaper changes
-    activities.push(
-      { type: 'diaper', time: '10:30 AM', details: { diaperType: 'wet' } },
-      { type: 'diaper', time: '2:30 PM', details: { diaperType: 'poopy' } },
-      { type: 'diaper', time: '6:00 PM', details: { diaperType: 'wet' } }
-    );
-    
-    // Add solids if baby is 6+ months
-    if (babyAgeMonths && babyAgeMonths >= 6) {
-      activities.push(
-        { type: 'solids', time: '8:00 AM', details: { solidDescription: 'Breakfast' } },
-        { type: 'solids', time: '12:00 PM', details: { solidDescription: 'Lunch' } },
-        { type: 'solids', time: '5:30 PM', details: { solidDescription: 'Dinner' } }
-      );
-    }
     
     return activities;
   };
