@@ -28,10 +28,14 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
   const needsNapForSchedule = firstActivity?.type === 'feed' && naps.length === 0;
   
   const totalLogged = activities.length;
-  const targetLogs = 5; // First milestone
-  const progress = Math.min(100, (totalLogged / targetLogs) * 100);
   
-  const isUnlocked = totalLogged >= 5;
+  // Predictions start after 1 nap - align UI with actual capability
+  const hasMinNaps = naps.length >= 1;
+  const isUnlocked = hasMinNaps;
+  
+  // Progress toward first nap if not unlocked yet
+  const targetLogs = 1;
+  const progress = hasMinNaps ? 100 : 0;
   const name = babyName?.split(' ')[0] || 'Baby';
 
   // Trigger unlock animation
@@ -78,36 +82,16 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
     <div className="space-y-2 px-4 py-3 rounded-xl bg-card/50 border border-border/40 animate-in fade-in slide-in-from-top-2 duration-300">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-foreground">
-          Building {name}'s pattern
+          Getting started
         </span>
         <span className="text-xs text-muted-foreground">
-          {totalLogged} of {targetLogs} logs
+          {totalLogged} log{totalLogged !== 1 ? 's' : ''}
         </span>
-      </div>
-      
-      <div className="relative">
-        <Progress value={progress} className="h-1.5" />
-        {/* Shimmer animation overlay */}
-        <div 
-          className="absolute inset-0 h-1.5 rounded-full overflow-hidden pointer-events-none"
-          style={{ 
-            background: 'linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.3) 50%, transparent 100%)',
-            animation: 'shimmer 2s infinite',
-            width: `${progress}%`
-          }}
-        />
       </div>
       
       <p className="text-xs text-muted-foreground">
-        {targetLogs - totalLogged} more log{targetLogs - totalLogged !== 1 ? 's' : ''} to unlock pattern tracking
+        Log a nap to unlock {name}'s schedule predictions
       </p>
-      
-      <style>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-      `}</style>
     </div>
   );
 };
