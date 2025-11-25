@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Moon, Milk, Clock } from "lucide-react";
+import { ChevronDown, ChevronUp, Moon, Milk, Clock, ChevronRight } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 
@@ -78,7 +78,8 @@ export const NextNeedHero = ({
         <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="px-4 py-5">
             {/* Top line */}
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <ChevronRight className="w-3.5 h-3.5" />
               What's Next
             </h3>
 
