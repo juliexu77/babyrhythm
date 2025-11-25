@@ -372,12 +372,12 @@ export const DailyReassurance = ({
     <div className="mx-2 mb-3">
       <div className="px-3 py-2 rounded-xl bg-gradient-to-b from-primary/8 via-primary/5 to-primary/3 border border-border/10">
         <div className="flex items-start gap-2">
-          <IconComponent className="w-3.5 h-3.5 text-primary/60 mt-0.5 flex-shrink-0" />
+          <IconComponent className="w-4 h-4 text-primary/60 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-medium text-foreground/50 uppercase tracking-wider mb-0.5">
+            <p className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-1">
               Today's Overview
             </p>
-            <p className="text-xs text-foreground/70 leading-relaxed">
+            <p className="text-sm text-foreground/70 leading-relaxed">
               {reassuranceMessage}
             </p>
           </div>
