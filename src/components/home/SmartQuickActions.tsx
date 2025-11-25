@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Milk, Moon, Droplet } from "lucide-react";
 
 export interface Activity {
   id: string;
@@ -25,6 +26,8 @@ interface SmartQuickActionsProps {
   activities?: Activity[];
   chatComponent?: React.ReactNode;
   addActivity?: (type: string, details?: any, activityDate?: Date, activityTime?: string) => Promise<void>;
+  onQuickLog?: (type: 'feed' | 'nap' | 'diaper', time?: string) => void;
+  isQuickLogging?: boolean;
 }
 
 export const SmartQuickActions = ({
@@ -32,11 +35,18 @@ export const SmartQuickActions = ({
   onOpenAddActivity,
   activities = [],
   chatComponent,
-  addActivity
+  addActivity,
+  onQuickLog,
+  isQuickLogging
 }: SmartQuickActionsProps) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
-  // Find the last feed and last nap for prefilling
+  const handleQuickLog = (type: 'feed' | 'nap' | 'diaper') => {
+    onQuickLog?.(type, currentTime);
+  };
+
+  // Find the last feed and last nap for prefilling (kept for backward compatibility but not used in new UI)
   const lastFeed = activities
     .filter(a => a.type === 'feed')
     .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
@@ -47,7 +57,6 @@ export const SmartQuickActions = ({
 
   // Create prefill activities with current time
   const now = new Date();
-  const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
 
   const prefillFeed = lastFeed ? {
     ...lastFeed,
@@ -80,33 +89,48 @@ export const SmartQuickActions = ({
       <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/20 overflow-hidden">
         <div className="px-4 py-5">
           <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
-            Quick Log
+            Quick Actions
           </h3>
-          <div className="grid grid-cols-2 gap-2">
+          
+          {/* Icon buttons for quick logging */}
+          <div className="flex items-center gap-2 mb-4">
             <Button
-              variant="outline"
               size="sm"
-              onClick={() => onOpenAddActivity?.('nap', prefillNap)}
-              className="w-full text-sm border-0"
+              variant="outline"
+              onClick={() => handleQuickLog('feed')}
+              disabled={isQuickLogging}
+              className="flex-1 h-12 border-0"
             >
-              <span className="mr-2">+</span>
-              Log Sleep
+              <Milk className="w-5 h-5" />
             </Button>
             <Button
-              variant="outline"
               size="sm"
-              onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
-              className="w-full text-sm border-0"
+              variant="outline"
+              onClick={() => handleQuickLog('nap')}
+              disabled={isQuickLogging}
+              className="flex-1 h-12 border-0"
             >
-              <span className="mr-2">+</span>
-              Log Feed
+              <Moon className="w-5 h-5" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleQuickLog('diaper')}
+              disabled={isQuickLogging}
+              className="flex-1 h-12 border-0"
+            >
+              <Droplet className="w-5 h-5" />
             </Button>
           </div>
+          
+          <p className="text-[10px] text-center text-muted-foreground mb-3">
+            Tap to log with current time—adjust details later if needed
+          </p>
 
           {chatComponent && (
             <button
               onClick={() => setIsChatOpen(true)}
-              className="w-full mt-2 text-center group"
+              className="w-full text-center group"
             >
               <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
                 Ask Me Anything →

@@ -34,7 +34,6 @@ import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { generateAdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { OnboardingTutorial } from "@/components/onboarding/OnboardingTutorial";
-import { QuickLogBar } from "@/components/home/QuickLogBar";
 import { ChevronDown } from "lucide-react";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
@@ -1555,40 +1554,36 @@ const lastDiaper = displayActivities
           ageBasedWakeWindow="2–2.5 hours"
         />
 
-        {/* Quick Log Bar */}
-        <QuickLogBar
-          onLogActivity={async (type, time) => {
-            setIsQuickLogging(true);
-            try {
-              if (type === 'nap') {
-                await addActivity?.('nap', { startTime: time }, new Date(), time);
-                toast({ title: "Nap started", description: `Started at ${time}` });
-              } else if (type === 'feed') {
-                await addActivity?.('feed', {}, new Date(), time);
-                toast({ title: "Feeding logged", description: `Logged at ${time}` });
-              } else if (type === 'diaper') {
-                await addActivity?.('diaper', {}, new Date(), time);
-                toast({ title: "Diaper change logged", description: `Logged at ${time}` });
-              }
-            } catch (error) {
-              toast({ 
-                title: "Error", 
-                description: "Could not log activity", 
-                variant: "destructive" 
-              });
-            } finally {
-              setIsQuickLogging(false);
-            }
-          }}
-          isLoading={isQuickLogging}
-        />
-
         {/* Zone 2: Smart Quick Actions */}
           <SmartQuickActions
             suggestions={smartSuggestions}
             onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
             activities={activities}
             addActivity={addActivity}
+            onQuickLog={async (type, time) => {
+              setIsQuickLogging(true);
+              try {
+                if (type === 'nap') {
+                  await addActivity?.('nap', { startTime: time }, new Date(), time);
+                  toast({ title: "Nap started", description: `Started at ${time}` });
+                } else if (type === 'feed') {
+                  await addActivity?.('feed', {}, new Date(), time);
+                  toast({ title: "Feeding logged", description: `Logged at ${time}` });
+                } else if (type === 'diaper') {
+                  await addActivity?.('diaper', {}, new Date(), time);
+                  toast({ title: "Diaper change logged", description: `Logged at ${time}` });
+                }
+              } catch (error) {
+                toast({ 
+                  title: "Error", 
+                  description: "Could not log activity", 
+                  variant: "destructive" 
+                });
+              } finally {
+                setIsQuickLogging(false);
+              }
+            }}
+            isQuickLogging={isQuickLogging}
           />
 
         {/* Predicted Schedule - Collapsible */}
