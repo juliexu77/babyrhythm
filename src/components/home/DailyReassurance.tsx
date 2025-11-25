@@ -175,39 +175,56 @@ export const DailyReassurance = ({
       ? recentWakeWindows.reduce((sum, w) => sum + w, 0) / recentWakeWindows.length 
       : 0;
 
-    // Decision logic - prioritize most notable pattern
+    // Decision logic - detect specific observable patterns
     
-    // Check cluster feeding first (most urgent pattern)
+    // Check cluster feeding (3+ feeds within 4 hours)
     if (isClusterFeeding) {
-      return "Feeds have been coming a little closer together today — a normal cluster-feeding pattern.";
+      return "Three feeds within 4 hours — cluster feeding pattern.";
     }
 
-    // Check significant volume increase (15%+)
-    if (todayFeeds.length >= 2 && recentDaysWithFeeds >= 3 && todayTotalVolume > recentTotalVolume * 1.15) {
-      return `${babyName} is eating a bit more than usual today — often a sign of growth or extra hunger.`;
-    }
-
-    // Check significant volume decrease (20%+)
-    if (todayFeeds.length >= 2 && recentDaysWithFeeds >= 3 && todayTotalVolume < recentTotalVolume * 0.8) {
-      return "Feeds have been a little lighter so far — this often resolves on its own by later in the day.";
-    }
-
-    // Check long nap (25%+ longer than average)
+    // Check first nap specifically if it was short
     if (todayNapDurations.length > 0 && recentNapDurations.length >= 5) {
-      const longestToday = Math.max(...todayNapDurations);
-      if (longestToday > avgRecentNapDuration * 1.25) {
-        return `${babyName} took a longer nap than usual — a great sign of catching up on rest.`;
+      const firstNap = todayNapDurations[0];
+      if (firstNap < avgRecentNapDuration * 0.7 && firstNap < 45) {
+        return "First nap was shorter than usual this morning.";
+      }
+      
+      // Check if first nap was long
+      if (firstNap > avgRecentNapDuration * 1.3) {
+        return "Started the day with a longer nap than usual.";
       }
     }
 
-    // Check short naps (20%+ shorter than average)
-    if (todayNapDurations.length >= 2 && recentNapDurations.length >= 5 && avgTodayNapDuration < avgRecentNapDuration * 0.8) {
-      return "Naps have been a bit shorter today, which is common at this age.";
+    // Check for significantly increased intake
+    if (todayFeeds.length >= 2 && recentDaysWithFeeds >= 3 && todayTotalVolume > recentTotalVolume * 1.2) {
+      return `${babyName} is eating more than usual today.`;
     }
 
-    // Check long wake windows (20%+ longer)
-    if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow > avgRecentWakeWindow * 1.2) {
-      return "Wake times are running a little longer today, which is common as babies get older.";
+    // Check for lighter feeds
+    if (todayFeeds.length >= 2 && recentDaysWithFeeds >= 3 && todayTotalVolume < recentTotalVolume * 0.75) {
+      return "Feeds have been lighter than usual so far.";
+    }
+
+    // Check longest wake window specifically
+    if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3) {
+      const longestToday = Math.max(...todayWakeWindows);
+      const avgRecent = avgRecentWakeWindow;
+      
+      if (longestToday > avgRecent * 1.25) {
+        const hours = Math.floor(longestToday / 60);
+        const mins = longestToday % 60;
+        return `Longest wake window today: ${hours > 0 ? `${hours}h ${mins}m` : `${mins}m`}.`;
+      }
+    }
+
+    // Check short wake windows
+    if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow < avgRecentWakeWindow * 0.8) {
+      return "Wake windows are running shorter today.";
+    }
+
+    // Check all naps short
+    if (todayNapDurations.length >= 2 && recentNapDurations.length >= 5 && avgTodayNapDuration < avgRecentNapDuration * 0.75) {
+      return "Naps are running shorter today.";
     }
 
     // Check schedule alignment (everything within normal ranges)
@@ -218,22 +235,22 @@ export const DailyReassurance = ({
       Math.abs(todayTotalVolume - recentTotalVolume) / recentTotalVolume < 0.15;
 
     if (napAligned && feedAligned) {
-      return `Today is lining up beautifully with ${babyName}'s usual rhythm.`;
+      return `Following ${babyName}'s usual rhythm today.`;
     }
 
     // Default - typical day
     if (todayNaps.length > 0 || todayFeeds.length > 0) {
-      return `${babyName}'s rhythm is on track — nothing unusual today.`;
+      return `${babyName}'s day is unfolding normally so far.`;
     }
 
-    return `Today looks like a very typical day so far.`;
+    return `Start logging to see how today unfolds.`;
     
   }, [activities, babyName, nightSleepStartHour, nightSleepEndHour]);
 
   return (
     <div className="mx-2 mb-3">
-      <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-accent/10 to-accent/5 border border-border/20">
-        <p className="text-sm text-foreground/80 leading-relaxed text-center">
+      <div className="px-4 py-5 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+        <p className="text-sm text-foreground/70 leading-relaxed">
           {reassuranceMessage}
         </p>
       </div>
