@@ -447,10 +447,18 @@ export function useMissedActivityDetection(
             expectedWakeMinutes = pattern.medianTime;
           }
           
-          // If current time is > 1 hour past expected wake, suggest logging it
-          const minutesPastExpected = currentMinutes - expectedWakeMinutes;
+          // CRITICAL FIX: Only prompt for wake-up if we're actually in the morning
+          // Current time should be AFTER nightSleepEndHour and BEFORE nightSleepStartHour
+          const currentHour = currentTime.getHours();
+          const isInMorning = currentHour >= nightSleepEndHour && currentHour < nightSleepStartHour;
           
-          if (currentMinutes > expectedWakeMinutes + 60) {
+          // Also check if the sleep started recently (within last 2 hours) - don't prompt if just started
+          const sleepStarted = new Date(ongoingNightSleep.loggedAt || new Date());
+          const hoursSinceSleepStart = (currentTime.getTime() - sleepStarted.getTime()) / (1000 * 60 * 60);
+          const sleepJustStarted = hoursSinceSleepStart < 2;
+          
+          // If current time is > 1 hour past expected wake AND we're in the morning AND sleep didn't just start
+          if (isInMorning && !sleepJustStarted && currentMinutes > expectedWakeMinutes + 60) {
             // Check localStorage for dismissals before returning
             const dismissalKey = `missed-${householdId || 'household'}-nap-morning-wake-${format(currentTime, 'yyyy-MM-dd')}`;
             const isDismissed = localStorage.getItem(dismissalKey) === 'true';
