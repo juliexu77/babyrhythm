@@ -254,13 +254,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }));
   }, [activities]);
   
-  // Calculate tone frequencies for the last 7 days (safe even without household)
+  // Calculate tone frequencies for the last 7 days EXCLUDING TODAY (safe even without household)
   const toneFrequencies = (() => {
     if (!household) return { frequency: {}, tones: [], currentStreak: 0, streakTone: "" };
     
+    // Exclude today - use last 7 complete days
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
-      date.setDate(date.getDate() - i);
+      date.setDate(date.getDate() - (i + 1)); // Start from yesterday
       date.setHours(0, 0, 0, 0);
       return date;
     }).reverse();
@@ -784,13 +785,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         if (mentionedCounts.size === 0) return false;
         
-        // Check actual nap counts from past 3 days
-        const threeDaysAgo = new Date();
-        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        // Check actual nap counts from past 3 complete days (excluding today)
+        const fourDaysAgo = new Date();
+        fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
         
-        const recentActivities = activities.filter(a => 
-          new Date(a.logged_at) >= threeDaysAgo
-        );
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(23, 59, 59, 999);
+        
+        const recentActivities = activities.filter(a => {
+          const logDate = new Date(a.logged_at);
+          return logDate >= fourDaysAgo && logDate <= yesterday;
+        });
         
         // Group by day and count naps
         const napsByDay = recentActivities
@@ -870,12 +876,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           return getActivityEventDateString(a) === todayStr;
         });
         
-        // Get last 14 days for pattern analysis (use event dates, not logged_at)
-        const fourteenDaysAgo = new Date();
-        fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-        const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().split('T')[0];
+        // Exclude today - get last 14 complete days for pattern analysis
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        const fifteenDaysAgo = new Date();
+        fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+        const fifteenDaysAgoStr = fifteenDaysAgo.toISOString().split('T')[0];
         const recentActivities = normalizedActivities.filter(a => {
-          return getActivityEventDateString(a) >= fourteenDaysAgoStr;
+          const dateStr = getActivityEventDateString(a);
+          return dateStr >= fifteenDaysAgoStr && dateStr <= yesterdayStr;
         });
         
         // Use simple calculation-based prediction instead of AI
@@ -987,11 +998,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     setIsLoading(true);
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-      const recentActivities = activities.filter(a => 
-        new Date(a.logged_at) >= twoWeeksAgo
-      );
+      
+      // Exclude today - use last 14 complete days
+      const fifteenDaysAgo = new Date();
+      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+      
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(23, 59, 59, 999);
+      
+      const recentActivities = activities.filter(a => {
+        const logDate = new Date(a.logged_at);
+        return logDate >= fifteenDaysAgo && logDate <= yesterday;
+      });
 
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
@@ -1088,11 +1107,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-      const recentActivities = activities.filter(a => 
-        new Date(a.logged_at) >= twoWeeksAgo
-      );
+      
+      // Exclude today - use last 14 complete days for context
+      const fifteenDaysAgo = new Date();
+      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+      
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(23, 59, 59, 999);
+      
+      const recentActivities = activities.filter(a => {
+        const logDate = new Date(a.logged_at);
+        return logDate >= fifteenDaysAgo && logDate <= yesterday;
+      });
 
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
