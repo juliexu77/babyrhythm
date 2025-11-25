@@ -25,30 +25,30 @@
     --s-6: 24px;
     --s-7: 32px;
     
-    /* Light Mode - "Fall Latte" */
-    --bg: 25 19% 86%; /* #E3DAD3 - warm beige background */
-    --surface: 25 28% 87%; /* warm peachy card surface */
-    --surface-muted: 25 26% 85%; /* slightly deeper peachy tan */
+    /* Light Mode - Soft Mauve Palette */
+    --bg: 30 18% 88%; /* #E8E2DD - soft cream background */
+    --surface: 320 28% 86%; /* soft mauve card surface */
+    --surface-muted: 320 24% 83%; /* slightly deeper mauve */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
     --divider: 28 28% 75%; /* subtle border matching background */
     
-    /* Card ombré progression (light mode: warm tan → deep brown) - more contrast */
-    --card-ombre-1: 28 30% 87%; /* Warm peachy tan for suggested actions */
-    --card-ombre-1-dark: 28 28% 81%; /* Darker peachy tan gradient end */
-    --card-ombre-2: 25 28% 84%; /* Medium tan */
-    --card-ombre-2-dark: 25 26% 78%; /* Darker tan gradient end */
-    --card-ombre-3: 22 26% 81%; /* Deeper tan for today's pulse */
-    --card-ombre-3-dark: 22 24% 75%; /* Darker tan gradient end */
-    --card-ombre-4: 320 25% 88%; /* Soft plum for right now card */
-    --card-ombre-4-dark: 320 20% 82%; /* Darker plum gradient end */
+    /* Card ombré progression (light mode: soft mauve/dusty rose palette) */
+    --card-ombre-1: 320 28% 86%; /* Soft mauve for suggested actions */
+    --card-ombre-1-dark: 320 24% 83%; /* Darker mauve gradient end */
+    --card-ombre-2: 320 28% 86%; /* Soft mauve */
+    --card-ombre-2-dark: 320 24% 83%; /* Darker mauve gradient end */
+    --card-ombre-3: 320 28% 86%; /* Soft mauve for today's pulse */
+    --card-ombre-3-dark: 320 24% 83%; /* Darker mauve gradient end */
+    --card-ombre-4: 320 28% 86%; /* Soft mauve for right now card */
+    --card-ombre-4-dark: 320 24% 83%; /* Darker mauve gradient end */
     
-    /* Light mode color overrides - fall latte palette */
+    /* Light mode color overrides - mauve palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
     --pp-grey: 0 0% 45%; /* #737373 - grey (neutral accents) */
-    --pp-terracotta: 25 30% 61%; /* #B8927C - cinnamon (charts/accents) */
+    --pp-terracotta: 28 28% 72%; /* #C5B3A4 - tan/beige (badges/accents) */
     
-    --accent-1: var(--pp-terracotta); /* cinnamon accents */
+    --accent-1: var(--pp-terracotta); /* tan/beige accents */
     --accent-2: 32 73% 91%; /* #F8E9D8 - warm accent */
     --chart-feed: var(--pp-terracotta); /* cinnamon for charts */
     --chart-sleep: var(--pp-terracotta); /* cinnamon for sleep */
