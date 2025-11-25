@@ -9,7 +9,7 @@ import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
-import { RightNowStatus } from "@/components/home/RightNowStatus";
+import { NextNeedHero } from "@/components/home/NextNeedHero";
 import { SmartQuickActions } from "@/components/home/SmartQuickActions";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
@@ -1534,52 +1534,14 @@ const lastDiaper = displayActivities
             </div>
         )}
 
-        {/* Zone 1: Right Now Status */}
-        <RightNowStatus
+        {/* Zone 1: Next Need Hero */}
+        <NextNeedHero
+          babyName={babyName || 'Baby'}
+          babyAge={babyAgeInWeeks}
           currentActivity={currentActivity}
           nextPrediction={nextPrediction}
-          onWokeEarly={onEndNap}
-          onStillAsleep={() => {
-            const isNightSleepFlag = ongoingNap ? isNightSleep(ongoingNap, nightSleepStartHour, nightSleepEndHour) : false;
-            const sleepType = isNightSleepFlag ? 'sleeping' : 'napping';
-            toast({
-              title: `Still ${sleepType}`,
-              description: `${isNightSleepFlag ? 'Sleep' : 'Nap'} timer continues`,
-            });
-          }}
-          onLogPrediction={(type) => onAddActivity(type)}
-          onStartNap={() => {
-            // Start a new nap with current time in correct 12-hour format
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const period = hours >= 12 ? 'PM' : 'AM';
-            const hour12 = hours % 12 || 12;
-            const timeString = `${hour12}:${String(minutes).padStart(2, '0')} ${period}`;
-            
-            addActivity?.('nap', { startTime: timeString }, now, timeString);
-            toast({ title: "Nap started", description: "Timer is now running" });
-          }}
-          onEndFeed={() => {
-            // End the current feed
-            const lastFeed = activities
-              .filter(a => a.type === 'feed')
-              .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
-            
-            if (lastFeed) {
-              const now = new Date();
-              const updatedFeed = { ...lastFeed, details: { ...lastFeed.details, endTime: now.toTimeString().slice(0, 5) } };
-              onEditActivity(updatedFeed);
-              toast({ title: "Feed ended", description: "Duration recorded" });
-            }
-          }}
-          babyName={babyName || 'Baby'}
-          babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
-          activities={activities}
-          suggestions={smartSuggestions}
-          onAddFeed={() => onAddActivity?.('feed')}
-          nightSleepStartHour={nightSleepStartHour}
-          nightSleepEndHour={nightSleepEndHour}
+          onLogActivity={onAddActivity}
+          ageBasedWakeWindow="2–2.5 hours"
         />
 
         {/* Zone 2: Smart Quick Actions */}

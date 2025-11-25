@@ -1,0 +1,194 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp, Moon, Milk, Clock } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+
+interface NextNeedHeroProps {
+  babyName: string;
+  babyAge?: number;
+  currentActivity: {
+    type: 'napping' | 'sleeping' | 'awake' | 'feeding';
+    duration: number; // minutes
+    statusText: string;
+    startTime: string;
+  } | null;
+  nextPrediction: {
+    activity: string;
+    timeRange: string;
+    countdown: string;
+    confidence: 'high' | 'medium' | 'low';
+  } | null;
+  onLogActivity: (type: 'feed' | 'nap') => void;
+  ageBasedWakeWindow?: string;
+}
+
+export const NextNeedHero = ({
+  babyName,
+  babyAge,
+  currentActivity,
+  nextPrediction,
+  onLogActivity,
+  ageBasedWakeWindow = "2–2.5 hours"
+}: NextNeedHeroProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  const firstName = babyName?.split(' ')[0] || 'Baby';
+  
+  // Generate contextual middle line based on current state
+  const getContextLine = () => {
+    if (!currentActivity) {
+      return "Log an activity to get personalized insights about what your baby needs next.";
+    }
+
+    if (currentActivity.type === 'awake' && nextPrediction?.activity.toLowerCase().includes('nap')) {
+      const awakeDurationHours = Math.floor(currentActivity.duration / 60);
+      const awakeDurationMins = currentActivity.duration % 60;
+      const awakeDisplay = awakeDurationHours > 0 
+        ? `${awakeDurationHours}h ${awakeDurationMins}m` 
+        : `${awakeDurationMins}m`;
+      
+      return `Most babies this age get sleepy after around ${ageBasedWakeWindow} awake. ${firstName}'s been up ${awakeDisplay}, so they may be ready for a nap soon.`;
+    }
+
+    if (currentActivity.type === 'napping' || currentActivity.type === 'sleeping') {
+      return `${firstName} is ${currentActivity.type === 'napping' ? 'napping' : 'sleeping'} right now. They've been asleep for ${Math.floor(currentActivity.duration / 60)}h ${currentActivity.duration % 60}m.`;
+    }
+
+    if (currentActivity.type === 'feeding') {
+      return `${firstName} is feeding right now. Once done, they'll likely need some awake time.`;
+    }
+
+    if (nextPrediction?.activity.toLowerCase().includes('feed')) {
+      return `Based on recent patterns, ${firstName} typically feeds ${nextPrediction.timeRange.toLowerCase()}.`;
+    }
+
+    return `${firstName} is doing great. Keep tracking activities to see personalized predictions.`;
+  };
+
+  const isAwake = currentActivity?.type === 'awake';
+  const shouldShowNapAction = isAwake && nextPrediction?.activity.toLowerCase().includes('nap');
+  const shouldShowFeedAction = nextPrediction?.activity.toLowerCase().includes('feed');
+
+  return (
+    <div className="mx-2 mb-6">
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="px-4 py-5">
+            {/* Top line */}
+            <h2 className="text-sm font-semibold text-foreground/90 mb-3">
+              Here's what your baby likely needs next.
+            </h2>
+
+            {/* Middle line */}
+            <p className="text-sm text-foreground/70 leading-relaxed mb-3">
+              {getContextLine()}
+            </p>
+
+            {/* Primary action */}
+            {shouldShowNapAction && (
+              <Button
+                onClick={() => onLogActivity('nap')}
+                variant="default"
+                size="sm"
+                className="w-full mb-3"
+              >
+                <Moon className="w-4 h-4 mr-2" />
+                Log nap now
+              </Button>
+            )}
+
+            {shouldShowFeedAction && !shouldShowNapAction && (
+              <Button
+                onClick={() => onLogActivity('feed')}
+                variant="default"
+                size="sm"
+                className="w-full mb-3"
+              >
+                <Milk className="w-4 h-4 mr-2" />
+                Log feed now
+              </Button>
+            )}
+
+            {/* Expand trigger */}
+            <CollapsibleTrigger asChild>
+              <button className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+                {isExpanded ? (
+                  <>
+                    Hide details
+                    <ChevronUp className="w-3 h-3" />
+                  </>
+                ) : (
+                  <>
+                    View details
+                    <ChevronDown className="w-3 h-3" />
+                  </>
+                )}
+              </button>
+            </CollapsibleTrigger>
+
+            {/* Collapsible details */}
+            <CollapsibleContent>
+              <div className="mt-4 pt-4 border-t border-border/30 space-y-4">
+                {/* Awake timer */}
+                {isAwake && currentActivity && (
+                  <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="w-4 h-4 text-primary" />
+                      <p className="text-xs font-medium text-foreground/80">Awake Timer</p>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">
+                      {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Since {currentActivity.startTime}
+                    </p>
+                  </div>
+                )}
+
+                {/* Current activity if not awake */}
+                {!isAwake && currentActivity && (
+                  <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
+                        <Moon className="w-4 h-4 text-primary" />
+                      )}
+                      {currentActivity.type === 'feeding' && (
+                        <Milk className="w-4 h-4 text-primary" />
+                      )}
+                      <p className="text-xs font-medium text-foreground/80">
+                        {currentActivity.type === 'napping' ? 'Napping' : 
+                         currentActivity.type === 'sleeping' ? 'Sleeping' : 'Feeding'}
+                      </p>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">
+                      {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Since {currentActivity.startTime}
+                    </p>
+                  </div>
+                )}
+
+                {/* Next feed prediction */}
+                {nextPrediction && shouldShowFeedAction && (
+                  <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Milk className="w-4 h-4 text-primary" />
+                      <p className="text-xs font-medium text-foreground/80">Expected Next Feed</p>
+                    </div>
+                    <p className="text-sm text-foreground">
+                      {nextPrediction.timeRange}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {nextPrediction.countdown}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CollapsibleContent>
+          </div>
+        </div>
+      </Collapsible>
+    </div>
+  );
+};
