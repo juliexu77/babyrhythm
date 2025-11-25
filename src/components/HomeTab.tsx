@@ -27,6 +27,7 @@ import { TodaysStory } from "@/components/home/TodaysStory";
 import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
 import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
 import { FirstActivityCelebration } from "@/components/FirstActivityCelebration";
+import { PrefillDayModal } from "@/components/PrefillDayModal";
 import { SchedulePreview } from "@/components/home/SchedulePreview";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
@@ -69,6 +70,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [selectedStoryDate, setSelectedStoryDate] = useState<string | null>(null);
   const [selectedStoryActivities, setSelectedStoryActivities] = useState<Activity[]>([]);
   const [showFirstActivityCelebration, setShowFirstActivityCelebration] = useState(false);
+  const [showPrefillModal, setShowPrefillModal] = useState(false);
   const [firstActivityType, setFirstActivityType] = useState<'feed' | 'nap' | 'diaper'>('feed');
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -127,27 +129,35 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const hasVisitedAllTabs = visitedTabs.has('home') && visitedTabs.has('trends') && 
                              visitedTabs.has('guide') && visitedTabs.has('log');
   
-  // Show educational content until user has logged at least one feed AND one sleep, OR 5+ total activities
+  // Show educational content until user has logged at least one feed AND one nap
   const hasFeed = activities.some(a => a.type === 'feed');
   const hasSleep = activities.some(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
-  const hasMinimumLogs = (hasFeed && hasSleep) || activities.length >= 5;
+  const hasMinimumLogs = hasFeed && hasSleep;
   const showEducationalContent = !hasMinimumLogs;
 
-  // Check if rhythm is unlocked
+  // Check if rhythm is unlocked - simplified to just needing 1 nap (aligns with learning progress)
   const napsCount = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length;
   const feedsCount = activities.filter(a => a.type === 'feed').length;
-  const isRhythmUnlocked = napsCount >= 4 && feedsCount >= 4;
+  const isRhythmUnlocked = napsCount >= 1;
 
-  // P1: Track first activity celebration
+  // P1: Track first activity celebration and offer prefill for new users
   useEffect(() => {
     const hasShownCelebration = localStorage.getItem('first_activity_celebrated') === 'true';
+    const hasShownPrefill = localStorage.getItem('prefill_offered') === 'true';
+    
     if (!hasShownCelebration && activities.length === 1) {
       const firstActivity = activities[0];
       setFirstActivityType(firstActivity.type as 'feed' | 'nap' | 'diaper');
       setShowFirstActivityCelebration(true);
       localStorage.setItem('first_activity_celebrated', 'true');
     }
-  }, [activities.length]);
+    
+    // Offer prefill after first activity celebration closes
+    if (!hasShownPrefill && activities.length === 1 && !showFirstActivityCelebration) {
+      setShowPrefillModal(true);
+      localStorage.setItem('prefill_offered', 'true');
+    }
+  }, [activities.length, showFirstActivityCelebration]);
 
   // P4: Pulse Guide tab after first nap
   useEffect(() => {
@@ -1404,6 +1414,23 @@ const lastDiaper = displayActivities
           onClose={() => setShowFirstActivityCelebration(false)}
           babyName={babyName}
           activityType={firstActivityType}
+        />
+
+        {/* Prefill Day Modal - shown after first activity */}
+        <PrefillDayModal
+          isOpen={showPrefillModal}
+          onClose={() => setShowPrefillModal(false)}
+          babyAgeMonths={babyAgeMonths}
+          onPrefill={(prefillActivities) => {
+            // Add all prefill activities
+            prefillActivities.forEach(activity => {
+              addActivity?.(activity.type, activity.details, new Date(), activity.time);
+            });
+            toast({
+              title: "Day prefilled!",
+              description: "Sample activities added. Edit or delete any as needed.",
+            });
+          }}
         />
 
         {/* P0: Schedule Preview after first nap */}

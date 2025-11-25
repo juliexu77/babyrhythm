@@ -125,7 +125,7 @@ export const RhythmUnlockedModal = ({ isOpen, onClose, babyName, totalLogs }: Rh
               Rhythm unlocked!
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Based on {name}'s last {totalLogs} logs, I've started recognizing their daily rhythm. You'll see more precise predictions as you keep logging.
+              I've started learning {name}'s patterns from your first nap log. As you continue logging, my predictions will get smarter and more personalized.
             </p>
           </div>
 
