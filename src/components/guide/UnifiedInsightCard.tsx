@@ -86,20 +86,6 @@ export const UnifiedInsightCard = ({
 
         {/* Content */}
         <div className="p-5 space-y-4">
-          {/* Baseline Context Banner - Prominent at top */}
-          {(baselineContext || currentPattern) && (
-            <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg space-y-1.5">
-              {currentPattern && (
-                <div className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-foreground font-medium">{currentPattern}</p>
-                </div>
-              )}
-              {baselineContext && (
-                <p className="text-xs text-muted-foreground pl-6">{baselineContext}</p>
-              )}
-            </div>
-          )}
         {/* What to Know - Expanded by default, observational insights */}
         {whatToKnow && whatToKnow.length > 0 && (() => {
           const isExpanded = expandedSections.has('know');
