@@ -33,6 +33,7 @@ interface RightNowStatusProps {
     onClick: () => void;
   }>;
   onAddFeed?: () => void;
+  onLogPrediction?: (type: 'feed' | 'nap') => void;
   nightSleepStartHour: number;
   nightSleepEndHour: number;
 }
@@ -49,6 +50,7 @@ export const RightNowStatus = ({
   activities,
   suggestions = [],
   onAddFeed,
+  onLogPrediction,
   nightSleepStartHour,
   nightSleepEndHour
 }: RightNowStatusProps) => {
@@ -98,7 +100,19 @@ export const RightNowStatus = ({
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
               What's Next
             </h3>
-            <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+            <button
+              onClick={() => {
+                if (onLogPrediction) {
+                  // Determine activity type from prediction text
+                  const activityType = nextPrediction.activity.toLowerCase().includes('nap') || 
+                                       nextPrediction.activity.toLowerCase().includes('sleep') 
+                    ? 'nap' 
+                    : 'feed';
+                  onLogPrediction(activityType);
+                }
+              }}
+              className="w-full p-3 bg-muted/20 hover:bg-muted/30 rounded-lg border border-border/30 transition-colors text-left active:scale-[0.98]"
+            >
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-medium text-foreground">
                   {nextPrediction.activity}
@@ -117,7 +131,7 @@ export const RightNowStatus = ({
                   {nextPrediction.countdown}
                 </p>
               </div>
-            </div>
+            </button>
           </div>
         )}
 

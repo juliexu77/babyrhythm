@@ -1547,6 +1547,7 @@ const lastDiaper = displayActivities
               description: `${isNightSleepFlag ? 'Sleep' : 'Nap'} timer continues`,
             });
           }}
+          onLogPrediction={(type) => onAddActivity(type)}
           onStartNap={() => {
             // Start a new nap with current time in correct 12-hour format
             const now = new Date();
