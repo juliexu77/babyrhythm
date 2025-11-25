@@ -19,13 +19,17 @@ const BabySetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
-  const [sleepWindow, setSleepWindow] = useState<[number, number]>([19, 7]); // [bedtime, wake] in 24h format
+  // Store as [bedtimeHour, bedtimeMinute, wakeHour, wakeMinute]
+  const [bedtimeHour, setBedtimeHour] = useState(19);
+  const [bedtimeMinute, setBedtimeMinute] = useState(0);
+  const [wakeHour, setWakeHour] = useState(7);
+  const [wakeMinute, setWakeMinute] = useState(0);
 
-  // Format hour to 12-hour time string
-  const formatHour = (hour: number) => {
+  // Format time with 5-minute intervals to 12-hour time string
+  const formatTime = (hour: number, minute: number) => {
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
-    return `${displayHour}:00 ${period}`;
+    return `${displayHour}:${String(minute).padStart(2, '0')} ${period}`;
   };
 
   // Redirect to auth if not logged in
@@ -76,8 +80,10 @@ const BabySetup = () => {
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
-          night_sleep_start_hour: sleepWindow[0],
-          night_sleep_end_hour: sleepWindow[1],
+          night_sleep_start_hour: bedtimeHour,
+          night_sleep_start_minute: bedtimeMinute,
+          night_sleep_end_hour: wakeHour,
+          night_sleep_end_minute: wakeMinute,
         })
         .eq('user_id', user.id);
 
@@ -161,12 +167,12 @@ const BabySetup = () => {
                     Sleep Schedule
                   </Label>
                   
-                  <div className="bg-accent/20 rounded-xl p-4 space-y-4">
+                    <div className="bg-accent/20 rounded-xl p-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="text-center flex-1">
                         <div className="text-xs text-muted-foreground mb-1">Bedtime</div>
                         <div className="text-2xl font-semibold text-foreground">
-                          {formatHour(sleepWindow[0])}
+                          {formatTime(bedtimeHour, bedtimeMinute)}
                         </div>
                       </div>
                       <div className="flex-shrink-0 px-4">
@@ -175,7 +181,7 @@ const BabySetup = () => {
                       <div className="text-center flex-1">
                         <div className="text-xs text-muted-foreground mb-1">Wake Time</div>
                         <div className="text-2xl font-semibold text-foreground">
-                          {formatHour(sleepWindow[1])}
+                          {formatTime(wakeHour, wakeMinute)}
                         </div>
                       </div>
                     </div>
@@ -184,34 +190,46 @@ const BabySetup = () => {
                       <div className="space-y-2">
                         <div className="text-xs text-muted-foreground">Adjust bedtime</div>
                         <Slider
-                          min={18}
-                          max={23}
+                          min={18 * 12}
+                          max={23 * 12 + 11}
                           step={1}
-                          value={[sleepWindow[0]]}
-                          onValueChange={(value) => setSleepWindow([value[0], sleepWindow[1]])}
+                          value={[bedtimeHour * 12 + Math.floor(bedtimeMinute / 5)]}
+                          onValueChange={(value) => {
+                            const totalSlots = value[0];
+                            const hour = Math.floor(totalSlots / 12);
+                            const minute = (totalSlots % 12) * 5;
+                            setBedtimeHour(hour);
+                            setBedtimeMinute(minute);
+                          }}
                           disabled={isLoading}
                           className="w-full"
                         />
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>6 PM</span>
-                          <span>11 PM</span>
+                          <span>6:00 PM</span>
+                          <span>11:55 PM</span>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="text-xs text-muted-foreground">Adjust wake time</div>
                         <Slider
-                          min={5}
-                          max={10}
+                          min={5 * 12}
+                          max={10 * 12 + 11}
                           step={1}
-                          value={[sleepWindow[1]]}
-                          onValueChange={(value) => setSleepWindow([sleepWindow[0], value[0]])}
+                          value={[wakeHour * 12 + Math.floor(wakeMinute / 5)]}
+                          onValueChange={(value) => {
+                            const totalSlots = value[0];
+                            const hour = Math.floor(totalSlots / 12);
+                            const minute = (totalSlots % 12) * 5;
+                            setWakeHour(hour);
+                            setWakeMinute(minute);
+                          }}
                           disabled={isLoading}
                           className="w-full"
                         />
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>5 AM</span>
-                          <span>10 AM</span>
+                          <span>5:00 AM</span>
+                          <span>10:55 AM</span>
                         </div>
                       </div>
                     </div>

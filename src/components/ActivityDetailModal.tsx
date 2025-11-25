@@ -58,14 +58,14 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
             {activity.details?.quantity && activity.details?.unit && (
               <div className="flex items-center gap-2">
                 <Droplets className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{t('amount')}: {activity.details.quantity} {activity.details.unit}</span>
+                <span className="text-sm break-words">{t('amount')}: {activity.details.quantity} {activity.details.unit}</span>
               </div>
             )}
             
             {activity.details?.note && (
               <div className="p-3 bg-muted/30 rounded-lg">
                 <p className="text-sm text-muted-foreground mb-1">{t('notesLabel')}:</p>
-                <p className="text-sm">{activity.details.note}</p>
+                <p className="text-sm break-words whitespace-pre-wrap">{activity.details.note}</p>
               </div>
             )}
           </div>
@@ -103,7 +103,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
             {activity.details?.note && (
               <div className="p-3 bg-muted/30 rounded-lg">
                 <p className="text-sm text-muted-foreground mb-1">{t('notesLabel')}:</p>
-                <p className="text-sm">{activity.details.note}</p>
+                <p className="text-sm break-words whitespace-pre-wrap">{activity.details.note}</p>
               </div>
             )}
           </div>
@@ -152,7 +152,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
             
             {activity.details?.note && (
               <div className="p-3 bg-muted/30 rounded-lg">
-                <p className="text-sm">{activity.details.note}</p>
+                <p className="text-sm break-words whitespace-pre-wrap">{activity.details.note}</p>
               </div>
             )}
           </div>

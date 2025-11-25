@@ -41,7 +41,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
-  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "solids" | "photo" | "sickday" | "">("");
+  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "solids" | "photo" | "">("");
   
   // Helper function to get exact current time
   const getCurrentTime = (date: Date = new Date()) => {
@@ -106,10 +106,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Solids state
   const [solidsDescription, setSolidsDescription] = useState("");
   const [allergens, setAllergens] = useState<string[]>([]);
-  
-  // Sick day state
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
-  const [sickNote, setSickNote] = useState("");
 
   // Load last used settings and handle editing
   useEffect(() => {
@@ -304,8 +300,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setSolidsDescription("");
     setAllergens([]);
     setNote("");
-    setSelectedSymptoms([]);
-    setSickNote("");
   };
 
   const startNapTimer = async () => {
@@ -522,24 +516,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         if (solidsDescription) details.solidDescription = solidsDescription;
         if (allergens.length > 0) details.allergens = allergens;
         break;
-      case "sickday":
-        details.noteText = [
-          selectedSymptoms.length > 0 ? `Under the weather: ${selectedSymptoms.map(id => {
-            const symptoms = [
-              { id: 'fever', label: 'Fever' },
-              { id: 'congested', label: 'Congested' },
-              { id: 'cough', label: 'Cough' },
-              { id: 'tummy', label: 'Tummy upset' },
-              { id: 'teething', label: 'Teething' },
-              { id: 'shots', label: 'Shots' },
-            ];
-            return symptoms.find(s => s.id === id)?.label;
-          }).filter(Boolean).join(', ')}` : '',
-          sickNote.trim()
-        ].filter(Boolean).join('\n');
-        details.isSickDay = true;
-        details.symptoms = selectedSymptoms;
-        break;
       case "photo":
         if (note) details.note = note;
         if (photoUrl) {
@@ -584,7 +560,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       } else {
         // Create new activity
         const newActivity: Omit<Activity, "id"> = {
-          type: activityType === "sickday" ? "note" : activityType as "feed" | "diaper" | "nap" | "note" | "solids" | "photo",
+          type: activityType as "feed" | "diaper" | "nap" | "note" | "solids" | "photo",
           time: activityType === "nap" ? startTime : time,
           details,
         };
@@ -627,7 +603,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       case "note": return <StickyNote className="h-4 w-4" />;
       case "solids": return <Carrot className="h-4 w-4" />;
       case "photo": return <Camera className="h-4 w-4" />;
-      case "sickday": return <Thermometer className="h-4 w-4" />;
       default: return null;
     }
   };
@@ -673,7 +648,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               {[
                 { type: "feed", icon: Baby, label: t('feeding') },
                 { type: "solids", icon: Carrot, label: t('solids') },
-                { type: "sickday", icon: Thermometer, label: "Sick day" },
                 { type: "nap", icon: Moon, label: t('sleep') },
                 { type: "diaper", icon: Droplet, label: t('diaper') },
                 { type: "note", icon: StickyNote, label: t('note') },
@@ -1093,62 +1067,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               </div>
             )}
 
-            {/* Sick Day Details */}
-            {activityType === "sickday" && (
-              <div className="space-y-4">
-                <TimeScrollPicker 
-                  value={time} 
-                  selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
-                />
-
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Symptoms</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { id: 'fever', label: 'Fever', icon: '🌡️' },
-                      { id: 'congested', label: 'Congested', icon: '🤧' },
-                      { id: 'cough', label: 'Cough', icon: '😷' },
-                      { id: 'tummy', label: 'Tummy upset', icon: '🤢' },
-                      { id: 'teething', label: 'Teething', icon: '🦷' },
-                      { id: 'shots', label: 'Shots', icon: '💉' },
-                    ].map((symptom) => (
-                      <Button
-                        key={symptom.id}
-                        type="button"
-                        variant={selectedSymptoms.includes(symptom.id) ? "default" : "outline"}
-                        size="sm"
-                        className="h-auto px-3 py-1.5 text-sm border-0"
-                        onClick={() => {
-                          if (selectedSymptoms.includes(symptom.id)) {
-                            setSelectedSymptoms(selectedSymptoms.filter(s => s !== symptom.id));
-                          } else {
-                            setSelectedSymptoms([...selectedSymptoms, symptom.id]);
-                          }
-                        }}
-                      >
-                        <span className="mr-1">{symptom.icon}</span>
-                        {symptom.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="sick-note" className="text-sm font-medium mb-2 block">Notes (optional)</Label>
-                  <Textarea
-                    id="sick-note"
-                    value={sickNote}
-                    onChange={(e) => setSickNote(e.target.value)}
-                    placeholder="Any additional details..."
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
-              </div>
-            )}
 
             {/* Photo Activity Details */}
             {activityType === "photo" && (

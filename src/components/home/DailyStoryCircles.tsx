@@ -36,8 +36,13 @@ export const DailyStoryCircles = ({
   const currentHour = today.getHours();
   const isStoryTime = currentHour >= nightSleepStartHour || currentHour < nightSleepEndHour;
 
-  // Don't show if no activities today OR if it's not story time
-  if (todayActivities.length === 0 || !isStoryTime) {
+  // Count feeds and naps to ensure story is meaningful
+  const feedCount = todayActivities.filter(a => a.type === 'feed').length;
+  const napCount = todayActivities.filter(a => a.type === 'nap').length;
+  const hasMinimumForStory = feedCount >= 1 && napCount >= 1;
+
+  // Don't show if no activities today OR if it's not story time OR insufficient data
+  if (todayActivities.length === 0 || !isStoryTime || !hasMinimumForStory) {
     return null;
   }
 
