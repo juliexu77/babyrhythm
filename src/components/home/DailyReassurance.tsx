@@ -4,7 +4,7 @@ import { getTodayActivities } from "@/utils/activityDateFilters";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { differenceInMinutes } from "date-fns";
-import { Brain } from "lucide-react";
+import { Brain, Moon, Milk, Sun, Sparkles } from "lucide-react";
 
 interface DailyReassuranceProps {
   activities: Activity[];
@@ -20,11 +20,11 @@ export const DailyReassurance = ({
   nightSleepEndHour
 }: DailyReassuranceProps) => {
   
-  const reassuranceMessage = useMemo(() => {
+  const { message: reassuranceMessage, iconType } = useMemo(() => {
     const todayActivities = getTodayActivities(activities);
     
     if (todayActivities.length === 0) {
-      return `Start logging to see how today unfolds.`;
+      return { message: `Start logging to see how today unfolds.`, iconType: 'sparkles' as const };
     }
 
     // Random selection helper
@@ -270,17 +270,17 @@ export const DailyReassurance = ({
     
     // Check cluster feeding first
     if (isClusterFeeding) {
-      return pick(messages.clusterFeeding);
+      return { message: pick(messages.clusterFeeding), iconType: 'feed' as const };
     }
 
     // Check first nap timing (earlier/later)
     if (todayNapStartTimes.length > 0 && recentNapStartTimes.length >= 3 && avgRecentFirstNapStart > 0) {
       const firstNapToday = todayNapStartTimes[0];
       if (firstNapToday < avgRecentFirstNapStart - 30) {
-        return pick(messages.napEarlier);
+        return { message: pick(messages.napEarlier), iconType: 'nap' as const };
       }
       if (firstNapToday > avgRecentFirstNapStart + 30) {
-        return pick(messages.napLater);
+        return { message: pick(messages.napLater), iconType: 'nap' as const };
       }
     }
 
@@ -288,10 +288,10 @@ export const DailyReassurance = ({
     if (todayNapDurations.length > 0 && recentNapDurations.length >= 5) {
       const firstNap = todayNapDurations[0];
       if (firstNap < avgRecentNapDuration * 0.7 && firstNap < 50) {
-        return pick(messages.napShorter);
+        return { message: pick(messages.napShorter), iconType: 'nap' as const };
       }
       if (firstNap > avgRecentNapDuration * 1.3) {
-        return pick(messages.napLonger);
+        return { message: pick(messages.napLonger), iconType: 'nap' as const };
       }
     }
 
@@ -302,43 +302,43 @@ export const DailyReassurance = ({
       const avgRecentFirstFeed = recentFirstFeedTimes.reduce((sum, t) => sum + t, 0) / recentFirstFeedTimes.length;
       
       if (firstFeedTodayMins < avgRecentFirstFeed - 45) {
-        return pick(messages.feedEarlier);
+        return { message: pick(messages.feedEarlier), iconType: 'feed' as const };
       }
       if (firstFeedTodayMins > avgRecentFirstFeed + 45) {
-        return pick(messages.feedLater);
+        return { message: pick(messages.feedLater), iconType: 'feed' as const };
       }
     }
 
     // Check for heavier feeds
     if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume > recentTotalVolume * 1.25) {
-      return pick(messages.feedsHeavier);
+      return { message: pick(messages.feedsHeavier), iconType: 'feed' as const };
     }
 
     // Check for lighter feeds
     if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume < recentTotalVolume * 0.7) {
-      return pick(messages.feedsLighter);
+      return { message: pick(messages.feedsLighter), iconType: 'feed' as const };
     }
 
     // Check wake windows longer
     if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow > avgRecentWakeWindow * 1.25) {
-      return pick(messages.wakeWindowsLonger);
+      return { message: pick(messages.wakeWindowsLonger), iconType: 'wake' as const };
     }
 
     // Check wake windows shorter
     if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow < avgRecentWakeWindow * 0.75) {
-      return pick(messages.wakeWindowsShorter);
+      return { message: pick(messages.wakeWindowsShorter), iconType: 'wake' as const };
     }
 
     // Check all naps shorter
     if (todayNapDurations.length >= 2 && recentNapDurations.length >= 5 && avgTodayNapDuration < avgRecentNapDuration * 0.75) {
-      return pick(messages.napShorter);
+      return { message: pick(messages.napShorter), iconType: 'nap' as const };
     }
 
     // Check growth spurt pattern (more feeds + longer naps)
     if (todayFeeds.length >= recentFeeds.length / 7 * 1.4 && 
         todayNapDurations.length > 0 && 
         avgTodayNapDuration > avgRecentNapDuration * 1.15) {
-      return pick(messages.growthSpurt);
+      return { message: pick(messages.growthSpurt), iconType: 'feed' as const };
     }
 
     // Check schedule alignment (everything within normal ranges)
@@ -349,23 +349,30 @@ export const DailyReassurance = ({
       Math.abs(todayTotalVolume - recentTotalVolume) / recentTotalVolume < 0.2;
 
     if (napAligned && feedAligned) {
-      return pick(messages.aligned);
+      return { message: pick(messages.aligned), iconType: 'sparkles' as const };
     }
 
     // Default fallback
     if (todayNaps.length > 0 || todayFeeds.length > 0) {
-      return pick(messages.fallback);
+      return { message: pick(messages.fallback), iconType: 'sparkles' as const };
     }
 
-    return `Start logging to see how today unfolds.`;
+    return { message: `Start logging to see how today unfolds.`, iconType: 'sparkles' as const };
     
   }, [activities, babyName, nightSleepStartHour, nightSleepEndHour]);
 
+  const IconComponent = {
+    nap: Moon,
+    feed: Milk,
+    wake: Sun,
+    sparkles: Sparkles,
+  }[iconType];
+
   return (
-    <div className="mx-2 mb-4">
-      <div className="px-3 py-2.5 rounded-xl bg-gradient-to-b from-primary/8 via-primary/5 to-primary/3 border border-border/10">
+    <div className="mx-2 mb-3">
+      <div className="px-3 py-2 rounded-xl bg-gradient-to-b from-primary/8 via-primary/5 to-primary/3 border border-border/10">
         <div className="flex items-start gap-2">
-          <Brain className="w-3.5 h-3.5 text-primary/60 mt-0.5 flex-shrink-0" />
+          <IconComponent className="w-3.5 h-3.5 text-primary/60 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-medium text-foreground/50 uppercase tracking-wider mb-0.5">
               Today's Overview
