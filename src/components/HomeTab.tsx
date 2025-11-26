@@ -1385,6 +1385,7 @@ const lastDiaper = displayActivities
           ongoingNap={passedOngoingNap}
           nightSleepStartHour={nightSleepStartHour}
           nightSleepEndHour={nightSleepEndHour}
+          babyBirthday={effectiveBabyBirthday}
         />
 
         {/* Today's Story Modal */}
