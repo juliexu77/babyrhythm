@@ -25,14 +25,21 @@ export const MetricSparkline = ({ data, color = "hsl(var(--primary))" }: MetricS
   return (
     <ResponsiveContainer width="100%" height={32}>
       <LineChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 4 }}>
+        <defs>
+          <linearGradient id={`sparklineGradient-${color}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
         <YAxis hide domain={[yMin, yMax]} />
         <Line
-          type="monotone"
+          type="monotoneX"
           dataKey="value"
           stroke={color}
-          strokeWidth={2.5}
+          strokeWidth={2}
           dot={false}
           isAnimationActive={false}
+          fill={`url(#sparklineGradient-${color})`}
         />
       </LineChart>
     </ResponsiveContainer>

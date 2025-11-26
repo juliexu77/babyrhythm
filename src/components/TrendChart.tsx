@@ -655,10 +655,10 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
             {/* Average line */}
             {feedSummary.avgVolume > 0 && (
               <div 
-                className="absolute left-0 right-0 border-t-2 border-dashed border-muted-foreground/30 z-10"
+                className="absolute left-0 right-0 border-t border-dashed border-muted-foreground/15 z-10"
                 style={{ bottom: `${avgFeedLine}%` }}
               >
-                <span className="absolute -left-1 -top-3 text-xs text-muted-foreground/60 font-medium">Avg</span>
+                <span className="absolute -left-1 -top-3 text-xs text-muted-foreground/50 font-medium">Avg</span>
               </div>
             )}
             
@@ -670,7 +670,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                       <div className="w-full h-1 bg-muted/20 rounded-full" />
                     ) : (
                       <button
-                        className="bg-gradient-feed rounded-xl w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
+                        className="bg-gradient-feed rounded-lg w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
                         style={{ height: `${(day.value / maxFeedValue) * 100}%`, minHeight: '40px' }}
                         onClick={() => setSelectedDetail(selectedDetail === `feed-${index}` ? null : `feed-${index}`)}
                       >

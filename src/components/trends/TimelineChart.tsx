@@ -251,6 +251,64 @@ export const TimelineChart = ({
     }
     
     const pathData = pathSegments.join(' ');
+    
+    // Generate area fill path - close to bottom of chart
+    const areaSegments: string[] = [];
+    let currentAreaPoints: {x: number, y: number}[] = [];
+    
+    chartData.forEach((d, i) => {
+      if (d.value === 0) {
+        // End current area segment if we have one
+        if (currentAreaPoints.length > 0) {
+          const firstX = currentAreaPoints[0].x;
+          const lastX = currentAreaPoints[currentAreaPoints.length - 1].x;
+          const areaPath = smoothCurve(currentAreaPoints) + 
+            ` L ${lastX} ${chartHeight} L ${firstX} ${chartHeight} Z`;
+          areaSegments.push(areaPath);
+          currentAreaPoints = [];
+        }
+      } else {
+        const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
+        const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
+        currentAreaPoints.push({ x, y });
+      }
+    });
+    
+    // Add final area segment if exists
+    if (currentAreaPoints.length > 0) {
+      const firstX = currentAreaPoints[0].x;
+      const lastX = currentAreaPoints[currentAreaPoints.length - 1].x;
+      const areaPath = smoothCurve(currentAreaPoints) + 
+        ` L ${lastX} ${chartHeight} L ${firstX} ${chartHeight} Z`;
+      areaSegments.push(areaPath);
+    }
+    
+    const areaData = areaSegments.join(' ');
+    
+    // Detect milestones: significant improvements in the data
+    const milestones: { index: number; label: string; value: number }[] = [];
+    const improvementThreshold = 0.15; // 15% improvement
+    
+    for (let i = 2; i < chartData.length; i++) {
+      const current = chartData[i].value;
+      const previous = chartData[i - 1].value;
+      const twoPrevious = chartData[i - 2].value;
+      
+      if (current > 0 && previous > 0 && twoPrevious > 0) {
+        const recentAvg = (previous + twoPrevious) / 2;
+        const improvement = (current - recentAvg) / recentAvg;
+        
+        // Check if this is a significant improvement
+        if (improvement >= improvementThreshold) {
+          const improvementPercent = Math.round(improvement * 100);
+          milestones.push({
+            index: i,
+            label: `+${improvementPercent}%`,
+            value: current
+          });
+        }
+      }
+    }
 
     // Generate cohort range paths
     const cohortRangePath = cohortRanges && cohortRanges.length > 0 ? (() => {
@@ -282,29 +340,38 @@ export const TimelineChart = ({
       <TooltipProvider>
         <div className="p-4">
           <svg width="100%" height={height + 40} className="overflow-visible">
+            {/* Gradient definition for area fill */}
+            <defs>
+              <linearGradient id={`areaGradient-${metricType}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+                <stop offset="50%" stopColor={color} stopOpacity="0.12" />
+                <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+              </linearGradient>
+            </defs>
+            
             {/* Cohort range filled area - only show if showBaseline is true */}
             {showBaseline && cohortRangePath && (
               <>
                 <path
                   d={`${cohortRangePath.topPath} L ${cohortRangePath.bottomPoints[cohortRangePath.bottomPoints.length - 1].x} ${cohortRangePath.bottomPoints[cohortRangePath.bottomPoints.length - 1].y} ${cohortRangePath.bottomPath.replace('M', 'L')} Z`}
                   fill="hsl(var(--primary))"
-                  opacity={0.15}
+                  opacity={0.08}
                 />
               {/* Top line */}
               <path
                 d={cohortRangePath.topPath}
                 fill="none"
                 stroke="hsl(var(--primary))"
-                strokeWidth="1.5"
-                opacity="0.5"
+                strokeWidth="1"
+                opacity="0.3"
               />
               {/* Bottom line */}
               <path
                 d={smoothCurve(cohortRangePath.bottomPoints)}
                 fill="none"
                 stroke="hsl(var(--primary))"
-                strokeWidth="1.5"
-                opacity="0.5"
+                strokeWidth="1"
+                opacity="0.3"
               />
               </>
             )}
@@ -328,19 +395,27 @@ export const TimelineChart = ({
                   x2={yAxisLabelWidth + chartWidth}
                   y2={y}
                   stroke="hsl(var(--border))"
-                  strokeWidth="1"
-                  opacity="0.3"
+                  strokeWidth="0.5"
+                  opacity="0.08"
                 />
               </g>
             );
           })}
+
+          {/* Area under curve with gradient */}
+          {areaData && (
+            <path
+              d={areaData}
+              fill={`url(#areaGradient-${metricType})`}
+            />
+          )}
 
           {/* Data line */}
           <path
             d={pathData}
             fill="none"
             stroke={color}
-            strokeWidth="2.5"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -381,6 +456,47 @@ export const TimelineChart = ({
                   </div>
                 </TooltipContent>
               </Tooltip>
+            );
+          })}
+
+          {/* Milestone annotations - mark improvements */}
+          {milestones.map((milestone) => {
+            const x = yAxisLabelWidth + (milestone.index / (chartData.length - 1)) * chartWidth;
+            const y = (1 - (milestone.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
+            
+            return (
+              <g key={`milestone-${milestone.index}`}>
+                {/* Vertical indicator line */}
+                <line
+                  x1={x}
+                  y1={y - 8}
+                  x2={x}
+                  y2={y - 20}
+                  stroke={color}
+                  strokeWidth="1.5"
+                  strokeDasharray="2,2"
+                  opacity="0.6"
+                />
+                {/* Improvement badge */}
+                <g transform={`translate(${x}, ${y - 28})`}>
+                  <rect
+                    x="-18"
+                    y="-8"
+                    width="36"
+                    height="16"
+                    rx="8"
+                    fill={color}
+                    opacity="0.9"
+                  />
+                  <text
+                    textAnchor="middle"
+                    y="3"
+                    className="text-[9px] font-semibold fill-background"
+                  >
+                    {milestone.label}
+                  </text>
+                </g>
+              </g>
             );
           })}
 
