@@ -402,39 +402,39 @@ export const CurrentMomentArc = ({
   return (
     <div className="px-0 pb-2 relative z-10">
       <div className="relative w-full flex flex-col items-center">
-        {/* Large subtle arc with minimal gradient */}
+        {/* Large prominent arc with peachy-pink gradient */}
         <svg
-          viewBox="0 0 400 200"
+          viewBox="0 0 400 220"
           className="w-full"
           style={{ maxWidth: '100%' }}
         >
           <defs>
-            {/* Very subtle daytime gradient - barely visible cream */}
+            {/* Daytime gradient: soft peachy-cream to pink/mauve */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(30 15% 90%)" stopOpacity="0.25" />
-              <stop offset="50%" stopColor="hsl(25 18% 88%)" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="hsl(20 15% 90%)" stopOpacity="0.25" />
+              <stop offset="0%" stopColor="hsl(25 35% 90%)" stopOpacity="0.7" />
+              <stop offset="50%" stopColor="hsl(15 40% 85%)" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="hsl(340 30% 80%)" stopOpacity="0.85" />
             </linearGradient>
             
-            {/* Very subtle nighttime gradient - barely visible lavender */}
+            {/* Nighttime gradient: soft indigo to lavender */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(240 15% 85%)" stopOpacity="0.2" />
-              <stop offset="50%" stopColor="hsl(250 12% 83%)" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="hsl(260 15% 85%)" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="hsl(240 25% 75%)" stopOpacity="0.5" />
+              <stop offset="50%" stopColor="hsl(250 20% 78%)" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="hsl(260 18% 80%)" stopOpacity="0.6" />
             </linearGradient>
           </defs>
           
-          {/* Large filled semicircle - very subtle */}
+          {/* Large filled semicircle */}
           <path
-            d="M 10 190 A 190 190 0 0 1 390 190 L 390 200 L 10 200 Z"
+            d="M 20 210 A 180 180 0 0 1 380 210 L 380 220 L 20 220 Z"
             fill={`url(#${isDay ? 'day' : 'night'}Gradient)`}
             stroke="none"
           />
         </svg>
         
         {/* State text positioned in center of the arc */}
-        <div className="absolute" style={{ top: '45%', transform: 'translateY(-50%)' }}>
-          <p className="text-[26px] font-normal text-foreground tracking-tight text-center leading-tight">
+        <div className="absolute" style={{ top: '50%', transform: 'translateY(-50%)' }}>
+          <p className="text-[28px] font-normal text-foreground tracking-tight text-center leading-tight">
             {currentState}
           </p>
         </div>
