@@ -75,22 +75,22 @@ export const NextNeedHero = ({
   return (
     <div className="mx-2 mb-6">
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+      <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="px-4 py-5">
             {/* Top line */}
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <ChevronRight className="w-3.5 h-3.5" />
+            <h3 className="text-xs font-medium text-primary-foreground/90 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <ChevronRight className="w-3.5 h-3.5 text-primary-foreground/80" />
               What's Next
             </h3>
 
             {/* Middle line */}
-            <p className="text-sm text-foreground/70 leading-relaxed">
+            <p className="text-sm text-primary-foreground/85 leading-relaxed">
               {getContextLine()}
             </p>
 
             {/* Expand trigger */}
             <CollapsibleTrigger asChild>
-              <button className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
+              <button className="w-full flex items-center justify-center gap-2 text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors py-1">
                 {isExpanded ? (
                   <>
                     Hide details
@@ -107,18 +107,18 @@ export const NextNeedHero = ({
 
             {/* Collapsible details */}
             <CollapsibleContent>
-              <div className="mt-4 pt-4 border-t border-border/30 space-y-4">
+              <div className="mt-4 pt-4 border-t border-primary-foreground/20 space-y-4">
                 {/* Awake timer */}
                 {isAwake && currentActivity && (
-                  <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+                  <div className="p-3 bg-primary-foreground/10 rounded-lg border border-primary-foreground/20">
                     <div className="flex items-center gap-2 mb-2">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <p className="text-xs font-medium text-foreground/80">Time awake</p>
+                      <Clock className="w-4 h-4 text-primary-foreground/80" />
+                      <p className="text-xs font-medium text-primary-foreground/85">Time awake</p>
                     </div>
-                    <p className="text-2xl font-num font-bold text-foreground">
+                    <p className="text-2xl font-num font-bold text-primary-foreground">
                       {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-primary-foreground/70 mt-1">
                       Awake since {currentActivity.startTime}
                     </p>
                   </div>
@@ -126,23 +126,23 @@ export const NextNeedHero = ({
 
                 {/* Current activity if not awake */}
                 {!isAwake && currentActivity && (
-                  <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+                  <div className="p-3 bg-primary-foreground/10 rounded-lg border border-primary-foreground/20">
                     <div className="flex items-center gap-2 mb-2">
                       {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
-                        <Moon className="w-4 h-4 text-primary" />
+                        <Moon className="w-4 h-4 text-primary-foreground/80" />
                       )}
                       {currentActivity.type === 'feeding' && (
-                        <Milk className="w-4 h-4 text-primary" />
+                        <Milk className="w-4 h-4 text-primary-foreground/80" />
                       )}
-                      <p className="text-xs font-medium text-foreground/80">
+                      <p className="text-xs font-medium text-primary-foreground/85">
                         {currentActivity.type === 'napping' ? 'Napping' : 
                          currentActivity.type === 'sleeping' ? 'Sleeping' : 'Feeding'}
                       </p>
                     </div>
-                    <p className="text-2xl font-num font-bold text-foreground">
+                    <p className="text-2xl font-num font-bold text-primary-foreground">
                       {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-primary-foreground/70 mt-1">
                       Since {currentActivity.startTime}
                     </p>
                   </div>
@@ -150,15 +150,15 @@ export const NextNeedHero = ({
 
                 {/* Next feed prediction */}
                 {nextPrediction && shouldShowFeedAction && (
-                  <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+                  <div className="p-3 bg-primary-foreground/10 rounded-lg border border-primary-foreground/20">
                     <div className="flex items-center gap-2 mb-2">
-                      <Milk className="w-4 h-4 text-primary" />
-                      <p className="text-xs font-medium text-foreground/80">Next feeding</p>
+                      <Milk className="w-4 h-4 text-primary-foreground/80" />
+                      <p className="text-xs font-medium text-primary-foreground/85">Next feeding</p>
                     </div>
-                    <p className="text-sm text-foreground">
+                    <p className="text-sm text-primary-foreground">
                       Usually around {nextPrediction.timeRange}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-primary-foreground/70 mt-1">
                       {nextPrediction.countdown}
                     </p>
                   </div>
