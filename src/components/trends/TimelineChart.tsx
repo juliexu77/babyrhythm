@@ -3,14 +3,22 @@ import { format, subDays, startOfDay, endOfDay, startOfWeek, eachWeekOfInterval,
 import { useMemo, useState } from "react";
 import { useTimelineCohortRanges } from "@/hooks/useTimelineCohortRanges";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
-import { TimelineDetailModal } from "./TimelineDetailModal";
 import { baselineWakeWindows, getFeedingGuidanceForAge } from "@/utils/ageAppropriateBaselines";
+import { isDaytimeNap } from "@/utils/napClassification";
+import { normalizeVolume } from "@/utils/unitConversion";
+import { getActivitiesByDate } from "@/utils/activityDateFilters";
+import { Moon, Sun, Milk, Clock } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface TimelineChartProps {
   title: string;
@@ -93,6 +101,7 @@ export const TimelineChart = ({
 }: TimelineChartProps) => {
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState<number | null>(null);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   const { chartData, weeks, days } = useMemo(() => {
@@ -358,7 +367,10 @@ export const TimelineChart = ({
                     className="cursor-pointer transition-all"
                     onMouseEnter={() => setHoveredPoint(i)}
                     onMouseLeave={() => setHoveredPoint(null)}
-                    onClick={() => setSelectedWeekIndex(i)}
+                    onClick={() => {
+                      setSelectedWeekIndex(i);
+                      setPopoverOpen(true);
+                    }}
                     style={{ pointerEvents: 'all' }}
                   />
                 </TooltipTrigger>
@@ -398,9 +410,81 @@ export const TimelineChart = ({
   const selectedDate = selectedWeekIndex !== null 
     ? (timeRange === '1week' ? days[selectedWeekIndex] : weeks[selectedWeekIndex])
     : null;
-  const selectedDateEnd = selectedDate 
-    ? (timeRange === '1week' ? selectedDate : endOfWeek(selectedDate, { weekStartsOn: 1 }))
-    : null;
+
+  // Get daily data for popover
+  const parseTimeToMinutes = (timeStr: string) => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return 0;
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const period = match[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
+
+  const getDailyData = (date: Date) => {
+    const dayActivities = getActivitiesByDate(activities, date);
+    
+    switch (metricType) {
+      case 'nightSleep': {
+        const nightSleeps = dayActivities.filter(a => 
+          a.type === 'nap' && !isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
+        );
+        let totalMinutes = 0;
+        nightSleeps.forEach(sleep => {
+          if (sleep.details?.startTime && sleep.details?.endTime) {
+            const start = parseTimeToMinutes(sleep.details.startTime);
+            let end = parseTimeToMinutes(sleep.details.endTime);
+            if (end < start) end += 24 * 60;
+            totalMinutes += (end - start);
+          }
+        });
+        return { value: totalMinutes / 60, unit: 'h', icon: Moon, activities: nightSleeps };
+      }
+      
+      case 'dayNaps': {
+        const dayNaps = dayActivities.filter(a => 
+          a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
+        );
+        return { value: dayNaps.length, unit: ' naps', icon: Sun, activities: dayNaps };
+      }
+      
+      case 'feedVolume': {
+        const feeds = dayActivities.filter(a => a.type === 'feed');
+        let total = 0;
+        feeds.forEach(feed => {
+          if (feed.details?.quantity) {
+            const normalized = normalizeVolume(feed.details.quantity, feed.details.unit);
+            total += Math.min(normalized.value, 20);
+          }
+        });
+        return { value: total, unit: 'oz', icon: Milk, activities: feeds };
+      }
+      
+      case 'wakeWindows': {
+        const dayNaps = dayActivities.filter(a => 
+          a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && 
+          a.details?.startTime && a.details?.endTime
+        );
+        const windows: number[] = [];
+        for (let i = 1; i < dayNaps.length; i++) {
+          const prevEnd = parseTimeToMinutes(dayNaps[i - 1].details.endTime!);
+          const currStart = parseTimeToMinutes(dayNaps[i].details.startTime!);
+          const window = currStart - prevEnd;
+          if (window > 0 && window < 360) windows.push(window);
+        }
+        const avgWindow = windows.length > 0 ? windows.reduce((a, b) => a + b, 0) / windows.length / 60 : 0;
+        return { value: avgWindow, unit: 'h', icon: Clock, activities: dayNaps };
+      }
+      
+      default:
+        return { value: 0, unit: '', icon: Clock, activities: [] };
+    }
+  };
+
+  const selectedData = selectedDate ? getDailyData(selectedDate) : null;
+  const SelectedIcon = selectedData?.icon;
   
   // Get warm explanation
   const explanation = getChartExplanation(metricType, babyBirthday);
@@ -424,18 +508,41 @@ export const TimelineChart = ({
         )}
       </div>
       
-      {selectedDate && selectedDateEnd && (
-        <TimelineDetailModal
-          open={selectedWeekIndex !== null}
-          onOpenChange={(open) => !open && setSelectedWeekIndex(null)}
-          weekStart={selectedDate}
-          weekEnd={selectedDateEnd}
-          activities={activities}
-          metricType={metricType}
-          nightSleepStartHour={nightSleepStartHour}
-          nightSleepEndHour={nightSleepEndHour}
-        />
-      )}
+      <Popover open={popoverOpen && selectedData !== null} onOpenChange={setPopoverOpen}>
+        <PopoverTrigger asChild>
+          <div className="absolute inset-0 pointer-events-none" />
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-3" align="center" side="top">
+          {selectedDate && selectedData && SelectedIcon && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <SelectedIcon className="w-4 h-4 text-muted-foreground" />
+                  <span className="font-medium text-sm">{format(selectedDate, 'EEE, MMM d')}</span>
+                </div>
+                <span className="text-sm font-semibold">
+                  {selectedData.value > 0 ? `${selectedData.value.toFixed(1)}${selectedData.unit}` : '-'}
+                </span>
+              </div>
+              
+              {selectedData.activities.length > 0 && (
+                <div className="space-y-1 pl-6 pt-1 border-t border-border">
+                  {selectedData.activities.map((activity, idx) => (
+                    <div key={idx} className="text-xs text-muted-foreground">
+                      {activity.details?.startTime && activity.details?.endTime && (
+                        <span>{activity.details.startTime} - {activity.details.endTime}</span>
+                      )}
+                      {activity.type === 'feed' && activity.details?.quantity && (
+                        <span> • {activity.details.quantity} {activity.details.unit}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
     </>
   );
 };
