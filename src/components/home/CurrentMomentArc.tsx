@@ -393,10 +393,11 @@ export const CurrentMomentArc = ({
           style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient: deep plum to grey (left to right) */}
+            {/* Daytime gradient: sunrise blush to pink to sunset orange/yellow (left to right) */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(280 40% 35%)" stopOpacity="1" />
-              <stop offset="100%" stopColor="hsl(0 0% 55%)" stopOpacity="1" />
+              <stop offset="0%" stopColor="hsl(340 45% 60%)" stopOpacity="1" />
+              <stop offset="50%" stopColor="hsl(330 50% 65%)" stopOpacity="1" />
+              <stop offset="100%" stopColor="hsl(30 60% 60%)" stopOpacity="1" />
             </linearGradient>
             
             {/* Nighttime gradient: bright indigo to light gray (left to right) */}
@@ -431,7 +432,7 @@ export const CurrentMomentArc = ({
           <g transform={`translate(${triangleX}, ${triangleY}) rotate(${(arcAngle * 180 / Math.PI) - 90})`}>
             <foreignObject x="-10" y="-10" width="20" height="20">
               {isDay ? (
-                <Sun className="w-5 h-5 text-[hsl(280,40%,35%)]" />
+                <Sun className="w-5 h-5 text-[hsl(340,45%,60%)]" />
               ) : (
                 <Moon className="w-5 h-5 text-[hsl(230,50%,45%)]" />
               )}
