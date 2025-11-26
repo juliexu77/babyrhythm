@@ -2,6 +2,7 @@ import { Activity } from "@/components/ActivityCard";
 import { differenceInMinutes } from "date-fns";
 import { getActivityEventDate } from "@/utils/activityDate";
 import { Sun, Moon } from "lucide-react";
+import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/ageAppropriateBaselines";
 
 interface CurrentMomentArcProps {
   activities: Activity[];
@@ -9,6 +10,7 @@ interface CurrentMomentArcProps {
   ongoingNap?: Activity | null;
   nightSleepStartHour: number;
   nightSleepEndHour: number;
+  babyBirthday?: string;
 }
 
 // Get the most recent meaningful activity
@@ -322,7 +324,8 @@ export const CurrentMomentArc = ({
   babyName,
   ongoingNap,
   nightSleepStartHour,
-  nightSleepEndHour
+  nightSleepEndHour,
+  babyBirthday
 }: CurrentMomentArcProps) => {
   const now = new Date();
   const currentHour = now.getHours();
@@ -331,33 +334,64 @@ export const CurrentMomentArc = ({
   
   const currentState = getCurrentState(activities, ongoingNap || null, nightSleepStartHour, nightSleepEndHour);
   
-  // Calculate position along the arc (0 = start, 1 = end of wake/sleep cycle)
+  // NEW LOGIC: Calculate arc position based on wake window battery
   const calculateArcPosition = (): number => {
-    const currentTimeInMinutes = currentHour * 60 + currentMinutes;
-    
-    if (isDay) {
-      const dayStartMinutes = nightSleepEndHour * 60;
-      const dayEndMinutes = nightSleepStartHour * 60;
-      const dayDuration = nightSleepStartHour > nightSleepEndHour 
-        ? dayEndMinutes - dayStartMinutes
-        : (24 * 60) - dayStartMinutes + dayEndMinutes;
+    // If baby is asleep (nap in progress), track nap progress
+    if (ongoingNap?.details?.startTime) {
+      const [hours, minutes] = ongoingNap.details.startTime.split(':').map(Number);
+      const startDate = new Date(now);
+      startDate.setHours(hours, minutes, 0, 0);
+      const napMinutes = differenceInMinutes(now, startDate);
       
-      let minutesSinceDayStart = currentTimeInMinutes - dayStartMinutes;
-      if (minutesSinceDayStart < 0) minutesSinceDayStart += 24 * 60;
+      // Target nap length: 1.5 hours for naps, use it as the recommended window
+      const targetNapMinutes = 90;
+      const progress = napMinutes / targetNapMinutes;
       
-      return Math.min(Math.max(minutesSinceDayStart / dayDuration, 0), 1);
-    } else {
-      const nightStartMinutes = nightSleepStartHour * 60;
-      const nightEndMinutes = nightSleepEndHour * 60;
-      const nightDuration = nightSleepEndHour > nightSleepStartHour
-        ? nightEndMinutes - nightStartMinutes
-        : (24 * 60) - nightStartMinutes + nightEndMinutes;
-      
-      let minutesSinceNightStart = currentTimeInMinutes - nightStartMinutes;
-      if (minutesSinceNightStart < 0) minutesSinceNightStart += 24 * 60;
-      
-      return Math.min(Math.max(minutesSinceNightStart / nightDuration, 0), 1);
+      // Clamp between 0 and 1.3 (allow slight overfill)
+      return Math.min(Math.max(progress, 0), 1.3);
     }
+    
+    // If baby is awake, track wake window battery
+    // Find the last wake event (most recent nap end time)
+    const lastSleep = activities
+      .filter(a => a.type === 'nap' && a.details?.endTime)
+      .sort((a, b) => {
+        const aTime = new Date(a.loggedAt || '').getTime();
+        const bTime = new Date(b.loggedAt || '').getTime();
+        return bTime - aTime;
+      })[0];
+    
+    if (lastSleep?.details?.endTime) {
+      const [hours, minutes] = lastSleep.details.endTime.split(':').map(Number);
+      const wakeDate = getActivityEventDate(lastSleep);
+      wakeDate.setHours(hours, minutes, 0, 0);
+      const minutesElapsed = differenceInMinutes(now, wakeDate);
+      
+      // Get recommended wake window based on baby's age
+      let recommendedWindow = 150; // Default: 2.5 hours
+      if (babyBirthday) {
+        const ageInWeeks = calculateAgeInWeeks(babyBirthday);
+        const wakeWindowData = getWakeWindowForAge(ageInWeeks);
+        if (wakeWindowData?.wakeWindows?.[0]) {
+          // Parse wake window string like "2-2.5hrs" or "1.5-2hrs"
+          const windowStr = wakeWindowData.wakeWindows[0];
+          const match = windowStr.match(/([\d.]+)(?:-[\d.]+)?h/);
+          if (match) {
+            const hours = parseFloat(match[1]);
+            recommendedWindow = hours * 60;
+          }
+        }
+      }
+      
+      // Calculate progress (0 = just woke, 0.8 = sweet spot, 1.0 = end of window, >1.0 = overtired)
+      const progress = minutesElapsed / recommendedWindow;
+      
+      // Clamp between 0 and 1.5 (allow overfill visualization)
+      return Math.min(Math.max(progress, 0), 1.5);
+    }
+    
+    // Fallback: no recent sleep data, assume mid-window
+    return 0.5;
   };
   
   const arcPosition = calculateArcPosition();
@@ -371,8 +405,11 @@ export const CurrentMomentArc = ({
   const iconX = centerX - Math.cos(arcAngle) * arcRadius;
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
   
-  // Check if in twilight zone (last 20% of arc)
-  const inTwilightZone = arcPosition >= 0.8;
+  // Check if in twilight zone (sweet spot at 80% of wake window)
+  const inTwilightZone = arcPosition >= 0.8 && arcPosition <= 1.0;
+  
+  // Check if overtired (beyond 100% of wake window)
+  const isOvertired = arcPosition > 1.0;
   
   // Create path for trailing fill (from start to current position)
   const createTrailPath = (): string => {

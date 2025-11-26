@@ -417,7 +417,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             <div className="flex items-center gap-2">
               <Sun className="w-4 h-4 text-primary" />
               <div className="text-left">
-                <h3 className="text-sm font-medium text-foreground">Day Naps</h3>
+                <h3 className="text-sm font-serif font-medium text-foreground">Day Naps</h3>
                 <p className="text-xs text-muted-foreground">See the gradual consolidation that happens with age</p>
               </div>
             </div>
@@ -456,7 +456,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             <div className="flex items-center gap-2">
               <Milk className="w-4 h-4 text-primary" />
               <div className="text-left">
-                <h3 className="text-sm font-medium text-foreground">Feed Volume</h3>
+                <h3 className="text-sm font-serif font-medium text-foreground">Feed Volume</h3>
                 <p className="text-xs text-muted-foreground">Feeding amounts stabilize naturally in the mid-months</p>
               </div>
             </div>
@@ -495,7 +495,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary" />
               <div className="text-left">
-                <h3 className="text-sm font-medium text-foreground">Wake Windows</h3>
+                <h3 className="text-sm font-serif font-medium text-foreground">Wake Windows</h3>
                 <p className="text-xs text-muted-foreground">Wake times stretch as babies grow</p>
               </div>
             </div>
