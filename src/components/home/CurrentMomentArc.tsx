@@ -406,16 +406,6 @@ export const CurrentMomentArc = ({
               <stop offset="50%" stopColor="hsl(230 30% 55%)" stopOpacity="1" />
               <stop offset="100%" stopColor="hsl(0 0% 65%)" stopOpacity="1" />
             </linearGradient>
-            
-            {/* Bottom fade mask - fade only below the arc (y=100) */}
-            <linearGradient id="bottomFade" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopOpacity="1" />
-              <stop offset="95%" stopOpacity="1" />
-              <stop offset="100%" stopOpacity="0" />
-            </linearGradient>
-            <mask id="arcMask">
-              <rect x="0" y="0" width="200" height="110" fill="url(#bottomFade)" />
-            </mask>
           </defs>
           
           {/* Semicircle arc - always right-side up */}
@@ -425,7 +415,6 @@ export const CurrentMomentArc = ({
             stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
             strokeWidth="8.5"
             strokeLinecap="round"
-            mask="url(#arcMask)"
           />
           
           {/* Sun/Moon indicator showing current position in day/night - rotated to point outward */}
