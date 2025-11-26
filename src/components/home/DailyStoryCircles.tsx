@@ -76,7 +76,7 @@ export const DailyStoryCircles = ({
         )}
         
         {/* Text */}
-        <span className="relative flex-1 text-left text-base font-medium text-foreground z-10">
+        <span className="relative flex-1 text-left text-base font-serif font-medium text-foreground z-10">
           Today's Story
         </span>
         
