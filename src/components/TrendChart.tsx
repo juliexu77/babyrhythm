@@ -457,7 +457,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   return (
     <div className="px-4 py-2.5 space-y-4">
       {/* Weekly Trends with Sparklines */}
-      <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+      <div className="bg-card/30 backdrop-blur rounded-xl p-5 border border-border/50">
         <div className="flex items-center justify-between pb-2 mb-4 border-b border-border/30">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" />
@@ -574,7 +574,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Level 1: Summary Cards */}
         <div className="grid grid-cols-2 gap-4">
           {/* Average Volume Card */}
-          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+          <div className="bg-card/30 backdrop-blur rounded-xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
                 <Milk className="w-4 h-4 text-primary" />
@@ -601,7 +601,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           </div>
 
           {/* Feed Count Card */}
-          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+          <div className="bg-card/30 backdrop-blur rounded-xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
                 <ActivityIcon className="w-4 h-4 text-primary" />
@@ -629,7 +629,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         </div>
 
         {/* Level 2: Volume Chart */}
-        <div ref={feedChartRef} className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50 transition-all hover:shadow-lg">
+        <div ref={feedChartRef} className="bg-card/30 backdrop-blur rounded-xl p-6 border border-border/50 transition-all hover:shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <h3 className="text-sm font-medium text-foreground">
@@ -708,7 +708,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Sleep Summary Cards */}
         <div className="grid grid-cols-2 gap-4">
           {/* Total Sleep */}
-          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+          <div className="bg-card/30 backdrop-blur rounded-xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
                 <Moon className="w-4 h-4 text-primary" />
@@ -735,7 +735,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           </div>
 
           {/* Nap Length Change */}
-          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+          <div className="bg-card/30 backdrop-blur rounded-xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
                 <Moon className="w-4 h-4 text-primary" />

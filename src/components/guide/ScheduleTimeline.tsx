@@ -390,7 +390,7 @@ export const ScheduleTimeline = ({
       
       {/* Transition insight row - matching insights card style */}
       {transitionWindow && (
-        <div className="flex items-center gap-2.5 px-5 py-2 bg-accent/30 rounded-3xl mb-3 border border-border">
+        <div className="flex items-center gap-2.5 px-5 py-2 bg-accent/30 rounded-xl mb-3 border border-border">
           <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
           <p className="text-xs text-primary font-medium">
             Transitioning between {transitionWindow.from} and {transitionWindow.to} naps

@@ -19,7 +19,7 @@ const leftTabs = [
   
   const rightTabs = [
     { id: "trends", label: "Trends", icon: TrendingUp },
-    { id: "insights", label: "Log", icon: List },
+    { id: "insights", label: "History", icon: List },
   ];
 
   return (

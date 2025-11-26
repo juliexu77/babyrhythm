@@ -77,7 +77,7 @@ export const EmailInvite = ({ inviteLink, babyName }: EmailInviteProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full h-12 rounded-2xl">
+        <Button variant="outline" className="w-full h-12 rounded-lg">
           <Mail className="w-4 h-4 mr-2" />
           Send Email Invite
         </Button>
