@@ -472,28 +472,33 @@ export const CurrentMomentArc = ({
           <circle
             cx={iconX}
             cy={iconY}
-            r="20"
+            r="24"
             fill={isDay ? "url(#sunGlow)" : "url(#moonGlow)"}
           />
           
-          {/* Icon (Sun or Moon) */}
+          {/* Icon - Solid filled circle */}
           <g transform={`translate(${iconX}, ${iconY})`}>
-            <circle
-              r="12"
-              fill="hsl(var(--background))"
-              stroke={isDay ? "hsl(45 85% 55%)" : "hsl(240 30% 75%)"}
-              strokeWidth="2"
-            />
             {isDay ? (
-              <Sun className="w-5 h-5" style={{ 
-                transform: 'translate(-10px, -10px)',
-                color: 'hsl(45 85% 55%)'
-              }} />
+              <circle
+                r="10"
+                fill="hsl(45 85% 55%)"
+                style={{
+                  filter: 'drop-shadow(0 0 8px hsla(45, 90%, 60%, 0.5))'
+                }}
+              />
             ) : (
-              <Moon className="w-5 h-5" style={{ 
-                transform: 'translate(-10px, -10px)',
-                color: 'hsl(240 30% 75%)'
-              }} />
+              <>
+                <circle
+                  r="12"
+                  fill="hsl(var(--background))"
+                  stroke="hsl(240 30% 75%)"
+                  strokeWidth="2"
+                />
+                <Moon className="w-5 h-5" style={{ 
+                  transform: 'translate(-10px, -10px)',
+                  color: 'hsl(240 30% 75%)'
+                }} />
+              </>
             )}
           </g>
           

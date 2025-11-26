@@ -385,7 +385,8 @@ export const TimelineChart = ({
                   x={yAxisLabelWidth - 8}
                   y={y + 4}
                   textAnchor="end"
-                  className="text-[10px] fill-muted-foreground"
+                  className="text-[10px] font-sans fill-muted-foreground"
+                  opacity="0.6"
                 >
                   {yAxisFormatter(tick)}
                 </text>
@@ -415,7 +416,7 @@ export const TimelineChart = ({
             d={pathData}
             fill="none"
             stroke={color}
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -435,7 +436,7 @@ export const TimelineChart = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={isHovered ? "6" : "4"}
+                    r={isHovered ? "5" : "3"}
                     fill={color}
                     stroke="hsl(var(--background))"
                     strokeWidth="2"
