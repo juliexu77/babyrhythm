@@ -69,20 +69,24 @@ const getCurrentState = (
         return "Just fell asleep";
       }
       
-      // Delightful variations based on duration and time
+      // Delightful variations based on duration first
       if (napMinutes < 20) {
         return "Quick snooze";
       } else if (napMinutes > 90) {
         return "Long snooze";
       }
       
-      // Time-based delightful variations
-      if (hours < 12) {
+      // Time-based delightful variations (use current hour, not start time hour)
+      if (currentHour >= 5 && currentHour < 12) {
         return "Morning snooze";
-      } else if (hours >= 15 && hours < 18) {
+      } else if (currentHour >= 15 && currentHour < 18) {
         return "Cat nap";
-      } else {
+      } else if (currentHour >= 12 && currentHour < 17) {
         return "Afternoon nap";
+      } else if (currentHour >= 19 || currentHour < 5) {
+        return "Night sleep";
+      } else {
+        return "Nap in progress";
       }
     }
     return "Nap in progress";
