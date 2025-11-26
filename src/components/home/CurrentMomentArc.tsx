@@ -65,18 +65,22 @@ const getCurrentState = (
       startDate.setHours(hours, minutes, 0, 0);
       const napMinutes = differenceInMinutes(now, startDate);
       
-      // Check if we're in the night sleep window
+      // Check if the sleep started in the night window (this is night sleep, not a nap)
+      const startHour = hours;
+      const sleepStartedAtNight = !isDaytime(startHour, nightSleepStartHour, nightSleepEndHour);
+      
+      // Check if we're currently in the night sleep window
       const isInNightWindow = !isDay;
       
       if (napMinutes < 5) {
-        if (isInNightWindow) {
+        if (isInNightWindow || sleepStartedAtNight) {
           return "Down for the night";
         }
         return "Just fell asleep";
       }
       
-      // If in night sleep window, show night sleep messages
-      if (isInNightWindow) {
+      // If sleep started at night OR currently in night window, show night sleep messages
+      if (isInNightWindow || sleepStartedAtNight) {
         return "Soundly asleep";
       }
       
