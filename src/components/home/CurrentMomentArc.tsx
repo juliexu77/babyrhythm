@@ -27,11 +27,11 @@ const getMostRecentActivity = (activities: Activity[]): Activity | null => {
 // Determine if we're in daytime or nighttime
 const isDaytime = (currentHour: number, nightSleepStartHour: number, nightSleepEndHour: number): boolean => {
   if (nightSleepEndHour > nightSleepStartHour) {
-    // Normal case: e.g., 19:00 to 7:00
-    return currentHour >= nightSleepEndHour && currentHour < nightSleepStartHour;
-  } else {
-    // Wrapped case: e.g., 22:00 to 6:00
+    // Unusual case: daytime sleep (e.g., sleep 10am-6pm, awake 6pm-10am)
     return currentHour >= nightSleepEndHour || currentHour < nightSleepStartHour;
+  } else {
+    // Normal overnight case: e.g., sleep 7pm-7am, awake 7am-7pm
+    return currentHour >= nightSleepEndHour && currentHour < nightSleepStartHour;
   }
 };
 
