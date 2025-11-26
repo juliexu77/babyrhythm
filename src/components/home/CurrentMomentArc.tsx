@@ -331,9 +331,53 @@ export const CurrentMomentArc = ({
 }: CurrentMomentArcProps) => {
   const now = new Date();
   const currentHour = now.getHours();
+  const currentMinutes = now.getMinutes();
   const isDay = isDaytime(currentHour, nightSleepStartHour, nightSleepEndHour);
   
   const currentState = getCurrentState(activities, ongoingNap || null, nightSleepStartHour, nightSleepEndHour);
+  
+  // Calculate position along the arc (0 to 1, where 0 is start of day/night and 1 is end)
+  const calculateArcPosition = (): number => {
+    const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+    
+    if (isDay) {
+      // Daytime: from nightSleepEndHour to nightSleepStartHour
+      const dayStartMinutes = nightSleepEndHour * 60;
+      const dayEndMinutes = nightSleepStartHour * 60;
+      const dayDuration = nightSleepStartHour > nightSleepEndHour 
+        ? dayEndMinutes - dayStartMinutes
+        : (24 * 60) - dayStartMinutes + dayEndMinutes;
+      
+      let minutesSinceDayStart = currentTimeInMinutes - dayStartMinutes;
+      if (minutesSinceDayStart < 0) minutesSinceDayStart += 24 * 60;
+      
+      return Math.min(Math.max(minutesSinceDayStart / dayDuration, 0), 1);
+    } else {
+      // Nighttime: from nightSleepStartHour to nightSleepEndHour
+      const nightStartMinutes = nightSleepStartHour * 60;
+      const nightEndMinutes = nightSleepEndHour * 60;
+      const nightDuration = nightSleepEndHour > nightSleepStartHour
+        ? nightEndMinutes - nightStartMinutes
+        : (24 * 60) - nightStartMinutes + nightEndMinutes;
+      
+      let minutesSinceNightStart = currentTimeInMinutes - nightStartMinutes;
+      if (minutesSinceNightStart < 0) minutesSinceNightStart += 24 * 60;
+      
+      return Math.min(Math.max(minutesSinceNightStart / nightDuration, 0), 1);
+    }
+  };
+  
+  const arcPosition = calculateArcPosition();
+  
+  // Calculate triangle position on the arc
+  // Arc goes from angle 180° (left) to 0° (right) on a semicircle
+  const arcAngle = Math.PI - (arcPosition * Math.PI); // 180° to 0°
+  const arcRadius = 80;
+  const centerX = 100;
+  const centerY = 100;
+  
+  const triangleX = centerX + Math.cos(arcAngle) * arcRadius;
+  const triangleY = centerY - Math.sin(arcAngle) * arcRadius;
   
   return (
     <div className="px-4 pb-0">
@@ -385,6 +429,13 @@ export const CurrentMomentArc = ({
             strokeWidth="8.5"
             strokeLinecap="round"
             mask={`url(#${isDay ? 'day' : 'night'}Mask)`}
+          />
+          
+          {/* Triangle indicator showing current position in day/night */}
+          <polygon
+            points={`${triangleX},${triangleY - 8} ${triangleX - 4},${triangleY - 2} ${triangleX + 4},${triangleY - 2}`}
+            fill={isDay ? "hsl(264 28% 50%)" : "hsl(230 50% 55%)"}
+            className="transition-all duration-1000"
           />
         </svg>
         
