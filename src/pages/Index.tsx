@@ -863,7 +863,7 @@ const ongoingNap = (() => {
                               <div className="space-y-2">
                                 {/* Date Header with Filter */}
                                 <div className="flex items-center justify-between border-b border-transparent pb-1 mb-2">
-                                  <h3 className="text-base font-sans font-medium text-foreground dark:font-bold">
+                                  <h3 className="text-base font-serif font-semibold text-foreground">
                                     {displayDate}
                                   </h3>
                                   
@@ -1243,7 +1243,7 @@ return (
             
             {/* Center - Tab name */}
             <div className="flex-1 flex justify-center">
-              <h1 className="text-base font-sans font-bold text-foreground">
+              <h1 className="text-base font-serif font-bold text-foreground">
                 {activeTab === 'home' && 'Home'}
                 {activeTab === 'helper' && 'Rhythm'}
                 {activeTab === 'trends' && 'Trends'}

@@ -62,22 +62,23 @@ const getActivityIcon = (type: string) => {
   }
 };
 
-const getActivityGradient = (type: string) => {
+// Color tinting for icons based on type
+const getIconColorClass = (type: string) => {
   switch (type) {
-    case "feed":
-      return "bg-gradient-feed";
-    case "diaper":
-      return "bg-gradient-diaper";
     case "nap":
-      return "bg-gradient-nap";
-    case "note":
-      return "bg-gradient-note";
+      return "text-[hsl(260,50%,45%)]"; // Deep purple
+    case "feed":
+      return "text-[hsl(15,70%,50%)]"; // Terracotta/warm orange
+    case "diaper":
+      return "text-[hsl(145,30%,45%)]"; // Sage green
     case "solids":
-      return "bg-gradient-primary";
+      return "text-[hsl(30,65%,50%)]"; // Amber
+    case "note":
+      return "text-[hsl(220,15%,50%)]"; // Neutral grey
     case "photo":
-      return "bg-gradient-primary";
+      return "text-[hsl(190,50%,45%)]"; // Soft teal
     default:
-      return "bg-gradient-primary";
+      return "text-muted-foreground";
   }
 };
 
@@ -113,64 +114,78 @@ const calculateNapDuration = (startTime: string, endTime: string): string => {
     if (durationMinutes >= 60) {
       const hours = Math.floor(durationMinutes / 60);
       const minutes = durationMinutes % 60;
-      return minutes > 0 ? `${hours}h ${minutes}min` : `${hours}h`;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
     }
     
-    return `${durationMinutes}min`;
+    return `${durationMinutes}m`;
   } catch (error) {
     return 'unknown duration';
   }
 };
 
-const getPersonalizedActivityText = (activity: Activity, babyName: string = "Baby", t: (key: string) => string) => {
+// New: Get value (bold) and descriptor (lighter) for smart text formatting
+const getActivityValueAndDescriptor = (activity: Activity, t: (key: string) => string): { value: string; descriptor: string } => {
   switch (activity.type) {
     case "feed":
-      const { feedType, quantity, unit, minutesLeft, minutesRight, solidDescription, isDreamFeed } = activity.details;
-      let feedText = "";
+      const { feedType, quantity, unit, minutesLeft, minutesRight, isDreamFeed } = activity.details;
       
       if (feedType === "bottle" && quantity && unit) {
-        feedText = `${babyName} ${t('drank')} ${quantity} ${unit}`;
+        return {
+          value: `${quantity} ${unit}`,
+          descriptor: isDreamFeed ? `Formula (${t('dreamFeed')})` : "Formula"
+        };
       } else if (feedType === "nursing") {
         const leftTime = minutesLeft ? parseInt(minutesLeft) : 0;
         const rightTime = minutesRight ? parseInt(minutesRight) : 0;
         const totalTime = leftTime + rightTime;
         
         if (totalTime > 0) {
-          feedText = `${babyName} ${t('nursed')} ${totalTime} ${t('minTotal')}`;
+          return {
+            value: `${totalTime} min`,
+            descriptor: isDreamFeed ? `Nursing (${t('dreamFeed')})` : "Nursing"
+          };
         } else {
-          feedText = `${babyName} ${t('nursed')}`;
+          return {
+            value: "Nursed",
+            descriptor: isDreamFeed ? `(${t('dreamFeed')})` : ""
+          };
         }
       } else {
-        feedText = `${babyName} ${t('hadAFeeding')}`;
+        return {
+          value: "Feed",
+          descriptor: isDreamFeed ? `(${t('dreamFeed')})` : ""
+        };
       }
       
-      // Add dream feed indicator
-      return isDreamFeed ? `${feedText} (${t('dreamFeed')})` : feedText;
     case "diaper":
       const type = activity.details.diaperType;
       if (type === "wet") {
-        return `${babyName} ${t('hadAWetDiaper')}`;
+        return { value: "Wet", descriptor: "Diaper" };
       } else if (type === "poopy") {
-        return `${babyName} ${t('hadAPoopDiaper')}`;
+        return { value: "Poopy", descriptor: "Diaper" };
       } else if (type === "both") {
-        return `${babyName} ${t('hadAWetAndPoopDiaper')}`;
+        return { value: "Wet & Poopy", descriptor: "Diaper" };
       }
-      return `${babyName} ${t('hadADiaperChange')}`;
+      return { value: "Diaper", descriptor: "Change" };
+      
     case "nap":
       if (activity.details.startTime && activity.details.endTime) {
         const duration = calculateNapDuration(activity.details.startTime, activity.details.endTime);
-        return `${babyName} ${t('slept')} ${duration}`;
+        return { value: duration, descriptor: activity.details.isNightSleep ? "Night sleep" : "Nap" };
       } else if (activity.details.startTime && !activity.details.endTime) {
-        return `${babyName} ${t('isSleeping')} (${t('startedAt')} ${activity.details.startTime})`;
+        return { value: "Sleeping", descriptor: `Started ${activity.details.startTime}` };
       }
-      return `${babyName} ${t('tookANap')}`;
+      return { value: "Nap", descriptor: "" };
+      
     case "note":
-      return activity.details.note || `${babyName} ${t('note')}`;
+      return { 
+        value: "Note", 
+        descriptor: activity.details.note ? activity.details.note.substring(0, 30) + (activity.details.note.length > 30 ? "..." : "") : ""
+      };
+      
     case "solids":
       const allergensArray = (activity.details as any)?.allergens || [];
-      let solidsText = activity.details.solidDescription 
-        ? `${babyName} ${t('ate')}: ${activity.details.solidDescription}`
-        : `${babyName} ${t('ateSolids')}`;
+      let solidsDescriptor = activity.details.solidDescription || "Solids";
       
       if (allergensArray.length > 0) {
         const allergenLabels = allergensArray.map((id: string) => {
@@ -187,19 +202,28 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
           };
           return allergenMap[id] || id;
         }).join(', ');
-        solidsText += ` • Allergens: ${allergenLabels}`;
+        solidsDescriptor += ` • ${allergenLabels}`;
       }
-      return solidsText;
+      
+      return {
+        value: activity.details.solidDescription || "Solids",
+        descriptor: allergensArray.length > 0 ? `Allergens: ${allergensArray.join(', ')}` : "Meal"
+      };
+      
     case "photo":
-      return activity.details.note || `${babyName} ${t('photo')}`;
+      return { 
+        value: "Photo", 
+        descriptor: activity.details.note || "Memory captured"
+      };
+      
     default:
-      return `${babyName} ${t('activity')}`;
+      return { value: "Activity", descriptor: "" };
   }
 };
 
 export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: ActivityCardProps) => {
   const { t } = useLanguage();
-  const activityText = getPersonalizedActivityText(activity, babyName, t);
+  const { value, descriptor } = getActivityValueAndDescriptor(activity, t);
 
   const handleClick = () => {
     if (onEdit) {
@@ -215,33 +239,40 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   };
 
   return (
-    <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
-      {/* Timeline line */}
-      <div className="absolute left-[18px] top-4 bottom-0 w-0.5 bg-border group-last:hidden"></div>
+    <div className="relative flex items-center gap-3 py-2 group hover:bg-accent/30 rounded-md px-2 transition-colors">
+      {/* Timeline line - thin vertical line connecting icons */}
+      <div className="absolute left-[22px] top-6 bottom-0 w-px bg-border/40 group-last:hidden"></div>
       
-      {/* Timeline marker */}
-      <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
+      {/* Icon - no background circle, just colored icon */}
+      <div className={`relative z-10 flex-shrink-0 w-5 h-5 flex items-center justify-center ${getIconColorClass(activity.type)}`}>
         {getActivityIcon(activity.type)}
       </div>
       
-      {/* Content - clickable with wrapping text */}
-      <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
+      {/* Content - clickable with smart text formatting */}
+      <div className="flex-1 flex items-center justify-between min-w-0 gap-3">
         <button
           onClick={handleClick}
-          className="flex-1 text-left min-w-0"
+          className="flex-1 text-left min-w-0 flex items-baseline gap-2"
         >
-          <p className="text-sm text-foreground font-medium break-words hover:text-primary transition-colors">
-            {activityText}
-          </p>
-        </button>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs font-num text-muted-foreground whitespace-nowrap">
-            {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
-              ? activity.details.startTime  // Show just start time for ongoing naps
-              : activity.time  // Show full time or time range for completed activities
-            }
+          {/* Value - Bold */}
+          <span className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+            {value}
           </span>
-        </div>
+          {/* Descriptor - Lighter */}
+          {descriptor && (
+            <span className="text-sm text-muted-foreground truncate">
+              {descriptor}
+            </span>
+          )}
+        </button>
+        
+        {/* Timestamp - aligned with tabular-nums */}
+        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap tabular-nums">
+          {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
+            ? activity.details.startTime  // Show just start time for ongoing naps
+            : activity.time  // Show full time or time range for completed activities
+          }
+        </span>
       </div>
     </div>
   );
