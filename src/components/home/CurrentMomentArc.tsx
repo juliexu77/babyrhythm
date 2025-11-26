@@ -303,8 +303,8 @@ export const CurrentMomentArc = ({
   const currentState = getCurrentState(activities, ongoingNap || null, nightSleepStartHour, nightSleepEndHour);
   
   return (
-    <div className="px-4 pb-1">
-      <div className="relative w-full flex flex-col items-center py-8">
+    <div className="px-4 pb-0">
+      <div className="relative w-full flex flex-col items-center py-2">
         {/* Arc SVG */}
         <svg
           viewBox="0 0 200 110"
@@ -312,22 +312,26 @@ export const CurrentMomentArc = ({
           style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient (flows around the arc) */}
+            {/* Daytime gradient with richer colors */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.5" />
+              <stop offset="25%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="hsl(var(--pp-lavender))" stopOpacity="1" />
+              <stop offset="75%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.5" />
             </linearGradient>
             
-            {/* Nighttime gradient (darker, more muted) */}
+            {/* Nighttime gradient with richer colors */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(264 20% 45%)" stopOpacity="0.3" />
-              <stop offset="50%" stopColor="hsl(264 20% 45%)" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="hsl(264 20% 45%)" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="hsl(264 20% 45%)" stopOpacity="0.4" />
+              <stop offset="25%" stopColor="hsl(264 20% 45%)" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="hsl(264 20% 45%)" stopOpacity="0.8" />
+              <stop offset="75%" stopColor="hsl(264 20% 45%)" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="hsl(264 20% 45%)" stopOpacity="0.4" />
             </linearGradient>
           </defs>
           
-          {/* True semicircle arc using SVG arc path */}
+          {/* True semicircle arc with thicker stroke */}
           <path
             d={isDay 
               ? "M 20 100 A 80 80 0 0 1 180 100"  // Daytime: semicircle arc upward
@@ -335,13 +339,18 @@ export const CurrentMomentArc = ({
             }
             fill="none"
             stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
-            strokeWidth="3"
+            strokeWidth="5"
             strokeLinecap="round"
           />
         </svg>
         
-        {/* State text */}
-        <p className="text-xs text-muted-foreground tracking-wide text-center mt-1 font-medium">
+        {/* State text positioned inside the arc */}
+        <p className="absolute text-xs text-muted-foreground tracking-wide text-center font-medium" 
+           style={{ 
+             top: isDay ? '60%' : '30%',
+             left: '50%',
+             transform: 'translateX(-50%)'
+           }}>
           {currentState}
         </p>
       </div>
