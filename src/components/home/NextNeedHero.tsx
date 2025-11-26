@@ -62,7 +62,7 @@ export const NextNeedHero = ({
     }
 
     if (nextPrediction?.activity.toLowerCase().includes('feed')) {
-      return `Based on what we've seen, ${firstName} usually gets hungry ${nextPrediction.timeRange.toLowerCase()}.`;
+      return `Based on what we've seen, ${firstName} usually gets hungry ${nextPrediction.timeRange}.`;
     }
 
     return `${firstName} is doing great! Keep logging activities and we'll learn their rhythm together.`;

@@ -401,7 +401,7 @@ export const CurrentMomentArc = ({
   const clampedPosition = Math.min(arcPosition, 1.0);
   const arcAngle = Math.PI * (1 - clampedPosition); // π to 0 (left to right)
   const arcRadius = 180;
-  const centerX = 200;
+  const centerX = 230; // Adjusted for 30px padding
   const centerY = 210;
   
   const iconX = centerX - Math.cos(arcAngle) * arcRadius;
@@ -436,11 +436,11 @@ export const CurrentMomentArc = ({
   
   return (
     <div className="px-0 pb-2 relative z-10">
-      <div className="relative w-full flex flex-col items-center">
+      <div className="relative w-full flex flex-col items-center px-8">
         <svg
-          viewBox="0 0 400 240"
+          viewBox="0 0 460 240"
           className="w-full"
-          style={{ maxWidth: '100%' }}
+          style={{ maxWidth: '100%', overflow: 'visible' }}
         >
           <defs>
             {/* Daytime gradients */}
@@ -476,10 +476,10 @@ export const CurrentMomentArc = ({
               <stop offset="100%" stopColor="hsl(255 22% 75%)" stopOpacity="0.45" />
             </linearGradient>
             
-            {/* Icon glows */}
+            {/* Icon glows - warm honey color */}
             <radialGradient id="sunGlow">
-              <stop offset="0%" stopColor="hsl(45 90% 60%)" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="hsl(45 90% 60%)" stopOpacity="0" />
+              <stop offset="0%" stopColor="#FFD580" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#FFD580" stopOpacity="0" />
             </radialGradient>
             
             <radialGradient id="moonGlow">
@@ -496,7 +496,7 @@ export const CurrentMomentArc = ({
           
           {/* Base arc path */}
           <path
-            d="M 20 210 A 180 180 0 0 1 380 210"
+            d="M 50 210 A 180 180 0 0 1 410 210"
             fill="none"
             stroke={isDay ? "url(#dayBaseGradient)" : "url(#nightBaseGradient)"}
             strokeWidth="8"
@@ -506,7 +506,7 @@ export const CurrentMomentArc = ({
           {/* Twilight zone (sweet spot at 80-100%) */}
           {inTwilightZone && isDay && !isOvertired && (
             <path
-              d="M 308 210 A 180 180 0 0 1 380 210"
+              d="M 338 210 A 180 180 0 0 1 410 210"
               fill="none"
               stroke="url(#dayTwilightGradient)"
               strokeWidth="8"
@@ -517,7 +517,7 @@ export const CurrentMomentArc = ({
           {/* Overtired zone (>100% of wake window) */}
           {isOvertired && isDay && (
             <path
-              d="M 308 210 A 180 180 0 0 1 380 210"
+              d="M 338 210 A 180 180 0 0 1 410 210"
               fill="none"
               stroke="url(#overtiredGradient)"
               strokeWidth="10"
@@ -545,11 +545,11 @@ export const CurrentMomentArc = ({
             {isDay ? (
               <circle
                 r="10"
-                fill={isOvertired ? "hsl(0 70% 55%)" : "hsl(45 85% 55%)"}
+                fill={isOvertired ? "hsl(0 70% 55%)" : "#FFB347"}
                 style={{
                   filter: isOvertired 
                     ? 'drop-shadow(0 0 8px hsla(0, 70%, 60%, 0.6))' 
-                    : 'drop-shadow(0 0 8px hsla(45, 90%, 60%, 0.5))'
+                    : 'drop-shadow(0 0 10px rgba(255, 213, 128, 0.6))'
                 }}
               />
             ) : (
@@ -571,7 +571,7 @@ export const CurrentMomentArc = ({
           {/* Zone indicator text */}
           {isOvertired && isDay && (
             <text
-              x="340"
+              x="370"
               y="225"
               textAnchor="middle"
               className="text-[9px] font-semibold"
@@ -582,7 +582,7 @@ export const CurrentMomentArc = ({
           )}
           {inTwilightZone && isDay && !isOvertired && (
             <text
-              x="340"
+              x="370"
               y="225"
               textAnchor="middle"
               className="text-[9px] font-medium fill-muted-foreground"

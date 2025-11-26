@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { differenceInMinutes, format, addMinutes } from 'date-fns';
+import { differenceInMinutes, format, addMinutes, subMinutes } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { Moon, Milk, Sun } from 'lucide-react';
 import { Activity } from '@/components/ActivityCard';
@@ -7,6 +7,28 @@ import { usePredictionEngine } from '@/hooks/usePredictionEngine';
 import { useNightSleepWindow } from '@/hooks/useNightSleepWindow';
 import { isDaytimeNap, isNightSleep } from '@/utils/napClassification';
 import { getActivityEventDateString } from '@/utils/activityDate';
+
+// Helper: Round time to nearest 5 minutes
+const roundToNearest5Minutes = (date: Date): Date => {
+  const minutes = date.getMinutes();
+  const rounded = Math.round(minutes / 5) * 5;
+  const result = new Date(date);
+  result.setMinutes(rounded);
+  result.setSeconds(0);
+  result.setMilliseconds(0);
+  return result;
+};
+
+// Helper: Create conversational time range (e.g., "5:40 – 6:10 PM")
+const createTimeRange = (centerTime: Date, marginMinutes: number = 15): string => {
+  const startTime = roundToNearest5Minutes(subMinutes(centerTime, marginMinutes));
+  const endTime = roundToNearest5Minutes(addMinutes(centerTime, marginMinutes));
+  
+  const startFormatted = format(startTime, 'h:mm');
+  const endFormatted = format(endTime, 'h:mm a');
+  
+  return `${startFormatted} – ${endFormatted}`;
+};
 
 interface CurrentActivityState {
   type: 'napping' | 'sleeping' | 'awake' | 'feeding';
@@ -295,7 +317,7 @@ export const useHomeTabIntelligence = (
         
         return {
           activity: 'Expected to wake',
-          timeRange: `${format(wakeTime, 'h:mm a')} ± 15 min`,
+          timeRange: `likely ${createTimeRange(wakeTime, 15)}`,
           countdown: minutesUntil > 0 ? `in ${minutesUntil} min` : 'any moment',
           confidence: prediction.confidence
         };
@@ -335,7 +357,7 @@ export const useHomeTabIntelligence = (
           
           return {
             activity: 'Next Feed',
-            timeRange: `${format(feedTime, 'h:mm a')} ± 15 min`,
+            timeRange: `between ${createTimeRange(feedTime, 15)}`,
             countdown,
             confidence: prediction.confidence
           };
@@ -357,7 +379,7 @@ export const useHomeTabIntelligence = (
         
         return {
           activity: 'Next Feed',
-          timeRange: `${format(feedTime, 'h:mm a')} ± 15 min`,
+          timeRange: `between ${createTimeRange(feedTime, 15)}`,
           countdown,
           confidence: prediction.confidence
         };
@@ -382,7 +404,7 @@ export const useHomeTabIntelligence = (
       
       return {
         activity: 'Next Feed',
-        timeRange: `${format(feedTime, 'h:mm a')} ± 15 min`,
+        timeRange: `between ${createTimeRange(feedTime, 15)}`,
         countdown,
         confidence: prediction.confidence
       };
@@ -438,7 +460,7 @@ export const useHomeTabIntelligence = (
       
       return {
         activity: 'Next Nap Window',
-        timeRange: `${format(napTime, 'h:mm a')} ± 20 min`,
+        timeRange: `between ${createTimeRange(napTime, 20)}`,
         countdown,
         confidence: prediction.confidence
       };
