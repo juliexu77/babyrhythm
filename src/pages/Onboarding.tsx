@@ -44,7 +44,7 @@ const Onboarding = () => {
 
           {/* Welcome Message */}
           <div className="space-y-8">
-            <h1 className="text-[22px] md:text-[36px] font-medium tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
+            <h1 className="text-[22px] md:text-[36px] font-serif font-medium tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
               Where intuition meets intelligence
             </h1>
             <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal mt-8 text-foreground/80">

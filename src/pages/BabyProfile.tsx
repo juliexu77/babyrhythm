@@ -183,7 +183,7 @@ export const BabyProfile = ({ onClose }: { onClose?: () => void }) => {
             </div>
             
             <div className="text-center">
-              <h2 className="text-2xl font-bold">{household?.baby_name || 'Baby'}</h2>
+              <h2 className="text-2xl font-serif font-bold">{household?.baby_name || 'Baby'}</h2>
               <p className="text-muted-foreground mt-1">{getBabyAge() || 'Age not set'}</p>
             </div>
           </div>

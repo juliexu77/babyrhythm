@@ -543,7 +543,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
 
   return (
     <main className="min-h-screen bg-white text-black print:bg-white print:text-black">
-      <div className="max-w-4xl mx-auto px-8 py-12 pb-16 print:p-8 print:pb-32 print:page-break" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <div className="max-w-4xl mx-auto px-8 py-12 pb-16 print:p-8 print:pb-32 print:page-break font-sans">
         {/* Page Header - Repeats on each page */}
         <style>{`
           @media print {
@@ -592,7 +592,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
               {babyBirthday && (
                 <p className="text-xs text-gray-500 mb-2">({getBirthContext()})</p>
               )}
-              <h2 className="text-2xl font-bold mb-2" style={{ color: '#6B4D77' }}>Summary for Pediatrician</h2>
+              <h2 className="text-2xl font-serif font-bold mb-2" style={{ color: '#6B4D77' }}>Summary for Pediatrician</h2>
               <p className="text-sm text-gray-700">{weekCaption}</p>
               <p className="text-sm text-gray-600 mt-2 italic">
                 Summary of feeding and sleep patterns logged during the week of {weekCaption.replace('Week of ', '')}.

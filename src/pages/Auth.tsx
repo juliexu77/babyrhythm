@@ -120,7 +120,7 @@ const Auth = () => {
             <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-xl opacity-75 animate-pulse"></div>
             <Activity className="auth-icon w-8 h-8 text-primary relative z-10" strokeWidth={1.5} />
           </div>
-          <h1 className="text-[22px] md:text-[36px] font-medium mb-6 tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
+          <h1 className="text-[22px] md:text-[36px] font-serif font-medium mb-6 tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
             Step into the rhythm
           </h1>
           <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto text-foreground/80">

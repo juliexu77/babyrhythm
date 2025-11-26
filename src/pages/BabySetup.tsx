@@ -118,7 +118,7 @@ const BabySetup = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-heading font-semibold text-foreground leading-tight">
+          <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
             Let's meet your baby.
           </h1>
           <p className="text-sm text-muted-foreground font-light leading-relaxed">
@@ -171,7 +171,7 @@ const BabySetup = () => {
                     <div className="flex items-center justify-between">
                       <div className="text-center flex-1">
                         <div className="text-xs text-muted-foreground mb-1">Bedtime</div>
-                        <div className="text-2xl font-semibold text-foreground">
+                        <div className="text-2xl font-num font-semibold text-foreground">
                           {formatTime(bedtimeHour, bedtimeMinute)}
                         </div>
                       </div>
@@ -180,7 +180,7 @@ const BabySetup = () => {
                       </div>
                       <div className="text-center flex-1">
                         <div className="text-xs text-muted-foreground mb-1">Wake Time</div>
-                        <div className="text-2xl font-semibold text-foreground">
+                        <div className="text-2xl font-num font-semibold text-foreground">
                           {formatTime(wakeHour, wakeMinute)}
                         </div>
                       </div>

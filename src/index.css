@@ -632,6 +632,7 @@
 @layer utilities {
   /* Typography scale */
   .text-h1 {
+    font-family: var(--font-serif);
     font-size: 32px;
     line-height: 38px;
     font-weight: 600; /* Light mode: SemiBold */
@@ -642,6 +643,7 @@
   }
   
   .text-h2 {
+    font-family: var(--font-serif);
     font-size: 24px;
     line-height: 30px;
     font-weight: 600;
@@ -652,6 +654,7 @@
   }
   
   .text-h3 {
+    font-family: var(--font-serif);
     font-size: 20px;
     line-height: 26px;
     font-weight: 600;

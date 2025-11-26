@@ -465,7 +465,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
           )}>
             {/* Headline positioned in safe zone - whispered typography */}
             <div className="relative px-8 pt-[30vh]">
-              <h1 className="text-[24px] leading-[1.4] font-light tracking-[0.04em] text-foreground/80 animate-story-headline-type drop-shadow-2xl" style={{ fontFamily: 'var(--font-ui-light)' }}>
+              <h1 className="text-[24px] font-serif leading-[1.4] font-light tracking-[0.04em] text-foreground/80 animate-story-headline-type drop-shadow-2xl">
                 {headline}
               </h1>
               

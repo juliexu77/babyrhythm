@@ -51,7 +51,7 @@ const VillageInvite = () => {
           <div className="flex items-center justify-center">
             <Users className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-heading font-semibold text-foreground leading-tight">
+          <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
             Who's in your village?
           </h1>
           <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-sm mx-auto">
