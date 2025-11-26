@@ -304,38 +304,38 @@ export const CurrentMomentArc = ({
   
   return (
     <div className="px-4 pb-1">
-      <div className="relative w-full flex flex-col items-center py-6">
+      <div className="relative w-full flex flex-col items-center py-8">
         {/* Arc SVG */}
         <svg
-          viewBox="0 0 200 100"
-          className="w-full h-24"
-          style={{ maxWidth: '320px' }}
+          viewBox="0 0 200 110"
+          className="w-full"
+          style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient (left to right: sunrise to sunset) */}
+            {/* Daytime gradient (flows around the arc) */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.3" />
-              <stop offset="50%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.4" />
+              <stop offset="50%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.4" />
             </linearGradient>
             
             {/* Nighttime gradient (darker, more muted) */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(264 20% 45%)" stopOpacity="0.25" />
-              <stop offset="50%" stopColor="hsl(264 20% 45%)" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="hsl(264 20% 45%)" stopOpacity="0.25" />
+              <stop offset="0%" stopColor="hsl(264 20% 45%)" stopOpacity="0.3" />
+              <stop offset="50%" stopColor="hsl(264 20% 45%)" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="hsl(264 20% 45%)" stopOpacity="0.3" />
             </linearGradient>
           </defs>
           
-          {/* Arc path - true semicircle */}
+          {/* True semicircle arc using SVG arc path */}
           <path
             d={isDay 
-              ? "M 10 95 Q 100 5, 190 95"  // Daytime: true semicircle arc
-              : "M 10 5 Q 100 95, 190 5"    // Nighttime: inverted semicircle
+              ? "M 20 100 A 80 80 0 0 1 180 100"  // Daytime: semicircle arc upward
+              : "M 20 10 A 80 80 0 0 0 180 10"     // Nighttime: inverted semicircle arc downward
             }
             fill="none"
             stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
-            strokeWidth="2"
+            strokeWidth="3"
             strokeLinecap="round"
           />
         </svg>
