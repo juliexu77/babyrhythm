@@ -1361,10 +1361,19 @@ const lastDiaper = displayActivities
     <div className="pb-24">
       <div className="pt-3 space-y-2">
 
-        {/* Baby Info Header */}
+        {/* Current Moment Arc */}
+        <CurrentMomentArc
+          activities={activities}
+          babyName={babyName}
+          ongoingNap={passedOngoingNap}
+          nightSleepStartHour={nightSleepStartHour}
+          nightSleepEndHour={nightSleepEndHour}
+        />
+
+        {/* Baby Info - Centered under arc */}
         {babyName && babyAge && (
-          <div className="px-4 py-3">
-            <div className="flex flex-row items-center gap-2 text-sm">
+          <div className="px-4 pb-3">
+            <div className="flex flex-row items-center justify-center gap-2 text-sm">
               <h2 className="font-semibold text-foreground">
                 {babyName}
               </h2>
@@ -1377,15 +1386,6 @@ const lastDiaper = displayActivities
             </div>
           </div>
         )}
-
-        {/* Current Moment Arc */}
-        <CurrentMomentArc
-          activities={activities}
-          babyName={babyName}
-          ongoingNap={passedOngoingNap}
-          nightSleepStartHour={nightSleepStartHour}
-          nightSleepEndHour={nightSleepEndHour}
-        />
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
