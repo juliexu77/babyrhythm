@@ -300,12 +300,12 @@ export const CurrentMomentArc = ({
   
   return (
     <div className="px-4 pb-1">
-      <div className="relative w-full flex flex-col items-center py-4">
+      <div className="relative w-full flex flex-col items-center py-6">
         {/* Arc SVG */}
         <svg
-          viewBox="0 0 200 50"
-          className="w-full h-12"
-          style={{ maxWidth: '280px' }}
+          viewBox="0 0 200 100"
+          className="w-full h-24"
+          style={{ maxWidth: '320px' }}
         >
           <defs>
             {/* Daytime gradient (left to right: sunrise to sunset) */}
@@ -323,15 +323,15 @@ export const CurrentMomentArc = ({
             </linearGradient>
           </defs>
           
-          {/* Arc path */}
+          {/* Arc path - true semicircle */}
           <path
             d={isDay 
-              ? "M 20 45 Q 100 5, 180 45"  // Daytime: normal arc (sunrise to sunset)
-              : "M 20 5 Q 100 45, 180 5"    // Nighttime: inverted arc (moonrise to moonset)
+              ? "M 10 95 Q 100 5, 190 95"  // Daytime: true semicircle arc
+              : "M 10 5 Q 100 95, 190 5"    // Nighttime: inverted semicircle
             }
             fill="none"
             stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
-            strokeWidth="1.5"
+            strokeWidth="2"
             strokeLinecap="round"
           />
         </svg>
