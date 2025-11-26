@@ -146,7 +146,43 @@ const getCurrentState = (
   
   // FEED & SOLIDS STATES
   if (recentActivity.type === 'feed') {
+    const quantity = recentActivity.details?.quantity;
+    const unit = recentActivity.details?.unit;
+    const minutesLeft = recentActivity.details?.minutesLeft;
+    const minutesRight = recentActivity.details?.minutesRight;
+    
+    // Count today's feeds for milestone celebrations
+    const todayFeeds = activities.filter(a => {
+      const activityDate = new Date(a.loggedAt || '');
+      const today = new Date();
+      return a.type === 'feed' && 
+        activityDate.toDateString() === today.toDateString();
+    }).length;
+    
     if (minutesSince < 10) {
+      // Celebrate feed milestones
+      if (todayFeeds === 3) {
+        return "Third feed today! 🎉";
+      } else if (todayFeeds === 5) {
+        return "Fifth feed today! 🌟";
+      }
+      
+      // Full belly for larger feeds
+      const quantityNum = quantity ? parseFloat(quantity) : 0;
+      const nursingMinutes = (minutesLeft ? parseInt(minutesLeft) : 0) + (minutesRight ? parseInt(minutesRight) : 0);
+      
+      const isLargeFeed = (unit === 'ml' && quantityNum >= 150) || 
+                         (unit === 'oz' && quantityNum >= 5) ||
+                         nursingMinutes >= 20;
+      
+      if (isLargeFeed) {
+        if (nursingMinutes > 0) {
+          return `Full belly · ${nursingMinutes}min`;
+        } else if (quantity && unit) {
+          return `Full belly · ${quantity}${unit}`;
+        }
+      }
+      
       const feedType = recentActivity.details?.feedType;
       if (feedType === 'bottle') {
         return "Just had a bottle";
@@ -210,10 +246,28 @@ const getCurrentState = (
       return "Just started awake time";
     } else if (awakeMinutes > 150) {
       return `Long stretch awake · ${getDurationString(awakeMinutes)}`;
+    } else if (awakeMinutes > 120) {
+      // Getting sleepy after 2+ hours awake
+      return "Getting sleepy";
     } else if (awakeMinutes > 60) {
       return `Awake · ${getDurationString(awakeMinutes)}`;
     }
     return `Awake · ${getDurationString(awakeMinutes)}`;
+  }
+  
+  // Check if bedtime is approaching (within 1 hour of night sleep start)
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const nightSleepStartMinute = 0; // Using nightSleepStartHour only, assuming on the hour
+  const bedtimeMinutes = nightSleepStartHour * 60 + nightSleepStartMinute;
+  let minutesUntilBedtime = bedtimeMinutes - currentMinutes;
+  
+  // Handle midnight crossing
+  if (minutesUntilBedtime < 0) {
+    minutesUntilBedtime += 24 * 60;
+  }
+  
+  if (minutesUntilBedtime > 0 && minutesUntilBedtime <= 60) {
+    return "Bedtime coming soon";
   }
   
   // Time-based fallbacks
