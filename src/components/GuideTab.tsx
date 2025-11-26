@@ -1289,6 +1289,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               babyAge={babyAgeInWeeks}
               activities={activities}
               transitionInfo={transitionInfo}
+              rhythmInsights={hasTier3Data ? rhythmInsights : undefined}
             />
           )}
           
@@ -1335,8 +1336,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 />
               )}
               
-              {/* AI-Generated Guidance - Personalized to your data */}
-              {hasTier3Data && (
+              {/* AI-Generated Guidance - Personalized to your data - Hidden since it's now in TodaysPulse */}
+              {false && hasTier3Data && (
                 <UnifiedInsightCard
                   whatToKnow={hasTier3Data ? rhythmInsights?.whatToKnow : undefined}
                   whatToDo={hasTier3Data ? rhythmInsights?.whatToDo : undefined}

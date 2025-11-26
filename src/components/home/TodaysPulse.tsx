@@ -33,6 +33,12 @@ interface TodaysPulseProps {
       transitioning: number;
     };
   } | null;
+  rhythmInsights?: {
+    whatToKnow?: string[];
+    whatToDo?: string[];
+    whatsNext?: string;
+    prepTip?: string;
+  };
 }
 
 export const TodaysPulse = ({
@@ -42,7 +48,8 @@ export const TodaysPulse = ({
   babyName,
   babyAge,
   activities,
-  transitionInfo
+  transitionInfo,
+  rhythmInsights
 }: TodaysPulseProps) => {
   const [explanation, setExplanation] = useState<string>('');
   const [explanationLoading, setExplanationLoading] = useState(false);
@@ -107,10 +114,17 @@ export const TodaysPulse = ({
   }, [biggestDeviation?.description, babyName, babyAge, activities]);
 
   const getStatusBadge = (status: DeviationData['status'], category?: string) => {
-    // Show transitioning badge for sleep if nap transition is detected
-    if (category === 'sleep' && transitionInfo?.isTransitioning && transitionInfo?.napCounts) {
-      const { current, transitioning } = transitionInfo.napCounts;
-      return <Badge variant="default" className="text-xs">Transitioning {current} &gt; {transitioning}</Badge>;
+    // Show nap count for sleep
+    if (category === 'sleep') {
+      const todayNaps = activities.filter((a: any) => {
+        const activityDate = new Date(a.logged_at || a.loggedAt);
+        const today = new Date();
+        return a.type === 'nap' && 
+               activityDate.getDate() === today.getDate() &&
+               activityDate.getMonth() === today.getMonth() &&
+               activityDate.getFullYear() === today.getFullYear();
+      }).length;
+      return <Badge variant="secondary" className="text-xs">{todayNaps} nap{todayNaps !== 1 ? 's' : ''} so far</Badge>;
     }
     
     // More descriptive and less alarming badge for schedule deviations
@@ -149,7 +163,7 @@ export const TodaysPulse = ({
           <div className="px-4 pb-4 pt-3 space-y-3">
             {/* Categories */}
             {deviations.map((deviation, index) => (
-              <div key={index} className="space-y-2">
+              <div key={index}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 text-primary">
@@ -161,9 +175,6 @@ export const TodaysPulse = ({
                   </div>
                   {getStatusBadge(deviation.status, deviation.category)}
                 </div>
-                <p className="text-xs text-muted-foreground pl-7">
-                  {deviation.details}
-                </p>
               </div>
             ))}
           </div>
@@ -198,6 +209,55 @@ export const TodaysPulse = ({
             </div>
           </CollapsibleContent>
         </Collapsible>
+
+      {/* Understanding Rhythm Section */}
+      {rhythmInsights && (rhythmInsights.whatToKnow?.length || rhythmInsights.whatToDo?.length) && (
+        <div className="border-t border-border/30">
+          <div className="px-4 py-4">
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
+              Understanding {babyName}&apos;s Rhythm
+            </h3>
+            <div className="space-y-4">
+              {rhythmInsights.whatToKnow && rhythmInsights.whatToKnow.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4 text-amber-500" />
+                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                      What to Know
+                    </h4>
+                  </div>
+                  <div className="pl-6 space-y-2">
+                    {rhythmInsights.whatToKnow.map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <div className="w-1 h-1 rounded-full bg-amber-500/60 mt-2 flex-shrink-0"></div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {rhythmInsights.whatToDo && rhythmInsights.whatToDo.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                      What to Do
+                    </h4>
+                  </div>
+                  <div className="pl-6 space-y-2">
+                    {rhythmInsights.whatToDo.map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <div className="w-1 h-1 rounded-full bg-green-500/60 mt-2 flex-shrink-0"></div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

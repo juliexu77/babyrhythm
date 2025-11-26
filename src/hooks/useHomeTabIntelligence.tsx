@@ -585,55 +585,36 @@ export const useHomeTabIntelligence = (
 
     // Analyze sleep
     let sleepStatus: 'normal' | 'needs-attention' | 'unusually-good' = 'normal';
-    let sleepDetails = `${napCount} nap${napCount !== 1 ? 's' : ''} so far`;
+    let sleepDetails = '';
     let sleepHasDeviation = false;
 
     if (napCount === 0 && now.getHours() >= 12) {
       sleepStatus = 'needs-attention';
-      sleepDetails = 'No naps logged yet today';
       sleepHasDeviation = true;
     } else if (napCount > avg7DayNaps * 1.3 && napCount > 2) {
-      // More naps than recent average — surface neutrally (not “better”)
       sleepStatus = 'normal';
-      sleepDetails = `${napCount} naps — more than your recent average (${avg7DayNaps.toFixed(1)})`;
       sleepHasDeviation = true;
-    } else if (napCount >= expected.naps[0] && napCount <= expected.naps[1]) {
-      sleepDetails = `${napCount} nap${napCount !== 1 ? 's' : ''} — right on track`;
     }
 
     // Analyze feeding
     let feedStatus: 'normal' | 'needs-attention' | 'unusually-good' = 'normal';
-    let feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''} so far`;
+    let feedDetails = '';
     let feedHasDeviation = false;
-
-    console.log('🍼 Feed Analysis:', {
-      feedCount,
-      expectedRange: expected.feeds,
-      threshold: expected.feeds[0] - 2,
-      currentHour: now.getHours(),
-      shouldTriggerAlert: feedCount < expected.feeds[0] - 2 && now.getHours() >= 16,
-      avg7DayFeeds: avg7DayFeeds.toFixed(1)
-    });
 
     if (feedCount === 0 && now.getHours() >= 10) {
       feedStatus = 'needs-attention';
-      feedDetails = 'No feeds logged yet today';
       feedHasDeviation = true;
     } else if (feedCount < expected.feeds[0] - 2 && now.getHours() >= 16) {
       feedStatus = 'needs-attention';
-      feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''} — below expected ${expected.feeds[0]}-${expected.feeds[1]}`;
       feedHasDeviation = true;
     } else if (feedCount > avg7DayFeeds * 1.4 && feedCount >= 2) {
       feedStatus = 'unusually-good';
-      feedDetails = `${feedCount} feeds today — cluster feeding (avg: ${avg7DayFeeds.toFixed(1)})`;
       feedHasDeviation = true;
-    } else if (feedCount >= expected.feeds[0] && feedCount <= expected.feeds[1]) {
-      feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''}, right on schedule`;
     }
 
     // Analyze schedule timing
     let scheduleStatus: 'normal' | 'needs-attention' | 'unusually-good' = 'normal';
-    let scheduleDetails = 'On track';
+    let scheduleDetails = '';
     let scheduleHasDeviation = false;
 
     // Check wake window if baby is currently awake
@@ -643,10 +624,7 @@ export const useHomeTabIntelligence = (
       
       if (currentWakeMinutes > expectedMaxWake + 30) {
         scheduleStatus = 'needs-attention';
-        scheduleDetails = `Awake ${Math.floor(currentWakeMinutes / 60)}h ${currentWakeMinutes % 60}m — longer than typical`;
         scheduleHasDeviation = true;
-      } else if (currentWakeMinutes > expectedMaxWake) {
-        scheduleDetails = `Approaching nap window`;
       }
     }
 
@@ -665,18 +643,16 @@ export const useHomeTabIntelligence = (
         gaps.push(gap);
       }
       
-      const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
-      const minGap = Math.min(...gaps);
-      
       // Detect cluster feeding
       if (gaps.filter(g => g < 90).length >= 2) {
         scheduleStatus = 'needs-attention';
-        scheduleDetails = 'Cluster feeding detected — possible growth spurt';
         scheduleHasDeviation = true;
-      } else if (avgGap >= 180 && avgGap <= 240 && babyAgeMonths < 6) {
-        scheduleStatus = 'unusually-good';
-        scheduleDetails = 'Great feed spacing today';
-        scheduleHasDeviation = true;
+      } else if (gaps.length > 0) {
+        const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+        if (avgGap >= 180 && avgGap <= 240 && babyAgeMonths < 6) {
+          scheduleStatus = 'unusually-good';
+          scheduleHasDeviation = true;
+        }
       }
     }
 
