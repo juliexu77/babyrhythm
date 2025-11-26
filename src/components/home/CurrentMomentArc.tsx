@@ -397,7 +397,9 @@ export const CurrentMomentArc = ({
   const arcPosition = calculateArcPosition();
   
   // Calculate icon position on the arc (0 = left, 1 = right)
-  const arcAngle = Math.PI * (1 - arcPosition); // π to 0 (left to right)
+  // Clamp position for display between 0 and 1 for icon placement
+  const clampedPosition = Math.min(arcPosition, 1.0);
+  const arcAngle = Math.PI * (1 - clampedPosition); // π to 0 (left to right)
   const arcRadius = 180;
   const centerX = 200;
   const centerY = 210;
@@ -414,7 +416,9 @@ export const CurrentMomentArc = ({
   // Create path for trailing fill (from start to current position)
   const createTrailPath = (): string => {
     const startAngle = Math.PI; // Start at left (180°)
-    const currentAngle = Math.PI * (1 - arcPosition); // Current position
+    // Clamp to max 1.0 for trail path (we'll render overtired separately)
+    const trailPosition = Math.min(clampedPosition, 1.0);
+    const currentAngle = Math.PI * (1 - trailPosition);
     
     // Create arc path
     const startX = centerX - Math.cos(startAngle) * arcRadius;
@@ -423,7 +427,7 @@ export const CurrentMomentArc = ({
     const endX = centerX - Math.cos(currentAngle) * arcRadius;
     const endY = centerY - Math.sin(currentAngle) * arcRadius;
     
-    const largeArcFlag = arcPosition > 0.5 ? 1 : 0;
+    const largeArcFlag = trailPosition > 0.5 ? 1 : 0;
     
     return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endX} ${endY} L ${centerX} ${centerY} Z`;
   };
@@ -455,6 +459,12 @@ export const CurrentMomentArc = ({
               <stop offset="100%" stopColor="hsl(15 45% 75%)" stopOpacity="0.5" />
             </linearGradient>
             
+            {/* Overtired gradient - red/orange warning */}
+            <linearGradient id="overtiredGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(15 70% 65%)" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="hsl(0 60% 60%)" stopOpacity="0.8" />
+            </linearGradient>
+            
             {/* Nighttime gradients */}
             <linearGradient id="nightBaseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(240 25% 75%)" stopOpacity="0.25" />
@@ -476,6 +486,12 @@ export const CurrentMomentArc = ({
               <stop offset="0%" stopColor="hsl(240 40% 80%)" stopOpacity="0.5" />
               <stop offset="100%" stopColor="hsl(240 40% 80%)" stopOpacity="0" />
             </radialGradient>
+            
+            {/* Overtired warning glow */}
+            <radialGradient id="overtiredGlow">
+              <stop offset="0%" stopColor="hsl(0 70% 60%)" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="hsl(0 70% 60%)" stopOpacity="0" />
+            </radialGradient>
           </defs>
           
           {/* Base arc path */}
@@ -487,8 +503,8 @@ export const CurrentMomentArc = ({
             strokeLinecap="round"
           />
           
-          {/* Twilight zone (last 20% of arc) */}
-          {inTwilightZone && isDay && (
+          {/* Twilight zone (sweet spot at 80-100%) */}
+          {inTwilightZone && isDay && !isOvertired && (
             <path
               d="M 308 210 A 180 180 0 0 1 380 210"
               fill="none"
@@ -498,10 +514,21 @@ export const CurrentMomentArc = ({
             />
           )}
           
+          {/* Overtired zone (>100% of wake window) */}
+          {isOvertired && isDay && (
+            <path
+              d="M 308 210 A 180 180 0 0 1 380 210"
+              fill="none"
+              stroke="url(#overtiredGradient)"
+              strokeWidth="10"
+              strokeLinecap="round"
+            />
+          )}
+          
           {/* Trailing fill showing progress */}
           <path
             d={trailPath}
-            fill={isDay ? "url(#dayTrailGradient)" : "url(#nightTrailGradient)"}
+            fill={isOvertired ? "url(#overtiredGradient)" : (isDay ? "url(#dayTrailGradient)" : "url(#nightTrailGradient)")}
             opacity="0.8"
           />
           
@@ -510,17 +537,19 @@ export const CurrentMomentArc = ({
             cx={iconX}
             cy={iconY}
             r="24"
-            fill={isDay ? "url(#sunGlow)" : "url(#moonGlow)"}
+            fill={isOvertired ? "url(#overtiredGlow)" : (isDay ? "url(#sunGlow)" : "url(#moonGlow)")}
           />
           
-          {/* Icon - Solid filled circle */}
+          {/* Icon - Solid filled circle or moon */}
           <g transform={`translate(${iconX}, ${iconY})`}>
             {isDay ? (
               <circle
                 r="10"
-                fill="hsl(45 85% 55%)"
+                fill={isOvertired ? "hsl(0 70% 55%)" : "hsl(45 85% 55%)"}
                 style={{
-                  filter: 'drop-shadow(0 0 8px hsla(45, 90%, 60%, 0.5))'
+                  filter: isOvertired 
+                    ? 'drop-shadow(0 0 8px hsla(0, 70%, 60%, 0.6))' 
+                    : 'drop-shadow(0 0 8px hsla(45, 90%, 60%, 0.5))'
                 }}
               />
             ) : (
@@ -539,8 +568,19 @@ export const CurrentMomentArc = ({
             )}
           </g>
           
-          {/* Twilight zone indicator text */}
-          {inTwilightZone && isDay && (
+          {/* Zone indicator text */}
+          {isOvertired && isDay && (
+            <text
+              x="340"
+              y="225"
+              textAnchor="middle"
+              className="text-[9px] font-semibold"
+              fill="hsl(0 70% 55%)"
+            >
+              Overtired
+            </text>
+          )}
+          {inTwilightZone && isDay && !isOvertired && (
             <text
               x="340"
               y="225"
