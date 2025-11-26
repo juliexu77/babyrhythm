@@ -69,11 +69,20 @@ const getCurrentState = (
         return "Just fell asleep";
       }
       
-      // Check if it's a morning or afternoon nap
+      // Delightful variations based on duration and time
+      if (napMinutes < 20) {
+        return "Quick snooze";
+      } else if (napMinutes > 90) {
+        return "Long snooze";
+      }
+      
+      // Time-based delightful variations
       if (hours < 12) {
-        return "Morning nap underway";
+        return "Morning snooze";
+      } else if (hours >= 15 && hours < 18) {
+        return "Cat nap";
       } else {
-        return "Afternoon nap underway";
+        return "Afternoon nap";
       }
     }
     return "Nap in progress";
@@ -97,8 +106,30 @@ const getCurrentState = (
   // SLEEP STATES
   if (recentActivity.type === 'nap') {
     const endTime = recentActivity.details?.endTime;
+    const startTime = recentActivity.details?.startTime;
     
     if (endTime) {
+      // Calculate nap duration for delightful variations
+      if (startTime) {
+        const [startHours, startMinutes] = startTime.split(':').map(Number);
+        const [endHours, endMinutes] = endTime.split(':').map(Number);
+        const startDate = new Date(now);
+        startDate.setHours(startHours, startMinutes, 0, 0);
+        const endDate = new Date(now);
+        endDate.setHours(endHours, endMinutes, 0, 0);
+        const napDuration = differenceInMinutes(endDate, startDate);
+        
+        if (minutesSince < 10) {
+          // Add context based on nap length
+          if (napDuration < 20) {
+            return "Just woke up from quick snooze";
+          } else if (napDuration > 90) {
+            return "Just woke up from long snooze";
+          }
+          return "Just woke up";
+        }
+      }
+      
       // Nap has ended
       if (minutesSince < 10) {
         return "Just woke up";
@@ -177,6 +208,8 @@ const getCurrentState = (
     
     if (awakeMinutes < 15) {
       return "Just started awake time";
+    } else if (awakeMinutes > 150) {
+      return `Long stretch awake · ${getDurationString(awakeMinutes)}`;
     } else if (awakeMinutes > 60) {
       return `Awake · ${getDurationString(awakeMinutes)}`;
     }
