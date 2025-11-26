@@ -100,7 +100,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   return (
     <div className="space-y-4">
       {/* Sleep Chart */}
-      <div ref={sleepChartRef} className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50 transition-all hover:shadow-lg">
+      <div ref={sleepChartRef} className="bg-card/30 backdrop-blur rounded-xl p-6 border border-border/50 transition-all hover:shadow-lg">
         <div className="mb-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">

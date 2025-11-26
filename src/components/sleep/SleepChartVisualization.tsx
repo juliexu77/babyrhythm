@@ -122,7 +122,7 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
                     return (
                       <div
                         key={`nap-${nap.id}-${day.fullDate.getTime()}`}
-                        className="absolute w-full bg-feed rounded-sm border border-feed/20 cursor-pointer hover:opacity-90 transition-opacity"
+                        className="absolute w-full bg-feed rounded-[2px] border border-feed/20 cursor-pointer hover:opacity-90 transition-opacity"
                         style={{ top: `${top}%`, height: `${height}%`, minHeight: "2px" }}
                         onClick={() => setSelectedNaps({ naps: [nap], day: day.date })}
                         title={`Tap to view details`}

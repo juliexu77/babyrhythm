@@ -669,7 +669,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                     )}
                     <div
                       onDoubleClick={() => msg.role === "assistant" && handleLikeMessage(idx)}
-                      className={`relative max-w-[85%] rounded-2xl px-4 py-3 ${
+                      className={`relative max-w-[85%] rounded-xl px-4 py-3 ${
                         msg.role === "user"
                           ? "bg-primary/80 text-primary-foreground"
                           : "bg-muted cursor-pointer select-none transition-all hover:bg-muted/80"
@@ -710,7 +710,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
               )}
               <div
                 onDoubleClick={() => msg.role === "assistant" && handleLikeMessage(sessionStartIndex + idx)}
-                className={`relative max-w-[85%] rounded-2xl px-4 py-3 ${
+                className={`relative max-w-[85%] rounded-xl px-4 py-3 ${
                   msg.role === "user"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted cursor-pointer select-none transition-all hover:bg-muted/80"
@@ -739,7 +739,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Leaf className="w-4 h-4 text-primary animate-pulse" />
               </div>
-              <div className="bg-muted rounded-2xl px-4 py-3">
+              <div className="bg-muted rounded-xl px-4 py-3">
                 <div className="flex gap-1">
                   <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -769,14 +769,14 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
               autoComplete="off"
               autoCorrect="on"
               spellCheck
-              className="flex-1 min-h-[48px] max-h-36 transition-all duration-200 rounded-2xl border-border/40 bg-muted/50 dark:bg-muted/30 resize-none px-4 py-3 text-[16px] leading-6 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50"
+              className="flex-1 min-h-[48px] max-h-36 transition-all duration-200 rounded-xl border-border/40 bg-muted/50 dark:bg-muted/30 resize-none px-4 py-3 text-[16px] leading-6 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50"
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
               size="icon"
               aria-label="Send message"
-              className="flex-shrink-0 h-12 w-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-95 transition-transform disabled:opacity-50"
+              className="flex-shrink-0 h-12 w-12 rounded-xl bg-primary hover:bg-primary/90 active:scale-95 transition-transform disabled:opacity-50"
             >
               <Send className="h-5 w-5" />
             </Button>

@@ -205,7 +205,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   // Empty state - no data yet
   if (!hasAnyData) {
     return (
-      <Card className="bg-card border border-border/40 p-6 rounded-2xl">
+      <Card className="bg-card border border-border/40 p-6 rounded-xl">
         <div className="text-center space-y-4">
           <div className="inline-flex p-3 bg-primary/10 rounded-full">
             <Clock className="h-6 w-6 text-primary" />
@@ -278,7 +278,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
                         napIntervalMinutes === 150 ? "2½ hours" : "3 hours";
 
     return (
-      <Card className="bg-card border border-border/40 p-4 rounded-2xl animate-in fade-in duration-300">
+      <Card className="bg-card border border-border/40 p-4 rounded-xl animate-in fade-in duration-300">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">

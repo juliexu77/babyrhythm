@@ -1,4 +1,4 @@
-import { Clock, Baby, Droplet, Moon, StickyNote, Carrot, Camera } from "lucide-react";
+import { Clock, Milk, Droplet, Moon, StickyNote, Utensils, Camera } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -46,7 +46,7 @@ interface ActivityCardProps {
 const getActivityIcon = (type: string) => {
   switch (type) {
     case "feed":
-      return <Baby className="h-4 w-4" />;
+      return <Milk className="h-4 w-4" />;
     case "diaper":
       return <Droplet className="h-4 w-4" />;
     case "nap":
@@ -54,7 +54,7 @@ const getActivityIcon = (type: string) => {
     case "note":
       return <StickyNote className="h-4 w-4" />;
     case "solids":
-      return <Carrot className="h-4 w-4" />;
+      return <Utensils className="h-4 w-4" />;
     case "photo":
       return <Camera className="h-4 w-4" />;
     default:
