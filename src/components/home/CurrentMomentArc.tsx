@@ -400,11 +400,11 @@ export const CurrentMomentArc = ({
               <stop offset="100%" stopOpacity="0.3" />
             </linearGradient>
             
-            {/* Nighttime gradient: blue to moonlit grey (left to right) fading top to bottom */}
+            {/* Nighttime gradient: bright indigo to light gray (left to right) fading top to bottom */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(220 70% 55%)" />
-              <stop offset="50%" stopColor="hsl(210 40% 60%)" />
-              <stop offset="100%" stopColor="hsl(0 0% 70%)" />
+              <stop offset="0%" stopColor="hsl(230 50% 45%)" />
+              <stop offset="50%" stopColor="hsl(230 30% 55%)" />
+              <stop offset="100%" stopColor="hsl(0 0% 65%)" />
             </linearGradient>
             <linearGradient id="nightFade" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopOpacity="0.3" />
@@ -434,7 +434,7 @@ export const CurrentMomentArc = ({
           {/* Triangle indicator showing current position in day/night */}
           <polygon
             points={`${triangleX},${triangleY - 8} ${triangleX - 4},${triangleY - 2} ${triangleX + 4},${triangleY - 2}`}
-            fill={isDay ? "hsl(264 28% 50%)" : "hsl(220 70% 60%)"}
+            fill={isDay ? "hsl(264 28% 50%)" : "hsl(230 50% 55%)"}
             className="transition-all duration-1000"
           />
         </svg>
