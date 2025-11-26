@@ -81,17 +81,30 @@ const getCurrentState = (
         return "Soundly asleep";
       }
       
-      // Daytime nap variations based on duration first
+      // Check if this is the first nap of the day
+      const todayNaps = activities.filter(a => {
+        const activityDate = new Date(a.loggedAt || '');
+        const today = new Date();
+        return a.type === 'nap' && 
+          activityDate.toDateString() === today.toDateString() &&
+          a.details?.endTime; // Only count completed naps
+      });
+      
+      const isFirstNap = todayNaps.length === 0;
+      
+      if (isFirstNap) {
+        return "First nap";
+      }
+      
+      // Daytime nap variations based on duration
       if (napMinutes < 20) {
         return "Quick snooze";
       } else if (napMinutes > 90) {
         return "Long snooze";
       }
       
-      // Time-based delightful variations for daytime naps
-      if (currentHour >= 5 && currentHour < 12) {
-        return "Morning snooze";
-      } else if (currentHour >= 15 && currentHour < 18) {
+      // Time-based variations for subsequent naps
+      if (currentHour >= 15 && currentHour < 18) {
         return "Cat nap";
       } else if (currentHour >= 12 && currentHour < 17) {
         return "Afternoon nap";
@@ -393,11 +406,11 @@ export const CurrentMomentArc = ({
           style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient: sunrise blush to pink to sunset orange/yellow (left to right) */}
+            {/* Daytime gradient: white to orange to blush (left to right) */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(340 45% 60%)" stopOpacity="1" />
-              <stop offset="50%" stopColor="hsl(330 50% 65%)" stopOpacity="1" />
-              <stop offset="100%" stopColor="hsl(30 60% 60%)" stopOpacity="1" />
+              <stop offset="0%" stopColor="hsl(0 0% 95%)" stopOpacity="1" />
+              <stop offset="50%" stopColor="hsl(30 90% 65%)" stopOpacity="1" />
+              <stop offset="100%" stopColor="hsl(340 60% 70%)" stopOpacity="1" />
             </linearGradient>
             
             {/* Nighttime gradient: bright indigo to light gray (left to right) */}
@@ -421,7 +434,7 @@ export const CurrentMomentArc = ({
           <g transform={`translate(${triangleX}, ${triangleY}) rotate(${(arcAngle * 180 / Math.PI) - 90})`}>
             <foreignObject x="-10" y="-10" width="20" height="20">
               {isDay ? (
-                <Sun className="w-5 h-5 text-[hsl(340,45%,60%)]" />
+                <Sun className="w-5 h-5 text-[hsl(35,100%,50%)]" fill="hsl(35,100%,50%)" />
               ) : (
                 <Moon className="w-5 h-5 text-[hsl(230,50%,45%)]" />
               )}
