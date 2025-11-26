@@ -345,46 +345,53 @@ export const CurrentMomentArc = ({
           style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient: light to dark (left to right) with fading ends */}
+            {/* Daytime gradient: light to dark (left to right) fading top to bottom */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0" />
-              <stop offset="10%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.5" />
-              <stop offset="25%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.7" />
-              <stop offset="50%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.85" />
-              <stop offset="75%" stopColor="hsl(var(--pp-lavender))" stopOpacity="1" />
-              <stop offset="90%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0" />
+              <stop offset="0%" stopColor="hsl(var(--pp-lavender))" />
+              <stop offset="100%" stopColor="hsl(264 28% 50%)" />
+            </linearGradient>
+            <linearGradient id="dayFade" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopOpacity="0.3" />
+              <stop offset="50%" stopOpacity="0.9" />
+              <stop offset="100%" stopOpacity="0.3" />
             </linearGradient>
             
-            {/* Nighttime gradient: dark to light (left to right) with fading ends - twilight feel */}
+            {/* Nighttime gradient: dark blue/indigo to gray (left to right) fading top to bottom */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(220 20% 30%)" stopOpacity="0" />
-              <stop offset="10%" stopColor="hsl(220 20% 30%)" stopOpacity="0.8" />
-              <stop offset="25%" stopColor="hsl(220 20% 30%)" stopOpacity="0.9" />
-              <stop offset="50%" stopColor="hsl(220 20% 30%)" stopOpacity="0.85" />
-              <stop offset="75%" stopColor="hsl(220 25% 40%)" stopOpacity="0.7" />
-              <stop offset="90%" stopColor="hsl(220 25% 40%)" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="hsl(220 25% 40%)" stopOpacity="0" />
+              <stop offset="0%" stopColor="hsl(230 40% 25%)" />
+              <stop offset="50%" stopColor="hsl(230 30% 35%)" />
+              <stop offset="100%" stopColor="hsl(0 0% 50%)" />
             </linearGradient>
+            <linearGradient id="nightFade" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopOpacity="0.3" />
+              <stop offset="50%" stopOpacity="0.9" />
+              <stop offset="100%" stopOpacity="0.3" />
+            </linearGradient>
+            
+            {/* Masks to apply color + fade */}
+            <mask id="dayMask">
+              <rect x="0" y="0" width="200" height="110" fill="url(#dayFade)" />
+            </mask>
+            <mask id="nightMask">
+              <rect x="0" y="0" width="200" height="110" fill="url(#nightFade)" />
+            </mask>
           </defs>
           
-          {/* True semicircle arc with thicker stroke (70% thicker) */}
+          {/* Semicircle arc - always right-side up */}
           <path
-            d={isDay 
-              ? "M 20 100 A 80 80 0 0 1 180 100"  // Daytime: semicircle arc upward
-              : "M 20 10 A 80 80 0 0 0 180 10"     // Nighttime: inverted semicircle arc downward
-            }
+            d="M 20 100 A 80 80 0 0 1 180 100"
             fill="none"
             stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
             strokeWidth="8.5"
             strokeLinecap="round"
+            mask={`url(#${isDay ? 'day' : 'night'}Mask)`}
           />
         </svg>
         
         {/* State text positioned inside the arc - bigger and bolder */}
         <p className="absolute text-base font-bold text-foreground tracking-wide text-center" 
            style={{ 
-             top: isDay ? '58%' : '32%',
+             top: '58%',
              left: '50%',
              transform: 'translateX(-50%)'
            }}>
