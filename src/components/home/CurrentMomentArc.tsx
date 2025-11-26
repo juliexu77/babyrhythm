@@ -434,7 +434,7 @@ export const CurrentMomentArc = ({
           <g transform={`translate(${triangleX}, ${triangleY}) rotate(${(arcAngle * 180 / Math.PI) - 90})`}>
             <foreignObject x="-10" y="-10" width="20" height="20">
               {isDay ? (
-                <Sun className="w-5 h-5 text-[hsl(35,100%,50%)]" fill="hsl(35,100%,50%)" />
+                <Sun className="w-5 h-5 text-[hsl(0,0%,35%)]" fill="hsl(0,0%,35%)" />
               ) : (
                 <Moon className="w-5 h-5 text-[hsl(230,50%,45%)]" />
               )}
