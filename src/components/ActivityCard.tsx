@@ -239,7 +239,7 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   };
 
   return (
-    <div className="relative flex items-center py-3 group transition-colors">
+    <div className="relative flex items-center py-1.5 group transition-colors">
       {/* Icon - centered on timeline with white background to mask the line */}
       <div className={`relative z-10 flex-shrink-0 w-5 h-5 flex items-center justify-center bg-background p-0.5 ${getIconColorClass(activity.type)}`} style={{ marginLeft: '14px' }}>
         {getActivityIcon(activity.type)}
