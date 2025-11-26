@@ -239,23 +239,20 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   };
 
   return (
-    <div className="relative flex items-center gap-3 py-2 group hover:bg-accent/30 rounded-md px-2 transition-colors">
-      {/* Timeline line - thin vertical line connecting icons */}
-      <div className="absolute left-[22px] top-6 bottom-0 w-px bg-border/40 group-last:hidden"></div>
-      
-      {/* Icon - no background circle, just colored icon */}
-      <div className={`relative z-10 flex-shrink-0 w-5 h-5 flex items-center justify-center ${getIconColorClass(activity.type)}`}>
+    <div className="relative flex items-center py-3 group transition-colors">
+      {/* Icon - centered on timeline with white background to mask the line */}
+      <div className={`relative z-10 flex-shrink-0 w-5 h-5 flex items-center justify-center bg-background p-0.5 ${getIconColorClass(activity.type)}`} style={{ marginLeft: '14px' }}>
         {getActivityIcon(activity.type)}
       </div>
       
-      {/* Content - clickable with smart text formatting */}
-      <div className="flex-1 flex items-center justify-between min-w-0 gap-3">
+      {/* Content - clickable with smart text formatting, positioned to the right of icon */}
+      <div className="flex-1 flex items-center justify-between min-w-0 gap-3 pl-4">
         <button
           onClick={handleClick}
-          className="flex-1 text-left min-w-0 flex items-baseline gap-2"
+          className="flex-1 text-left min-w-0 flex items-baseline gap-2 hover:opacity-80 transition-opacity"
         >
           {/* Value - Bold */}
-          <span className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+          <span className="text-sm font-semibold text-foreground">
             {value}
           </span>
           {/* Descriptor - Lighter */}

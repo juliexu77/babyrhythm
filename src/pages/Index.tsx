@@ -995,7 +995,9 @@ const ongoingNap = (() => {
                                 </div>
                                 
                                 {/* Activities for this date */}
-                                <div className="space-y-1">
+                                <div className="relative space-y-0">
+                                  {/* Continuous timeline line running through all activities */}
+                                  <div className="absolute left-[24px] top-0 bottom-0 w-px bg-[#E5E0D8]"></div>
                                   {(() => {
                                     // To detect night sleep for this day, we need to check:
                                     // 1. Sleeps that started TODAY and ended TODAY
@@ -1111,29 +1113,31 @@ const ongoingNap = (() => {
                                           />
                                         ))}
                                         
-                                        {/* Wake-up indicator - show in the date section where the wake-up happened */}
+                                         {/* Wake-up indicator - show in the date section where the wake-up happened */}
                                         {showWakeUpHere && nightSleep && wakeTime && (
                                           <button
                                             onClick={() => {
                                               console.log('Clicked wake up indicator, opening night sleep:', nightSleep);
                                               setEditingActivity(nightSleep);
                                             }}
-                                            className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors w-full text-left"
+                                            className="relative flex items-center py-3 group transition-colors w-full text-left"
                                           >
-                                            {/* Timeline line */}
-                                            <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border group-last:hidden"></div>
-                                            
-                                            {/* Timeline marker */}
-                                            <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                                              <Sun className="w-3 h-3 text-primary" />
+                                            {/* Icon - centered on timeline with white background to mask the line */}
+                                            <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-background flex items-center justify-center text-[hsl(45,90%,55%)]" style={{ marginLeft: '14px' }}>
+                                              <Sun className="w-4 h-4" />
                                             </div>
                                             
                                             {/* Content */}
-                                            <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
-                                              <p className="text-sm text-foreground font-medium break-words hover:text-primary transition-colors">
-                                                {babyProfile?.name?.split(' ')[0] || 'Baby'} woke up
-                                              </p>
-                                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                            <div className="flex-1 flex items-center justify-between min-w-0 gap-3 pl-4">
+                                              <div className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
+                                                <span className="text-sm font-semibold text-foreground">
+                                                  {wakeTime}
+                                                </span>
+                                                <span className="text-sm text-muted-foreground">
+                                                  Woke up
+                                                </span>
+                                              </div>
+                                              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap tabular-nums">
                                                 {wakeTime}
                                               </span>
                                             </div>
