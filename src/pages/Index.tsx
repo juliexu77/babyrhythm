@@ -1120,7 +1120,7 @@ const ongoingNap = (() => {
                                               console.log('Clicked wake up indicator, opening night sleep:', nightSleep);
                                               setEditingActivity(nightSleep);
                                             }}
-                                            className="relative flex items-center py-3 group transition-colors w-full text-left"
+                                            className="relative flex items-center py-1.5 group transition-colors w-full text-left"
                                           >
                                             {/* Icon - centered on timeline with white background to mask the line */}
                                             <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-background flex items-center justify-center text-[hsl(45,90%,55%)]" style={{ marginLeft: '14px' }}>
