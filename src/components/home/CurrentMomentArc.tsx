@@ -65,7 +65,13 @@ const getCurrentState = (
       startDate.setHours(hours, minutes, 0, 0);
       const napMinutes = differenceInMinutes(now, startDate);
       
+      // Check if this is night sleep (outside daytime hours)
+      const isNightTime = currentHour >= 19 || currentHour < 5;
+      
       if (napMinutes < 5) {
+        if (isNightTime) {
+          return "Down for the night";
+        }
         return "Just fell asleep";
       }
       
@@ -84,7 +90,7 @@ const getCurrentState = (
       } else if (currentHour >= 12 && currentHour < 17) {
         return "Afternoon nap";
       } else if (currentHour >= 19 || currentHour < 5) {
-        return "Night sleep";
+        return "Sleeping peacefully";
       } else {
         return "Nap in progress";
       }
@@ -111,6 +117,7 @@ const getCurrentState = (
   if (recentActivity.type === 'nap') {
     const endTime = recentActivity.details?.endTime;
     const startTime = recentActivity.details?.startTime;
+    const isNightTime = currentHour >= 19 || currentHour < 5;
     
     if (endTime) {
       // Calculate nap duration for delightful variations
@@ -124,6 +131,17 @@ const getCurrentState = (
         const napDuration = differenceInMinutes(endDate, startDate);
         
         if (minutesSince < 10) {
+          // Night wake-ups
+          if (isNightTime) {
+            if (minutesSince < 3) {
+              return "Just woke up";
+            } else if (napDuration < 30) {
+              return "Quick wake-up";
+            } else {
+              return "Little midnight moment";
+            }
+          }
+          
           // Add context based on nap length
           if (napDuration < 20) {
             return "Just woke up from quick snooze";
@@ -136,6 +154,9 @@ const getCurrentState = (
       
       // Nap has ended
       if (minutesSince < 10) {
+        if (isNightTime) {
+          return "Late-night wake";
+        }
         return "Just woke up";
       } else if (minutesSince < 30) {
         return "Nap just ended";
@@ -154,6 +175,7 @@ const getCurrentState = (
     const unit = recentActivity.details?.unit;
     const minutesLeft = recentActivity.details?.minutesLeft;
     const minutesRight = recentActivity.details?.minutesRight;
+    const isNightTime = currentHour >= 19 || currentHour < 5;
     
     // Count today's feeds for milestone celebrations
     const todayFeeds = activities.filter(a => {
@@ -164,6 +186,17 @@ const getCurrentState = (
     }).length;
     
     if (minutesSince < 10) {
+      // Night feed messages
+      if (isNightTime) {
+        if (minutesSince < 3) {
+          return "Just had a night feed";
+        } else if (minutesSince < 6) {
+          return "Night feed wrapped up";
+        } else {
+          return "Topped up for the night";
+        }
+      }
+      
       // Celebrate feed milestones
       if (todayFeeds === 3) {
         return "Third feed today! 🎉";
@@ -312,26 +345,26 @@ export const CurrentMomentArc = ({
           style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient with richer colors and fading ends */}
+            {/* Daytime gradient: light to dark (left to right) with fading ends */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0" />
-              <stop offset="10%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.6" />
-              <stop offset="25%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.9" />
-              <stop offset="50%" stopColor="hsl(var(--pp-lavender))" stopOpacity="1" />
-              <stop offset="75%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.9" />
-              <stop offset="90%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.6" />
+              <stop offset="10%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.5" />
+              <stop offset="25%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.7" />
+              <stop offset="50%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.85" />
+              <stop offset="75%" stopColor="hsl(var(--pp-lavender))" stopOpacity="1" />
+              <stop offset="90%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0.9" />
               <stop offset="100%" stopColor="hsl(var(--pp-lavender))" stopOpacity="0" />
             </linearGradient>
             
-            {/* Twilight gradient - deeper, more muted blue-grays with fading ends */}
+            {/* Nighttime gradient: dark to light (left to right) with fading ends - twilight feel */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(220 20% 30%)" stopOpacity="0" />
-              <stop offset="10%" stopColor="hsl(220 20% 30%)" stopOpacity="0.5" />
-              <stop offset="25%" stopColor="hsl(220 20% 30%)" stopOpacity="0.7" />
+              <stop offset="10%" stopColor="hsl(220 20% 30%)" stopOpacity="0.8" />
+              <stop offset="25%" stopColor="hsl(220 20% 30%)" stopOpacity="0.9" />
               <stop offset="50%" stopColor="hsl(220 20% 30%)" stopOpacity="0.85" />
-              <stop offset="75%" stopColor="hsl(220 20% 30%)" stopOpacity="0.7" />
-              <stop offset="90%" stopColor="hsl(220 20% 30%)" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="hsl(220 20% 30%)" stopOpacity="0" />
+              <stop offset="75%" stopColor="hsl(220 25% 40%)" stopOpacity="0.7" />
+              <stop offset="90%" stopColor="hsl(220 25% 40%)" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="hsl(220 25% 40%)" stopOpacity="0" />
             </linearGradient>
           </defs>
           
@@ -349,7 +382,7 @@ export const CurrentMomentArc = ({
         </svg>
         
         {/* State text positioned inside the arc - bigger and bolder */}
-        <p className="absolute text-sm font-bold text-foreground tracking-wide text-center" 
+        <p className="absolute text-base font-bold text-foreground tracking-wide text-center" 
            style={{ 
              top: isDay ? '58%' : '32%',
              left: '50%',
