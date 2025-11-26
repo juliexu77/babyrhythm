@@ -28,7 +28,7 @@ import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
 import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
 import { FirstActivityCelebration } from "@/components/FirstActivityCelebration";
 import { PrefillDayModal } from "@/components/PrefillDayModal";
-import { SchedulePreview } from "@/components/home/SchedulePreview";
+
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { DailyReassurance } from "@/components/home/DailyReassurance";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
@@ -1449,18 +1449,6 @@ const lastDiaper = displayActivities
           }}
         />
 
-        {/* P0: Schedule Preview after first nap */}
-        {napsCount === 1 && !visitedTabs.has('guide') && (
-          <div className="px-4 animate-in fade-in slide-in-from-top-2 duration-500">
-            <SchedulePreview 
-              babyName={babyName}
-              onViewFullSchedule={() => {
-                const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-                guideTab?.click();
-              }}
-            />
-          </div>
-        )}
 
         {/* Missed Activity Prompt - Show above Right Now card */}
         {missedActivitySuggestion && (
