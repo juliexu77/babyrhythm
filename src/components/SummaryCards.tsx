@@ -47,7 +47,7 @@ export const SummaryCards = ({ activities }: SummaryCardsProps) => {
           </div>
         </div>
         <div className="space-y-1">
-          <div className="text-3xl font-sans font-semibold text-rose-900 dark:font-bold dark:text-primary">
+          <div className="text-3xl font-num font-semibold text-rose-900 dark:font-bold dark:text-primary">
             {feedActivities.length}
           </div>
           <div className="text-sm text-rose-600 font-medium">
@@ -67,7 +67,7 @@ export const SummaryCards = ({ activities }: SummaryCardsProps) => {
           </div>
         </div>
         <div className="space-y-1">
-          <div className="text-3xl font-sans font-semibold text-blue-900 dark:font-bold dark:text-primary">
+          <div className="text-3xl font-num font-semibold text-blue-900 dark:font-bold dark:text-primary">
             {napActivities.length}
           </div>
           <div className="text-sm text-blue-600 font-medium">

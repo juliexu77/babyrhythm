@@ -121,7 +121,7 @@ export const RhythmUnlockedModal = ({ isOpen, onClose, babyName, totalLogs }: Rh
           </div>
           
           <div className="space-y-3">
-            <h2 className="text-2xl font-bold text-foreground">
+            <h2 className="text-2xl font-serif font-bold text-foreground">
               Rhythm unlocked!
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">

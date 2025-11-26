@@ -582,7 +582,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Average Volume</h3>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-semibold text-foreground tracking-tight">
+              <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
                 {Math.round(feedSummary.avgVolume)} <span className="text-base text-muted-foreground font-normal">{feedUnit}/day</span>
               </div>
               {prevFeedSummary.avgVolume > 0 && (
@@ -609,7 +609,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Feed Count</h3>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-semibold text-foreground tracking-tight">
+              <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
                 {Math.round(feedSummary.avgFeedsPerDay)} <span className="text-base text-muted-foreground font-normal">/day</span>
               </div>
               {prevFeedSummary.avgFeedsPerDay > 0 && (
@@ -716,7 +716,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total Sleep</h3>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-semibold text-foreground tracking-tight">
+              <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
                 {napSummary.avgDuration.toFixed(1)} <span className="text-base text-muted-foreground font-normal">h/day</span>
               </div>
               {prevNapSummary.avgDuration > 0 && (
@@ -743,7 +743,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Nap Length</h3>
             </div>
             <div className="space-y-1">
-              <div className="text-2xl font-semibold text-foreground tracking-tight">
+              <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
                 {napSummary.avgDaytimeNapsPerDay.toFixed(1)} <span className="text-base text-muted-foreground font-normal">naps/day</span>
               </div>
               <div className="flex items-center gap-1.5">

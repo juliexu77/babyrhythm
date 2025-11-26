@@ -91,7 +91,7 @@ export const FirstActivityCelebration = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-foreground">
+            <h3 className="text-xl font-serif font-bold text-foreground">
               {message.title}
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">

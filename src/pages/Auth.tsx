@@ -137,7 +137,7 @@ const Auth = () => {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isLoading}
-                  className="w-full font-semibold"
+                  className="w-full font-sans font-semibold"
                 >
                   <Mail className="mr-2 h-4 w-4" />
                   Sign up with Google
@@ -190,7 +190,7 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-semibold" 
+                  className="w-full font-sans font-semibold" 
                   disabled={isLoading}
                 >
                   {isLoading ? t('settingUp') : t('createAccount')}
@@ -202,7 +202,7 @@ const Auth = () => {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={isLoading}
-                  className="w-full font-semibold"
+                  className="w-full font-sans font-semibold"
                 >
                   <Mail className="mr-2 h-4 w-4" />
                   Sign in with Google
@@ -244,7 +244,7 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-semibold" 
+                  className="w-full font-sans font-semibold" 
                   disabled={isLoading}
                 >
                   {isLoading ? t('loading') : t('signIn')}

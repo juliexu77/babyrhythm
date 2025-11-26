@@ -130,7 +130,7 @@ export const OnboardingTutorial = ({ isOpen, onComplete, babyName = "your baby" 
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <Icon className="w-5 h-5 text-primary" />
             </div>
-            <DialogTitle className="text-xl">{step.title}</DialogTitle>
+            <DialogTitle className="text-xl font-serif">{step.title}</DialogTitle>
           </div>
         </DialogHeader>
 

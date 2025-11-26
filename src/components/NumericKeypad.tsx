@@ -91,7 +91,7 @@ useEffect(() => {
           {/* Display */}
           <div className="bg-muted/50 rounded-lg p-4">
             <div className="relative flex items-center justify-center">
-              <div className="text-3xl font-bold text-foreground">
+              <div className="text-3xl font-num font-bold text-foreground">
                 {value || "0"}
               </div>
               <div className="absolute right-0">

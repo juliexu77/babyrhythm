@@ -109,7 +109,7 @@ export const PrefillDayModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Customize Your Sample Day</DialogTitle>
+          <DialogTitle className="text-xl font-serif">Customize Your Sample Day</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-2">

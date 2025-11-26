@@ -188,7 +188,7 @@ const handleAddCaregiver = async () => {
           <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
             ← Back
           </Button>
-          <h1 className="text-xl font-medium">{household?.baby_name || "Baby"}</h1>
+          <h1 className="text-xl font-serif font-medium">{household?.baby_name || "Baby"}</h1>
           <Button variant="ghost" className="text-muted-foreground">
             Cancel
           </Button>

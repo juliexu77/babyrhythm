@@ -1205,7 +1205,7 @@ const ongoingNap = (() => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center space-y-4">
-          <h2 className="text-xl font-semibold">Connection Issue</h2>
+          <h2 className="text-xl font-serif font-semibold">Connection Issue</h2>
           <p className="text-muted-foreground">{householdError}</p>
           <Button
             onClick={() => {
@@ -1225,7 +1225,7 @@ const ongoingNap = (() => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center space-y-4">
-          <h2 className="text-xl font-semibold">No Household Found</h2>
+          <h2 className="text-xl font-serif font-semibold">No Household Found</h2>
           <p className="text-muted-foreground">Let's set up your household</p>
           <Button onClick={() => navigate('/onboarding')}>Go to Onboarding</Button>
         </div>

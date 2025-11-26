@@ -343,8 +343,13 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
   return (
     <div className="space-y-4 pb-6">
-      {/* Time Range Switcher */}
+      {/* Header */}
       <div className="mx-2 pt-4">
+        <h1 className="text-2xl font-serif font-semibold text-foreground mb-4">History</h1>
+      </div>
+      
+      {/* Time Range Switcher */}
+      <div className="mx-2">
         <div className="flex justify-center gap-2">
         {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
           <Button

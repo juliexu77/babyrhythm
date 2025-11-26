@@ -63,7 +63,7 @@ export const MetricOverviewStrip = ({ metrics }: MetricOverviewStripProps) => {
           <div key={index} className="p-4 space-y-2">
             {/* Current Value */}
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-bold text-foreground tracking-tight">
+              <span className="text-3xl font-num font-bold text-foreground tracking-tight">
                 {metric.currentValue}
               </span>
               <span className="text-sm text-muted-foreground font-normal">

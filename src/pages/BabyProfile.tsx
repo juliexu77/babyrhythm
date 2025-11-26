@@ -146,7 +146,7 @@ export const BabyProfile = ({ onClose }: { onClose?: () => void }) => {
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center justify-between px-4 h-14">
-          <h1 className="text-xl font-semibold">Profile</h1>
+          <h1 className="text-xl font-serif font-semibold">Profile</h1>
           {onClose && (
             <Button
               variant="ghost"

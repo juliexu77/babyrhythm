@@ -1212,7 +1212,7 @@ const lastDiaper = displayActivities
         <div className="max-w-2xl mx-auto space-y-3">
           {/* Welcome Message */}
           <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-foreground">
+            <h2 className="text-xl font-serif font-semibold text-foreground">
               Hi {userName || 'there'} 👋
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">

@@ -115,7 +115,7 @@ export const NextNeedHero = ({
                       <Clock className="w-4 h-4 text-primary" />
                       <p className="text-xs font-medium text-foreground/80">Time awake</p>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-2xl font-num font-bold text-foreground">
                       {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -139,7 +139,7 @@ export const NextNeedHero = ({
                          currentActivity.type === 'sleeping' ? 'Sleeping' : 'Feeding'}
                       </p>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-2xl font-num font-bold text-foreground">
                       {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
