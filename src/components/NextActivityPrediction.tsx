@@ -211,7 +211,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
             <Clock className="h-6 w-6 text-primary" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-foreground">
+            <h3 className="text-base font-serif font-semibold text-foreground">
               Your baby's next rhythm prediction will appear here
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
@@ -375,7 +375,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
     <div className="next-action-card bg-card rounded-lg border border-border p-4 relative z-10">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium text-base text-foreground">What's Next</h3>
+          <h3 className="font-serif font-medium text-base text-foreground">What's Next</h3>
           {prediction.isStillLearning && (
             <span className="text-[10px] px-2 py-0.5 bg-accent/40 text-accent-foreground rounded-full border border-accent/60">
               Still learning

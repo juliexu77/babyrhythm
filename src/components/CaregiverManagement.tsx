@@ -197,7 +197,7 @@ const handleAddCaregiver = async () => {
         {/* Parents / Caregivers Section */}
         <div className="px-4 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">{t('parentsCaregiversTitle')}</h3>
+            <h3 className="text-lg font-serif font-medium">{t('parentsCaregiversTitle')}</h3>
           </div>
           
           <p className="text-sm text-muted-foreground mb-4">
@@ -352,7 +352,7 @@ const handleAddCaregiver = async () => {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold text-lg">
+                  <h3 className="font-serif font-semibold text-lg">
                     {selectedCollaborator.full_name || selectedCollaborator.profiles?.full_name || "User"}
                   </h3>
                   <Badge className={getRoleColor(selectedCollaborator.role)}>

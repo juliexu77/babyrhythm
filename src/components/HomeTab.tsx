@@ -1224,7 +1224,7 @@ const lastDiaper = displayActivities
           <Card className="p-6 bg-card/50 border border-border/40">
             <div className="space-y-5">
               <div className="space-y-2">
-                <h3 className="text-base font-semibold text-foreground">
+                <h3 className="text-base font-serif font-semibold text-foreground">
                   Start tracking to unlock predictions
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">

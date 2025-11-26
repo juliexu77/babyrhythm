@@ -43,7 +43,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-semibold capitalize">{activity.type}</h3>
+                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type}</h3>
                 <p className="text-sm text-muted-foreground">{activity.time}</p>
               </div>
             </div>
@@ -79,7 +79,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-semibold capitalize">{activity.type} {t('change')}</h3>
+                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type} {t('change')}</h3>
                 <p className="text-sm text-muted-foreground">{activity.time}</p>
               </div>
             </div>
@@ -117,7 +117,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-semibold capitalize">{activity.type}</h3>
+                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type}</h3>
                 <p className="text-sm text-muted-foreground">{activity.time}</p>
               </div>
             </div>
@@ -145,7 +145,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-semibold capitalize">{activity.type}</h3>
+                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type}</h3>
                 <p className="text-sm text-muted-foreground">{activity.time}</p>
               </div>
             </div>

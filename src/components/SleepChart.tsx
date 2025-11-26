@@ -105,7 +105,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Moon className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-base font-sans font-medium text-foreground dark:font-semibold">{t('weeklySleepSchedule')}</h3>
+              <h3 className="text-base font-serif font-sans font-medium text-foreground dark:font-semibold">{t('weeklySleepSchedule')}</h3>
             </div>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={onShare}>
               <Share className="h-4 w-4" />

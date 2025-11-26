@@ -557,7 +557,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                   <Leaf className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground">Ask Me Anything</h3>
+                <h3 className="text-lg font-serif font-semibold text-foreground">Ask Me Anything</h3>
                 <p className="text-sm text-muted-foreground">
                   I can help with sleep, feeding, development, and parenting questions
                 </p>
