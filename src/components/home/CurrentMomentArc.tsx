@@ -407,10 +407,10 @@ export const CurrentMomentArc = ({
               <stop offset="100%" stopColor="hsl(0 0% 65%)" stopOpacity="1" />
             </linearGradient>
             
-            {/* Bottom fade mask - only fade the bottom 10% */}
+            {/* Bottom fade mask - fade only below the arc (y=100) */}
             <linearGradient id="bottomFade" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopOpacity="1" />
-              <stop offset="90%" stopOpacity="1" />
+              <stop offset="95%" stopOpacity="1" />
               <stop offset="100%" stopOpacity="0" />
             </linearGradient>
             <mask id="arcMask">
