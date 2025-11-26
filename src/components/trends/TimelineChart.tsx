@@ -95,7 +95,7 @@ export const TimelineChart = ({
   const [selectedWeekIndex, setSelectedWeekIndex] = useState<number | null>(null);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
-  const { chartData, weeks } = useMemo(() => {
+  const { chartData, weeks, days } = useMemo(() => {
     const now = new Date();
     // Exclude today - go back to yesterday
     const yesterday = startOfDay(subDays(now, 1));
@@ -119,7 +119,7 @@ export const TimelineChart = ({
         };
       });
       
-      return { chartData: data, weeks: [] };
+      return { chartData: data, weeks: [], days };
     }
     
     // Get all weeks in the range
@@ -145,7 +145,7 @@ export const TimelineChart = ({
       };
     });
     
-    return { chartData: data, weeks };
+    return { chartData: data, weeks, days: [] };
   }, [activities, timeRange, dataExtractor]);
 
   // Fetch cohort ranges for the timeline
@@ -394,8 +394,13 @@ export const TimelineChart = ({
     );
   };
 
-  const selectedWeek = selectedWeekIndex !== null ? weeks[selectedWeekIndex] : null;
-  const selectedWeekEnd = selectedWeek ? endOfWeek(selectedWeek, { weekStartsOn: 1 }) : null;
+  // Handle both weekly and daily selections
+  const selectedDate = selectedWeekIndex !== null 
+    ? (timeRange === '1week' ? days[selectedWeekIndex] : weeks[selectedWeekIndex])
+    : null;
+  const selectedDateEnd = selectedDate 
+    ? (timeRange === '1week' ? selectedDate : endOfWeek(selectedDate, { weekStartsOn: 1 }))
+    : null;
   
   // Get warm explanation
   const explanation = getChartExplanation(metricType, babyBirthday);
@@ -419,12 +424,12 @@ export const TimelineChart = ({
         )}
       </div>
       
-      {selectedWeek && selectedWeekEnd && (
+      {selectedDate && selectedDateEnd && (
         <TimelineDetailModal
           open={selectedWeekIndex !== null}
           onOpenChange={(open) => !open && setSelectedWeekIndex(null)}
-          weekStart={selectedWeek}
-          weekEnd={selectedWeekEnd}
+          weekStart={selectedDate}
+          weekEnd={selectedDateEnd}
           activities={activities}
           metricType={metricType}
           nightSleepStartHour={nightSleepStartHour}
