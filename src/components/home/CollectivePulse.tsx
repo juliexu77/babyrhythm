@@ -183,13 +183,13 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
               <div className="bg-card rounded-lg p-3">
                 <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Night Sleep</div>
                 <div className="flex items-baseline gap-2">
-                  <div className="text-2xl font-semibold text-foreground tracking-tight">
+                  <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
                     {cohortStats.night_sleep_hours?.toFixed(1) || '—'} <span className="text-base text-muted-foreground font-normal">h</span>
                   </div>
                   {renderChange(cohortStats.night_sleep_change)}
                 </div>
                 {babyMetrics?.nightSleepHours !== null && babyMetrics?.nightSleepHours !== undefined && (
-                  <div className="text-[11px] text-muted-foreground/80 italic mt-1.5">
+                  <div className="text-[11px] font-num text-muted-foreground/80 italic mt-1.5">
                     Your baby: {babyMetrics.nightSleepHours.toFixed(1)}h
                   </div>
                 )}
@@ -197,13 +197,13 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
               <div className="bg-card rounded-lg p-3">
                 <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Naps/Day</div>
                 <div className="flex items-baseline gap-2">
-                  <div className="text-2xl font-semibold text-foreground tracking-tight">
+                  <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
                     {formatNaps(cohortStats.naps_per_day)}
                   </div>
                   {renderChange(cohortStats.naps_per_day_change)}
                 </div>
                 {babyMetrics?.napsPerDay !== null && babyMetrics?.napsPerDay !== undefined && (
-                  <div className="text-[11px] text-muted-foreground/80 italic mt-1.5">
+                  <div className="text-[11px] font-num text-muted-foreground/80 italic mt-1.5">
                     Your baby: {babyMetrics.napsPerDay.toFixed(1)}
                   </div>
                 )}

@@ -543,12 +543,12 @@ export const ScheduleTimeline = ({
                       </div>
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-sm font-semibold text-foreground transition-all duration-500 ${
+                          <span className={`text-sm font-num font-semibold text-foreground transition-all duration-500 ${
                             animateWakeTime ? 'scale-110 text-amber-600' : ''
                           }`}>
                             {formatTime(activity.time, 'wake')}
                           </span>
-                          <span className="text-xs font-medium text-muted-foreground">
+                          <span className="text-xs font-serif font-medium text-muted-foreground">
                             Wake up
                           </span>
                           {isCurrent && (
@@ -646,10 +646,10 @@ export const ScheduleTimeline = ({
                       </div>
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-foreground">
+                          <span className="text-sm font-num font-semibold text-foreground">
                             {formatTime(activity.time)}
                           </span>
-                          <span className="text-xs font-medium text-muted-foreground">
+                          <span className="text-xs font-serif font-medium text-muted-foreground">
                             Bedtime
                           </span>
                           {isCurrent && (
