@@ -1247,7 +1247,7 @@ return (
                 {activeTab === 'home' && 'Home'}
                 {activeTab === 'helper' && 'Rhythm'}
                 {activeTab === 'trends' && 'Trends'}
-                {activeTab === 'insights' && 'Log'}
+                {activeTab === 'insights' && 'History'}
                 {activeTab === 'settings' && 'Settings'}
               </h1>
             </div>

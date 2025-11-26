@@ -129,7 +129,7 @@ const Auth = () => {
         </div>
 
         {/* Auth Forms */}
-        <Card className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 dark:bg-transparent shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 dark:border-border overflow-hidden">
+        <Card className="rounded-xl bg-gradient-to-[145deg] from-[#FFF9F5] to-[#E6E0D9] dark:bg-transparent shadow-[0px_20px_40px_-10px_rgba(74,58,51,0.08)] border border-white/40 dark:border-border overflow-hidden">
           <CardContent className="pt-6">
             {mode === 'signup' ? (
               <form onSubmit={handleSignUp} className="space-y-4">
