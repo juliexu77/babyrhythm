@@ -380,7 +380,7 @@ export const CurrentMomentArc = ({
   const triangleY = centerY - Math.sin(arcAngle) * arcRadius;
   
   return (
-    <div className="px-4 pb-0">
+    <div className="px-4 pb-0 relative z-10">
       <div className="relative w-full flex flex-col items-center pt-0 pb-2">
         {/* Arc SVG */}
         <svg
