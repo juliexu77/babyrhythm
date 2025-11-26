@@ -48,7 +48,7 @@ const leftTabs = [
                   fill={isActive && tab.id === 'home' ? 'currentColor' : 'none'}
                   strokeWidth={isActive && tab.id === 'home' ? 0 : 2}
                 />
-                <span className="text-xs font-medium">{tab.label}</span>
+                <span className="text-xs font-serif font-medium">{tab.label}</span>
               </button>
             );
           })}
@@ -84,7 +84,7 @@ const leftTabs = [
                 }`}
               >
                 <Icon className="w-6 h-6" />
-                <span className="text-xs font-medium">{tab.label}</span>
+                <span className="text-xs font-serif font-medium">{tab.label}</span>
               </button>
             );
           })}

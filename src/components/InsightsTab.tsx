@@ -373,7 +373,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             <div className="flex items-center gap-2">
               <Moon className="w-4 h-4 text-primary" />
               <div className="text-left">
-                <h3 className="text-sm font-medium text-foreground">Night Sleep</h3>
+                <h3 className="text-sm font-serif font-medium text-foreground">Night Sleep</h3>
                 <p className="text-xs text-muted-foreground">See how night sleep has shifted over time</p>
               </div>
             </div>

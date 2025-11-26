@@ -519,7 +519,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                       const time = activity.loggedAt ? format(new Date(activity.loggedAt), "h:mm a") : "";
                       return (
                         <div key={idx} className="text-[12px] text-foreground/70 leading-relaxed">
-                          <span className="text-muted-foreground/50 italic text-[11px]">{time}</span>
+                          <span className="font-num text-muted-foreground/50 italic text-[11px]">{time}</span>
                           <span className="mx-1">·</span>
                           {activity.details.note}
                         </div>
