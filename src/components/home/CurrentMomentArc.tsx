@@ -337,7 +337,7 @@ export const CurrentMomentArc = ({
   
   return (
     <div className="px-4 pb-0">
-      <div className="relative w-full flex flex-col items-center pt-1 pb-2">
+      <div className="relative w-full flex flex-col items-center pt-0 pb-2">
         {/* Arc SVG */}
         <svg
           viewBox="0 0 200 110"
