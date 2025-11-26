@@ -8,7 +8,7 @@ import { TimeScrollPicker } from "./TimeScrollPicker";
 import { MinuteScrollPicker } from "./MinuteScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler, Mic, Thermometer } from "lucide-react";
+import { Plus, Milk, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Utensils, MoreVertical, Trash2, Ruler, Mic, Thermometer } from "lucide-react";
 import { VoiceRecorder } from "./VoiceRecorder";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
@@ -597,11 +597,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case "feed": return <Baby className="h-4 w-4" />;
+      case "feed": return <Milk className="h-4 w-4" />;
       case "diaper": return <Droplet className="h-4 w-4" />;
       case "nap": return <Moon className="h-4 w-4" />;
       case "note": return <StickyNote className="h-4 w-4" />;
-      case "solids": return <Carrot className="h-4 w-4" />;
+      case "solids": return <Utensils className="h-4 w-4" />;
       case "photo": return <Camera className="h-4 w-4" />;
       default: return null;
     }
@@ -623,8 +623,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col [&>button[data-state]]:hidden">{/* Hide close button */}
           <DialogHeader className="pb-4 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-lg font-medium">
-                {editingActivity ? t('editActivity') : t('addActivity')}
+              <DialogTitle className="font-serif text-xl font-medium">
+                {editingActivity ? t('editActivity') : 'Log Activity'}
               </DialogTitle>
               {!editingActivity && (
                 <Button
@@ -646,8 +646,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Activity Type Selection - Clean Grid */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { type: "feed", icon: Baby, label: t('feeding') },
-                { type: "solids", icon: Carrot, label: t('solids') },
+                { type: "feed", icon: Milk, label: t('feeding') },
+                { type: "solids", icon: Utensils, label: t('solids') },
                 { type: "nap", icon: Moon, label: t('sleep') },
                 { type: "diaper", icon: Droplet, label: t('diaper') },
                 { type: "note", icon: StickyNote, label: t('note') },
@@ -657,10 +657,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   key={type}
                   type="button"
                   variant={activityType === type ? "default" : "outline"}
-                  className={`h-12 flex-col gap-1 ${
+                  className={`h-12 flex-col gap-1 transition-all ${
                     activityType === type 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'hover:bg-muted border-0'
+                      ? 'bg-primary text-primary-foreground shadow-lg ring-2 ring-primary/30' 
+                      : 'hover:bg-muted border-0 opacity-50 hover:opacity-70'
                   }`}
                   onClick={() => setActivityType(type as any)}
                 >
@@ -678,7 +678,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <div className="grid grid-cols-2 gap-2">
                     {[
                      { type: "bottle", icon: Milk, label: t('bottle') },
-                      { type: "nursing", icon: Baby, label: t('nursing') }
+                      { type: "nursing", icon: Milk, label: t('nursing') }
                     ].map(({ type, icon: Icon, label }) => (
                       <Button
                         key={type}
@@ -1016,12 +1016,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {/* What did they eat */}
                 <div>
-                  <Label htmlFor="solids-description" className="text-sm font-medium mb-2 block">What did they eat?</Label>
+                  <Label htmlFor="solids-description" className="text-sm font-medium mb-2 block">Menu</Label>
                   <Textarea
                     id="solids-description"
                     value={solidsDescription}
                     onChange={(e) => setSolidsDescription(e.target.value)}
-                    placeholder="e.g., banana puree, rice cereal, cheerios..."
+                    placeholder="Avocado toast, pureed pears..."
                     rows={3}
                     className="resize-none"
                   />
