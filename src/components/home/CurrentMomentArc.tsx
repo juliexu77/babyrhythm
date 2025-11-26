@@ -1,6 +1,7 @@
 import { Activity } from "@/components/ActivityCard";
 import { differenceInMinutes, format } from "date-fns";
 import { getActivityEventDate } from "@/utils/activityDate";
+import { Sun, Moon } from "lucide-react";
 
 interface CurrentMomentArcProps {
   activities: Activity[];
@@ -404,6 +405,16 @@ export const CurrentMomentArc = ({
               <stop offset="50%" stopColor="hsl(230 30% 55%)" stopOpacity="1" />
               <stop offset="100%" stopColor="hsl(0 0% 65%)" stopOpacity="1" />
             </linearGradient>
+            
+            {/* Bottom fade mask - only fade the bottom 10% */}
+            <linearGradient id="bottomFade" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopOpacity="1" />
+              <stop offset="90%" stopOpacity="1" />
+              <stop offset="100%" stopOpacity="0" />
+            </linearGradient>
+            <mask id="arcMask">
+              <rect x="0" y="0" width="200" height="110" fill="url(#bottomFade)" />
+            </mask>
           </defs>
           
           {/* Semicircle arc - always right-side up */}
@@ -413,16 +424,18 @@ export const CurrentMomentArc = ({
             stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
             strokeWidth="8.5"
             strokeLinecap="round"
-            opacity="0.85"
+            mask="url(#arcMask)"
           />
           
-          {/* Triangle indicator showing current position in day/night - rotated to point outward */}
+          {/* Sun/Moon indicator showing current position in day/night - rotated to point outward */}
           <g transform={`translate(${triangleX}, ${triangleY}) rotate(${(arcAngle * 180 / Math.PI) - 90})`}>
-            <polygon
-              points="0,-8 -4,-2 4,-2"
-              fill={isDay ? "hsl(280 40% 35%)" : "hsl(230 50% 45%)"}
-              className="transition-all duration-1000"
-            />
+            <foreignObject x="-10" y="-10" width="20" height="20">
+              {isDay ? (
+                <Sun className="w-5 h-5 text-[hsl(280,40%,35%)]" />
+              ) : (
+                <Moon className="w-5 h-5 text-[hsl(230,50%,45%)]" />
+              )}
+            </foreignObject>
           </g>
         </svg>
         
