@@ -356,30 +356,6 @@ export const RhythmArc = ({
             </div>
           </foreignObject>
         </svg>
-        
-        {/* Debug Visual */}
-        <div className="mt-2 p-2 bg-muted/50 rounded-lg text-[10px] font-mono text-muted-foreground border border-border/30">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-            <span>Mode:</span>
-            <span className="text-foreground">{mode}</span>
-            <span>Theme:</span>
-            <span className="text-foreground">{theme}</span>
-            <span>Progress:</span>
-            <span className="text-foreground">{(rawProgress * 100).toFixed(1)}%</span>
-            <span>Elapsed:</span>
-            <span className="text-foreground">{elapsedMinutes} min</span>
-            <span>Typical Duration:</span>
-            <span className="text-foreground">{typicalDuration} min</span>
-            <span>Start Time:</span>
-            <span className="text-foreground">{startTime.toLocaleTimeString()}</span>
-            <span>Zone:</span>
-            <span className="text-foreground">
-              {isOvertired ? "Overtired" : inTwilightZone ? "Twilight" : "Normal"}
-            </span>
-            <span>State:</span>
-            <span className="text-foreground truncate">{stateMessage}</span>
-          </div>
-        </div>
       </div>
     </div>
   );
