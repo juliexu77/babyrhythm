@@ -533,7 +533,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
       {/* Long Term Trends Summary */}
       <div className="mx-2">
-        <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
+        <div className="rounded-xl bg-card border border-border/40 overflow-hidden">
           <div className="px-4 py-4 border-b border-border/30">
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
               Long Term Trends
