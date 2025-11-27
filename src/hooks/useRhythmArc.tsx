@@ -234,40 +234,12 @@ export const useRhythmArc = ({
         if (sortedNaps.length > 0) {
           const lastNap = sortedNaps[0];
           const endTimeStr = String(lastNap.details.endTime);
-          
-          // Parse time with AM/PM support (e.g., "7:44 AM" or "7:44")
-          const timeMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-          if (timeMatch) {
-            let hours = parseInt(timeMatch[1]);
-            const minutes = parseInt(timeMatch[2]);
-            const period = timeMatch[3]?.toUpperCase();
-            
-            // Convert 12-hour to 24-hour format
-            if (period === 'PM' && hours !== 12) hours += 12;
-            if (period === 'AM' && hours === 12) hours = 0;
-            
-            // Get base date from the nap's date_local or loggedAt
-            const napDetails = lastNap.details as any;
-            let napEndDate: Date;
-            
-            if (napDetails.date_local) {
-              // Parse date_local as local date to avoid UTC shift
-              const [year, month, day] = napDetails.date_local.split('-').map(Number);
-              napEndDate = new Date(year, month - 1, day);
-            } else {
-              napEndDate = new Date(lastNap.loggedAt || lastNap.time || currentTime);
-            }
-            
+          const timeParts = endTimeStr.split(":").map(Number);
+          if (timeParts.length >= 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
+            const [hours, minutes] = timeParts;
+            const napEndDate = new Date(lastNap.loggedAt || lastNap.time || currentTime);
             napEndDate.setHours(hours, minutes, 0, 0);
             startTime = napEndDate;
-            
-            console.log('⏰ WAKE MODE - Parsed last nap end:', {
-              endTimeStr,
-              parsedHours: hours,
-              parsedMinutes: minutes,
-              period,
-              startTime: startTime.toLocaleString()
-            });
           }
 
           // Calculate age-appropriate wake window
