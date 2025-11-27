@@ -37,13 +37,13 @@ export const RhythmArc = ({
   const rawProgress = elapsedMinutes / typicalDuration;
   const progress = Math.max(0, Math.min(rawProgress, 1.5)); // Cap at 150%
   
-  // Arc configuration - elevated arc above horizon
+  // Arc configuration - elevated arc above horizon with steeper curve
   const viewBoxWidth = 520;
   const viewBoxHeight = 200;
   const padding = 50;
   const horizonY = viewBoxHeight - 20; // Horizon at bottom (180)
   const arcStartEndY = 120; // Arc endpoints elevated above horizon
-  const arcPeakY = 40; // Peak of the arc
+  const arcPeakY = 25; // Peak of the arc - 25% steeper (was 40)
   
   // Arc endpoints elevated above horizon, curving upward
   const startPoint = { x: padding, y: arcStartEndY };
