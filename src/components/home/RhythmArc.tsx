@@ -62,11 +62,18 @@ export const RhythmArc = ({
     endPoint
   );
   
-  // Create wedge path: follows the arc curve precisely from start to icon, then fills down to horizon
-  // Use the SAME control point as the main arc to ensure the wedge follows the exact curve
+  // Calculate the subdivided control point for the partial curve
+  // For a quadratic Bézier from t=0 to t=iconProgress, the control point is:
+  // C' = (1-t)P0 + tP1, where P0=startPoint, P1=controlPoint
+  const subdividedControl = {
+    x: startPoint.x + iconProgress * (controlPoint.x - startPoint.x),
+    y: startPoint.y + iconProgress * (controlPoint.y - startPoint.y)
+  };
+  
+  // Create wedge path: follows the exact arc curve from start to icon, then fills down to horizon
   const wedgePath = `
     M ${startPoint.x} ${startPoint.y}
-    Q ${controlPoint.x} ${controlPoint.y} ${iconPosition.x} ${iconPosition.y}
+    Q ${subdividedControl.x} ${subdividedControl.y} ${iconPosition.x} ${iconPosition.y}
     L ${iconPosition.x} ${horizonY}
     L ${startPoint.x} ${horizonY}
     Z
