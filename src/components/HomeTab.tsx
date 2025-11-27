@@ -1555,17 +1555,15 @@ const lastDiaper = displayActivities
         />
 
         {/* Today's Pulse - Show deviations */}
-        {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
-          <div className="px-4">
-            <TodaysPulse
-              deviations={todaysPulse.deviations}
-              biggestDeviation={todaysPulse.biggestDeviation}
-              babyName={babyName}
-              babyAge={babyAgeInWeeks}
-              activities={activities}
-              transitionInfo={null}
-            />
-          </div>
+        {todaysPulse?.deviations && (
+          <TodaysPulse
+            deviations={todaysPulse.deviations}
+            biggestDeviation={todaysPulse.biggestDeviation}
+            babyName={babyName || 'Baby'}
+            babyAge={babyAgeInWeeks}
+            activities={activities}
+            transitionInfo={null}
+          />
         )}
 
         {/* Zone 1: Next Need Hero */}
