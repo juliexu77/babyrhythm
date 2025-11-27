@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { Activity } from "@/components/ActivityCard";
 import { getRhythmStateMessage } from "@/utils/rhythmStateMessages";
+import { isNightSleep as isNightSleepActivity } from "@/utils/napClassification";
+import { isNightTime } from "@/utils/nightWindow";
+import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/ageAppropriateBaselines";
 
 interface UseRhythmArcProps {
   activities: Activity[];
@@ -62,16 +65,14 @@ export const useRhythmArc = ({
       let typicalDuration = 120; // Default 2 hours
 
       if (ongoingNap?.details?.startTime) {
-        // Check if this is night sleep or a nap
         mode = "nap";
         
-        // Use the activity's time field which is already in local timezone
-        const activityTime = new Date(ongoingNap.time);
+        // Parse start time with fallback chain to prevent Invalid Date
+        let parsedStartTime: Date | null = null;
         const startTimeStr = String(ongoingNap.details.startTime);
         
-        // Parse the time string (e.g., "7:44 PM")
+        // Try parsing the time string (e.g., "7:44 PM")
         const timeParts = startTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-        
         if (timeParts) {
           let hours = parseInt(timeParts[1]);
           const minutes = parseInt(timeParts[2]);
@@ -80,46 +81,74 @@ export const useRhythmArc = ({
           if (period === 'PM' && hours !== 12) hours += 12;
           if (period === 'AM' && hours === 12) hours = 0;
           
-          // Use the date from activity.time but set the hours/minutes from startTime
-          startTime = new Date(activityTime);
-          startTime.setHours(hours, minutes, 0, 0);
+          // Use date_local if available (from details), otherwise use activity.time or loggedAt
+          const detailsAny = ongoingNap.details as any;
+          const baseDate = detailsAny.date_local 
+            ? new Date(detailsAny.date_local)
+            : new Date(ongoingNap.loggedAt || ongoingNap.time);
+          
+          if (!isNaN(baseDate.getTime())) {
+            parsedStartTime = new Date(baseDate);
+            parsedStartTime.setHours(hours, minutes, 0, 0);
+          }
         }
         
+        // Fallback chain if parsing failed
+        if (!parsedStartTime || isNaN(parsedStartTime.getTime())) {
+          const detailsAny = ongoingNap.details as any;
+          if (detailsAny.date_local) {
+            parsedStartTime = new Date(detailsAny.date_local);
+          } else if (ongoingNap.loggedAt) {
+            parsedStartTime = new Date(ongoingNap.loggedAt);
+          } else if (ongoingNap.time) {
+            parsedStartTime = new Date(ongoingNap.time);
+          } else {
+            parsedStartTime = currentTime;
+          }
+        }
+        
+        startTime = parsedStartTime;
         
         
-        // Determine if this is night sleep based on start time
+        // Determine if this is night sleep using shared utility
         const startHour = startTime.getHours();
-        const isNightSleep = nightSleepStartHour > nightSleepEndHour
-          ? startHour >= nightSleepStartHour || startHour < nightSleepEndHour
-          : startHour >= nightSleepStartHour && startHour < nightSleepEndHour;
+        const isNightSleep = isNightTime(startHour, nightSleepStartHour, nightSleepEndHour);
         
-        // Calculate age-based typical duration
+        // Use baseline data for typical duration
         let ageBasedDuration = 90; // Default nap duration
         if (babyBirthday) {
           try {
-            const birthDate = new Date(babyBirthday);
-            const ageInMonths = Math.floor(
-              (currentTime.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
-            );
+            const ageInWeeks = calculateAgeInWeeks(babyBirthday);
             
             if (isNightSleep) {
-              // Age-appropriate night sleep durations (in minutes)
-              if (ageInMonths < 1) ageBasedDuration = 480; // 8 hours
-              else if (ageInMonths < 2) ageBasedDuration = 540; // 9 hours
-              else if (ageInMonths < 4) ageBasedDuration = 600; // 10 hours
-              else if (ageInMonths < 6) ageBasedDuration = 630; // 10.5 hours
-              else if (ageInMonths < 9) ageBasedDuration = 660; // 11 hours
-              else if (ageInMonths < 12) ageBasedDuration = 660; // 11 hours
-              else ageBasedDuration = 630; // 10.5 hours
+              // Night sleep durations from baseline data (hours -> minutes)
+              // From baselineWakeWindows totalSleep field
+              if (ageInWeeks < 2) ageBasedDuration = 600; // 10 hours (16-20hrs total, ~10hrs night)
+              else if (ageInWeeks < 5) ageBasedDuration = 570; // 9.5 hours (15-18hrs total)
+              else if (ageInWeeks < 9) ageBasedDuration = 540; // 9 hours (14-17hrs total)
+              else if (ageInWeeks < 13) ageBasedDuration = 540; // 9 hours (14-16hrs total)
+              else if (ageInWeeks < 17) ageBasedDuration = 600; // 10 hours (12-15hrs total)
+              else if (ageInWeeks < 25) ageBasedDuration = 630; // 10.5 hours (12-15hrs total)
+              else if (ageInWeeks < 36) ageBasedDuration = 660; // 11 hours (12-14hrs total)
+              else if (ageInWeeks < 53) ageBasedDuration = 660; // 11 hours (11-14hrs total)
+              else if (ageInWeeks < 105) ageBasedDuration = 630; // 10.5 hours (11-13hrs total)
+              else ageBasedDuration = 600; // 10 hours (10-12hrs total)
             } else {
-              // Age-appropriate nap durations (in minutes)
-              if (ageInMonths < 1) ageBasedDuration = 120; // 2 hours
-              else if (ageInMonths < 2) ageBasedDuration = 105; // 1.75 hours
-              else if (ageInMonths < 4) ageBasedDuration = 90; // 1.5 hours
-              else if (ageInMonths < 6) ageBasedDuration = 90; // 1.5 hours
-              else if (ageInMonths < 9) ageBasedDuration = 75; // 1.25 hours
-              else if (ageInMonths < 12) ageBasedDuration = 75; // 1.25 hours
-              else ageBasedDuration = 90; // 1.5 hours
+              // Daytime nap durations from baseline data
+              const wakeWindowData = getWakeWindowForAge(ageInWeeks);
+              if (wakeWindowData) {
+                // Estimate nap length based on age and typical nap count
+                const napCountStr = wakeWindowData.napCount;
+                const napCount = parseInt(napCountStr.split('-')[0]) || 3;
+                
+                // Rough nap duration estimates
+                if (ageInWeeks < 5) ageBasedDuration = 90; // 1.5 hours
+                else if (ageInWeeks < 13) ageBasedDuration = 75; // 1.25 hours
+                else if (ageInWeeks < 25) ageBasedDuration = 90; // 1.5 hours
+                else if (ageInWeeks < 36) ageBasedDuration = 90; // 1.5 hours
+                else if (ageInWeeks < 65) ageBasedDuration = 90; // 1.5 hours for single nap
+                else ageBasedDuration = 0; // No naps after 65 weeks typically
+              }
             }
           } catch (e) {
             console.error("Error calculating age-appropriate duration:", e);
