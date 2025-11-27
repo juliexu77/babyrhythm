@@ -430,7 +430,8 @@ export const CurrentMomentArc = ({
         <svg
           viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
           className="w-full"
-          style={{ maxWidth: '100%', overflow: 'visible' }}
+          preserveAspectRatio="xMidYMid meet"
+          style={{ maxWidth: '100%', overflow: 'hidden' }}
         >
           <defs>
             <linearGradient id="dayBaseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
