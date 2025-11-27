@@ -370,14 +370,16 @@ export const DailyReassurance = ({
 
   return (
     <div className="mx-2 mb-3">
-      <div className="px-3 py-2 rounded-xl bg-gradient-to-b from-primary/8 via-primary/5 to-primary/3 border border-border/10">
+      <div className="px-3 py-2 rounded-xl border border-border/10" style={{
+        background: 'linear-gradient(145deg, #FFF9F5, #E6E0D9)'
+      }}>
         <div className="flex items-start gap-2">
-          <IconComponent className="w-4 h-4 text-primary/60 mt-0.5 flex-shrink-0" />
+          <IconComponent className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#B8927C' }} />
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-semibold text-foreground/50 uppercase tracking-[0.08em] mb-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] mb-1" style={{ color: '#6B5D55' }}>
               Noticed Today
             </p>
-            <p className="text-sm text-foreground/70 leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: '#4A3A33' }}>
               {reassuranceMessage}
             </p>
           </div>
