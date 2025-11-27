@@ -433,8 +433,8 @@ export const CurrentMomentArc = ({
     const endX = centerX + Math.cos(currentAngle) * arcRadius;
     const endY = centerY - Math.sin(currentAngle) * arcRadius;
     
-    // Use large arc flag (1) for the 144° arc going the long way
-    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 1 1 ${endX} ${endY}`;
+    // Use small arc flag (0) since 144° < 180°, sweep clockwise (1)
+    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
   };
   
   const trailPath = createTrailPath();
@@ -488,7 +488,7 @@ export const CurrentMomentArc = ({
           
           {/* Base Arc Background (shortened) */}
           <path
-            d={`M ${centerX + Math.cos(startAngle) * arcRadius} ${centerY - Math.sin(startAngle) * arcRadius} A ${arcRadius} ${arcRadius} 0 1 1 ${centerX + Math.cos(endAngle) * arcRadius} ${centerY - Math.sin(endAngle) * arcRadius}`}
+            d={`M ${centerX + Math.cos(startAngle) * arcRadius} ${centerY - Math.sin(startAngle) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + Math.cos(endAngle) * arcRadius} ${centerY - Math.sin(endAngle) * arcRadius}`}
             fill="none"
             stroke={isDay ? "url(#dayBaseGradient)" : "url(#nightBaseGradient)"}
             strokeWidth="8"
