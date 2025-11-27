@@ -2,20 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* BabyRhythm - Baby Tracker Design System - Brand colors: Lavender (#9B89B3) and Mint (#4CAF7D) */
+/* BabyRhythm - Baby Tracker Design System - Rare Beauty Inspired */
 
 @layer base {
   :root {
-    /* Font stacks - Inter superfamily: Inter for body, Inter Tight for display */
+    /* Font stacks - Inter for body, Playfair Display for elegant headlines */
     --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    --font-display: "Inter Tight", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-    --font-serif: "Inter Tight", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+    --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+    --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
     --font-num: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
     
-    /* Brand colors - base definitions (for dark mode) */
-    --pp-mint: 153 35% 50%; /* #54AF7D - original sage mint */
-    --pp-lavender: 264 28% 65%; /* #A08DC5 - soft lavender */
-    --pp-coral: 15 55% 70%; /* #D89B82 - muted coral/taupe */
+    /* Brand colors - Rare Beauty inspired palette */
+    --pp-dusty-rose: 347 35% 45%; /* #9C4B5E - primary dusty rose/mauve */
+    --pp-soft-blush: 0 30% 74%; /* #D4A5A5 - soft blush accent */
+    --pp-burgundy: 347 30% 33%; /* #6B3A42 - deep burgundy for text */
+    --pp-mauve-gray: 350 10% 50%; /* #8B7577 - warm gray-mauve */
     
     /* Spacing scale (8pt grid) */
     --s-1: 4px;
@@ -26,40 +27,40 @@
     --s-6: 24px;
     --s-7: 32px;
     
-    /* Light Mode - "Warm Organic Nursery" */
-    --bg: 35 50% 97%; /* #FAF9F6 - warm organic paper */
-    --surface: 25 40% 92%; /* soft warm peachy card surface */
-    --surface-muted: 25 35% 89%; /* slightly deeper warm peachy */
-    --text: 25 15% 15%; /* #27221F - warm dark brown text */
-    --text-muted: 25 8% 45%; /* warm grey mid-tone */
-    --divider: 28 20% 88%; /* ultra-subtle warm border */
+    /* Light Mode - Rare Beauty "Soft & Minimal" */
+    --bg: 15 40% 97%; /* #FAF5F3 - soft cream-blush background */
+    --surface: 20 35% 96%; /* #FFFAF8 - warm cream card surface */
+    --surface-muted: 15 30% 94%; /* #F5EBE8 - slightly deeper cream */
+    --text: 347 30% 25%; /* #4A2A32 - deep burgundy-brown text */
+    --text-muted: 350 10% 50%; /* #8B7577 - warm mauve-gray */
+    --divider: 0 25% 87%; /* #E8D5D5 - blush border */
     
-    /* Card ombré progression (light mode: warm tan → deep brown) - more contrast */
-    --card-ombre-1: 28 30% 87%; /* Warm peachy tan for suggested actions */
-    --card-ombre-1-dark: 28 28% 81%; /* Darker peachy tan gradient end */
-    --card-ombre-2: 25 28% 84%; /* Medium tan */
-    --card-ombre-2-dark: 25 26% 78%; /* Darker tan gradient end */
-    --card-ombre-3: 22 26% 81%; /* Deeper tan for today's pulse */
-    --card-ombre-3-dark: 22 24% 75%; /* Darker tan gradient end */
-    --card-ombre-4: 320 25% 88%; /* Soft plum for right now card */
-    --card-ombre-4-dark: 320 20% 82%; /* Darker plum gradient end */
+    /* Card ombré progression (Rare Beauty: soft blush tones) */
+    --card-ombre-1: 10 35% 94%; /* Soft peachy-cream */
+    --card-ombre-1-dark: 10 30% 90%; /* Slightly deeper */
+    --card-ombre-2: 5 30% 92%; /* Warm blush-cream */
+    --card-ombre-2-dark: 5 28% 88%; /* Deeper blush */
+    --card-ombre-3: 0 25% 90%; /* Rose-tinted cream */
+    --card-ombre-3-dark: 0 22% 86%; /* Deeper rose */
+    --card-ombre-4: 347 20% 92%; /* Soft dusty rose tint */
+    --card-ombre-4-dark: 347 18% 88%; /* Deeper dusty rose */
     
-    /* Light mode color overrides - fall latte palette */
-    --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
-    --pp-grey: 0 0% 45%; /* #737373 - grey (neutral accents) */
-    --pp-terracotta: 25 30% 61%; /* #B8927C - cinnamon (charts/accents) */
+    /* Rare Beauty color overrides */
+    --pp-blackberry: var(--pp-dusty-rose); /* Dusty rose for primary buttons */
+    --pp-grey: var(--pp-mauve-gray); /* Warm mauve-gray for neutrals */
+    --pp-terracotta: var(--pp-soft-blush); /* Soft blush for accents */
     
-    --accent-1: var(--pp-terracotta); /* cinnamon accents */
-    --accent-2: 32 73% 91%; /* #F8E9D8 - warm accent */
-    --chart-feed: var(--pp-terracotta); /* cinnamon for charts */
-    --chart-sleep: var(--pp-terracotta); /* cinnamon for sleep */
+    --accent-1: var(--pp-soft-blush); /* Soft blush accents */
+    --accent-2: 15 45% 95%; /* #FDF6F4 - very light blush */
+    --chart-feed: var(--pp-dusty-rose); /* Dusty rose for charts */
+    --chart-sleep: 347 25% 60%; /* Lighter dusty rose for sleep */
     
-    /* Card elevation - soft colored shadows for pillowy depth */
-    --elev-shadow: 0 4px 20px -4px rgba(165, 100, 60, 0.15), 0 2px 8px -2px rgba(165, 100, 60, 0.08);
-    --card-radius: 24px;
+    /* Card elevation - diffused warm shadows (Rare Beauty aesthetic) */
+    --elev-shadow: 0 4px 24px -6px rgba(156, 75, 94, 0.12), 0 2px 10px -3px rgba(156, 75, 94, 0.06);
+    --card-radius: 20px;
     
-    /* Transitions - Light Mode: gentle */
-    --transition-smooth: all 180ms ease-in-out;
+    /* Transitions - Light Mode: gentle & elegant */
+    --transition-smooth: all 200ms ease-in-out;
     
     /* Tailwind compatibility */
     --background: var(--bg);
@@ -68,54 +69,54 @@
     --card-foreground: var(--text);
     --popover: var(--surface);
     --popover-foreground: var(--text);
-    --primary: var(--pp-blackberry);
+    --primary: var(--pp-dusty-rose);
     --primary-foreground: 0 0% 100%;
-    --secondary: var(--pp-terracotta);
-    --secondary-foreground: 0 0% 13%;
+    --secondary: var(--pp-soft-blush);
+    --secondary-foreground: 347 30% 25%;
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
-    --accent: var(--pp-terracotta);
-    --accent-foreground: 0 0% 13%;
-    --destructive: var(--pp-coral);
+    --accent: var(--pp-soft-blush);
+    --accent-foreground: 347 30% 25%;
+    --destructive: 0 65% 55%; /* Soft red */
     --destructive-foreground: 0 0% 100%;
     --border: var(--divider);
     --input: var(--surface-muted);
-    --ring: var(--pp-mint);
-    --radius: 24px;
+    --ring: var(--pp-dusty-rose);
+    --radius: 20px;
     
-    /* Primary CTA gradient */
-    --cta-gradient-start: 315 20% 70%;
-    --cta-gradient-end: 315 20% 57%;
-    --cta-shadow: 0 0 18px rgba(185, 159, 178, 0.4);
+    /* Primary CTA gradient - Rare Beauty dusty rose */
+    --cta-gradient-start: 347 35% 50%;
+    --cta-gradient-end: 347 40% 40%;
+    --cta-shadow: 0 0 20px rgba(156, 75, 94, 0.25);
     
-    /* Activity colors - varied palette */
-    --feed-color: var(--pp-terracotta); /* terracotta for feeds */
-    --diaper-color: var(--pp-grey); /* grey for diapers */
-    --nap-color: var(--pp-terracotta); /* brownish terracotta for sleep */
-    --note-color: 25 35% 35%; /* dark brown for notes */
-    --chat-color: var(--pp-blackberry); /* blackberry for chat */
+    /* Activity colors - Rare Beauty palette */
+    --feed-color: var(--pp-dusty-rose); /* Dusty rose for feeds */
+    --diaper-color: var(--pp-mauve-gray); /* Mauve-gray for diapers */
+    --nap-color: 347 25% 55%; /* Lighter rose for sleep */
+    --note-color: var(--pp-burgundy); /* Burgundy for notes */
+    --chat-color: var(--pp-dusty-rose); /* Dusty rose for chat */
     
-    /* Gradients - varied for each activity */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-blackberry)), hsl(320 61% 40%));
-    --gradient-feed: linear-gradient(135deg, hsl(340 35% 55%), hsl(340 30% 65%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-grey)), hsl(0 0% 55%));
-    --gradient-nap: linear-gradient(135deg, hsl(25 30% 50%), hsl(25 30% 60%));
-    --gradient-note: linear-gradient(135deg, hsl(25 35% 35%), hsl(25 35% 45%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-blackberry)), hsl(320 61% 40%));
+    /* Gradients - Rare Beauty inspired */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-dusty-rose)), hsl(347 40% 55%));
+    --gradient-feed: linear-gradient(135deg, hsl(var(--pp-dusty-rose)), hsl(350 30% 60%));
+    --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-mauve-gray)), hsl(350 8% 60%));
+    --gradient-nap: linear-gradient(135deg, hsl(347 25% 50%), hsl(347 20% 60%));
+    --gradient-note: linear-gradient(135deg, hsl(var(--pp-burgundy)), hsl(347 25% 40%));
+    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-dusty-rose)), hsl(347 40% 55%));
     
-    /* Shadows - soft colored pillowy depth */
-    --shadow-soft: 0 4px 16px -4px rgba(165, 100, 60, 0.12), 0 2px 6px -2px rgba(165, 100, 60, 0.06);
-    --shadow-card: 0 4px 20px -4px rgba(165, 100, 60, 0.15), 0 2px 8px -2px rgba(165, 100, 60, 0.08);
+    /* Shadows - soft diffused warm rose tones */
+    --shadow-soft: 0 4px 18px -4px rgba(156, 75, 94, 0.10), 0 2px 8px -2px rgba(156, 75, 94, 0.05);
+    --shadow-card: 0 4px 24px -6px rgba(156, 75, 94, 0.12), 0 2px 10px -3px rgba(156, 75, 94, 0.06);
     
     /* Sidebar */
     --sidebar-background: var(--bg);
     --sidebar-foreground: var(--text);
-    --sidebar-primary: var(--pp-mint);
+    --sidebar-primary: var(--pp-dusty-rose);
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: var(--surface-muted);
     --sidebar-accent-foreground: var(--text);
     --sidebar-border: var(--divider);
-    --sidebar-ring: var(--pp-mint);
+    --sidebar-ring: var(--pp-dusty-rose);
   }
 
   .dark {

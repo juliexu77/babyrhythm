@@ -15,8 +15,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
-        display: ["Inter Tight", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
-        serif: ["Inter Tight", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
+        display: ["Playfair Display", "Georgia", "Times New Roman", "serif"],
+        serif: ["Playfair Display", "Georgia", "Times New Roman", "serif"],
         num: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
       },
       colors: {
