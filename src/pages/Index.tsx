@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { TrendsTab } from "@/components/InsightsTab";
+import { TrendsTab } from "@/components/TrendsTab";
 import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { GuideTab } from "@/components/GuideTab";

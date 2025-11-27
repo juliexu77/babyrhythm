@@ -345,7 +345,7 @@ export const TrendsTab = ({ activities }: TrendsTabProps) => {
     <div className="space-y-5 pb-6">
       {/* Header - Elegant with subtle accent */}
       <div className="mx-4 pt-6">
-        <h1 className="text-2xl font-serif font-semibold text-foreground tracking-tight">History</h1>
+        <h1 className="text-2xl font-serif font-semibold text-foreground tracking-tight">Trends</h1>
         <p className="text-sm text-muted-foreground mt-1">Your baby's journey over time</p>
       </div>
       
