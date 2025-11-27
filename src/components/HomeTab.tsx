@@ -3,7 +3,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CurrentMomentArc } from "@/components/home/CurrentMomentArc";
+import { RhythmArc } from "@/components/home/RhythmArc";
+import { getRhythmStateMessage } from "@/utils/rhythmStateMessages";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
@@ -1380,15 +1381,83 @@ const lastDiaper = displayActivities
           </div>
         )}
 
-        {/* Current Moment Arc */}
-        <CurrentMomentArc
-          activities={activities}
-          babyName={babyName}
-          ongoingNap={passedOngoingNap}
-          nightSleepStartHour={nightSleepStartHour}
-          nightSleepEndHour={nightSleepEndHour}
-          babyBirthday={effectiveBabyBirthday}
-        />
+        {/* Rhythm Arc */}
+        {(() => {
+          const now = new Date();
+          const currentHour = now.getHours();
+          
+          // Determine theme (day vs night)
+          const isNightTheme = nightSleepStartHour > nightSleepEndHour
+            ? currentHour >= nightSleepStartHour || currentHour < nightSleepEndHour
+            : currentHour >= nightSleepStartHour && currentHour < nightSleepEndHour;
+          
+          // Get state message
+          const stateMessage = getRhythmStateMessage({
+            activities,
+            currentTime: now,
+            nightSleepStartHour,
+            nightSleepEndHour,
+            ongoingNap: passedOngoingNap,
+          });
+          
+          // Determine mode and calculate start time + typical duration
+          let mode: "nap" | "wake" = "wake";
+          let startTime = now;
+          let typicalDuration = 120; // Default 2 hours
+          
+          if (passedOngoingNap?.details?.startTime) {
+            // Nap mode
+            mode = "nap";
+            const [hours, minutes] = passedOngoingNap.details.startTime.split(':').map(Number);
+            startTime = new Date(now);
+            startTime.setHours(hours, minutes, 0, 0);
+            typicalDuration = 90; // 1.5 hours for naps
+          } else {
+            // Wake mode - find last nap end time
+            const sortedNaps = activities
+              .filter(a => a.type === 'nap' && a.details?.endTime)
+              .sort((a, b) => {
+                const aTime = new Date(a.loggedAt || '').getTime();
+                const bTime = new Date(b.loggedAt || '').getTime();
+                return bTime - aTime;
+              });
+            
+            if (sortedNaps.length > 0) {
+              const lastNap = sortedNaps[0];
+              const [hours, minutes] = lastNap.details.endTime.split(':').map(Number);
+              const napEndDate = new Date(lastNap.loggedAt || '');
+              napEndDate.setHours(hours, minutes, 0, 0);
+              startTime = napEndDate;
+              
+              // Calculate age-appropriate wake window
+              if (effectiveBabyBirthday) {
+                const birthDate = new Date(effectiveBabyBirthday);
+                const ageInWeeks = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+                
+                // Age-based wake windows (in minutes)
+                if (ageInWeeks < 4) typicalDuration = 45;
+                else if (ageInWeeks < 8) typicalDuration = 60;
+                else if (ageInWeeks < 12) typicalDuration = 75;
+                else if (ageInWeeks < 16) typicalDuration = 90;
+                else if (ageInWeeks < 24) typicalDuration = 105;
+                else if (ageInWeeks < 36) typicalDuration = 120;
+                else if (ageInWeeks < 52) typicalDuration = 150;
+                else typicalDuration = 180;
+              }
+            }
+          }
+          
+          return (
+            <RhythmArc
+              mode={mode}
+              startTime={startTime}
+              typicalDuration={typicalDuration}
+              currentTime={now}
+              theme={isNightTheme ? "night" : "day"}
+              stateMessage={stateMessage}
+            />
+          );
+        })()}
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
