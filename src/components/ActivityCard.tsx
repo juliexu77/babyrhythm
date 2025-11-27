@@ -260,8 +260,8 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
 
   return (
     <div className="relative flex items-center py-0 group transition-colors">
-      {/* Icon - centered on timeline with brand-colored background circle */}
-      <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getIconBackgroundClass(activity.type)} ${getIconColorClass(activity.type)}`} style={{ marginLeft: '8px' }}>
+      {/* Icon - minimalist line art in dark purple */}
+      <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-[#5D2E46]" style={{ marginLeft: '8px' }}>
         {getActivityIcon(activity.type)}
       </div>
       
@@ -271,20 +271,20 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
           onClick={handleClick}
           className="flex-1 text-left min-w-0 flex items-baseline gap-2 hover:opacity-80 transition-opacity"
         >
-          {/* Value - Bold - Deep Fig color */}
-          <span className="text-sm font-semibold" style={{ color: '#3E2F2B' }}>
+          {/* Value - Semibold serif - Deep Fig color */}
+          <span className="text-sm font-serif font-semibold" style={{ color: '#3E2F2B' }}>
             {value}
           </span>
-          {/* Descriptor - Lighter - Warm Mauve-Grey */}
+          {/* Descriptor - Lighter sans-serif - Warm Mauve-Grey */}
           {descriptor && (
-            <span className="text-sm truncate" style={{ color: '#8C7C7A' }}>
+            <span className="text-sm font-light truncate" style={{ color: '#8C7C7A' }}>
               {descriptor}
             </span>
           )}
         </button>
         
-        {/* Timestamp - aligned with tabular-nums - Warm Mauve-Grey */}
-        <span className="text-xs font-medium whitespace-nowrap tabular-nums" style={{ color: '#8C7C7A' }}>
+        {/* Timestamp - lighter weight sans-serif with tabular-nums - Warm Mauve-Grey */}
+        <span className="text-xs font-light whitespace-nowrap tabular-nums" style={{ color: '#8C7C7A' }}>
           {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
             ? activity.details.startTime  // Show just start time for ongoing naps
             : activity.time  // Show full time or time range for completed activities
