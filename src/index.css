@@ -14,8 +14,8 @@
     
     /* Brand colors - Rare Beauty packaging inspired */
     --pp-burgundy: 350 45% 28%; /* #6B3344 - deep burgundy (primary) */
-    --pp-dusty-mauve: 0 20% 71%; /* #C4A4A4 - rose clay (accent) - warmer, neutral-blush */
-    --pp-rose-clay: 0 20% 71%; /* #C4A4A4 - rose clay */
+    --pp-dusty-mauve: 345 20% 65%; /* #B8929B - dusty mauve (accent) */
+    --pp-rose-clay: 0 20% 71%; /* #C4A4A4 - rose clay (secondary) */
     --pp-warm-taupe: 15 15% 55%; /* #9A8A85 - warm taupe for muted text */
     
     /* Spacing scale (8pt grid) */
@@ -29,6 +29,7 @@
     
     /* Light Mode - Warm Peach-Cream (Rare Beauty packaging) */
     --bg: 20 45% 96%; /* #FAF3EF - warm peach-cream */
+    --bg-gradient: linear-gradient(180deg, hsl(20 45% 97%) 0%, hsl(18 38% 93%) 100%);
     --surface: 25 40% 98%; /* #FFFBF9 - warm cream card */
     --surface-muted: 18 35% 94%; /* #F5E8E2 - deeper peach-cream */
     --text: 350 35% 22%; /* #4A2832 - deep burgundy-brown */
@@ -87,7 +88,14 @@
     /* Primary CTA gradient - deep burgundy */
     --cta-gradient-start: 350 40% 35%;
     --cta-gradient-end: 350 45% 25%;
+    --cta-gradient: linear-gradient(135deg, hsl(350 40% 32%) 0%, hsl(350 45% 24%) 100%);
     --cta-shadow: 0 4px 20px hsla(350, 40%, 35%, 0.25);
+    --cta-glow: 0 0 24px hsla(350, 40%, 35%, 0.20);
+    
+    /* Focus & interaction effects - warm tones */
+    --focus-ring: 0 0 0 3px hsla(20, 50%, 70%, 0.35);
+    --hover-glow: 0 8px 28px -4px hsla(20, 35%, 45%, 0.15);
+    --active-shadow: 0 2px 8px hsla(15, 40%, 45%, 0.18);
     
     /* Activity colors */
     --feed-color: var(--pp-burgundy); /* Burgundy for feeds */
@@ -107,6 +115,11 @@
     /* Shadows - warm terracotta-tinted (not rose) */
     --shadow-soft: 0 4px 18px -4px hsla(20, 40%, 50%, 0.08), 0 2px 8px -2px hsla(20, 40%, 50%, 0.04);
     --shadow-card: 0 4px 24px -6px hsla(20, 40%, 50%, 0.10), 0 2px 10px -3px hsla(20, 40%, 50%, 0.06);
+    --shadow-elevated: 0 8px 32px -8px hsla(20, 40%, 45%, 0.14), 0 4px 16px -4px hsla(20, 40%, 45%, 0.08);
+    
+    /* Accent glows */
+    --mauve-glow: 0 0 20px hsla(345, 20%, 65%, 0.25);
+    --burgundy-glow: 0 0 24px hsla(350, 45%, 28%, 0.20);
     
     /* Sidebar */
     --sidebar-background: var(--bg);
@@ -312,11 +325,11 @@
     font-feature-settings: "tnum" 1;
     overflow-x: hidden;
     width: 100%;
-    background: linear-gradient(180deg, #FFF8F5 0%, #FAEDEC 100%);
+    background: linear-gradient(180deg, hsl(20 45% 97%) 0%, hsl(18 38% 93%) 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+    @apply font-display;
   }
 
   #root {
