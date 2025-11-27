@@ -1,5 +1,6 @@
 import { Activity } from "@/components/ActivityCard";
 import { differenceInMinutes, differenceInHours } from "date-fns";
+import { isNightTime } from "./nightWindow";
 
 interface StateMessageContext {
   activities: Activity[];
@@ -8,18 +9,6 @@ interface StateMessageContext {
   nightSleepEndHour: number;
   ongoingNap?: Activity | null;
 }
-
-// Check if current time is in night window
-const isNightTime = (
-  hour: number,
-  nightSleepStartHour: number,
-  nightSleepEndHour: number
-): boolean => {
-  if (nightSleepStartHour > nightSleepEndHour) {
-    return hour >= nightSleepStartHour || hour < nightSleepEndHour;
-  }
-  return hour >= nightSleepStartHour && hour < nightSleepEndHour;
-};
 
 // Get nap ordinal (1st, 2nd, 3rd, etc.)
 const getNapOrdinal = (napNumber: number): string => {
@@ -66,7 +55,7 @@ const getMostRecentActivity = (activities: Activity[]): Activity | null => {
   if (activities.length === 0) return null;
   const sorted = [...activities].sort((a, b) => {
     const aTime = new Date(a.loggedAt || a.time).getTime();
-    const bTime = new Date(b.loggedAt || a.time).getTime();
+    const bTime = new Date(b.loggedAt || b.time).getTime(); // Fixed: was using a.time
     return bTime - aTime;
   });
   return sorted[0];
@@ -184,11 +173,12 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
     }
   }
   
-  // Default fallback
-  if (currentHour < 12) {
-    return "Morning awake time";
-  } else if (currentHour < 17) {
-    return "Afternoon awake time";
+  // Default fallback - only use approved messages
+  // If no naps today, assume morning wake
+  if (todayActivities.length === 0) {
+    return "Start winding down";
   }
-  return "Evening awake time";
+  
+  // Generic awake state - should be improved with more context
+  return "Start winding down";
 };

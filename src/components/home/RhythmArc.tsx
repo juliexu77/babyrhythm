@@ -34,7 +34,7 @@ export const RhythmArc = ({
   stateMessage,
 }: RhythmArcProps) => {
   // Calculate progress (0 to 1.5+ to allow overtired visualization)
-  const elapsedMinutes = differenceInMinutes(currentTime, startTime);
+  const elapsedMinutes = Math.max(0, differenceInMinutes(currentTime, startTime)); // Prevent negative
   const rawProgress = elapsedMinutes / typicalDuration;
   const progress = Math.max(0, Math.min(rawProgress, 1.5)); // Cap at 150%
   
