@@ -4,6 +4,7 @@ import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Pa
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CurrentMomentArc } from "@/components/home/CurrentMomentArc";
+import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
@@ -86,7 +87,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { 
     currentActivity, 
     nextPrediction, 
-    smartSuggestions
+    smartSuggestions,
+    todaysPulse
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
   // Missed activity detection
@@ -1551,6 +1553,20 @@ const lastDiaper = displayActivities
           nightSleepStartHour={nightSleepStartHour}
           nightSleepEndHour={nightSleepEndHour}
         />
+
+        {/* Today's Pulse - Show deviations */}
+        {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
+          <div className="px-4">
+            <TodaysPulse
+              deviations={todaysPulse.deviations}
+              biggestDeviation={todaysPulse.biggestDeviation}
+              babyName={babyName}
+              babyAge={babyAgeInWeeks}
+              activities={activities}
+              transitionInfo={null}
+            />
+          </div>
+        )}
 
         {/* Zone 1: Next Need Hero */}
         <NextNeedHero

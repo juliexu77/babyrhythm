@@ -425,13 +425,13 @@ export const CurrentMomentArc = ({
   const trailPath = createTrailPath();
 
   return (
-    <div className="px-0 pb-0 relative z-10">
+    <div className="px-4 pb-0 relative z-10">
       <div className="relative w-full flex flex-col items-center">
         <svg
           viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
           className="w-full"
           preserveAspectRatio="xMidYMid meet"
-          style={{ maxWidth: '100%', overflow: 'hidden' }}
+          style={{ maxWidth: '100%', overflow: 'visible' }}
         >
           <defs>
             <linearGradient id="dayBaseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
