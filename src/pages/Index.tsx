@@ -720,7 +720,7 @@ const ongoingNap = (() => {
       return <SettingsPage />;
       case "insights":
         return (
-          <div style={{ background: '#FAF5F2', minHeight: '100vh' }}>
+          <div className="bg-background min-h-screen">
             {/* Log Header */}
             <div className="px-4 py-2.5 border-b border-border">
               <div className="flex items-center gap-4">
