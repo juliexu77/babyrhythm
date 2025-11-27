@@ -36,13 +36,13 @@ export const RhythmArc = ({
   const rawProgress = elapsedMinutes / typicalDuration;
   const progress = Math.max(0, Math.min(rawProgress, 1.5)); // Cap at 150%
   
-  // Arc configuration - elevated arc above horizon with steeper curve
+  // Arc configuration - elevated arc above horizon with increased vertical curvature
   const viewBoxWidth = 520;
-  const viewBoxHeight = 200;
+  const viewBoxHeight = 260; // Increased to accommodate higher arc
   const padding = 50;
-  const horizonY = viewBoxHeight - 20; // Horizon at bottom (180)
+  const horizonY = 180; // Horizon at bottom (fixed position)
   const arcStartEndY = 120; // Arc endpoints elevated above horizon
-  const arcPeakY = 9; // Peak of the arc - 50% steeper (was 17)
+  const arcPeakY = -45; // Peak of the arc - increased curvature for moonpath effect
   
   // Arc endpoints elevated above horizon, curving upward
   const startPoint = { x: padding, y: arcStartEndY };
@@ -161,7 +161,7 @@ export const RhythmArc = ({
     <div className="px-6 pb-6 relative z-10">
       <div className="relative w-full flex flex-col items-center">
         <svg
-          viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+          viewBox={`0 -60 ${viewBoxWidth} ${viewBoxHeight}`}
           className="w-full"
           preserveAspectRatio="xMidYMid meet"
           style={{ maxWidth: '100%', overflow: 'visible' }}
