@@ -27,23 +27,23 @@
     --s-6: 24px;
     --s-7: 32px;
     
-    /* Light Mode - Warm Peach-Cream (Rare Beauty packaging) */
-    --bg: 20 45% 96%; /* #FAF3EF - warm peach-cream */
-    --surface: 25 40% 98%; /* #FFFBF9 - warm cream card */
-    --surface-muted: 18 35% 94%; /* #F5E8E2 - deeper peach-cream */
-    --text: 350 35% 22%; /* #4A2832 - deep burgundy-brown */
-    --text-muted: 15 15% 55%; /* #9A8A85 - warm taupe */
-    --divider: 20 25% 88%; /* #E8DCD8 - peachy-warm border */
+    /* Light Mode - Soft Blush (matching reference) */
+    --bg: 15 30% 96%; /* #F9F5F3 - soft cream with pink undertone */
+    --surface: 15 25% 98%; /* #FDFBFA - clean white with warm tint */
+    --surface-muted: 15 25% 94%; /* #F5EFED - deeper blush cream */
+    --text: 350 30% 25%; /* #4A2D35 - warm brown text */
+    --text-muted: 15 12% 50%; /* #8A807D - warm grey */
+    --divider: 15 20% 88%; /* #E6DDD9 - soft pink-tinted border */
     
-    /* Card ombré progression (warm peach tones) */
-    --card-ombre-1: 18 35% 95%; /* Soft peach-cream */
-    --card-ombre-1-dark: 18 30% 91%; /* Deeper peach */
-    --card-ombre-2: 15 30% 93%; /* Warm cream */
-    --card-ombre-2-dark: 15 28% 89%; /* Deeper warm */
-    --card-ombre-3: 12 28% 91%; /* Peachy-pink tint */
-    --card-ombre-3-dark: 12 25% 87%; /* Deeper peachy */
-    --card-ombre-4: 345 18% 93%; /* Soft mauve tint */
-    --card-ombre-4-dark: 345 16% 89%; /* Deeper mauve */
+    /* Card ombré progression (soft blush tones) */
+    --card-ombre-1: 15 25% 97%; /* Soft blush cream */
+    --card-ombre-1-dark: 15 22% 93%; /* Deeper blush */
+    --card-ombre-2: 15 22% 95%; /* Warm cream */
+    --card-ombre-2-dark: 15 20% 91%; /* Deeper warm */
+    --card-ombre-3: 15 20% 96%; /* Soft pink tint */
+    --card-ombre-3-dark: 15 18% 92%; /* Deeper pink */
+    --card-ombre-4: 345 15% 95%; /* Soft rose tint */
+    --card-ombre-4-dark: 345 13% 91%; /* Deeper rose */
     
     /* Color aliases */
     --pp-blackberry: var(--pp-burgundy); /* Deep burgundy for primary */
@@ -51,12 +51,12 @@
     --pp-terracotta: var(--pp-dusty-mauve); /* Dusty mauve for accents */
     
     --accent-1: var(--pp-dusty-mauve); /* Dusty mauve accents */
-    --accent-2: 20 40% 96%; /* #FDF6F3 - very light peach */
+    --accent-2: 15 30% 96%; /* Very light blush */
     --chart-feed: var(--pp-burgundy); /* Burgundy for charts */
     --chart-sleep: var(--pp-dusty-mauve); /* Dusty mauve for sleep */
     
-    /* Card elevation - warm terracotta-tinted shadows */
-    --elev-shadow: 0 4px 24px -6px hsla(20, 40%, 50%, 0.10), 0 2px 10px -3px hsla(20, 40%, 50%, 0.06);
+    /* Card elevation - soft warm shadows */
+    --elev-shadow: 0 4px 24px -6px hsla(15, 30%, 50%, 0.08), 0 2px 10px -3px hsla(15, 30%, 50%, 0.04);
     --card-radius: 20px;
     
     /* Transitions - gentle & elegant */
@@ -312,7 +312,7 @@
     font-feature-settings: "tnum" 1;
     overflow-x: hidden;
     width: 100%;
-    background: linear-gradient(180deg, #FFF8F5 0%, #FAEDEC 100%);
+    background: linear-gradient(180deg, #FAF6F4 0%, #F5EDEA 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
