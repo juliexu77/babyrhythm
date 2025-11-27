@@ -14,9 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["Nunito", "Fraunces", "Georgia", "serif"],
-        sans: ["Satoshi", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
-        num: ["Satoshi", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
+        display: ["Inter Tight", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
+        serif: ["Inter Tight", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
+        num: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
