@@ -110,13 +110,10 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-6" style={{
-      background: 'radial-gradient(circle at center, #FDF8F6, #F2EBE9)'
-    }}>
+    <div className="min-h-screen relative flex items-center justify-center p-6 bg-background">
       {/* Glow Orb - soft halo behind card */}
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full opacity-40 blur-3xl pointer-events-none"
-        style={{ background: '#EBCBCB' }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full opacity-40 blur-3xl pointer-events-none bg-primary/20"
       />
       
       <div className="w-full max-w-md relative z-10">
@@ -128,18 +125,17 @@ const Auth = () => {
             <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-xl opacity-75 animate-pulse"></div>
             <Activity className="auth-icon w-8 h-8 text-primary relative z-10" strokeWidth={1.5} />
           </div>
-          <h1 className="text-[22px] md:text-[36px] font-serif font-medium mb-6 tracking-tight" style={{ lineHeight: '1.25', color: '#4A3A33' }}>
+          <h1 className="text-[22px] md:text-[36px] font-serif font-medium mb-6 tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
             Step into the rhythm
           </h1>
-          <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto" style={{ color: '#6B5D55' }}>
+          <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto text-muted-foreground">
             Create an account to start tracking and reflecting your baby's day — and let BabyRhythm guide you toward balance, predictability, and peace of mind.
           </p>
         </div>
 
         {/* Auth Forms */}
         <Card 
-          className="rounded-xl dark:bg-transparent shadow-[0px_20px_40px_-10px_rgba(74,58,51,0.08)] border border-white/40 dark:border-border overflow-hidden"
-          style={{ background: 'linear-gradient(145deg, #FFF9F5, #E6E0D9)' }}
+          className="rounded-xl bg-card shadow-card border border-border overflow-hidden"
         >
           <CardContent className="pt-6">
             {mode === 'signup' ? (
@@ -174,7 +170,7 @@ const Auth = () => {
                     placeholder={t('fullName')}
                     required
                     disabled={isLoading}
-                    className="bg-transparent border-0 border-b border-[#D1C7C0] rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    className="bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -186,7 +182,7 @@ const Auth = () => {
                     placeholder={t('enterEmail')}
                     required
                     disabled={isLoading}
-                    className="bg-transparent border-0 border-b border-[#D1C7C0] rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    className="bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -198,7 +194,7 @@ const Auth = () => {
                     placeholder={t('enterPassword')}
                     required
                     disabled={isLoading}
-                    className="text-sm bg-transparent border-0 border-b border-[#D1C7C0] rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    className="text-sm bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <Button 
@@ -241,7 +237,7 @@ const Auth = () => {
                     placeholder={t('enterEmail')}
                     required
                     disabled={isLoading}
-                    className="bg-transparent border-0 border-b border-[#D1C7C0] rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    className="bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -253,7 +249,7 @@ const Auth = () => {
                     placeholder={t('enterPassword')}
                     required
                     disabled={isLoading}
-                    className="text-sm bg-transparent border-0 border-b border-[#D1C7C0] rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                    className="text-sm bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <Button 
