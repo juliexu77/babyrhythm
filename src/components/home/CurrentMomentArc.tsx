@@ -391,46 +391,51 @@ export const CurrentMomentArc = ({
   // --- FIXED LAYOUT CONSTANTS ---
   // Widen the viewBox width to 500 (was 460) to add internal side padding
   const viewBoxWidth = 500;
-  const viewBoxHeight = 260; // Slightly taller for text
+  const viewBoxHeight = 220; // Reduced height since we're cutting bottom
   const centerX = 250; // Exact center of new width
-  const centerY = 220; // Lower down
+  const centerY = 200; // Moved down slightly
   const arcRadius = 180;
 
-  // --- FIXED MATH (Left to Right) ---
-  // Angle: PI (Left) -> 0 (Right)
-  const arcAngle = Math.PI * (1 - clampedPosition); 
+  // --- ARC RANGE: Cut bottom 20% ---
+  // Instead of full semicircle (PI to 0), use 80% arc
+  // Start angle: 0.8 * PI (144°) - left side raised up
+  // End angle: 0.2 * PI (36°) - right side raised up
+  const startAngle = Math.PI * 0.8;
+  const endAngle = Math.PI * 0.2;
+  const angleRange = startAngle - endAngle; // 0.6 * PI
+
+  // --- FIXED MATH (Left to Right on shortened arc) ---
+  // Map position (0 to 1) to angle range (startAngle to endAngle)
+  const arcAngle = startAngle - (clampedPosition * angleRange);
 
   // FIXED FORMULA: Plus (+) Cosine
-  // At PI (Left): cos is -1. 250 + (-180) = 70. (Safe margin from 0)
-  // At 0 (Right): cos is 1. 250 + (180) = 430. (Safe margin from 500)
+  // Icon moves along the shortened arc
   const iconX = centerX + Math.cos(arcAngle) * arcRadius;
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
   
   console.log('🎯 Icon position:', {
+    arcPosition: clampedPosition.toFixed(2),
     arcAngle: (arcAngle * 180 / Math.PI).toFixed(1) + '°',
     iconX: iconX.toFixed(1),
     iconY: iconY.toFixed(1),
-    centerX,
-    centerY,
-    arcRadius
+    onArc: 'yes (constrained to arc path)'
   });
   
   const inTwilightZone = arcPosition >= 0.8 && arcPosition <= 1.0;
   const isOvertired = arcPosition > 1.0;
   
-  // --- FIXED TRAIL PATH LOGIC ---
+  // --- FIXED TRAIL PATH LOGIC (shortened arc) ---
   const createTrailPath = (): string => {
-    // Start Point (Far Left)
-    // Angle = PI
-    const startX = centerX + Math.cos(Math.PI) * arcRadius; // 70
-    const startY = centerY - Math.sin(Math.PI) * arcRadius; // 220
+    // Start Point (Left side of shortened arc)
+    const startX = centerX + Math.cos(startAngle) * arcRadius;
+    const startY = centerY - Math.sin(startAngle) * arcRadius;
     
-    // End Point (Current Icon Position)
-    // We reuse iconX/iconY logic but based on clamped position
-    const currentAngle = Math.PI * (1 - Math.min(arcPosition, 1.0));
+    // End Point (Current Icon Position on shortened arc)
+    const currentAngle = startAngle - (Math.min(arcPosition, 1.0) * angleRange);
     const endX = centerX + Math.cos(currentAngle) * arcRadius;
     const endY = centerY - Math.sin(currentAngle) * arcRadius;
     
+    // Use small arc flag (0) since we're drawing less than 180°
     return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
   };
   
@@ -483,9 +488,9 @@ export const CurrentMomentArc = ({
             </radialGradient>
           </defs>
           
-          {/* Base Arc Background */}
+          {/* Base Arc Background (shortened) */}
           <path
-            d={`M ${centerX - arcRadius} ${centerY} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + arcRadius} ${centerY}`}
+            d={`M ${centerX + Math.cos(startAngle) * arcRadius} ${centerY - Math.sin(startAngle) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + Math.cos(endAngle) * arcRadius} ${centerY - Math.sin(endAngle) * arcRadius}`}
             fill="none"
             stroke={isDay ? "url(#dayBaseGradient)" : "url(#nightBaseGradient)"}
             strokeWidth="8"
@@ -495,7 +500,7 @@ export const CurrentMomentArc = ({
           {/* Twilight zone (sweet spot at 80-100%) */}
           {inTwilightZone && isDay && !isOvertired && (
             <path
-              d={`M ${centerX + Math.cos(Math.PI * 0.2) * arcRadius} ${centerY - Math.sin(Math.PI * 0.2) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + arcRadius} ${centerY}`}
+              d={`M ${centerX + Math.cos(startAngle - 0.8 * angleRange) * arcRadius} ${centerY - Math.sin(startAngle - 0.8 * angleRange) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + Math.cos(endAngle) * arcRadius} ${centerY - Math.sin(endAngle) * arcRadius}`}
               fill="none"
               stroke="url(#dayTwilightGradient)"
               strokeWidth="8"
@@ -506,7 +511,7 @@ export const CurrentMomentArc = ({
           {/* Overtired zone (>100% of wake window) */}
           {isOvertired && isDay && (
             <path
-              d={`M ${centerX + Math.cos(Math.PI * 0.2) * arcRadius} ${centerY - Math.sin(Math.PI * 0.2) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + arcRadius} ${centerY}`}
+              d={`M ${centerX + Math.cos(startAngle - 0.8 * angleRange) * arcRadius} ${centerY - Math.sin(startAngle - 0.8 * angleRange) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + Math.cos(endAngle) * arcRadius} ${centerY - Math.sin(endAngle) * arcRadius}`}
               fill="none"
               stroke="url(#overtiredGradient)"
               strokeWidth="10"
@@ -563,8 +568,8 @@ export const CurrentMomentArc = ({
           {/* Zone indicator text */}
           {isOvertired && isDay && (
             <text
-              x={centerX + arcRadius - 40}
-              y={centerY + 15}
+              x={centerX + Math.cos(endAngle) * arcRadius - 40}
+              y={centerY - Math.sin(endAngle) * arcRadius + 25}
               textAnchor="middle"
               className="text-[9px] font-semibold"
               fill="hsl(0 70% 55%)"
@@ -574,8 +579,8 @@ export const CurrentMomentArc = ({
           )}
           {inTwilightZone && isDay && !isOvertired && (
             <text
-              x={centerX + arcRadius - 40}
-              y={centerY + 15}
+              x={centerX + Math.cos(endAngle) * arcRadius - 40}
+              y={centerY - Math.sin(endAngle) * arcRadius + 25}
               textAnchor="middle"
               className="text-[9px] font-medium fill-muted-foreground"
             >
@@ -585,7 +590,7 @@ export const CurrentMomentArc = ({
         </svg>
         
         {/* State Text - Centered Absolute */}
-        <div className="absolute top-[50%] left-0 right-0 text-center transform -translate-y-1/2 mt-4">
+        <div className="absolute top-[55%] left-0 right-0 text-center transform -translate-y-1/2">
           <p className="text-[26px] font-serif font-normal text-foreground tracking-tight text-center leading-tight" 
              style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
