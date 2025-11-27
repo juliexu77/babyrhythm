@@ -241,14 +241,23 @@ export const useRhythmArc = ({
           const startParsed = parseTimeTo24h(startTimeStr);
           if (!endParsed) return null;
           
-          if (!detailsAny.date_local) return null;
-          const [year, month, day] = detailsAny.date_local.split('-').map(Number);
-          let baseDate = new Date(year, month - 1, day);
+          let baseDate: Date;
           
-          // Detect overnight sleep: if endTime is earlier than startTime, add a day
-          // e.g., startTime 7:44 PM (19:44), endTime 6:45 AM (6:45) - end is next day
-          if (startParsed && endParsed.hours < startParsed.hours) {
-            baseDate.setDate(baseDate.getDate() + 1);
+          // Prefer end_date_local if stored (new activities will have this)
+          if (detailsAny.end_date_local) {
+            const [year, month, day] = detailsAny.end_date_local.split('-').map(Number);
+            baseDate = new Date(year, month - 1, day);
+          } else if (detailsAny.date_local) {
+            // Fallback: infer from start/end time comparison
+            const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+            baseDate = new Date(year, month - 1, day);
+            
+            // Detect overnight sleep: if endTime is earlier than startTime, add a day
+            if (startParsed && endParsed.hours < startParsed.hours) {
+              baseDate.setDate(baseDate.getDate() + 1);
+            }
+          } else {
+            return null;
           }
           
           baseDate.setHours(endParsed.hours, endParsed.minutes, 0, 0);
@@ -271,13 +280,24 @@ export const useRhythmArc = ({
           const endParsed = parseTimeTo24h(endTimeStr);
           const startParsed = parseTimeTo24h(startTimeStr);
           
-          if (endParsed && detailsAny.date_local) {
-            const [year, month, day] = detailsAny.date_local.split('-').map(Number);
-            let baseDate = new Date(year, month - 1, day);
+          if (endParsed) {
+            let baseDate: Date;
             
-            // Detect overnight sleep: if endTime is earlier than startTime, add a day
-            if (startParsed && endParsed.hours < startParsed.hours) {
-              baseDate.setDate(baseDate.getDate() + 1);
+            // Prefer end_date_local if stored (new activities will have this)
+            if (detailsAny.end_date_local) {
+              const [year, month, day] = detailsAny.end_date_local.split('-').map(Number);
+              baseDate = new Date(year, month - 1, day);
+            } else if (detailsAny.date_local) {
+              // Fallback: infer from start/end time comparison
+              const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+              baseDate = new Date(year, month - 1, day);
+              
+              // Detect overnight sleep: if endTime is earlier than startTime, add a day
+              if (startParsed && endParsed.hours < startParsed.hours) {
+                baseDate.setDate(baseDate.getDate() + 1);
+              }
+            } else {
+              return; // Can't determine date
             }
             
             baseDate.setHours(endParsed.hours, endParsed.minutes, 0, 0);
@@ -286,8 +306,9 @@ export const useRhythmArc = ({
             console.log('⏰ WAKE MODE - End time parsing:', {
               startTimeStr,
               endTimeStr,
+              end_date_local: detailsAny.end_date_local,
               date_local: detailsAny.date_local,
-              isOvernightSleep: startParsed ? endParsed.hours < startParsed.hours : false,
+              isOvernightSleep: !detailsAny.end_date_local && startParsed ? endParsed.hours < startParsed.hours : false,
               parsedWakeTime: startTime.toLocaleString()
             });
           }
