@@ -43,7 +43,7 @@ export const RhythmArc = ({
   const padding = 50;
   const horizonY = viewBoxHeight - 20; // Horizon at bottom (180)
   const arcStartEndY = 120; // Arc endpoints elevated above horizon
-  const arcPeakY = 17; // Peak of the arc - 30% steeper (was 25)
+  const arcPeakY = 9; // Peak of the arc - 50% steeper (was 17)
   
   // Arc endpoints elevated above horizon, curving upward
   const startPoint = { x: padding, y: arcStartEndY };
@@ -234,6 +234,17 @@ export const RhythmArc = ({
           
           {/* Sun/Moon icon group - centered at curve point */}
           <g transform={`translate(${iconPosition.x}, ${iconPosition.y})`}>
+            {/* TEMP: Bright marker to verify this is the visible element */}
+            <circle
+              cx="0"
+              cy="0"
+              r="50"
+              fill="none"
+              stroke="lime"
+              strokeWidth="4"
+              opacity="1"
+            />
+            
             {/* Sun glow - centered at origin */}
             <circle
               cx="0"
