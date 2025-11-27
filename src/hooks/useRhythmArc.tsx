@@ -62,7 +62,7 @@ export const useRhythmArc = ({
       let typicalDuration = 120; // Default 2 hours
 
       if (ongoingNap?.details?.startTime) {
-        // Nap mode
+        // Check if this is night sleep or a nap
         mode = "nap";
         const startTimeStr = String(ongoingNap.details.startTime);
         const timeParts = startTimeStr.split(":").map(Number);
@@ -71,7 +71,23 @@ export const useRhythmArc = ({
           startTime = new Date(currentTime);
           startTime.setHours(hours, minutes, 0, 0);
         }
-        typicalDuration = 90; // 1.5 hours for naps
+        
+        // Determine if this is night sleep based on start time
+        const startHour = startTime.getHours();
+        const isNightSleep = nightSleepStartHour > nightSleepEndHour
+          ? startHour >= nightSleepStartHour || startHour < nightSleepEndHour
+          : startHour >= nightSleepStartHour && startHour < nightSleepEndHour;
+        
+        // Use appropriate duration for night sleep vs nap
+        if (isNightSleep) {
+          // Calculate expected night sleep duration
+          const nightDuration = nightSleepStartHour > nightSleepEndHour
+            ? (24 - nightSleepStartHour + nightSleepEndHour) * 60
+            : (nightSleepEndHour - nightSleepStartHour) * 60;
+          typicalDuration = nightDuration;
+        } else {
+          typicalDuration = 90; // 1.5 hours for naps
+        }
       } else if (activities && activities.length > 0) {
         // Wake mode - find last nap end time
         const sortedNaps = activities
