@@ -37,17 +37,6 @@ export const RhythmArc = ({
   const rawProgress = elapsedMinutes / typicalDuration;
   const progress = Math.max(0, Math.min(rawProgress, 1.5)); // Cap at 150%
   
-  // DEBUG: Log and display arc inputs
-  console.log("🌙 RhythmArc Component Inputs:", {
-    mode,
-    startTime: startTime.toLocaleString(),
-    currentTime: currentTime.toLocaleString(),
-    typicalDuration,
-    elapsedMinutes,
-    progress,
-    rawProgress
-  });
-  
   // Arc configuration - elevated arc above horizon with steeper curve
   const viewBoxWidth = 520;
   const viewBoxHeight = 200;
