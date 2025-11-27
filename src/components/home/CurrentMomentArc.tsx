@@ -503,38 +503,44 @@ export const CurrentMomentArc = ({
             fill={isOvertired ? "url(#overtiredGlow)" : (isDay ? "url(#sunGlow)" : "url(#moonGlow)")}
           />
           
-          {/* The Icon Itself */}
-          <g transform={`translate(${iconX}, ${iconY})`}>
-            {isDay ? (
+          {/* The Icon Itself - positioned at calculated arc coordinates */}
+          {isDay ? (
+            <circle
+              cx={iconX}
+              cy={iconY}
+              r="10"
+              fill={isOvertired ? "hsl(0 70% 55%)" : "#FFB347"}
+              style={{
+                filter: isOvertired 
+                  ? 'drop-shadow(0 0 8px hsla(0, 70%, 60%, 0.6))' 
+                  : 'drop-shadow(0 0 10px rgba(255, 213, 128, 0.6))'
+              }}
+            />
+          ) : (
+            <g>
+              {/* Moon base circle */}
               <circle
+                cx={iconX}
+                cy={iconY}
                 r="10"
-                fill={isOvertired ? "hsl(0 70% 55%)" : "#FFB347"}
+                fill="hsl(240 30% 75%)"
                 style={{
-                  filter: isOvertired 
-                    ? 'drop-shadow(0 0 8px hsla(0, 70%, 60%, 0.6))' 
-                    : 'drop-shadow(0 0 10px rgba(255, 213, 128, 0.6))'
+                  filter: 'drop-shadow(0 0 8px hsla(240, 30%, 75%, 0.4))'
                 }}
               />
-            ) : (
-              <g>
-                {/* Moon crescent - pure SVG */}
-                <circle
-                  r="10"
-                  fill="hsl(240 30% 75%)"
-                  style={{
-                    filter: 'drop-shadow(0 0 8px hsla(240, 30%, 75%, 0.4))'
-                  }}
-                />
-                {/* Crescent shadow */}
-                <circle
-                  cx="3"
-                  cy="-2"
-                  r="8"
-                  fill="hsl(var(--background))"
-                />
-              </g>
-            )}
-          </g>
+              {/* Crescent shadow - proper SVG path */}
+              <path
+                d={`
+                  M ${iconX + 2} ${iconY - 10}
+                  A 8 8 0 0 1 ${iconX + 2} ${iconY + 10}
+                  A 6 6 0 0 0 ${iconX + 2} ${iconY - 10}
+                  Z
+                `}
+                fill="hsl(240 20% 60%)"
+                opacity="0.5"
+              />
+            </g>
+          )}
           
           {/* Zone indicator text */}
           {isOvertired && isDay && (
