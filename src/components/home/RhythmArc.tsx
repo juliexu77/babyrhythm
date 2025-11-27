@@ -188,12 +188,12 @@ export const RhythmArc = ({
             </linearGradient>
           </defs>
           
-          {/* Horizon ambient glow backdrop */}
+          {/* Horizon ambient glow backdrop - only above horizon line */}
           <rect
             x="0"
             y={horizonY - 40}
             width={viewBoxWidth}
-            height="60"
+            height="40"
             fill="url(#horizonGlow)"
             opacity="0.7"
           />
