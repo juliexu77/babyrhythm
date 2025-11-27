@@ -62,23 +62,43 @@ const getActivityIcon = (type: string) => {
   }
 };
 
-// Color tinting for icons based on type
+// Color tinting for icons based on type - Brand palette: Plum -> Fig -> Rose
 const getIconColorClass = (type: string) => {
   switch (type) {
     case "nap":
-      return "text-[hsl(260,50%,45%)]"; // Deep purple
+      return "text-[#4A2B36]"; // Fig color for sleep
     case "feed":
-      return "text-[hsl(15,70%,50%)]"; // Terracotta/warm orange
+      return "text-[#A85D52]"; // Dusty Clay for feeding
     case "diaper":
-      return "text-[hsl(145,30%,45%)]"; // Sage green
+      return "text-[#6D645F]"; // Mushroom for diaper
     case "solids":
-      return "text-[hsl(30,65%,50%)]"; // Amber
+      return "text-[#A85D52]"; // Dusty Clay (same as feed)
     case "note":
-      return "text-[hsl(220,15%,50%)]"; // Neutral grey
+      return "text-[#8C7C7A]"; // Warm Mauve-Grey
     case "photo":
-      return "text-[hsl(190,50%,45%)]"; // Soft teal
+      return "text-[#4A2B36]"; // Fig color
     default:
-      return "text-muted-foreground";
+      return "text-[#6D645F]"; // Mushroom default
+  }
+};
+
+// Background circles for icons - Brand palette backgrounds
+const getIconBackgroundClass = (type: string) => {
+  switch (type) {
+    case "nap":
+      return "bg-[#F5E6EA]"; // Deep Plum background for sleep
+    case "feed":
+      return "bg-[#FCECE6]"; // Soft Rose background for feeding
+    case "diaper":
+      return "bg-[#F0EEEB]"; // Warm Taupe for diaper
+    case "solids":
+      return "bg-[#FCECE6]"; // Soft Rose (same as feed)
+    case "note":
+      return "bg-[#F0EEEB]"; // Warm Taupe
+    case "photo":
+      return "bg-[#F5E6EA]"; // Deep Plum
+    default:
+      return "bg-[#F0EEEB]"; // Warm Taupe default
   }
 };
 
@@ -240,8 +260,8 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
 
   return (
     <div className="relative flex items-center py-1.5 group transition-colors">
-      {/* Icon - centered on timeline with white background to mask the line */}
-      <div className={`relative z-10 flex-shrink-0 w-5 h-5 flex items-center justify-center bg-background p-0.5 ${getIconColorClass(activity.type)}`} style={{ marginLeft: '14px' }}>
+      {/* Icon - centered on timeline with brand-colored background circle */}
+      <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getIconBackgroundClass(activity.type)} ${getIconColorClass(activity.type)}`} style={{ marginLeft: '8px' }}>
         {getActivityIcon(activity.type)}
       </div>
       
@@ -251,20 +271,20 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
           onClick={handleClick}
           className="flex-1 text-left min-w-0 flex items-baseline gap-2 hover:opacity-80 transition-opacity"
         >
-          {/* Value - Bold */}
-          <span className="text-sm font-semibold text-foreground">
+          {/* Value - Bold - Deep Fig color */}
+          <span className="text-sm font-semibold" style={{ color: '#3E2F2B' }}>
             {value}
           </span>
-          {/* Descriptor - Lighter */}
+          {/* Descriptor - Lighter - Warm Mauve-Grey */}
           {descriptor && (
-            <span className="text-sm text-muted-foreground truncate">
+            <span className="text-sm truncate" style={{ color: '#8C7C7A' }}>
               {descriptor}
             </span>
           )}
         </button>
         
-        {/* Timestamp - aligned with tabular-nums */}
-        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap tabular-nums">
+        {/* Timestamp - aligned with tabular-nums - Warm Mauve-Grey */}
+        <span className="text-xs font-medium whitespace-nowrap tabular-nums" style={{ color: '#8C7C7A' }}>
           {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
             ? activity.details.startTime  // Show just start time for ongoing naps
             : activity.time  // Show full time or time range for completed activities

@@ -720,7 +720,7 @@ const ongoingNap = (() => {
       return <SettingsPage />;
       case "insights":
         return (
-          <>
+          <div style={{ background: '#FAF5F2', minHeight: '100vh' }}>
             {/* Log Header */}
             <div className="px-4 py-2.5 border-b border-border">
               <div className="flex items-center gap-4">
@@ -996,8 +996,8 @@ const ongoingNap = (() => {
                                 
                                 {/* Activities for this date */}
                                 <div className="relative space-y-0">
-                                  {/* Continuous timeline line running through all activities */}
-                                  <div className="absolute left-[24px] top-0 bottom-0 w-px bg-[#E5E0D8]"></div>
+                                  {/* Continuous timeline line running through all activities - Soft Rose-Taupe */}
+                                  <div className="absolute left-[20px] top-0 bottom-0 w-px" style={{ background: '#E6DCD8' }}></div>
                                   {(() => {
                                     // To detect night sleep for this day, we need to check:
                                     // 1. Sleeps that started TODAY and ended TODAY
@@ -1122,22 +1122,22 @@ const ongoingNap = (() => {
                                             }}
                                             className="relative flex items-center py-1.5 group transition-colors w-full text-left"
                                           >
-                                            {/* Icon - centered on timeline with white background to mask the line */}
-                                            <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-background flex items-center justify-center text-[hsl(45,90%,55%)]" style={{ marginLeft: '14px' }}>
+                                            {/* Icon - centered on timeline with brand background */}
+                                            <div className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ marginLeft: '8px', background: '#F5E6EA', color: '#4A2B36' }}>
                                               <Sun className="w-4 h-4" />
                                             </div>
                                             
                                             {/* Content */}
                                             <div className="flex-1 flex items-center justify-between min-w-0 gap-3 pl-4">
                                               <div className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
-                                                <span className="text-sm font-semibold text-foreground">
+                                                <span className="text-sm font-semibold" style={{ color: '#3E2F2B' }}>
                                                   {wakeTime}
                                                 </span>
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm" style={{ color: '#8C7C7A' }}>
                                                   Woke up
                                                 </span>
                                               </div>
-                                              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap tabular-nums">
+                                              <span className="text-xs font-medium whitespace-nowrap tabular-nums" style={{ color: '#8C7C7A' }}>
                                                 {wakeTime}
                                               </span>
                                             </div>
@@ -1186,7 +1186,7 @@ const ongoingNap = (() => {
                 )}
               </div>
             </div>
-          </>
+          </div>
         );
     }
   };
