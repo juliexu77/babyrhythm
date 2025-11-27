@@ -369,7 +369,7 @@ export const DailyReassurance = ({
   }[iconType];
 
   return (
-    <div className="mx-2 mb-3">
+    <div className="mx-2 mb-6">
       <div className="px-3 py-2 rounded-xl bg-gradient-to-b from-primary/8 via-primary/5 to-primary/3 border border-border/10">
         <div className="flex items-start gap-2">
           <IconComponent className="w-4 h-4 text-primary/60 mt-0.5 flex-shrink-0" />
