@@ -8,6 +8,8 @@ interface StateMessageContext {
   nightSleepStartHour: number;
   nightSleepEndHour: number;
   ongoingNap?: Activity | null;
+  averageWakeHour?: number; // Expected wake up hour (0-23)
+  averageWakeMinute?: number; // Expected wake up minute (0-59)
 }
 
 // Get nap ordinal (1st, 2nd, 3rd, etc.)
@@ -62,29 +64,80 @@ const getMostRecentActivity = (activities: Activity[]): Activity | null => {
 };
 
 export const getRhythmStateMessage = (context: StateMessageContext): string => {
-  const { activities, currentTime, nightSleepStartHour, nightSleepEndHour, ongoingNap } = context;
+  const { 
+    activities, 
+    currentTime, 
+    nightSleepStartHour, 
+    nightSleepEndHour, 
+    ongoingNap,
+    averageWakeHour = 7,  // Default 7 AM
+    averageWakeMinute = 0 
+  } = context;
   const currentHour = currentTime.getHours();
+  const currentMinute = currentTime.getMinutes();
   const todayActivities = getTodayActivities(activities);
   const yesterdayActivities = getYesterdayActivities(activities);
   
-  // Mode 1: Currently in a nap
+  // Mode 1: Currently in a nap/sleep
   if (ongoingNap?.details?.startTime) {
-    const [hours, minutes] = ongoingNap.details.startTime.split(':').map(Number);
-    const napStart = new Date(currentTime);
-    napStart.setHours(hours, minutes, 0, 0);
-    const napMinutes = differenceInMinutes(currentTime, napStart);
+    // Parse the start time
+    const startTimeStr = String(ongoingNap.details.startTime);
+    const timeParts = startTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    let napStartHours = 0;
+    let napStartMinutes = 0;
     
-    // Check if this is night sleep (> 4 hours or in night window)
+    if (timeParts) {
+      napStartHours = parseInt(timeParts[1]);
+      napStartMinutes = parseInt(timeParts[2]);
+      const period = timeParts[3]?.toUpperCase();
+      if (period === 'PM' && napStartHours !== 12) napStartHours += 12;
+      if (period === 'AM' && napStartHours === 12) napStartHours = 0;
+    }
+    
+    // Get the date the nap started on
+    const detailsAny = ongoingNap.details as any;
+    let napStartDate: Date;
+    
+    if (detailsAny.date_local) {
+      const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+      napStartDate = new Date(year, month - 1, day, napStartHours, napStartMinutes, 0, 0);
+    } else {
+      napStartDate = new Date(ongoingNap.loggedAt || ongoingNap.time);
+      napStartDate.setHours(napStartHours, napStartMinutes, 0, 0);
+    }
+    
+    const napMinutes = differenceInMinutes(currentTime, napStartDate);
+    
+    // Check if this is overnight sleep (started yesterday or > 4 hours ago)
+    const startedYesterday = napStartDate.toDateString() !== currentTime.toDateString();
     const inNightWindow = isNightTime(currentHour, nightSleepStartHour, nightSleepEndHour);
-    if (inNightWindow || napMinutes > 240) {
-      return "Down for the night";
+    const isOvernightSleep = startedYesterday || napMinutes > 240 || inNightWindow;
+    
+    if (isOvernightSleep) {
+      // Check if approaching average wake time (within 30 minutes)
+      const currentTotalMinutes = currentHour * 60 + currentMinute;
+      const avgWakeTotalMinutes = averageWakeHour * 60 + averageWakeMinute;
+      const minutesUntilWake = avgWakeTotalMinutes - currentTotalMinutes;
+      
+      // If within 30 minutes before or 15 minutes after expected wake time
+      if (minutesUntilWake > 0 && minutesUntilWake <= 30) {
+        return "May wake soon";
+      }
+      
+      // Past expected wake time but still sleeping
+      if (minutesUntilWake < 0 && minutesUntilWake >= -30) {
+        return "May wake soon";
+      }
+      
+      // Still in deep night sleep
+      return "Still snoozing";
     }
     
     // Daytime nap - determine which nap
     const completedNapsToday = todayActivities.filter(a => 
       a.type === 'nap' && 
       a.details?.endTime &&
-      new Date(a.loggedAt || a.time) < napStart
+      new Date(a.loggedAt || a.time) < napStartDate
     ).length;
     
     const napNumber = completedNapsToday + 1;

@@ -50,6 +50,40 @@ export const useRhythmArc = ({
           ? currentHour >= nightSleepStartHour || currentHour < nightSleepEndHour
           : currentHour >= nightSleepStartHour && currentHour < nightSleepEndHour;
 
+      // Calculate average wake time from recent morning activities
+      let averageWakeHour = nightSleepEndHour || 7; // Default to night sleep end hour
+      let averageWakeMinute = 0;
+      
+      // Try to find average wake time from recent completed night sleeps
+      if (activities && activities.length > 0) {
+        const recentMorningWakes = activities
+          .filter(a => a.type === 'nap' && a.details?.endTime)
+          .map(a => {
+            const endTimeStr = String(a.details.endTime);
+            const match = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+            if (match) {
+              let hours = parseInt(match[1]);
+              const minutes = parseInt(match[2]);
+              const period = match[3]?.toUpperCase();
+              if (period === 'PM' && hours !== 12) hours += 12;
+              if (period === 'AM' && hours === 12) hours = 0;
+              // Only consider morning wake times (5-10 AM)
+              if (hours >= 5 && hours <= 10) {
+                return { hours, minutes };
+              }
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .slice(0, 7); // Last 7 morning wakes
+        
+        if (recentMorningWakes.length > 0) {
+          const avgMinutes = recentMorningWakes.reduce((sum, t) => sum + t!.hours * 60 + t!.minutes, 0) / recentMorningWakes.length;
+          averageWakeHour = Math.floor(avgMinutes / 60);
+          averageWakeMinute = Math.round(avgMinutes % 60);
+        }
+      }
+
       // Get state message with fallback
       const stateMessage = getRhythmStateMessage({
         activities: activities || [],
@@ -57,6 +91,8 @@ export const useRhythmArc = ({
         nightSleepStartHour,
         nightSleepEndHour,
         ongoingNap,
+        averageWakeHour,
+        averageWakeMinute,
       }) || "Tracking your rhythm";
 
       // Determine mode and calculate start time + typical duration
