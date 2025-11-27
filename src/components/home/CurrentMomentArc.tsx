@@ -401,13 +401,13 @@ export const CurrentMomentArc = ({
   // End angle: 0.1 * PI (18°) - right side
   const startAngle = Math.PI * 0.9;
   const endAngle = Math.PI * 0.1;
-  const angleRange = startAngle - endAngle; // 0.8 * PI
+  const angleRange = startAngle - endAngle; // 0.8 * PI (144°)
 
   // --- FIXED MATH (Left to Right on shortened arc) ---
   // Map position (0 to 1) to angle range (startAngle to endAngle)
   const arcAngle = startAngle - (clampedPosition * angleRange);
 
-  // Calculate icon position on arc
+  // Calculate icon position on arc - MUST match arc path coordinates exactly
   const iconX = centerX + Math.cos(arcAngle) * arcRadius;
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
   
@@ -588,8 +588,8 @@ export const CurrentMomentArc = ({
         </svg>
         
         {/* State Text - Centered Absolute */}
-        <div className="absolute top-[60%] left-0 right-0 text-center transform -translate-y-1/2">
-          <p className="text-[26px] font-serif font-normal text-foreground tracking-tight text-center leading-tight" 
+        <div className="absolute top-[60%] left-0 right-0 px-8 text-center transform -translate-y-1/2">
+          <p className="text-[20px] font-serif font-normal text-foreground tracking-tight text-center leading-snug max-w-[280px] mx-auto" 
              style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
           </p>
