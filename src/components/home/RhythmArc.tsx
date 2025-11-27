@@ -1,4 +1,3 @@
-import { Sun, Moon } from "lucide-react";
 import { differenceInMinutes } from "date-fns";
 
 interface RhythmArcProps {
@@ -157,7 +156,6 @@ export const RhythmArc = ({
   };
   
   const colors = getColors();
-  const IconComponent = theme === "night" ? Moon : Sun;
 
   return (
     <div className="px-6 pb-6 relative z-10">
@@ -234,7 +232,7 @@ export const RhythmArc = ({
           
           {/* Sun/Moon icon group - centered at curve point */}
           <g transform={`translate(${iconPosition.x}, ${iconPosition.y})`}>
-            {/* TEMP: Bright marker to verify this is the visible element */}
+            {/* TEMP: Bright marker to verify positioning */}
             <circle
               cx="0"
               cy="0"
@@ -254,21 +252,61 @@ export const RhythmArc = ({
               className="transition-all duration-700 ease-out"
             />
             
-            {/* Icon - centered at origin */}
-            <foreignObject x="-12" y="-12" width="24" height="24">
-              <IconComponent 
-                size={24} 
-                strokeWidth={2}
-                style={{
-                  color: colors.icon,
-                  filter: theme === "night" 
-                    ? 'drop-shadow(0 0 8px hsla(235, 20%, 72%, 0.5)) drop-shadow(0 0 16px hsla(235, 20%, 72%, 0.3))'
-                    : isOvertired
-                      ? 'drop-shadow(0 0 10px hsla(15, 35%, 65%, 0.6)) drop-shadow(0 0 20px hsla(15, 35%, 65%, 0.4))'
-                      : 'drop-shadow(0 0 12px hsla(38, 40%, 75%, 0.6)) drop-shadow(0 0 24px hsla(38, 40%, 75%, 0.4))',
-                }}
-              />
-            </foreignObject>
+            {/* Icon - native SVG (not foreignObject) */}
+            {theme === "night" ? (
+              // Moon icon - native SVG
+              <g>
+                <circle
+                  cx="0"
+                  cy="0"
+                  r="10"
+                  fill={colors.icon}
+                  opacity="0.9"
+                  filter={`drop-shadow(0 0 8px hsla(235, 20%, 72%, 0.5)) drop-shadow(0 0 16px hsla(235, 20%, 72%, 0.3))`}
+                />
+                <circle
+                  cx="3"
+                  cy="-2"
+                  r="8"
+                  fill="hsl(var(--background))"
+                  opacity="0.4"
+                />
+              </g>
+            ) : (
+              // Sun icon - native SVG
+              <g>
+                <circle
+                  cx="0"
+                  cy="0"
+                  r="8"
+                  fill={colors.icon}
+                  filter={isOvertired 
+                    ? `drop-shadow(0 0 10px hsla(15, 35%, 65%, 0.6)) drop-shadow(0 0 20px hsla(15, 35%, 65%, 0.4))`
+                    : `drop-shadow(0 0 12px hsla(38, 40%, 75%, 0.6)) drop-shadow(0 0 24px hsla(38, 40%, 75%, 0.4))`
+                  }
+                />
+                {/* Sun rays */}
+                {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
+                  const radians = (angle * Math.PI) / 180;
+                  const x1 = Math.cos(radians) * 12;
+                  const y1 = Math.sin(radians) * 12;
+                  const x2 = Math.cos(radians) * 16;
+                  const y2 = Math.sin(radians) * 16;
+                  return (
+                    <line
+                      key={angle}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke={colors.icon}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  );
+                })}
+              </g>
+            )}
             
             {/* Anchor point - centered at origin */}
             <circle
