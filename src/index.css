@@ -320,6 +320,7 @@
   #root {
     overflow-x: hidden;
     width: 100%;
+    background: transparent;
   }
 
   /* Dusk mode - transparent root container to show gradient */
