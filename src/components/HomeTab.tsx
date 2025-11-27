@@ -92,6 +92,15 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     todaysPulse
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
+  // Rhythm arc data
+  const rhythmArcData = useRhythmArc({
+    activities,
+    ongoingNap: passedOngoingNap,
+    nightSleepStartHour,
+    nightSleepEndHour,
+    babyBirthday: effectiveBabyBirthday,
+  });
+
   // Missed activity detection
   const missedActivitySuggestion = useMissedActivityDetection(
     activities, 
@@ -1382,15 +1391,7 @@ const lastDiaper = displayActivities
         )}
 
         {/* Rhythm Arc */}
-        <RhythmArc
-          {...useRhythmArc({
-            activities,
-            ongoingNap: passedOngoingNap,
-            nightSleepStartHour,
-            nightSleepEndHour,
-            babyBirthday: effectiveBabyBirthday,
-          })}
-        />
+        <RhythmArc {...rhythmArcData} />
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
