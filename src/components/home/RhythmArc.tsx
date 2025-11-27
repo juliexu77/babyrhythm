@@ -334,14 +334,14 @@ export const RhythmArc = ({
           )}
           {/* State message - positioned under arc, centered vertically between peak and baseline */}
           <foreignObject
-            x={controlPoint.x - 140}
+            x={controlPoint.x - 160}
             y={20}
-            width="280"
+            width="320"
             height="120"
           >
             <div className="w-full h-full flex items-center justify-center px-4">
               <p 
-                className="text-[32px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
+                className="text-[24px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
                 style={{
                   fontVariationSettings: '"wght" 700'
                 }}
