@@ -69,14 +69,6 @@ export const useRhythmArc = ({
         const activityTime = new Date(ongoingNap.time);
         const startTimeStr = String(ongoingNap.details.startTime);
         
-        console.log('🌙 Arc Debug - Ongoing Nap:', {
-          activityTime,
-          startTimeStr,
-          ongoingNapTime: ongoingNap.time,
-          ongoingNapLoggedAt: ongoingNap.loggedAt,
-          currentTime
-        });
-        
         // Parse the time string (e.g., "7:44 PM")
         const timeParts = startTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
         
@@ -91,13 +83,6 @@ export const useRhythmArc = ({
           // Use the date from activity.time but set the hours/minutes from startTime
           startTime = new Date(activityTime);
           startTime.setHours(hours, minutes, 0, 0);
-          
-          console.log('🌙 Arc Debug - Calculated startTime:', {
-            startTime,
-            hours,
-            minutes,
-            period
-          });
         }
         
         
@@ -206,15 +191,6 @@ export const useRhythmArc = ({
           }
         }
       }
-
-      console.log('🌙 Arc Final Data:', {
-        mode,
-        startTime,
-        typicalDuration,
-        currentTime,
-        theme: isNightTheme ? "night" : "day",
-        progress: ((currentTime.getTime() - startTime.getTime()) / (typicalDuration * 60 * 1000))
-      });
 
       return {
         mode,
