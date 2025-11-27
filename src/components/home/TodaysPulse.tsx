@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Moon, Milk, Clock, ChevronDown, AlertCircle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isDaytimeNap } from "@/utils/napClassification";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 interface DeviationData {
   category: 'sleep' | 'feeding' | 'schedule';
@@ -43,6 +45,7 @@ export const TodaysPulse = ({
   activities,
   transitionInfo
 }: TodaysPulseProps) => {
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [explanation, setExplanation] = useState<string>('');
   const [explanationLoading, setExplanationLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(true); // Open by default
@@ -106,15 +109,15 @@ export const TodaysPulse = ({
   }, [biggestDeviation?.description, babyName, babyAge, activities]);
 
   const getStatusBadge = (status: DeviationData['status'], category?: string) => {
-    // Show nap count for sleep
+    // Show nap count for sleep (exclude night sleep)
     if (category === 'sleep') {
       const todayNaps = activities.filter((a: any) => {
         const activityDate = new Date(a.logged_at || a.loggedAt);
         const today = new Date();
-        return a.type === 'nap' && 
-               activityDate.getDate() === today.getDate() &&
+        const isToday = activityDate.getDate() === today.getDate() &&
                activityDate.getMonth() === today.getMonth() &&
                activityDate.getFullYear() === today.getFullYear();
+        return a.type === 'nap' && isToday && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour);
       }).length;
       return <Badge variant="secondary" className="text-xs">{todayNaps} nap{todayNaps !== 1 ? 's' : ''} so far</Badge>;
     }
