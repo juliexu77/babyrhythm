@@ -374,16 +374,15 @@ export const CurrentMomentArc = ({
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
   
   console.log('🎯 CurrentMomentArc debug:', {
+    currentHour,
+    nightSleepStartHour,
+    nightSleepEndHour,
+    isDay,
     arcPosition: arcPosition.toFixed(2),
     clampedPosition: clampedPosition.toFixed(2),
     arcAngle: (arcAngle * 180 / Math.PI).toFixed(1) + '°',
     iconX: iconX.toFixed(1),
     iconY: iconY.toFixed(1),
-    centerX,
-    centerY,
-    arcRadius,
-    startAngle: (startAngle * 180 / Math.PI).toFixed(1) + '°',
-    endAngle: (endAngle * 180 / Math.PI).toFixed(1) + '°',
     hasOngoingNap: !!ongoingNap
   });
   
