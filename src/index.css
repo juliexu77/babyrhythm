@@ -12,11 +12,12 @@
     --font-serif: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
     --font-num: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
     
-    /* Brand colors - Matching reference palette */
-    --pp-burgundy: 345 38% 38%; /* #8B3A4C - warmer burgundy (primary) */
-    --pp-dusty-mauve: 0 22% 72%; /* #C9A5A5 - soft dusty rose (badges) */
-    --pp-rose-clay: 0 20% 71%; /* #C4A4A4 - rose clay (secondary accent) */
-    --pp-warm-taupe: 20 12% 50%; /* #8F8078 - warm taupe for muted text */
+    /* Brand colors - Rare Beauty inspired warm palette */
+    --pp-burgundy: 345 42% 36%; /* Deep burgundy (primary) - richer */
+    --pp-dusty-mauve: 10 35% 70%; /* #D4A89A - warm dusty rose (more saturated) */
+    --pp-rose-clay: 15 40% 68%; /* #D4A090 - peachy rose clay */
+    --pp-warm-taupe: 18 25% 48%; /* #917665 - richer warm taupe */
+    --pp-coral-peach: 18 55% 82%; /* #EDCFC0 - soft coral peach for backgrounds */
     
     /* Spacing scale (8pt grid) */
     --s-1: 4px;
@@ -27,23 +28,23 @@
     --s-6: 24px;
     --s-7: 32px;
     
-    /* Light Mode - Soft Blush (matching reference) */
-    --bg: 15 30% 96%; /* #F9F5F3 - soft cream with pink undertone */
-    --surface: 15 25% 98%; /* #FDFBFA - clean white with warm tint */
-    --surface-muted: 15 25% 94%; /* #F5EFED - deeper blush cream */
-    --text: 350 30% 25%; /* #4A2D35 - warm brown text */
-    --text-muted: 15 12% 50%; /* #8A807D - warm grey */
-    --divider: 15 20% 88%; /* #E6DDD9 - soft pink-tinted border */
+    /* Light Mode - Warm Peachy Cream (Rare Beauty packaging) */
+    --bg: 20 45% 94%; /* Warm peachy cream background */
+    --surface: 18 40% 96%; /* Soft peachy white */
+    --surface-muted: 18 35% 91%; /* Warmer cream with presence */
+    --text: 350 35% 22%; /* Deep burgundy-brown text */
+    --text-muted: 15 20% 45%; /* Warm brown-grey */
+    --divider: 15 30% 85%; /* Warm peachy border */
     
-    /* Card ombré progression (soft blush tones) */
-    --card-ombre-1: 15 25% 97%; /* Soft blush cream */
-    --card-ombre-1-dark: 15 22% 93%; /* Deeper blush */
-    --card-ombre-2: 15 22% 95%; /* Warm cream */
-    --card-ombre-2-dark: 15 20% 91%; /* Deeper warm */
-    --card-ombre-3: 15 20% 96%; /* Soft pink tint */
-    --card-ombre-3-dark: 15 18% 92%; /* Deeper pink */
-    --card-ombre-4: 345 15% 95%; /* Soft rose tint */
-    --card-ombre-4-dark: 345 13% 91%; /* Deeper rose */
+    /* Card ombré progression (warm peachy tones - more saturated) */
+    --card-ombre-1: 18 38% 95%; /* Warm peachy cream */
+    --card-ombre-1-dark: 18 35% 90%; /* Deeper peach */
+    --card-ombre-2: 15 35% 93%; /* Soft blush */
+    --card-ombre-2-dark: 15 32% 88%; /* Deeper blush */
+    --card-ombre-3: 12 32% 94%; /* Rose-tinted cream */
+    --card-ombre-3-dark: 12 30% 89%; /* Deeper rose cream */
+    --card-ombre-4: 8 35% 92%; /* Coral tint */
+    --card-ombre-4-dark: 8 32% 87%; /* Deeper coral */
     
     /* Color aliases */
     --pp-blackberry: var(--pp-burgundy); /* Deep burgundy for primary */
@@ -51,12 +52,12 @@
     --pp-terracotta: var(--pp-dusty-mauve); /* Dusty mauve for accents */
     
     --accent-1: var(--pp-dusty-mauve); /* Dusty mauve accents */
-    --accent-2: 15 30% 96%; /* Very light blush */
+    --accent-2: var(--pp-coral-peach); /* Coral peach for subtle highlights */
     --chart-feed: var(--pp-burgundy); /* Burgundy for charts */
     --chart-sleep: var(--pp-dusty-mauve); /* Dusty mauve for sleep */
     
-    /* Card elevation - soft warm shadows */
-    --elev-shadow: 0 4px 24px -6px hsla(15, 30%, 50%, 0.08), 0 2px 10px -3px hsla(15, 30%, 50%, 0.04);
+    /* Card elevation - warm peachy shadows */
+    --elev-shadow: 0 4px 24px -6px hsla(18, 50%, 50%, 0.12), 0 2px 10px -3px hsla(18, 50%, 50%, 0.08);
     --card-radius: 20px;
     
     /* Transitions - gentle & elegant */
@@ -72,41 +73,41 @@
     --primary: var(--pp-burgundy);
     --primary-foreground: 0 0% 100%;
     --secondary: var(--pp-dusty-mauve);
-    --secondary-foreground: 350 35% 22%;
+    --secondary-foreground: 350 40% 18%;
     --muted: var(--surface-muted);
     --muted-foreground: var(--text-muted);
-    --accent: var(--pp-dusty-mauve);
-    --accent-foreground: 350 35% 22%;
-    --destructive: 0 60% 50%; /* Soft red */
+    --accent: var(--pp-rose-clay);
+    --accent-foreground: 350 40% 18%;
+    --destructive: 0 55% 50%; /* Soft red */
     --destructive-foreground: 0 0% 100%;
     --border: var(--divider);
     --input: var(--surface-muted);
     --ring: var(--pp-burgundy);
     --radius: 20px;
     
-    /* Primary CTA gradient - deep burgundy */
-    --cta-gradient-start: 350 40% 35%;
-    --cta-gradient-end: 350 45% 25%;
-    --cta-shadow: 0 4px 20px hsla(350, 40%, 35%, 0.25);
+    /* Primary CTA gradient - rich burgundy */
+    --cta-gradient-start: 350 45% 33%;
+    --cta-gradient-end: 350 50% 24%;
+    --cta-shadow: 0 4px 20px hsla(350, 45%, 35%, 0.30);
     
     /* Activity colors */
     --feed-color: var(--pp-burgundy); /* Burgundy for feeds */
     --diaper-color: var(--pp-warm-taupe); /* Warm taupe for diapers */
     --nap-color: var(--pp-dusty-mauve); /* Dusty mauve for sleep */
-    --note-color: 350 30% 35%; /* Darker burgundy for notes */
+    --note-color: 350 35% 32%; /* Darker burgundy for notes */
     --chat-color: var(--pp-burgundy); /* Burgundy for chat */
     
     /* Gradients - warm burgundy/mauve inspired */
-    --gradient-primary: linear-gradient(135deg, hsl(350 40% 32%), hsl(350 45% 25%));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--pp-burgundy)), hsl(350 40% 35%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-warm-taupe)), hsl(15 12% 60%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--pp-dusty-mauve)), hsl(345 18% 70%));
-    --gradient-note: linear-gradient(135deg, hsl(350 30% 35%), hsl(350 35% 28%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-burgundy)), hsl(350 45% 25%));
+    --gradient-primary: linear-gradient(135deg, hsl(350 45% 30%), hsl(350 50% 22%));
+    --gradient-feed: linear-gradient(135deg, hsl(var(--pp-burgundy)), hsl(350 45% 32%));
+    --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-warm-taupe)), hsl(18 25% 55%));
+    --gradient-nap: linear-gradient(135deg, hsl(var(--pp-dusty-mauve)), hsl(12 38% 65%));
+    --gradient-note: linear-gradient(135deg, hsl(350 35% 32%), hsl(350 40% 25%));
+    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-burgundy)), hsl(350 50% 22%));
     
-    /* Shadows - warm terracotta-tinted (not rose) */
-    --shadow-soft: 0 4px 18px -4px hsla(20, 40%, 50%, 0.08), 0 2px 8px -2px hsla(20, 40%, 50%, 0.04);
-    --shadow-card: 0 4px 24px -6px hsla(20, 40%, 50%, 0.10), 0 2px 10px -3px hsla(20, 40%, 50%, 0.06);
+    /* Shadows - warm peachy-tinted */
+    --shadow-soft: 0 4px 18px -4px hsla(18, 50%, 50%, 0.12), 0 2px 8px -2px hsla(18, 50%, 50%, 0.08);
+    --shadow-card: 0 4px 24px -6px hsla(18, 50%, 50%, 0.14), 0 2px 10px -3px hsla(18, 50%, 50%, 0.10);
     
     /* Sidebar */
     --sidebar-background: var(--bg);
@@ -312,7 +313,7 @@
     font-feature-settings: "tnum" 1;
     overflow-x: hidden;
     width: 100%;
-    background: linear-gradient(180deg, #FAF6F4 0%, #F5EDEA 100%);
+    background: linear-gradient(180deg, #FAF0EB 0%, #F5E5DE 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
