@@ -82,15 +82,6 @@ export const RhythmArc = ({
     );
   }
   
-  console.log('🌙 Moon position debug:', {
-    progress: progress.toFixed(3),
-    iconProgress: iconProgress.toFixed(3),
-    iconPosition: { x: iconPosition.x.toFixed(1), y: iconPosition.y.toFixed(1) },
-    startPoint,
-    controlPoint,
-    endPoint
-  });
-  
   // De Casteljau subdivision for wedge path (only for progress <= 1.0)
   const wedgeProgress = Math.min(progress, 1.0);
   const wedgePosition = getPointOnQuadraticCurve(
@@ -109,16 +100,14 @@ export const RhythmArc = ({
     y: t1 * startPoint.y + t * controlPoint.y
   };
   
-  // Wedge path for sundial-style fill: confined between arc curve and horizon baseline
-  // Explicitly draws the shape: horizon baseline → up to arc → follow arc curve → down to horizon → close along horizon
-  // Ensure fill never extends below horizonY
+  // Wedge path for sundial-style fill: confined between arc curve and baseline
+  // The baseline is the y-coordinate of the arc endpoints (arcStartEndY)
+  const baselineY = arcStartEndY;
   const wedgePath = `
-    M ${startPoint.x} ${Math.min(startPoint.y, horizonY)}
+    M ${startPoint.x} ${baselineY}
     L ${startPoint.x} ${startPoint.y}
     Q ${q0.x} ${q0.y} ${wedgePosition.x} ${wedgePosition.y}
-    L ${wedgePosition.x} ${Math.min(wedgePosition.y, horizonY)}
-    L ${wedgePosition.x} ${horizonY}
-    L ${startPoint.x} ${horizonY}
+    L ${wedgePosition.x} ${baselineY}
     Z
   `;
   
