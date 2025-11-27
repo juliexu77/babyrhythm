@@ -162,6 +162,12 @@ export const RhythmArc = ({
 
   return (
     <div className="px-6 pb-6 relative z-10">
+      <style>{`
+        @keyframes breathe {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-0.75px); }
+        }
+      `}</style>
       <div className="relative w-full flex flex-col items-center">
         <svg
           viewBox={`0 -60 ${viewBoxWidth} ${viewBoxHeight}`}
@@ -170,18 +176,25 @@ export const RhythmArc = ({
           style={{ maxWidth: '100%', overflow: 'visible' }}
         >
           <defs>
-            {/* Sun glow gradient */}
-            <radialGradient id="sunGlow">
-              <stop offset="0%" stopColor={colors.glow} stopOpacity="0.4" />
-              <stop offset="50%" stopColor={colors.glow} stopOpacity="0.2" />
+            {/* Soft icon glow - warm for day, cool for night */}
+            <radialGradient id="iconGlow">
+              <stop offset="0%" stopColor={colors.glow} stopOpacity="0.3" />
+              <stop offset="40%" stopColor={colors.glow} stopOpacity="0.15" />
               <stop offset="100%" stopColor={colors.glow} stopOpacity="0" />
             </radialGradient>
             
-            {/* Light wedge gradient - fades from sun position down to horizon */}
-            <linearGradient id="lightWedge" x1="0%" y1="0%" x2="0%" y2="100%">
+            {/* Light wedge gradient - sweeps left to right */}
+            <linearGradient id="lightWedge" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor={colors.trail} stopOpacity="0.25" />
-              <stop offset="70%" stopColor={colors.trail} stopOpacity="0.12" />
-              <stop offset="100%" stopColor={colors.trail} stopOpacity="0.03" />
+              <stop offset="50%" stopColor={colors.trail} stopOpacity="0.32" />
+              <stop offset="100%" stopColor={colors.trail} stopOpacity="0.28" />
+            </linearGradient>
+            
+            {/* Arc stroke gradient - lighter at peak, darker at ends */}
+            <linearGradient id="arcStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={colors.base} stopOpacity="0.5" />
+              <stop offset="50%" stopColor={colors.base} stopOpacity="0.7" />
+              <stop offset="100%" stopColor={colors.base} stopOpacity="0.5" />
             </linearGradient>
             
             {/* Horizon ambient glow */}
@@ -209,14 +222,13 @@ export const RhythmArc = ({
             style={{ mixBlendMode: 'screen' }}
           />
           
-          {/* Base arc path - thin line above the wedge */}
+          {/* Base arc path - thicker with gradient stroke */}
           <path
             d={arcPath}
             fill="none"
-            stroke={colors.base}
-            strokeWidth="2"
+            stroke="url(#arcStroke)"
+            strokeWidth="5"
             strokeLinecap="round"
-            opacity="0.3"
           />
           
           {/* Twilight zone subtle pulse on arc */}
@@ -233,93 +245,77 @@ export const RhythmArc = ({
             />
           )}
           
-          {/* Sun/Moon icon group - centered at curve point */}
-          <g transform={`translate(${iconPosition.x}, ${iconPosition.y})`}>
-            {/* TEMP: Bright marker to verify positioning */}
+          {/* Sun/Moon icon group - centered at curve point with breathing animation */}
+          <g 
+            transform={`translate(${iconPosition.x}, ${iconPosition.y})`}
+            className="transition-all duration-700 ease-out"
+          >
+            {/* Subtle glow backdrop */}
             <circle
               cx="0"
               cy="0"
-              r="50"
-              fill="none"
-              stroke="lime"
-              strokeWidth="4"
-              opacity="1"
+              r="32"
+              fill="url(#iconGlow)"
+              className="animate-[pulse_8s_ease-in-out_infinite]"
             />
             
-            {/* Sun glow - centered at origin */}
-            <circle
-              cx="0"
-              cy="0"
-              r="40"
-              fill="url(#sunGlow)"
-              className="transition-all duration-700 ease-out"
-            />
-            
-            {/* Icon - native SVG (not foreignObject) */}
-            {theme === "night" ? (
-              // Moon icon - native SVG
-              <g>
-                <circle
-                  cx="0"
-                  cy="0"
-                  r="10"
-                  fill={colors.icon}
-                  opacity="0.9"
-                  filter={`drop-shadow(0 0 8px hsla(235, 20%, 72%, 0.5)) drop-shadow(0 0 16px hsla(235, 20%, 72%, 0.3))`}
-                />
-                <circle
-                  cx="3"
-                  cy="-2"
-                  r="8"
-                  fill="hsl(var(--background))"
-                  opacity="0.4"
-                />
-              </g>
-            ) : (
-              // Sun icon - native SVG
-              <g>
-                <circle
-                  cx="0"
-                  cy="0"
-                  r="8"
-                  fill={colors.icon}
-                  filter={isOvertired 
-                    ? `drop-shadow(0 0 10px hsla(15, 35%, 65%, 0.6)) drop-shadow(0 0 20px hsla(15, 35%, 65%, 0.4))`
-                    : `drop-shadow(0 0 12px hsla(38, 40%, 75%, 0.6)) drop-shadow(0 0 24px hsla(38, 40%, 75%, 0.4))`
-                  }
-                />
-                {/* Sun rays */}
-                {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
-                  const radians = (angle * Math.PI) / 180;
-                  const x1 = Math.cos(radians) * 12;
-                  const y1 = Math.sin(radians) * 12;
-                  const x2 = Math.cos(radians) * 16;
-                  const y2 = Math.sin(radians) * 16;
-                  return (
-                    <line
-                      key={angle}
-                      x1={x1}
-                      y1={y1}
-                      x2={x2}
-                      y2={y2}
-                      stroke={colors.icon}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  );
-                })}
-              </g>
-            )}
-            
-            {/* Anchor point - centered at origin */}
-            <circle
-              cx="0"
-              cy="0"
-              r="2"
-              fill={colors.icon}
-              opacity="0.4"
-              className="transition-all duration-700 ease-out"
-            />
+            {/* Icon with breathing motion */}
+            <g className="animate-[breathe_8s_ease-in-out_infinite]">
+              {theme === "night" ? (
+                // Moon icon - cool silvery glow
+                <g>
+                  <circle
+                    cx="0"
+                    cy="0"
+                    r="11"
+                    fill={colors.icon}
+                    opacity="0.95"
+                    filter={`drop-shadow(0 0 10px hsla(235, 20%, 72%, 0.4)) drop-shadow(0 0 20px hsla(235, 20%, 72%, 0.25))`}
+                  />
+                  <circle
+                    cx="3.5"
+                    cy="-2"
+                    r="9"
+                    fill="hsl(var(--background))"
+                    opacity="0.5"
+                  />
+                </g>
+              ) : (
+                // Sun icon - warm golden glow
+                <g>
+                  <circle
+                    cx="0"
+                    cy="0"
+                    r="9"
+                    fill={colors.icon}
+                    filter={isOvertired 
+                      ? `drop-shadow(0 0 12px hsla(15, 35%, 65%, 0.5)) drop-shadow(0 0 24px hsla(15, 35%, 65%, 0.3))`
+                      : `drop-shadow(0 0 14px hsla(38, 40%, 75%, 0.5)) drop-shadow(0 0 28px hsla(38, 40%, 75%, 0.3))`
+                    }
+                  />
+                  {/* Sun rays */}
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
+                    const radians = (angle * Math.PI) / 180;
+                    const x1 = Math.cos(radians) * 13;
+                    const y1 = Math.sin(radians) * 13;
+                    const x2 = Math.cos(radians) * 18;
+                    const y2 = Math.sin(radians) * 18;
+                    return (
+                      <line
+                        key={angle}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
+                        stroke={colors.icon}
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                    );
+                  })}
+                </g>
+              )}
+            </g>
           </g>
           
           {/* Refined zone labels */}
@@ -366,21 +362,6 @@ export const RhythmArc = ({
             </div>
           </foreignObject>
         </svg>
-        
-        {/* DEBUG: On-screen display of arc values */}
-        <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-400 rounded-lg text-xs font-mono">
-          <div className="font-bold mb-2 text-yellow-900 dark:text-yellow-200">🔍 ARC DEBUG VALUES:</div>
-          <div className="space-y-1 text-yellow-800 dark:text-yellow-300">
-            <div>Mode: {mode}</div>
-            <div>Start Date: {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()}</div>
-            <div>Current Date: {currentTime.toLocaleDateString()} {currentTime.toLocaleTimeString()}</div>
-            <div>Typical Duration: {typicalDuration} min ({(typicalDuration / 60).toFixed(1)}h)</div>
-            <div>Elapsed Minutes: {elapsedMinutes}</div>
-            <div>Progress: {(progress * 100).toFixed(1)}% (raw: {(rawProgress * 100).toFixed(1)}%)</div>
-            <div className="font-bold text-blue-900 dark:text-blue-300 mt-2">Moon iconProgress: {iconProgress.toFixed(3)}</div>
-            <div>Moon position: x={iconPosition.x.toFixed(1)}, y={iconPosition.y.toFixed(1)}</div>
-          </div>
-        </div>
       </div>
     </div>
   );
