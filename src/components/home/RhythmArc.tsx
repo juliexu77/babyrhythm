@@ -37,16 +37,18 @@ export const RhythmArc = ({
   const rawProgress = elapsedMinutes / typicalDuration;
   const progress = Math.max(0, Math.min(rawProgress, 1.5)); // Cap at 150%
   
-  // Arc configuration - gentle quadratic Bézier curve (horizon-like)
+  // Arc configuration - elevated arc above horizon
   const viewBoxWidth = 520;
-  const viewBoxHeight = 180;
+  const viewBoxHeight = 200;
   const padding = 50;
-  const horizonY = viewBoxHeight - 20; // Horizon line at bottom
+  const horizonY = viewBoxHeight - 20; // Horizon at bottom (180)
+  const arcStartEndY = 120; // Arc endpoints elevated above horizon
+  const arcPeakY = 40; // Peak of the arc
   
-  // Flatter arc: bottom-left → gentle peak → bottom-right (like sun on horizon)
-  const startPoint = { x: padding, y: horizonY };
-  const controlPoint = { x: viewBoxWidth / 2, y: 50 }; // Peak of the arc
-  const endPoint = { x: viewBoxWidth - padding, y: horizonY };
+  // Arc endpoints elevated above horizon, curving upward
+  const startPoint = { x: padding, y: arcStartEndY };
+  const controlPoint = { x: viewBoxWidth / 2, y: arcPeakY };
+  const endPoint = { x: viewBoxWidth - padding, y: arcStartEndY };
   
   // Create the full arc path (SVG quadratic Bézier)
   const arcPath = `M ${startPoint.x} ${startPoint.y} Q ${controlPoint.x} ${controlPoint.y} ${endPoint.x} ${endPoint.y}`;
