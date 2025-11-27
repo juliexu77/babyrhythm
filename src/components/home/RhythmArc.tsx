@@ -111,11 +111,14 @@ export const RhythmArc = ({
   
   // Wedge path for sundial-style fill: confined between arc curve and horizon baseline
   // Explicitly draws the shape: horizon baseline → up to arc → follow arc curve → down to horizon → close along horizon
+  // Ensure fill never extends below horizonY
   const wedgePath = `
-    M ${startPoint.x} ${horizonY}
+    M ${startPoint.x} ${Math.min(startPoint.y, horizonY)}
     L ${startPoint.x} ${startPoint.y}
     Q ${q0.x} ${q0.y} ${wedgePosition.x} ${wedgePosition.y}
+    L ${wedgePosition.x} ${Math.min(wedgePosition.y, horizonY)}
     L ${wedgePosition.x} ${horizonY}
+    L ${startPoint.x} ${horizonY}
     Z
   `;
   
