@@ -222,6 +222,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       const current = getCurrentTime();
       setTime(current);
       if (!startTime) setStartTime(current);
+      setSelectedDate(new Date()); // Reset to today when opening for new activity
+      setSelectedEndDate(new Date()); // Reset end date too
       // Reset unit to household default for new bottle feeds
       setUnit(getLastBottleUnit());
     }
@@ -300,6 +302,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setSolidsDescription("");
     setAllergens([]);
     setNote("");
+    setSelectedDate(new Date()); // Reset to current date
+    setSelectedEndDate(new Date()); // Reset end date too
   };
 
   const startNapTimer = async () => {
@@ -308,6 +312,17 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     const startTime = getCurrentTime();
     setStartTime(startTime);
     setHasEndTime(false); // Don't include end time when using timer
+    
+    // Ensure we're using today's date (prevent stale date from previous use)
+    const todaysDate = new Date();
+    
+    console.log('🛏️ Starting nap timer:', {
+      startTime,
+      selectedDate: selectedDate.toLocaleDateString(),
+      todaysDate: todaysDate.toLocaleDateString(),
+      selectedDateISOString: selectedDate.toISOString(),
+      todaysDateISOString: todaysDate.toISOString()
+    });
     
     // Save the activity immediately when starting the sleep timer
     const newActivity: Omit<Activity, "id"> = {
@@ -319,8 +334,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       },
     };
 
-    // Wait for the activity to be saved before closing the modal
-    await onAddActivity(newActivity, selectedDate, startTime);
+    // Use todaysDate to ensure correct date
+    await onAddActivity(newActivity, todaysDate, startTime);
     
     // Close the modal after starting the timer
     resetForm();
