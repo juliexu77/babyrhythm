@@ -132,7 +132,7 @@ export const useRhythmArc = ({
           if (period === 'PM' && hours !== 12) hours += 12;
           if (period === 'AM' && hours === 12) hours = 0;
           
-          // Get base date - use date_local if available to ensure correct local date
+        // Get base date from date_local - this is the activity start date
           const detailsAny = ongoingNap.details as any;
           let baseDate: Date;
           
@@ -141,8 +141,8 @@ export const useRhythmArc = ({
             const [year, month, day] = detailsAny.date_local.split('-').map(Number);
             baseDate = new Date(year, month - 1, day);
           } else {
-            // Fallback to logged_at or time
-            baseDate = new Date(ongoingNap.loggedAt || ongoingNap.time);
+            // Fallback to current time if no date_local
+            baseDate = new Date(currentTime);
           }
           
           if (!isNaN(baseDate.getTime())) {
@@ -151,16 +151,12 @@ export const useRhythmArc = ({
           }
         }
         
-        // Fallback chain if parsing failed
+        // Fallback chain if parsing failed - use date_local or current time
         if (!parsedStartTime || isNaN(parsedStartTime.getTime())) {
           const detailsAny = ongoingNap.details as any;
           if (detailsAny.date_local) {
             const [year, month, day] = detailsAny.date_local.split('-').map(Number);
             parsedStartTime = new Date(year, month - 1, day);
-          } else if (ongoingNap.loggedAt) {
-            parsedStartTime = new Date(ongoingNap.loggedAt);
-          } else if (ongoingNap.time) {
-            parsedStartTime = new Date(ongoingNap.time);
           } else {
             parsedStartTime = currentTime;
           }
@@ -223,13 +219,39 @@ export const useRhythmArc = ({
         typicalDuration = ageBasedDuration;
       } else if (activities && activities.length > 0) {
         // Wake mode - find last nap end time
+        // Helper to parse activity end time into a Date
+        const getEndDateTime = (a: Activity): Date | null => {
+          const detailsAny = a.details as any;
+          const endTimeStr = String(a.details?.endTime || '');
+          const timeMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+          if (!timeMatch) return null;
+          
+          let hours = parseInt(timeMatch[1]);
+          const minutes = parseInt(timeMatch[2]);
+          const period = timeMatch[3]?.toUpperCase();
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          
+          let baseDate: Date;
+          if (detailsAny.end_date_local) {
+            const [year, month, day] = detailsAny.end_date_local.split('-').map(Number);
+            baseDate = new Date(year, month - 1, day);
+          } else if (detailsAny.date_local) {
+            const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+            baseDate = new Date(year, month - 1, day);
+          } else {
+            return null;
+          }
+          baseDate.setHours(hours, minutes, 0, 0);
+          return baseDate;
+        };
+        
         const sortedNaps = activities
           .filter((a) => a && a.type === "nap" && a.details?.endTime)
-          .sort((a, b) => {
-            const aTime = new Date(a.loggedAt || a.time || "").getTime();
-            const bTime = new Date(b.loggedAt || b.time || "").getTime();
-            return bTime - aTime;
-          });
+          .map(a => ({ activity: a, endDateTime: getEndDateTime(a) }))
+          .filter(item => item.endDateTime !== null)
+          .sort((a, b) => b.endDateTime!.getTime() - a.endDateTime!.getTime())
+          .map(item => item.activity);
 
         if (sortedNaps.length > 0) {
           const lastNap = sortedNaps[0];
@@ -247,7 +269,7 @@ export const useRhythmArc = ({
             if (period === 'AM' && hours === 12) hours = 0;
             
             // Use end_date_local if available (for overnight sleeps that end the next day)
-            // Otherwise fall back to date_local, then loggedAt
+            // Otherwise fall back to date_local - never use loggedAt
             let baseDate: Date;
             if (detailsAny.end_date_local) {
               const [year, month, day] = detailsAny.end_date_local.split('-').map(Number);
@@ -256,7 +278,8 @@ export const useRhythmArc = ({
               const [year, month, day] = detailsAny.date_local.split('-').map(Number);
               baseDate = new Date(year, month - 1, day);
             } else {
-              baseDate = new Date(lastNap.loggedAt || lastNap.time || currentTime);
+              // Skip this nap if no date_local info - can't determine actual end time
+              return;
             }
             
             baseDate.setHours(hours, minutes, 0, 0);
@@ -300,21 +323,44 @@ export const useRhythmArc = ({
             }
           }
         } else {
-          // No naps logged - use first activity of day or morning wake
+          // No naps logged - use first activity of day based on date_local
+          const todayStr = currentTime.toISOString().split('T')[0];
           const todayActivities = activities.filter((a) => {
             if (!a) return false;
-            const actDate = new Date(a.loggedAt || a.time || "");
-            return actDate.toDateString() === currentTime.toDateString();
+            const detailsAny = a.details as any;
+            return detailsAny?.date_local === todayStr;
           });
 
           if (todayActivities.length > 0) {
-            // Use earliest activity today as proxy for wake time
-            const sortedToday = [...todayActivities].sort(
-              (a, b) =>
-                new Date(a.loggedAt || a.time || "").getTime() -
-                new Date(b.loggedAt || b.time || "").getTime()
-            );
-            startTime = new Date(sortedToday[0].loggedAt || sortedToday[0].time || currentTime);
+            // Use earliest activity today as proxy for wake time - parse startTime from details
+            const withParsedTimes = todayActivities
+              .map(a => {
+                const detailsAny = a.details as any;
+                const timeStr = String(detailsAny?.startTime || '');
+                const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+                if (!timeMatch || !detailsAny?.date_local) return null;
+                
+                let hours = parseInt(timeMatch[1]);
+                const minutes = parseInt(timeMatch[2]);
+                const period = timeMatch[3]?.toUpperCase();
+                if (period === 'PM' && hours !== 12) hours += 12;
+                if (period === 'AM' && hours === 12) hours = 0;
+                
+                const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+                const activityDate = new Date(year, month - 1, day);
+                activityDate.setHours(hours, minutes, 0, 0);
+                return activityDate;
+              })
+              .filter(Boolean) as Date[];
+            
+            if (withParsedTimes.length > 0) {
+              withParsedTimes.sort((a, b) => a.getTime() - b.getTime());
+              startTime = withParsedTimes[0];
+            } else {
+              // Absolute fallback: assume 7 AM wake
+              startTime = new Date(currentTime);
+              startTime.setHours(7, 0, 0, 0);
+            }
           } else {
             // Absolute fallback: assume 7 AM wake
             startTime = new Date(currentTime);
