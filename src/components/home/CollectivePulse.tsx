@@ -86,8 +86,8 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="px-4 py-4 border-b border-border/30">
+      <div className="rounded-xl bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
+        <div className="px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30">
           <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
             Collective Pulse
           </h3>
@@ -104,10 +104,10 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   // Show message when data not yet computed
   if (!cohortStats) {
     return (
-      <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
+      <div className="rounded-xl bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full px-4 py-4 border-b border-border/30 flex items-center justify-between hover:bg-muted/20 transition-colors"
+          className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-white/30 dark:hover:bg-muted/20 transition-colors"
         >
           <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
             Collective Pulse
@@ -158,11 +158,11 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     (regressionInfo ? ` Note: Your baby is in the ${regressionInfo.name} regression window, where ${regressionInfo.description.toLowerCase()}` : '');
 
   return (
-    <div className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+    <div className="rounded-xl bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
       {/* Header - Always visible and clickable */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-4 border-b border-border/30 flex items-center justify-between hover:bg-muted/20 transition-colors"
+        className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-white/30 dark:hover:bg-muted/20 transition-colors"
       >
         <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
           Collective Pulse

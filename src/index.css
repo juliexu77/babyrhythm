@@ -42,22 +42,27 @@
        LIGHT MODE - Warm Rose-Beige World
        ═══════════════════════════════════════════════════════════════════ */
     
-    --bg: 20 40% 93%; /* #F5E7DF - Warm beige background */
-    --surface: 22 50% 96%; /* Cream white for cards */
-    --surface-muted: 18 45% 91%; /* #F2DED5 - Soft beige */
-    --text: 350 32% 24%; /* Deep burgundy-brown text */
-    --text-muted: 18 20% 48%; /* Warm taupe muted text */
-    --divider: 15 35% 86%; /* Soft rose-beige border */
+    /* ═══════════════════════════════════════════════════════════════════
+       LIGHT MODE - Warm Almond Rose-Beige World (Rare Beauty)
+       Shifted from peachy pink → warm almond with rose undertone
+       ═══════════════════════════════════════════════════════════════════ */
     
-    /* Card surfaces - rose clay family (tactile, object-like) */
-    --card-ombre-1: 15 48% 94%; /* Warm cream with rose tint */
-    --card-ombre-1-dark: 12 50% 88%; /* Rose clay undertone */
-    --card-ombre-2: 12 52% 92%; /* Dusty blush */
-    --card-ombre-2-dark: 10 48% 86%; /* Deeper blush */
-    --card-ombre-3: 10 45% 93%; /* Rose-tinted cream */
-    --card-ombre-3-dark: 8 42% 88%; /* Warmer rose */
-    --card-ombre-4: 8 50% 91%; /* Peachy rose */
-    --card-ombre-4-dark: 6 45% 85%; /* Deep rose clay */
+    --bg: 25 35% 89%; /* Warm almond-beige (darker, less pink) */
+    --surface: 20 40% 93%; /* Rose-clay cream for cards */
+    --surface-muted: 22 38% 87%; /* Deeper warm beige */
+    --text: 15 35% 22%; /* Deep clay-brown text */
+    --text-muted: 20 22% 45%; /* Warm clay-brown muted text */
+    --divider: 18 30% 82%; /* Soft clay border */
+    
+    /* Card surfaces - unified rose-clay tone (tactile, object-like) */
+    --card-ombre-1: 18 42% 90%; /* Rose-clay (unified tone) */
+    --card-ombre-1-dark: 15 45% 85%; /* Deeper rose-clay */
+    --card-ombre-2: 18 42% 90%; /* Same rose-clay */
+    --card-ombre-2-dark: 15 45% 85%;
+    --card-ombre-3: 18 42% 90%;
+    --card-ombre-3-dark: 15 45% 85%;
+    --card-ombre-4: 18 42% 90%;
+    --card-ombre-4-dark: 15 45% 85%;
     
     /* Legacy aliases */
     --pp-burgundy: var(--rb-berry-mauve);
@@ -66,10 +71,11 @@
     --pp-warm-taupe: var(--rb-taupe);
     --pp-coral-peach: var(--rb-dusty-blush);
     
-    --accent-1: var(--rb-dusty-blush);
-    --accent-2: var(--rb-rose-clay);
-    --chart-feed: var(--rb-berry-mauve);
-    --chart-sleep: var(--rb-dusty-blush);
+    /* Activity accents - cinnamon-rose and dusty neutrals */
+    --accent-1: 15 40% 72%; /* Cinnamon-rose */
+    --accent-2: 18 38% 78%; /* Dusty rose-neutral */
+    --chart-feed: 12 40% 55%; /* Clay brown */
+    --chart-sleep: 18 35% 72%; /* Dusty rose */
     
     /* ═══════════════════════════════════════════════════════════════════
        DEPTH - Diffused cinematic shadows (4-12px at 8% opacity)
@@ -345,8 +351,13 @@
     font-feature-settings: "tnum" 1;
     overflow-x: hidden;
     width: 100%;
-    /* Rare Beauty warm beige gradient background */
-    background: linear-gradient(180deg, #F5E7DF 0%, #F2DED5 100%);
+    /* Rare Beauty warm almond-beige gradient (less pink, more almond) */
+    background: linear-gradient(
+      180deg, 
+      hsl(25, 35%, 89%) 0%,    /* Warm almond top */
+      hsl(22, 38%, 86%) 50%,   /* Soft clay middle */
+      hsl(20, 40%, 84%) 100%   /* Rose-beige bottom */
+    );
     font-weight: 400;
     line-height: 1.6;
   }

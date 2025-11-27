@@ -720,26 +720,29 @@ const ongoingNap = (() => {
       return <SettingsPage />;
       case "history":
         return (
-          <div className="bg-background min-h-screen">
+          <div className="min-h-screen relative">
+            {/* Slight vertical gradient - top of page feels illuminated */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[hsl(25,38%,91%)]/60 via-transparent to-transparent pointer-events-none" />
+            
             {/* Header with title and actions */}
-            <div className="mx-4 pt-6 pb-4">
+            <div className="relative mx-4 pt-6 pb-4">
               <h1 className="text-2xl font-serif font-semibold text-foreground tracking-tight">History</h1>
-              <p className="text-sm text-muted-foreground mt-1">Your activity timeline</p>
+              <p className="text-sm text-[hsl(20,22%,50%)] dark:text-muted-foreground mt-1">Your activity timeline</p>
             </div>
             
             {/* Action buttons - elegant style */}
-            <div className="px-4 pb-4">
+            <div className="relative px-4 pb-4">
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                  className="text-sm text-[hsl(12,40%,50%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
                 >
                   Pediatrician Report
                 </button>
-                <span className="text-border">•</span>
+                <span className="text-[hsl(20,25%,78%)] dark:text-border">•</span>
                 <button 
                   onClick={() => setShowCSVExport(true)}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                  className="text-sm text-[hsl(12,40%,50%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
                 >
                   Export CSV
                 </button>
@@ -747,7 +750,7 @@ const ongoingNap = (() => {
             </div>
             
             {/* Activities Timeline */}
-            <div className="px-4 py-4">              
+            <div className="relative px-4 py-4">
               <div className="space-y-4 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -865,11 +868,16 @@ const ongoingNap = (() => {
                           }
 
                           return (
-                            <div key={dateKey}>
-                              <div className="space-y-2">
-                                {/* Date Header with Filter */}
-                                 <div className="flex items-center justify-between border-b border-transparent pb-1 mb-2">
-                                  <h3 className="text-base font-serif font-semibold text-foreground">
+                            <div key={dateKey} className="mb-5">
+                              {/* Date block with subtle tonal background instead of hard separator */}
+                              <div className="space-y-3">
+                                {/* Date Header - subtle tonal block background for "Today" and "Yesterday" */}
+                                <div className={`flex items-center justify-between pb-2 pt-2 px-3 -mx-3 rounded-xl ${
+                                  (dateKey === todayKey || dateKey === yesterdayKey) 
+                                    ? 'bg-[hsl(22,35%,92%)]/50 dark:bg-card/30' 
+                                    : ''
+                                }`}>
+                                  <h3 className="text-sm font-serif font-semibold text-[hsl(18,30%,38%)] dark:text-foreground uppercase tracking-wide">
                                     {displayDate}
                                   </h3>
                                   
@@ -1000,10 +1008,10 @@ const ongoingNap = (() => {
                   )}
                                 </div>
                                 
-                                {/* Activities for this date */}
-                                <div className="relative space-y-0">
-                                  {/* Continuous timeline line - uses design system */}
-                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-border/60 dark:bg-border/40"></div>
+                                {/* Activities for this date - increased spacing */}
+                                <div className="relative space-y-1 pl-1">
+                                  {/* Continuous timeline line - warm clay color */}
+                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-[hsl(20,28%,82%)] dark:bg-border/40"></div>
                                   {(() => {
                                     // To detect night sleep for this day, we need to check:
                                     // 1. Sleeps that started TODAY and ended TODAY

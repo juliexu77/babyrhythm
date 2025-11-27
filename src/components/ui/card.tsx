@@ -17,11 +17,11 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
       // Shape: Large radius, feels like a physical object
       "rounded-[28px] text-card-foreground",
       // Border: Very soft, barely visible
-      "border border-border/20",
-      // Background: Top-light gradient for soft matte effect
-      "bg-gradient-to-b from-[hsl(22,50%,98%)] via-[hsl(18,48%,96%)] to-[hsl(15,45%,93%)]",
-      // Depth: Diffused cinematic shadow (8% opacity, 4-12px spread)
-      "shadow-[0_2px_4px_-1px_hsla(15,50%,40%,0.04),0_6px_16px_-3px_hsla(15,50%,40%,0.08),0_12px_32px_-6px_hsla(15,50%,40%,0.06)]",
+      "border border-[hsl(18,28%,80%)]/30",
+      // Background: Unified rose-clay tone with soft matte top-light effect
+      "bg-gradient-to-b from-[hsl(20,40%,92%)] via-[hsl(18,38%,89%)] to-[hsl(16,35%,86%)]",
+      // Depth: Diffused cinematic shadow (8-10% opacity, blur 14-20px)
+      "shadow-[0_4px_8px_-2px_hsla(18,40%,45%,0.05),0_8px_20px_-4px_hsla(18,40%,45%,0.10),0_14px_32px_-8px_hsla(18,40%,45%,0.08)]",
       // Dark mode: Clean flat design
       "dark:rounded-xl dark:shadow-none dark:bg-card dark:border-border/40",
       className

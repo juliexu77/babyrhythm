@@ -121,36 +121,37 @@ export const RhythmArc = ({
   const isOvertired = progress > 1.0;
   
   // Rose Gold color palette - Rare Beauty inspired
+  // Reduced opacity so arc feels like environmental light, not a UI object
   const getColors = () => {
     if (isOvertired) {
-      // Deeper rose when overtired - warmer warning tone
+      // Deeper rose when overtired - warmer warning tone (reduced intensity)
       return {
-        base: "hsl(8 35% 82%)",
-        trail: "hsl(5 40% 72%)",
-        glow: "hsl(5 45% 68%)",
-        icon: "hsl(350 40% 62%)",
-        horizonGlow: "hsla(5, 40%, 72%, 0.18)",
+        base: "hsl(12 30% 78%)",
+        trail: "hsl(10 35% 70%)",
+        glow: "hsl(10 38% 66%)",
+        icon: "hsl(8 38% 58%)",
+        horizonGlow: "hsla(10, 35%, 70%, 0.12)",
       };
     }
     
     if (theme === "night") {
-      // Night: cool dusty rose/mauve - still elegant
+      // Night: warm dusty clay (no lavender/purple) - still elegant
       return {
-        base: "hsl(320 18% 82%)",
-        trail: "hsl(315 20% 75%)",
-        glow: "hsl(310 22% 72%)",
-        icon: "hsl(305 25% 70%)",
-        horizonGlow: "hsla(315, 20%, 75%, 0.14)",
+        base: "hsl(18 22% 75%)",
+        trail: "hsl(16 25% 68%)",
+        glow: "hsl(15 28% 65%)",
+        icon: "hsl(14 30% 60%)",
+        horizonGlow: "hsla(16, 25%, 68%, 0.10)",
       };
     }
     
-    // Day theme - Rose Gold gradient: richer, more visible tones
+    // Day theme - Warm clay gradient: feels like environmental sunrise light (reduced opacity)
     return {
-      base: "hsl(15 55% 72%)",
-      trail: inTwilightZone ? "hsl(10 60% 65%)" : "hsl(18 50% 68%)",
-      glow: "hsl(20 65% 70%)",
-      icon: "hsl(15 60% 62%)",
-      horizonGlow: inTwilightZone ? "hsla(10, 60%, 65%, 0.35)" : "hsla(18, 50%, 68%, 0.28)",
+      base: "hsl(18 40% 75%)",
+      trail: inTwilightZone ? "hsl(14 45% 68%)" : "hsl(20 38% 72%)",
+      glow: "hsl(22 48% 72%)",
+      icon: "hsl(18 48% 60%)",
+      horizonGlow: inTwilightZone ? "hsla(14, 45%, 68%, 0.18)" : "hsla(20, 38%, 72%, 0.14)",
     };
   };
   

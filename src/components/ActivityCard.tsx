@@ -62,41 +62,41 @@ const getActivityIcon = (type: string) => {
   }
 };
 
-// Color tinting for icons based on type - Uses design system colors
+// Color tinting for icons based on type - Warm clay-brown family (no clinical mauve)
 const getIconColorClass = (type: string) => {
   switch (type) {
     case "nap":
-      return "text-[hsl(315,30%,40%)] dark:text-[hsl(315,35%,70%)]"; // Mauve for sleep
+      return "text-[hsl(18,35%,48%)] dark:text-[hsl(18,40%,65%)]"; // Warm clay for sleep
     case "feed":
-      return "text-[hsl(350,40%,45%)] dark:text-[hsl(350,45%,65%)]"; // Rose/berry for feeding
+      return "text-[hsl(12,42%,50%)] dark:text-[hsl(12,45%,62%)]"; // Cinnamon-rose for feeding
     case "diaper":
-      return "text-[hsl(30,25%,45%)] dark:text-[hsl(30,30%,65%)]"; // Warm taupe for diaper
+      return "text-[hsl(22,30%,48%)] dark:text-[hsl(22,35%,62%)]"; // Warm taupe for diaper
     case "solids":
-      return "text-[hsl(25,45%,50%)] dark:text-[hsl(25,50%,65%)]"; // Coral for solids
+      return "text-[hsl(20,45%,52%)] dark:text-[hsl(20,48%,62%)]"; // Terracotta for solids
     case "note":
-      return "text-[hsl(15,20%,50%)] dark:text-[hsl(15,25%,65%)]"; // Warm grey
+      return "text-[hsl(18,22%,48%)] dark:text-[hsl(18,25%,62%)]"; // Clay brown
     case "photo":
-      return "text-[hsl(320,25%,45%)] dark:text-[hsl(320,30%,65%)]"; // Dusty rose
+      return "text-[hsl(15,32%,50%)] dark:text-[hsl(15,35%,62%)]"; // Dusty clay
     default:
       return "text-muted-foreground";
   }
 };
 
-// Background circles for icons - Uses design system with dark mode
+// Background circles for icons - Warm clay-beige tints (archival feel)
 const getIconBackgroundClass = (type: string) => {
   switch (type) {
     case "nap":
-      return "bg-[hsl(315,25%,92%)] dark:bg-[hsl(315,20%,20%)]"; // Mauve tint
+      return "bg-[hsl(18,32%,90%)] dark:bg-[hsl(18,25%,18%)]"; // Warm clay tint
     case "feed":
-      return "bg-[hsl(350,35%,93%)] dark:bg-[hsl(350,25%,18%)]"; // Rose tint
+      return "bg-[hsl(12,38%,91%)] dark:bg-[hsl(12,30%,18%)]"; // Cinnamon tint
     case "diaper":
-      return "bg-[hsl(30,20%,92%)] dark:bg-[hsl(30,15%,18%)]"; // Taupe tint
+      return "bg-[hsl(22,28%,90%)] dark:bg-[hsl(22,22%,18%)]"; // Taupe tint
     case "solids":
-      return "bg-[hsl(25,40%,93%)] dark:bg-[hsl(25,30%,18%)]"; // Coral tint
+      return "bg-[hsl(20,40%,91%)] dark:bg-[hsl(20,32%,18%)]"; // Terracotta tint
     case "note":
-      return "bg-[hsl(15,15%,92%)] dark:bg-[hsl(15,10%,18%)]"; // Neutral tint
+      return "bg-[hsl(18,20%,90%)] dark:bg-[hsl(18,15%,18%)]"; // Clay tint
     case "photo":
-      return "bg-[hsl(320,20%,93%)] dark:bg-[hsl(320,15%,18%)]"; // Dusty rose tint
+      return "bg-[hsl(15,28%,91%)] dark:bg-[hsl(15,22%,18%)]"; // Dusty clay tint
     default:
       return "bg-muted/50";
   }

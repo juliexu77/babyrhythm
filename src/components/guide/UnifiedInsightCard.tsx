@@ -45,14 +45,15 @@ export const UnifiedInsightCard = ({
   if (loading) {
     return (
       <div className="mx-2">
-        <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
-          <div className="px-4 py-4 border-b border-border/30">
-            <div className="h-4 w-48 bg-muted rounded"></div>
+        {/* Deeper rose-neutral card with tonal separators and soft matte highlight */}
+        <div className="rounded-xl bg-gradient-to-b from-[hsl(18,40%,88%)] via-[hsl(16,38%,86%)] to-[hsl(14,35%,83%)] dark:from-card dark:to-card border border-[hsl(18,28%,78%)]/30 dark:border-border/20 shadow-[0_6px_18px_-4px_hsla(18,40%,45%,0.12)] dark:shadow-none overflow-hidden">
+          <div className="px-4 py-4 border-b border-[hsl(18,25%,78%)]/30 dark:border-border/30 bg-gradient-to-b from-[hsl(22,35%,93%)]/60 to-transparent">
+            <div className="h-4 w-48 bg-[hsl(18,30%,82%)] dark:bg-muted rounded"></div>
           </div>
           <div className="p-5 space-y-4 animate-pulse">
-            <div className="h-4 w-full bg-muted rounded"></div>
-            <div className="h-4 w-5/6 bg-muted rounded"></div>
-            <div className="h-4 w-4/6 bg-muted rounded"></div>
+            <div className="h-4 w-full bg-[hsl(18,30%,82%)] dark:bg-muted rounded"></div>
+            <div className="h-4 w-5/6 bg-[hsl(18,30%,82%)] dark:bg-muted rounded"></div>
+            <div className="h-4 w-4/6 bg-[hsl(18,30%,82%)] dark:bg-muted rounded"></div>
           </div>
         </div>
       </div>
@@ -76,9 +77,10 @@ export const UnifiedInsightCard = ({
 
   return (
     <div className="mx-2">
-      <div className="rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 border border-border/20 overflow-hidden">
-        {/* Header */}
-        <div className="px-4 py-4 border-b border-border/30">
+      {/* Deeper rose-neutral card with tonal separators and soft matte highlight at top */}
+      <div className="rounded-xl bg-gradient-to-b from-[hsl(18,40%,88%)] via-[hsl(16,38%,86%)] to-[hsl(14,35%,83%)] dark:from-card dark:to-card border border-[hsl(18,28%,78%)]/30 dark:border-border/20 shadow-[0_6px_18px_-4px_hsla(18,40%,45%,0.12)] dark:shadow-none overflow-hidden">
+        {/* Header with soft matte highlight (warm cream > blush gradient at 5-7% opacity) */}
+        <div className="px-4 py-4 border-b border-[hsl(18,25%,78%)]/30 dark:border-border/30 bg-gradient-to-b from-[hsl(22,35%,93%)]/60 to-transparent">
           <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
             Understanding {babyName}&apos;s Rhythm
           </h3>
