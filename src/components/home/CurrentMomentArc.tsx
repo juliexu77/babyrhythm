@@ -116,11 +116,6 @@ const getCurrentState = (
   
   const recentActivity = getMostRecentActivity(activities);
   if (!recentActivity) {
-    if (currentHour >= 5 && currentHour < 10) {
-      return "Starting the morning";
-    } else if (currentHour >= 19 || currentHour < 5) {
-      return "Night stretch";
-    }
     return "Awake";
   }
   
@@ -290,30 +285,6 @@ const getCurrentState = (
       }
       return `Awake · ${getDurationString(awakeMinutes)}`;
     }
-  }
-  
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const nightSleepStartMinute = 0;
-  const bedtimeMinutes = nightSleepStartHour * 60 + nightSleepStartMinute;
-  let minutesUntilBedtime = bedtimeMinutes - currentMinutes;
-  
-  if (minutesUntilBedtime < 0) {
-    minutesUntilBedtime += 24 * 60;
-  }
-  
-  if (minutesUntilBedtime > 0 && minutesUntilBedtime <= 60) {
-    return "Bedtime coming soon";
-  }
-  
-  if (currentHour >= 5 && currentHour < 9) {
-    return "Starting the morning";
-  } else if (currentHour >= 17 && currentHour < 20) {
-    return "Ending the day";
-  } else if (currentHour >= 20 || currentHour < 5) {
-    if (currentHour >= 22 || currentHour < 2) {
-      return "Overnight window";
-    }
-    return "Night stretch";
   }
   
   return "Awake";
