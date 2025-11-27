@@ -81,11 +81,18 @@ export const useRhythmArc = ({
           if (period === 'PM' && hours !== 12) hours += 12;
           if (period === 'AM' && hours === 12) hours = 0;
           
-          // Use date_local if available (from details), otherwise use activity.time or loggedAt
+          // Get base date - use date_local if available to ensure correct local date
           const detailsAny = ongoingNap.details as any;
-          const baseDate = detailsAny.date_local 
-            ? new Date(detailsAny.date_local)
-            : new Date(ongoingNap.loggedAt || ongoingNap.time);
+          let baseDate: Date;
+          
+          if (detailsAny.date_local) {
+            // Parse date_local as local date components to avoid UTC shift
+            const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+            baseDate = new Date(year, month - 1, day);
+          } else {
+            // Fallback to logged_at or time
+            baseDate = new Date(ongoingNap.loggedAt || ongoingNap.time);
+          }
           
           if (!isNaN(baseDate.getTime())) {
             parsedStartTime = new Date(baseDate);
@@ -97,7 +104,8 @@ export const useRhythmArc = ({
         if (!parsedStartTime || isNaN(parsedStartTime.getTime())) {
           const detailsAny = ongoingNap.details as any;
           if (detailsAny.date_local) {
-            parsedStartTime = new Date(detailsAny.date_local);
+            const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+            parsedStartTime = new Date(year, month - 1, day);
           } else if (ongoingNap.loggedAt) {
             parsedStartTime = new Date(ongoingNap.loggedAt);
           } else if (ongoingNap.time) {
