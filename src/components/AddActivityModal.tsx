@@ -519,6 +519,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         details.startTime = startTime;
         if (hasEndTime && endTime) {
           details.endTime = endTime;
+          // Store end_date_local for overnight sleeps
+          // Format as YYYY-MM-DD in local timezone
+          const endYear = selectedEndDate.getFullYear();
+          const endMonth = String(selectedEndDate.getMonth() + 1).padStart(2, '0');
+          const endDay = String(selectedEndDate.getDate()).padStart(2, '0');
+          details.end_date_local = `${endYear}-${endMonth}-${endDay}`;
         }
         break;
       case "note":
