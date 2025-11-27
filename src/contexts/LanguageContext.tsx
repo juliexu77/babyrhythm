@@ -115,6 +115,15 @@ const translations: Record<string, string> = {
   'addActivity': 'Add Activity',
   'editActivity': 'Edit Activity',
   'voiceInput': 'Voice Input',
+  'additionalNotesFeeding': 'Additional notes about feeding...',
+  'additionalNotesDiaper': 'Additional notes about diaper...',
+  'notes': 'Notes',
+  'tapToEnterAmount': 'Tap to enter amount',
+  'leftSide': 'Left Side',
+  'rightSide': 'Right Side',
+  'wet': 'Wet',
+  'poopy': 'Poopy',
+  'both': 'Both',
 };
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
