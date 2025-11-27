@@ -12,11 +12,11 @@
     --font-serif: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
     --font-num: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
     
-    /* Brand colors - Rare Beauty packaging inspired */
-    --pp-burgundy: 350 45% 28%; /* #6B3344 - deep burgundy (primary) */
-    --pp-dusty-mauve: 345 20% 65%; /* #B8929B - dusty mauve (accent) */
+    /* Brand colors - Matching reference palette */
+    --pp-burgundy: 345 38% 38%; /* #8B3A4C - warmer burgundy (primary) */
+    --pp-dusty-mauve: 0 22% 72%; /* #C9A5A5 - soft dusty rose (badges) */
     --pp-rose-clay: 0 20% 71%; /* #C4A4A4 - rose clay (secondary accent) */
-    --pp-warm-taupe: 15 15% 55%; /* #9A8A85 - warm taupe for muted text */
+    --pp-warm-taupe: 20 12% 50%; /* #8F8078 - warm taupe for muted text */
     
     /* Spacing scale (8pt grid) */
     --s-1: 4px;
