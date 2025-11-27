@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RhythmArc } from "@/components/home/RhythmArc";
 import { useRhythmArc } from "@/hooks/useRhythmArc";
-import { TodaysPulse } from "@/components/home/TodaysPulse";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
@@ -88,8 +88,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { 
     currentActivity, 
     nextPrediction, 
-    smartSuggestions,
-    todaysPulse
+    smartSuggestions
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
   // Rhythm arc data
@@ -1556,18 +1555,6 @@ const lastDiaper = displayActivities
           nightSleepStartHour={nightSleepStartHour}
           nightSleepEndHour={nightSleepEndHour}
         />
-
-        {/* Today's Pulse - Always visible */}
-        {todaysPulse && (
-          <TodaysPulse
-            deviations={todaysPulse.deviations || []}
-            biggestDeviation={todaysPulse.biggestDeviation}
-            babyName={babyName || 'Baby'}
-            babyAge={babyAgeInWeeks}
-            activities={activities}
-            transitionInfo={null}
-          />
-        )}
 
         {/* Zone 1: Next Need Hero */}
         <NextNeedHero
