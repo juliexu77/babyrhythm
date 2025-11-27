@@ -96,10 +96,10 @@ export const NextNeedHero = ({
             {shouldShowWakeUpAction && (
               <button
                 onClick={onWakeUp}
-                className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground bg-muted/40 hover:bg-muted/60 rounded-full border border-border/40 transition-colors"
               >
                 <Sun className="w-3.5 h-3.5" />
-                <span className="underline underline-offset-2">Woke up just now</span>
+                Woke up just now
               </button>
             )}
 
