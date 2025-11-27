@@ -157,6 +157,20 @@ export const RhythmArc = ({
   
   const colors = getColors();
 
+  // Debug info
+  const debugInfo = {
+    mode,
+    theme,
+    elapsedMinutes,
+    typicalDuration,
+    rawProgress: rawProgress.toFixed(3),
+    clampedProgress: progress.toFixed(3),
+    inTwilightZone,
+    isOvertired,
+    startTime: startTime.toLocaleTimeString(),
+    currentTime: currentTime.toLocaleTimeString(),
+  };
+
   return (
     <div className="px-6 pb-2 relative z-10">
       <style>{`
@@ -165,6 +179,24 @@ export const RhythmArc = ({
           50% { transform: translateY(-0.75px); }
         }
       `}</style>
+      
+      {/* Debug Panel */}
+      <div className="mb-4 p-3 bg-black/80 rounded-lg text-[10px] font-mono text-green-400 space-y-1">
+        <div className="font-bold text-green-300 mb-2">🔧 RhythmArc Debug</div>
+        {Object.entries(debugInfo).map(([key, value]) => (
+          <div key={key} className="flex justify-between">
+            <span className="text-green-500">{key}:</span>
+            <span className={
+              key === 'isOvertired' && value ? 'text-red-400' :
+              key === 'inTwilightZone' && value ? 'text-yellow-400' :
+              'text-green-400'
+            }>
+              {String(value)}
+            </span>
+          </div>
+        ))}
+      </div>
+      
       <div className="relative w-full flex flex-col items-center">
         <svg
           viewBox={`0 -50 ${viewBoxWidth} 230`}
