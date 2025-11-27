@@ -3,6 +3,7 @@ import { differenceInMinutes } from "date-fns";
 import { getActivityEventDate } from "@/utils/activityDate";
 import { Sun } from "lucide-react";
 import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/ageAppropriateBaselines";
+import { Card } from "@/components/ui/card";
 
 interface CurrentMomentArcProps {
   activities: Activity[];
@@ -565,13 +566,13 @@ export const CurrentMomentArc = ({
           )}
         </svg>
         
-        {/* State Text - Centered Absolute */}
-        <div className="absolute top-[60%] left-0 right-0 px-8 text-center transform -translate-y-1/2">
-          <p className="text-[20px] font-serif font-semibold text-foreground tracking-tight text-center leading-snug max-w-[240px] mx-auto" 
+        {/* State Card - Layered over bottom of arc */}
+        <Card className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 px-6 py-3 shadow-lg border-border/50 bg-card/95 backdrop-blur-sm">
+          <p className="text-[18px] font-serif font-semibold text-foreground tracking-tight text-center leading-snug whitespace-nowrap" 
              style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
           </p>
-        </div>
+        </Card>
       </div>
     </div>
   );
