@@ -62,18 +62,29 @@ export const RhythmArc = ({
     endPoint
   );
   
-  // Calculate the subdivided control point for the partial curve
-  // For a quadratic Bézier from t=0 to t=iconProgress, the control point is:
-  // C' = (1-t)P0 + tP1, where P0=startPoint, P1=controlPoint
-  const subdividedControl = {
-    x: startPoint.x + iconProgress * (controlPoint.x - startPoint.x),
-    y: startPoint.y + iconProgress * (controlPoint.y - startPoint.y)
+  // De Casteljau subdivision for quadratic Bézier
+  // To split curve at t, first control point = lerp(P0, P1, t)
+  // But we also need to account that the curve continues to P2
+  const t = iconProgress;
+  const t1 = 1 - t;
+  
+  // First level interpolation
+  const q0 = {
+    x: t1 * startPoint.x + t * controlPoint.x,
+    y: t1 * startPoint.y + t * controlPoint.y
   };
+  const q1 = {
+    x: t1 * controlPoint.x + t * endPoint.x,
+    y: t1 * controlPoint.y + t * endPoint.y
+  };
+  
+  // The control point for the first segment (0 to t) is q0
+  // The end point is the interpolation of q0 and q1 at t (which equals iconPosition)
   
   // Create wedge path: follows the exact arc curve from start to icon, then fills down to horizon
   const wedgePath = `
     M ${startPoint.x} ${startPoint.y}
-    Q ${subdividedControl.x} ${subdividedControl.y} ${iconPosition.x} ${iconPosition.y}
+    Q ${q0.x} ${q0.y} ${iconPosition.x} ${iconPosition.y}
     L ${iconPosition.x} ${horizonY}
     L ${startPoint.x} ${horizonY}
     Z
