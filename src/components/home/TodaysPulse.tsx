@@ -142,7 +142,7 @@ export const TodaysPulse = ({
         <div className="px-4 py-5 border-b border-border/30">
           <CollapsibleTrigger className="w-full" onClick={() => setDetailsOpen(!detailsOpen)}>
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              <h3 className="text-xs font-serif font-medium text-foreground/70 uppercase tracking-wider">
                 Today's Pulse
               </h3>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
