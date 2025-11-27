@@ -189,27 +189,34 @@ export const RhythmArc = ({
             />
           )}
           
-          {/* Sun glow - radial gradient behind icon */}
+          {/* Sun glow - radial gradient centered exactly on arc position */}
           <circle
             cx={iconPosition.x}
             cy={iconPosition.y}
-            r="45"
+            r="40"
             fill="url(#sunGlow)"
             className="transition-all duration-700 ease-out"
           />
           
-          {/* Sun/Moon icon - moves along arc path */}
+          {/* Sun/Moon icon - center positioned exactly on arc curve */}
           <foreignObject
-            x={iconPosition.x - 14}
-            y={iconPosition.y - 14}
-            width="28"
-            height="28"
-            className="transition-all duration-700 ease-out overflow-visible"
+            x={iconPosition.x - 12}
+            y={iconPosition.y - 12}
+            width="24"
+            height="24"
+            className="transition-all duration-700 ease-out"
+            style={{ overflow: 'visible' }}
           >
-            <div className="w-full h-full flex items-center justify-center">
+            <div 
+              className="w-full h-full flex items-center justify-center"
+              style={{ 
+                transform: 'translate(0, 0)',
+                position: 'relative'
+              }}
+            >
               <IconComponent 
                 size={24} 
-                strokeWidth={1.5}
+                strokeWidth={2}
                 style={{
                   color: colors.icon,
                   filter: theme === "night" 
@@ -221,6 +228,16 @@ export const RhythmArc = ({
               />
             </div>
           </foreignObject>
+          
+          {/* Subtle anchor point to visualize icon is on the arc */}
+          <circle
+            cx={iconPosition.x}
+            cy={iconPosition.y}
+            r="2"
+            fill={colors.icon}
+            opacity="0.4"
+            className="transition-all duration-700 ease-out"
+          />
           
           {/* Refined zone labels */}
           {inTwilightZone && !isOvertired && (
