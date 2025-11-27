@@ -150,7 +150,7 @@ export const RhythmArc = ({
   const colors = getColors();
 
   return (
-    <div className="px-6 pb-6 relative z-10">
+    <div className="px-6 pb-2 relative z-10">
       <style>{`
         @keyframes breathe {
           0%, 100% { transform: translateY(0px); }
@@ -159,7 +159,7 @@ export const RhythmArc = ({
       `}</style>
       <div className="relative w-full flex flex-col items-center">
         <svg
-          viewBox={`0 -60 ${viewBoxWidth} ${viewBoxHeight}`}
+          viewBox={`0 -50 ${viewBoxWidth} 230`}
           className="w-full"
           preserveAspectRatio="xMidYMid meet"
           style={{ maxWidth: '100%', overflow: 'visible' }}
