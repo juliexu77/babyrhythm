@@ -29,10 +29,16 @@ const getMostRecentActivity = (activities: Activity[]): Activity | null => {
 
 // Determine if we're in daytime or nighttime
 const isDaytime = (currentHour: number, nightSleepStartHour: number, nightSleepEndHour: number): boolean => {
-  if (nightSleepEndHour > nightSleepStartHour) {
-    return currentHour >= nightSleepEndHour || currentHour < nightSleepStartHour;
-  } else {
+  // Normal case: night window crosses midnight (e.g., 19:00-7:00)
+  if (nightSleepStartHour > nightSleepEndHour) {
+    // Nighttime if hour >= start OR hour < end
+    // Daytime is the inverse: hour >= end AND hour < start
     return currentHour >= nightSleepEndHour && currentHour < nightSleepStartHour;
+  } else {
+    // Unusual case: night window doesn't cross midnight (e.g., 2:00-10:00)
+    // Nighttime if hour >= start AND hour < end
+    // Daytime is the inverse: hour < start OR hour >= end
+    return currentHour < nightSleepStartHour || currentHour >= nightSleepEndHour;
   }
 };
 
@@ -300,9 +306,17 @@ export const CurrentMomentArc = ({
   babyBirthday
 }: CurrentMomentArcProps) => {
   const now = new Date();
-  const currentHour = now.getHours();
+  const currentHour = now.getHours(); // Uses local time
   const isDay = isDaytime(currentHour, nightSleepStartHour, nightSleepEndHour);
   const currentState = getCurrentState(activities, ongoingNap || null, nightSleepStartHour, nightSleepEndHour);
+  
+  console.log('🌓 Day/Night Detection:', {
+    currentHour,
+    nightSleepStartHour,
+    nightSleepEndHour,
+    isDay,
+    timestamp: now.toLocaleString()
+  });
   
   // 1. Calculate Progress (0.0 to 1.0+)
   const calculateArcPosition = (): number => {
@@ -382,8 +396,11 @@ export const CurrentMomentArc = ({
     arcPosition: arcPosition.toFixed(2),
     clampedPosition: clampedPosition.toFixed(2),
     arcAngle: (arcAngle * 180 / Math.PI).toFixed(1) + '°',
+    arcAngleDegrees: (arcAngle * 180 / Math.PI).toFixed(1),
     iconX: iconX.toFixed(1),
     iconY: iconY.toFixed(1),
+    expectedXRange: `${centerX - arcRadius} to ${centerX + arcRadius}`,
+    expectedYRange: `${centerY - arcRadius} to ${centerY}`,
     hasOngoingNap: !!ongoingNap
   });
   
