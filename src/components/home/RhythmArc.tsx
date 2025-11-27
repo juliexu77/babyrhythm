@@ -38,15 +38,15 @@ export const RhythmArc = ({
   const rawProgress = elapsedMinutes / typicalDuration;
   const progress = Math.max(0, Math.min(rawProgress, 1.5)); // Cap at 150%
   
-  // Arc configuration - quadratic Bézier curve
+  // Arc configuration - gentle quadratic Bézier curve (horizon-like)
   const viewBoxWidth = 520;
-  const viewBoxHeight = 200;
-  const padding = 40;
+  const viewBoxHeight = 180;
+  const padding = 50;
   
-  // Quadratic arc points: bottom-left → top-center → bottom-right
-  const startPoint = { x: padding, y: viewBoxHeight - 20 };
-  const controlPoint = { x: viewBoxWidth / 2, y: 30 }; // Peak of arc
-  const endPoint = { x: viewBoxWidth - padding, y: viewBoxHeight - 20 };
+  // Flatter arc: bottom-left → gentle peak → bottom-right (like sun on horizon)
+  const startPoint = { x: padding, y: viewBoxHeight - 30 };
+  const controlPoint = { x: viewBoxWidth / 2, y: 60 }; // Gentler peak (was 30)
+  const endPoint = { x: viewBoxWidth - padding, y: viewBoxHeight - 30 };
   
   // Create the full arc path (SVG quadratic Bézier)
   const arcPath = `M ${startPoint.x} ${startPoint.y} Q ${controlPoint.x} ${controlPoint.y} ${endPoint.x} ${endPoint.y}`;
@@ -73,32 +73,35 @@ export const RhythmArc = ({
   const inTwilightZone = progress >= 0.8 && progress <= 1.0;
   const isOvertired = progress > 1.0;
   
-  // Color scheme based on theme and progress
+  // Sophisticated color scheme - sunrise/sunset inspired
   const getColors = () => {
     if (isOvertired) {
       return {
-        base: "hsl(15 40% 90%)",
-        trail: "hsl(0 60% 65%)",
-        glow: "hsl(0 70% 60%)",
-        icon: "hsl(0 70% 55%)",
+        base: "hsl(20 15% 88%)",
+        trail: "hsl(15 25% 75%)",
+        glow: "hsl(15 30% 70%)",
+        icon: "hsl(15 35% 65%)",
+        horizonGlow: "hsla(15, 25%, 75%, 0.15)",
       };
     }
     
     if (theme === "night") {
       return {
-        base: "hsl(240 25% 80%)",
-        trail: "hsl(245 30% 70%)",
-        glow: "hsl(240 40% 75%)",
-        icon: "hsl(240 30% 70%)",
+        base: "hsl(230 12% 85%)",
+        trail: "hsl(235 15% 78%)",
+        glow: "hsl(235 18% 75%)",
+        icon: "hsl(235 20% 72%)",
+        horizonGlow: "hsla(235, 15%, 78%, 0.12)",
       };
     }
     
-    // Day theme
+    // Day theme - soft golden sunrise/sunset
     return {
-      base: "hsl(30 40% 92%)",
-      trail: inTwilightZone ? "hsl(25 50% 80%)" : "hsl(40 60% 88%)",
-      glow: "#FFD580",
-      icon: "#FFB347",
+      base: "hsl(35 20% 90%)",
+      trail: inTwilightZone ? "hsl(30 28% 82%)" : "hsl(40 25% 85%)",
+      glow: "hsl(40 35% 78%)",
+      icon: "hsl(38 40% 75%)",
+      horizonGlow: inTwilightZone ? "hsla(30, 28%, 82%, 0.18)" : "hsla(40, 25%, 85%, 0.15)",
     };
   };
   
@@ -115,111 +118,130 @@ export const RhythmArc = ({
           style={{ maxWidth: '100%', overflow: 'visible' }}
         >
           <defs>
+            {/* Subtle glow gradient */}
             <radialGradient id="rhythmGlow">
-              <stop offset="0%" stopColor={colors.glow} stopOpacity="0.6" />
+              <stop offset="0%" stopColor={colors.glow} stopOpacity="0.3" />
               <stop offset="100%" stopColor={colors.glow} stopOpacity="0" />
             </radialGradient>
+            
+            {/* Horizon glow effect */}
+            <linearGradient id="horizonGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colors.glow} stopOpacity="0" />
+              <stop offset="100%" stopColor={colors.glow} stopOpacity="0.08" />
+            </linearGradient>
           </defs>
           
-          {/* Base arc (full path) */}
+          {/* Horizon glow backdrop */}
+          <rect
+            x="0"
+            y={viewBoxHeight - 60}
+            width={viewBoxWidth}
+            height="60"
+            fill="url(#horizonGlow)"
+            opacity="0.6"
+          />
+          
+          {/* Base arc (full path) - subtle and elegant */}
           <path
             d={arcPath}
             fill="none"
             stroke={colors.base}
-            strokeWidth="8"
+            strokeWidth="6"
             strokeLinecap="round"
-            opacity="0.35"
+            opacity="0.25"
           />
           
-          {/* Twilight zone highlight (80-100%) */}
+          {/* Twilight zone subtle highlight */}
           {inTwilightZone && !isOvertired && (
             <path
               d={arcPath}
               fill="none"
               stroke={colors.trail}
-              strokeWidth="10"
+              strokeWidth="8"
               strokeLinecap="round"
-              opacity="0.3"
+              opacity="0.2"
               strokeDasharray={`${(endPoint.x - startPoint.x) * 0.2} ${(endPoint.x - startPoint.x) * 0.8}`}
               strokeDashoffset={-(endPoint.x - startPoint.x) * 0.8}
             />
           )}
           
-          {/* Progress trail */}
+          {/* Progress trail - refined stroke */}
           <path
             d={trailPath}
             fill="none"
             stroke={colors.trail}
-            strokeWidth="8"
+            strokeWidth="6"
             strokeLinecap="round"
-            opacity="0.7"
-            className="transition-all duration-300 ease-out"
+            opacity="0.5"
+            className="transition-all duration-500 ease-out"
           />
           
-          {/* Icon glow */}
+          {/* Icon glow - subtle and refined */}
           <circle
             cx={iconPosition.x}
             cy={iconPosition.y}
-            r="28"
+            r="32"
             fill="url(#rhythmGlow)"
-            className="transition-all duration-300 ease-out"
+            className="transition-all duration-500 ease-out"
           />
           
-          {/* Icon */}
+          {/* Icon - refined with softer drop shadow */}
           <g
             transform={`translate(${iconPosition.x}, ${iconPosition.y})`}
-            className="transition-all duration-300 ease-out"
+            className="transition-all duration-500 ease-out"
           >
             {theme === "night" ? (
               <>
-                {/* Moon circle */}
+                {/* Moon circle - refined */}
                 <circle
-                  r="11"
+                  r="10"
                   fill={colors.icon}
                   style={{
-                    filter: 'drop-shadow(0 0 8px hsla(240, 30%, 75%, 0.5))'
+                    filter: 'drop-shadow(0 0 6px hsla(235, 20%, 72%, 0.3))'
                   }}
                 />
-                {/* Crescent shadow */}
+                {/* Crescent shadow - softer */}
                 <path
-                  d="M 2 -11 A 9 9 0 0 1 2 11 A 7 7 0 0 0 2 -11 Z"
-                  fill="hsl(240 20% 55%)"
-                  opacity="0.4"
+                  d="M 2 -10 A 8 8 0 0 1 2 10 A 6.5 6.5 0 0 0 2 -10 Z"
+                  fill="hsl(235 15% 60%)"
+                  opacity="0.3"
                 />
               </>
             ) : (
               <circle
-                r="11"
+                r="10"
                 fill={colors.icon}
                 style={{
                   filter: isOvertired
-                    ? 'drop-shadow(0 0 10px hsla(0, 70%, 60%, 0.7))'
-                    : 'drop-shadow(0 0 12px rgba(255, 213, 128, 0.7))'
+                    ? 'drop-shadow(0 0 8px hsla(15, 35%, 65%, 0.4))'
+                    : 'drop-shadow(0 0 10px hsla(38, 40%, 75%, 0.35))'
                 }}
               />
             )}
           </g>
           
-          {/* Subtle connector line from icon to card */}
+          {/* Refined connector line from icon to card */}
           <line
             x1={iconPosition.x}
-            y1={iconPosition.y + 14}
+            y1={iconPosition.y + 12}
             x2={viewBoxWidth / 2}
             y2={viewBoxHeight + 5}
             stroke="hsl(var(--border))"
-            strokeWidth="1"
-            strokeDasharray="2,3"
-            opacity="0.15"
-            className="transition-all duration-300 ease-out"
+            strokeWidth="0.5"
+            strokeDasharray="1,2"
+            opacity="0.1"
+            className="transition-all duration-500 ease-out"
           />
           
-          {/* Zone labels */}
+          {/* Refined zone labels */}
           {inTwilightZone && !isOvertired && (
             <text
               x={endPoint.x - 50}
-              y={endPoint.y + 30}
+              y={endPoint.y + 25}
               textAnchor="middle"
-              className="text-[9px] font-medium fill-muted-foreground"
+              className="text-[8px] font-medium tracking-wide uppercase"
+              fill="hsl(var(--muted-foreground))"
+              opacity="0.5"
             >
               Wind down
             </text>
@@ -227,20 +249,21 @@ export const RhythmArc = ({
           {isOvertired && (
             <text
               x={endPoint.x - 50}
-              y={endPoint.y + 30}
+              y={endPoint.y + 25}
               textAnchor="middle"
-              className="text-[9px] font-semibold"
+              className="text-[8px] font-medium tracking-wide uppercase"
               fill={colors.icon}
+              opacity="0.6"
             >
               Overtired
             </text>
           )}
         </svg>
         
-        {/* State card below arc */}
-        <Card className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-6 py-3 shadow-md border-border/40 bg-card backdrop-blur-sm">
+        {/* Refined state card */}
+        <Card className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-6 py-2.5 shadow-sm border-border/30 bg-card/95 backdrop-blur-sm">
           <p 
-            className="text-[18px] font-serif font-semibold text-foreground tracking-tight text-center leading-snug whitespace-nowrap"
+            className="text-[17px] font-serif font-medium text-foreground/90 tracking-tight text-center leading-snug whitespace-nowrap"
             style={{ fontVariationSettings: '"SOFT" 100' }}
           >
             {stateMessage}
