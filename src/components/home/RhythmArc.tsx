@@ -109,7 +109,7 @@ export const RhythmArc = ({
   const IconComponent = theme === "night" ? Moon : Sun;
 
   return (
-    <div className="px-6 pb-0 relative z-10">
+    <div className="px-6 pb-6 relative z-10">
       <div className="relative w-full flex flex-col items-center">
         <svg
           viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
@@ -260,8 +260,8 @@ export const RhythmArc = ({
           )}
         </svg>
         
-        {/* Refined state card */}
-        <Card className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-6 py-2.5 shadow-sm border-border/30 bg-card/95 backdrop-blur-sm">
+        {/* Refined state card - no border */}
+        <Card className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-6 py-2.5 shadow-sm border-0 bg-card/95 backdrop-blur-sm">
           <p 
             className="text-[17px] font-serif font-medium text-foreground/90 tracking-tight text-center leading-snug whitespace-nowrap"
             style={{ fontVariationSettings: '"SOFT" 100' }}
