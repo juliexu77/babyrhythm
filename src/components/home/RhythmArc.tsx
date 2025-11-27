@@ -266,12 +266,20 @@ export const RhythmArc = ({
           )}
         </svg>
         
-        {/* State message text */}
-        <p 
-          className="mt-3 text-[15px] font-medium text-muted-foreground tracking-tight text-center"
+        {/* State message - positioned directly under arc center */}
+        <div 
+          className="mt-4 max-w-[180px] mx-auto"
         >
-          {stateMessage}
-        </p>
+          <p 
+            className="text-[18px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
+            style={{
+              wordSpacing: '100vw', // Force line breaks after each word
+              fontVariationSettings: '"wght" 700'
+            }}
+          >
+            {stateMessage}
+          </p>
+        </div>
       </div>
     </div>
   );
