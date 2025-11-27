@@ -351,7 +351,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       
       {/* Time Range Switcher - Elegant pill style */}
       <div className="mx-4">
-        <div className="inline-flex p-1 rounded-full bg-gradient-to-b from-[hsl(18,35%,94%)] to-[hsl(15,30%,91%)] border border-border/30 shadow-sm">
+        <div className="inline-flex p-1 rounded-full bg-muted/60 border border-border/30 shadow-sm dark:bg-card/50 dark:border-border/20">
           {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
             <button
               key={range}
@@ -359,7 +359,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
               className={`
                 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-200
                 ${timeRange === range 
-                  ? 'bg-gradient-to-b from-white to-[hsl(18,30%,97%)] text-foreground shadow-sm border border-border/20' 
+                  ? 'bg-card text-foreground shadow-sm border border-border/20 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/30' 
                   : 'text-muted-foreground hover:text-foreground'
                 }
               `}
@@ -375,13 +375,13 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       {/* Collapsible Chart Sections - Each with unique gradient */}
       <div className="space-y-3 px-4">
         {/* Night Sleep - Dusty mauve/lavender tones */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(315,25%,95%)] via-[hsl(320,22%,93%)] to-[hsl(310,18%,90%)] border border-[hsl(315,20%,85%)]/60 overflow-hidden shadow-[0_4px_20px_-6px_hsla(315,30%,50%,0.15)]">
+        <div className="rounded-2xl bg-gradient-to-br from-[hsl(315,25%,95%)] via-[hsl(320,22%,93%)] to-[hsl(310,18%,90%)] dark:from-[hsl(315,20%,18%)] dark:via-[hsl(320,18%,15%)] dark:to-[hsl(310,15%,12%)] border border-[hsl(315,20%,85%)]/60 dark:border-[hsl(315,25%,35%)]/40 overflow-hidden shadow-[0_4px_20px_-6px_hsla(315,30%,50%,0.15)] dark:shadow-[0_4px_20px_-6px_hsla(315,30%,20%,0.4)]">
           <button
             onClick={() => toggleChart('nightSleep')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(315,30%,72%)] to-[hsl(320,25%,62%)] flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(315,30%,72%)] to-[hsl(320,25%,62%)] dark:from-[hsl(315,35%,55%)] dark:to-[hsl(320,30%,45%)] flex items-center justify-center shadow-md">
                 <Moon className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
               <div className="text-left">
@@ -389,12 +389,12 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 <p className="text-xs text-muted-foreground">See how night sleep has shifted</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/50 flex items-center justify-center transition-transform duration-300 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(315,25%,50%)]" />
+            <div className={`w-7 h-7 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`}>
+              <ChevronDown className="w-4 h-4 text-[hsl(315,25%,50%)] dark:text-[hsl(315,30%,70%)]" />
             </div>
           </button>
           {expandedCharts['nightSleep'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(315,20%,85%)]/40">
+            <div className="px-3 pb-4 pt-1 border-t border-[hsl(315,20%,85%)]/40 dark:border-[hsl(315,25%,30%)]/40">
               <TimelineChart
                 title="Night Sleep"
                 icon={<Moon className="w-4 h-4 text-foreground/70" />}
@@ -414,13 +414,13 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </div>
 
         {/* Day Naps - Warm golden/peach tones */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(35,45%,95%)] via-[hsl(30,40%,93%)] to-[hsl(25,35%,90%)] border border-[hsl(30,35%,85%)]/60 overflow-hidden shadow-[0_4px_20px_-6px_hsla(30,50%,50%,0.15)]">
+        <div className="rounded-2xl bg-gradient-to-br from-[hsl(35,45%,95%)] via-[hsl(30,40%,93%)] to-[hsl(25,35%,90%)] dark:from-[hsl(35,35%,18%)] dark:via-[hsl(30,30%,15%)] dark:to-[hsl(25,25%,12%)] border border-[hsl(30,35%,85%)]/60 dark:border-[hsl(30,40%,35%)]/40 overflow-hidden shadow-[0_4px_20px_-6px_hsla(30,50%,50%,0.15)] dark:shadow-[0_4px_20px_-6px_hsla(30,40%,20%,0.4)]">
           <button
             onClick={() => toggleChart('dayNaps')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(35,60%,68%)] to-[hsl(25,55%,58%)] flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(35,60%,68%)] to-[hsl(25,55%,58%)] dark:from-[hsl(35,55%,50%)] dark:to-[hsl(25,50%,40%)] flex items-center justify-center shadow-md">
                 <Sun className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
               <div className="text-left">
@@ -428,12 +428,12 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 <p className="text-xs text-muted-foreground">Consolidation over time</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/50 flex items-center justify-center transition-transform duration-300 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(30,45%,45%)]" />
+            <div className={`w-7 h-7 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`}>
+              <ChevronDown className="w-4 h-4 text-[hsl(30,45%,45%)] dark:text-[hsl(30,50%,65%)]" />
             </div>
           </button>
           {expandedCharts['dayNaps'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(30,35%,85%)]/40">
+            <div className="px-3 pb-4 pt-1 border-t border-[hsl(30,35%,85%)]/40 dark:border-[hsl(30,40%,30%)]/40">
               <TimelineChart
                 title="Day Naps"
                 icon={<Sun className="w-4 h-4 text-foreground/70" />}
@@ -453,13 +453,13 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </div>
 
         {/* Feed Volume - Deeper rose/berry tones */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(350,35%,95%)] via-[hsl(345,32%,93%)] to-[hsl(340,28%,90%)] border border-[hsl(345,25%,85%)]/60 overflow-hidden shadow-[0_4px_20px_-6px_hsla(345,40%,50%,0.15)]">
+        <div className="rounded-2xl bg-gradient-to-br from-[hsl(350,35%,95%)] via-[hsl(345,32%,93%)] to-[hsl(340,28%,90%)] dark:from-[hsl(350,30%,18%)] dark:via-[hsl(345,25%,15%)] dark:to-[hsl(340,20%,12%)] border border-[hsl(345,25%,85%)]/60 dark:border-[hsl(345,30%,35%)]/40 overflow-hidden shadow-[0_4px_20px_-6px_hsla(345,40%,50%,0.15)] dark:shadow-[0_4px_20px_-6px_hsla(345,35%,20%,0.4)]">
           <button
             onClick={() => toggleChart('feedVolume')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(350,45%,62%)] to-[hsl(345,42%,52%)] flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(350,45%,62%)] to-[hsl(345,42%,52%)] dark:from-[hsl(350,50%,50%)] dark:to-[hsl(345,45%,40%)] flex items-center justify-center shadow-md">
                 <Milk className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
               <div className="text-left">
@@ -467,12 +467,12 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 <p className="text-xs text-muted-foreground">Feeding patterns over time</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/50 flex items-center justify-center transition-transform duration-300 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(345,35%,45%)]" />
+            <div className={`w-7 h-7 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`}>
+              <ChevronDown className="w-4 h-4 text-[hsl(345,35%,45%)] dark:text-[hsl(345,40%,65%)]" />
             </div>
           </button>
           {expandedCharts['feedVolume'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(345,25%,85%)]/40">
+            <div className="px-3 pb-4 pt-1 border-t border-[hsl(345,25%,85%)]/40 dark:border-[hsl(345,30%,30%)]/40">
               <TimelineChart
                 title="Feed Volume"
                 icon={<Milk className="w-4 h-4 text-foreground/70" />}
@@ -492,13 +492,13 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </div>
 
         {/* Wake Windows - Warm coral/terracotta tones */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(18,42%,95%)] via-[hsl(15,38%,93%)] to-[hsl(12,34%,90%)] border border-[hsl(15,32%,85%)]/60 overflow-hidden shadow-[0_4px_20px_-6px_hsla(15,45%,50%,0.15)]">
+        <div className="rounded-2xl bg-gradient-to-br from-[hsl(18,42%,95%)] via-[hsl(15,38%,93%)] to-[hsl(12,34%,90%)] dark:from-[hsl(18,35%,18%)] dark:via-[hsl(15,30%,15%)] dark:to-[hsl(12,25%,12%)] border border-[hsl(15,32%,85%)]/60 dark:border-[hsl(15,38%,35%)]/40 overflow-hidden shadow-[0_4px_20px_-6px_hsla(15,45%,50%,0.15)] dark:shadow-[0_4px_20px_-6px_hsla(15,40%,20%,0.4)]">
           <button
             onClick={() => toggleChart('wakeWindows')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(15,50%,65%)] to-[hsl(10,48%,55%)] flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(15,50%,65%)] to-[hsl(10,48%,55%)] dark:from-[hsl(15,55%,50%)] dark:to-[hsl(10,50%,40%)] flex items-center justify-center shadow-md">
                 <Clock className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
               <div className="text-left">
@@ -506,12 +506,12 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 <p className="text-xs text-muted-foreground">Wake times stretch as baby grows</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/50 flex items-center justify-center transition-transform duration-300 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(15,40%,45%)]" />
+            <div className={`w-7 h-7 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`}>
+              <ChevronDown className="w-4 h-4 text-[hsl(15,40%,45%)] dark:text-[hsl(15,45%,65%)]" />
             </div>
           </button>
           {expandedCharts['wakeWindows'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(15,32%,85%)]/40">
+            <div className="px-3 pb-4 pt-1 border-t border-[hsl(15,32%,85%)]/40 dark:border-[hsl(15,38%,30%)]/40">
               <TimelineChart
                 title="Wake Windows"
                 icon={<Clock className="w-4 h-4 text-foreground/70" />}
@@ -538,8 +538,8 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
       {/* Long Term Trends Summary - Elegant multi-tone card */}
       <div className="mx-4">
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(320,20%,95%)] via-[hsl(30,30%,94%)] to-[hsl(15,35%,92%)] border border-[hsl(345,20%,88%)]/50 overflow-hidden shadow-[0_6px_24px_-8px_hsla(345,35%,50%,0.18)]">
-          <div className="px-4 py-3 border-b border-[hsl(345,20%,88%)]/30 bg-gradient-to-r from-[hsl(315,25%,90%)] via-[hsl(345,28%,91%)] to-[hsl(25,35%,92%)]">
+        <div className="rounded-2xl bg-gradient-to-br from-[hsl(320,20%,95%)] via-[hsl(30,30%,94%)] to-[hsl(15,35%,92%)] dark:from-[hsl(320,15%,16%)] dark:via-[hsl(30,20%,14%)] dark:to-[hsl(15,25%,12%)] border border-[hsl(345,20%,88%)]/50 dark:border-[hsl(345,20%,30%)]/40 overflow-hidden shadow-[0_6px_24px_-8px_hsla(345,35%,50%,0.18)] dark:shadow-[0_6px_24px_-8px_hsla(345,30%,20%,0.4)]">
+          <div className="px-4 py-3 border-b border-[hsl(345,20%,88%)]/30 dark:border-[hsl(345,20%,30%)]/30 bg-gradient-to-r from-[hsl(315,25%,90%)] via-[hsl(345,28%,91%)] to-[hsl(25,35%,92%)] dark:from-[hsl(315,20%,18%)] dark:via-[hsl(345,22%,16%)] dark:to-[hsl(25,28%,15%)]">
             <h3 className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">
               Long Term Trends
             </h3>
