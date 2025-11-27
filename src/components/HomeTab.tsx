@@ -1563,6 +1563,7 @@ const lastDiaper = displayActivities
           currentActivity={currentActivity}
           nextPrediction={nextPrediction}
           onLogActivity={onAddActivity}
+          onWakeUp={onEndNap}
           ageBasedWakeWindow="2–2.5 hours"
         />
 

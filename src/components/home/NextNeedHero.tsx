@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Moon, Milk, Clock, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronUp, Moon, Milk, Clock, ChevronRight, Sun } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +19,7 @@ interface NextNeedHeroProps {
     confidence: 'high' | 'medium' | 'low';
   } | null;
   onLogActivity: (type: 'feed' | 'nap') => void;
+  onWakeUp?: () => void;
   ageBasedWakeWindow?: string;
 }
 
@@ -28,6 +29,7 @@ export const NextNeedHero = ({
   currentActivity,
   nextPrediction,
   onLogActivity,
+  onWakeUp,
   ageBasedWakeWindow = "2–2.5 hours"
 }: NextNeedHeroProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -69,8 +71,10 @@ export const NextNeedHero = ({
   };
 
   const isAwake = currentActivity?.type === 'awake';
+  const isSleeping = currentActivity?.type === 'napping' || currentActivity?.type === 'sleeping';
   const shouldShowNapAction = isAwake && nextPrediction?.activity.toLowerCase().includes('nap');
   const shouldShowFeedAction = nextPrediction?.activity.toLowerCase().includes('feed');
+  const shouldShowWakeUpAction = isSleeping && onWakeUp;
 
   return (
     <div className="mx-2 mb-6">
@@ -87,6 +91,17 @@ export const NextNeedHero = ({
             <p className="text-sm text-foreground/70 leading-relaxed">
               {getContextLine()}
             </p>
+
+            {/* Woke up action - subtle secondary CTA when baby is sleeping */}
+            {shouldShowWakeUpAction && (
+              <button
+                onClick={onWakeUp}
+                className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Sun className="w-3.5 h-3.5" />
+                <span className="underline underline-offset-2">Woke up just now</span>
+              </button>
+            )}
 
             {/* Expand trigger */}
             <CollapsibleTrigger asChild>
