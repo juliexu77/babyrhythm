@@ -203,53 +203,6 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
     }
   }
   
-  // Check for early wake or sleeping in (compare to yesterday's first wake)
-  const todayFirstWake = todayNaps.length > 0 && todayNaps[0].details?.endTime
-    ? parseTimeToMinutes(todayNaps[0].details.endTime)
-    : null;
-  
-  const yesterdayNaps = yesterdayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
-  const yesterdayFirstWake = yesterdayNaps.length > 0 && yesterdayNaps[0].details?.endTime
-    ? parseTimeToMinutes(yesterdayNaps[0].details.endTime)
-    : null;
-  
-  if (todayFirstWake !== null && yesterdayFirstWake !== null) {
-    const wakeDifference = todayFirstWake - yesterdayFirstWake;
-    
-    // Early wake: 60+ minutes earlier
-    if (wakeDifference <= -60) {
-      return "Early start to the day";
-    }
-    
-    // Sleeping in: 30+ minutes later
-    if (wakeDifference >= 30) {
-      return "Slept in today";
-    }
-  }
-  
-  // Default fallback - check if enough time awake for wind down
-  // Find first activity today as proxy for wake time
-  const firstActivityToday = todayActivities.length > 0 
-    ? todayActivities.sort((a, b) => 
-        new Date(a.loggedAt || a.time).getTime() - new Date(b.loggedAt || b.time).getTime()
-      )[0]
-    : null;
-  
-  if (firstActivityToday) {
-    const firstActivityTime = new Date(firstActivityToday.loggedAt || firstActivityToday.time);
-    const minutesSinceFirstActivity = differenceInMinutes(currentTime, firstActivityTime);
-    
-    // Only show "wind down" if past the threshold
-    if (minutesSinceFirstActivity >= windDownThreshold && minutesSinceFirstActivity < typicalWakeWindow) {
-      return "Start winding down";
-    }
-    
-    // Past wake window
-    if (minutesSinceFirstActivity >= typicalWakeWindow) {
-      return "Ready for a nap";
-    }
-  }
-  
-  // Not yet at wind down threshold - return neutral state
-  return "Awake and active";
+  // Default awake state - simple and clear
+  return "Awake";
 };
