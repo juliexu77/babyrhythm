@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Sun, Moon } from "lucide-react";
 import { differenceInMinutes } from "date-fns";
 
@@ -185,53 +184,28 @@ export const RhythmArc = ({
             className="transition-all duration-500 ease-out"
           />
           
-          {/* Icon - refined with softer drop shadow */}
-          <g
-            transform={`translate(${iconPosition.x}, ${iconPosition.y})`}
-            className="transition-all duration-500 ease-out"
+          {/* Icon - Lucide component embedded in SVG */}
+          <foreignObject
+            x={iconPosition.x - 12}
+            y={iconPosition.y - 12}
+            width="24"
+            height="24"
+            className="transition-all duration-500 ease-out overflow-visible"
           >
-            {theme === "night" ? (
-              <>
-                {/* Moon circle - refined */}
-                <circle
-                  r="10"
-                  fill={colors.icon}
-                  style={{
-                    filter: 'drop-shadow(0 0 6px hsla(235, 20%, 72%, 0.3))'
-                  }}
-                />
-                {/* Crescent shadow - softer */}
-                <path
-                  d="M 2 -10 A 8 8 0 0 1 2 10 A 6.5 6.5 0 0 0 2 -10 Z"
-                  fill="hsl(235 15% 60%)"
-                  opacity="0.3"
-                />
-              </>
-            ) : (
-              <circle
-                r="10"
-                fill={colors.icon}
+            <div className="w-full h-full flex items-center justify-center">
+              <IconComponent 
+                size={20} 
                 style={{
-                  filter: isOvertired
-                    ? 'drop-shadow(0 0 8px hsla(15, 35%, 65%, 0.4))'
-                    : 'drop-shadow(0 0 10px hsla(38, 40%, 75%, 0.35))'
+                  color: colors.icon,
+                  filter: theme === "night" 
+                    ? 'drop-shadow(0 0 6px hsla(235, 20%, 72%, 0.3))'
+                    : isOvertired
+                      ? 'drop-shadow(0 0 8px hsla(15, 35%, 65%, 0.4))'
+                      : 'drop-shadow(0 0 10px hsla(38, 40%, 75%, 0.35))'
                 }}
               />
-            )}
-          </g>
-          
-          {/* Refined connector line from icon to card */}
-          <line
-            x1={iconPosition.x}
-            y1={iconPosition.y + 12}
-            x2={viewBoxWidth / 2}
-            y2={viewBoxHeight + 5}
-            stroke="hsl(var(--border))"
-            strokeWidth="0.5"
-            strokeDasharray="1,2"
-            opacity="0.1"
-            className="transition-all duration-500 ease-out"
-          />
+            </div>
+          </foreignObject>
           
           {/* Refined zone labels */}
           {inTwilightZone && !isOvertired && (
@@ -260,15 +234,12 @@ export const RhythmArc = ({
           )}
         </svg>
         
-        {/* Refined state card - no border */}
-        <Card className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-6 py-2.5 shadow-sm border-0 bg-card/95 backdrop-blur-sm">
-          <p 
-            className="text-[17px] font-serif font-medium text-foreground/90 tracking-tight text-center leading-snug whitespace-nowrap"
-            style={{ fontVariationSettings: '"SOFT" 100' }}
-          >
-            {stateMessage}
-          </p>
-        </Card>
+        {/* State message text */}
+        <p 
+          className="mt-3 text-[15px] font-medium text-muted-foreground tracking-tight text-center"
+        >
+          {stateMessage}
+        </p>
       </div>
     </div>
   );

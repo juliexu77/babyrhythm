@@ -1371,7 +1371,7 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="pt-2 space-y-0">
+      <div className="pt-2 space-y-6">
 
         {/* Baby Info - Centered above arc */}
         {babyName && babyAge && (
