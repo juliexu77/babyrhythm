@@ -1,7 +1,7 @@
 import { Activity } from "@/components/ActivityCard";
 import { differenceInMinutes } from "date-fns";
 import { getActivityEventDate } from "@/utils/activityDate";
-import { Sun, Moon } from "lucide-react";
+import { Sun } from "lucide-react";
 import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/ageAppropriateBaselines";
 
 interface CurrentMomentArcProps {
@@ -350,15 +350,6 @@ export const CurrentMomentArc = ({
   const arcPosition = calculateArcPosition();
   const clampedPosition = Math.min(arcPosition, 1.0); // Stop movement at end of arc for icon
 
-  // Debug logging
-  console.log('🎯 CurrentMomentArc debug:', {
-    arcPosition,
-    clampedPosition,
-    hasOngoingNap: !!ongoingNap,
-    activitiesCount: activities.length,
-    babyBirthday
-  });
-
   // --- FIXED LAYOUT CONSTANTS ---
   // Widen the viewBox width to 500 (was 460) to add internal side padding
   const viewBoxWidth = 500;
@@ -382,12 +373,18 @@ export const CurrentMomentArc = ({
   const iconX = centerX + Math.cos(arcAngle) * arcRadius;
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
   
-  console.log('🎯 Icon position:', {
-    arcPosition: clampedPosition.toFixed(2),
+  console.log('🎯 CurrentMomentArc debug:', {
+    arcPosition: arcPosition.toFixed(2),
+    clampedPosition: clampedPosition.toFixed(2),
     arcAngle: (arcAngle * 180 / Math.PI).toFixed(1) + '°',
     iconX: iconX.toFixed(1),
     iconY: iconY.toFixed(1),
-    onArc: 'yes (constrained to arc path)'
+    centerX,
+    centerY,
+    arcRadius,
+    startAngle: (startAngle * 180 / Math.PI).toFixed(1) + '°',
+    endAngle: (endAngle * 180 / Math.PI).toFixed(1) + '°',
+    hasOngoingNap: !!ongoingNap
   });
   
   const inTwilightZone = arcPosition >= 0.8 && arcPosition <= 1.0;
@@ -519,18 +516,23 @@ export const CurrentMomentArc = ({
                 }}
               />
             ) : (
-              <>
+              <g>
+                {/* Moon crescent - pure SVG */}
                 <circle
-                  r="12"
-                  fill="hsl(var(--background))"
-                  stroke="hsl(240 30% 75%)"
-                  strokeWidth="2"
+                  r="10"
+                  fill="hsl(240 30% 75%)"
+                  style={{
+                    filter: 'drop-shadow(0 0 8px hsla(240, 30%, 75%, 0.4))'
+                  }}
                 />
-                <Moon className="w-5 h-5" style={{ 
-                  transform: 'translate(-10px, -10px)',
-                  color: 'hsl(240 30% 75%)'
-                }} />
-              </>
+                {/* Crescent shadow */}
+                <circle
+                  cx="3"
+                  cy="-2"
+                  r="8"
+                  fill="hsl(var(--background))"
+                />
+              </g>
             )}
           </g>
           
