@@ -391,18 +391,17 @@ export const CurrentMomentArc = ({
   // --- FIXED LAYOUT CONSTANTS ---
   // Widen the viewBox width to 500 (was 460) to add internal side padding
   const viewBoxWidth = 500;
-  const viewBoxHeight = 220; // Reduced height since we're cutting bottom
+  const viewBoxHeight = 200; // Further reduced for tighter spacing
   const centerX = 250; // Exact center of new width
-  const centerY = 200; // Moved down slightly
+  const centerY = 180; // Adjusted for reduced height
   const arcRadius = 180;
 
-  // --- ARC RANGE: Cut bottom 20% ---
-  // Instead of full semicircle (PI to 0), use 80% arc
-  // Start angle: 0.8 * PI (144°) - left side raised up
-  // End angle: 0.2 * PI (36°) - right side raised up
-  const startAngle = Math.PI * 0.8;
-  const endAngle = Math.PI * 0.2;
-  const angleRange = startAngle - endAngle; // 0.6 * PI
+  // --- ARC RANGE: Cut bottom 10% (extended from 20%) ---
+  // Start angle: 0.9 * PI (162°) - left side
+  // End angle: 0.1 * PI (18°) - right side
+  const startAngle = Math.PI * 0.9;
+  const endAngle = Math.PI * 0.1;
+  const angleRange = startAngle - endAngle; // 0.8 * PI
 
   // --- FIXED MATH (Left to Right on shortened arc) ---
   // Map position (0 to 1) to angle range (startAngle to endAngle)
@@ -442,7 +441,7 @@ export const CurrentMomentArc = ({
   const trailPath = createTrailPath();
 
   return (
-    <div className="px-0 pb-2 relative z-10">
+    <div className="px-0 pb-0 relative z-10">
       <div className="relative w-full flex flex-col items-center">
         <svg
           viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
@@ -590,7 +589,7 @@ export const CurrentMomentArc = ({
         </svg>
         
         {/* State Text - Centered Absolute */}
-        <div className="absolute top-[55%] left-0 right-0 text-center transform -translate-y-1/2">
+        <div className="absolute top-[60%] left-0 right-0 text-center transform -translate-y-1/2">
           <p className="text-[26px] font-serif font-normal text-foreground tracking-tight text-center leading-tight" 
              style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
