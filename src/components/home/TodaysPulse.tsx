@@ -4,6 +4,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Moon, Milk, Clock, ChevronDown, AlertCircle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+import { GrowthIndicators } from "@/components/home/GrowthIndicators";
+
 interface DeviationData {
   category: 'sleep' | 'feeding' | 'schedule';
   status: 'normal' | 'needs-attention' | 'unusually-good';
@@ -25,6 +27,7 @@ interface TodaysPulseProps {
   babyName: string;
   babyAge?: number;
   activities: any[];
+  babyBirthday?: string;
   transitionInfo?: {
     isTransitioning: boolean;
     napCounts: {
@@ -41,6 +44,7 @@ export const TodaysPulse = ({
   babyName,
   babyAge,
   activities,
+  babyBirthday,
   transitionInfo
 }: TodaysPulseProps) => {
   const [explanation, setExplanation] = useState<string>('');
@@ -231,6 +235,14 @@ export const TodaysPulse = ({
           </CollapsibleContent>
         </Collapsible>
       )}
+      
+      {/* Growth Indicators at bottom of card */}
+      <div className="border-t border-border/30">
+        <GrowthIndicators 
+          activities={activities} 
+          babyBirthday={babyBirthday}
+        />
+      </div>
     </div>
   );
 };

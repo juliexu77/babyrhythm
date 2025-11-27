@@ -24,7 +24,6 @@ import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
-import { GrowthIndicators } from "@/components/home/GrowthIndicators";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { ParentingChat } from "@/components/ParentingChat";
 
@@ -1283,20 +1282,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <div ref={scrollRef} className="pt-4 space-y-4">
           {/* Today's Pulse - At the very top */}
           {!needsBirthdaySetup && todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
-            <>
-              <TodaysPulse
-                deviations={todaysPulse.deviations}
-                biggestDeviation={todaysPulse.biggestDeviation}
-                babyName={babyName}
-                babyAge={babyAgeInWeeks}
-                activities={activities}
-                transitionInfo={transitionInfo}
-              />
-              <GrowthIndicators 
-                activities={activities as any} 
-                babyBirthday={household?.baby_birthday}
-              />
-            </>
+            <TodaysPulse
+              deviations={todaysPulse.deviations}
+              biggestDeviation={todaysPulse.biggestDeviation}
+              babyName={babyName}
+              babyAge={babyAgeInWeeks}
+              activities={activities}
+              babyBirthday={household?.baby_birthday}
+              transitionInfo={transitionInfo}
+            />
           )}
           
           {/* Tier 1 & 2: Simple confidence message + unlock progress */}
