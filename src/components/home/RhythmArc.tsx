@@ -102,10 +102,12 @@ export const RhythmArc = ({
   
   // Wedge path for sundial-style fill: confined between arc curve and baseline
   // The baseline is the y-coordinate of the arc endpoints (arcStartEndY)
+  // Start slightly inward from the left edge for a softer appearance
   const baselineY = arcStartEndY;
+  const wedgeStartX = startPoint.x + 8; // 8px inward for rounded feel
   const wedgePath = `
-    M ${startPoint.x} ${baselineY}
-    L ${startPoint.x} ${startPoint.y}
+    M ${wedgeStartX} ${baselineY}
+    L ${wedgeStartX} ${startPoint.y}
     Q ${q0.x} ${q0.y} ${wedgePosition.x} ${wedgePosition.y}
     L ${wedgePosition.x} ${baselineY}
     Z
@@ -172,11 +174,10 @@ export const RhythmArc = ({
               <stop offset="100%" stopColor={colors.glow} stopOpacity="0" />
             </radialGradient>
             
-            {/* Light wedge gradient - sweeps left to right */}
-            <linearGradient id="lightWedge" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={colors.trail} stopOpacity="0.25" />
-              <stop offset="50%" stopColor={colors.trail} stopOpacity="0.32" />
-              <stop offset="100%" stopColor={colors.trail} stopOpacity="0.28" />
+            {/* Light wedge gradient - vertical: brighter at arc, darker at baseline */}
+            <linearGradient id="lightWedge" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colors.trail} stopOpacity="0.18" />
+              <stop offset="100%" stopColor={colors.trail} stopOpacity="0.08" />
             </linearGradient>
             
             {/* Arc stroke gradient - lighter at peak, darker at ends */}
@@ -208,7 +209,6 @@ export const RhythmArc = ({
             d={wedgePath}
             fill="url(#lightWedge)"
             className="transition-all duration-700 ease-out"
-            style={{ mixBlendMode: 'screen' }}
           />
           
           {/* Base arc path - thicker with gradient stroke */}
