@@ -120,35 +120,37 @@ export const RhythmArc = ({
   const inTwilightZone = progress >= 0.8 && progress <= 1.0;
   const isOvertired = progress > 1.0;
   
-  // Sophisticated color scheme - sunrise/sunset inspired
+  // Rose Gold color palette - Rare Beauty inspired
   const getColors = () => {
     if (isOvertired) {
+      // Deeper rose when overtired - warmer warning tone
       return {
-        base: "hsl(20 15% 88%)",
-        trail: "hsl(15 25% 75%)",
-        glow: "hsl(15 30% 70%)",
-        icon: "hsl(15 35% 65%)",
-        horizonGlow: "hsla(15, 25%, 75%, 0.15)",
+        base: "hsl(8 35% 82%)",
+        trail: "hsl(5 40% 72%)",
+        glow: "hsl(5 45% 68%)",
+        icon: "hsl(350 40% 62%)",
+        horizonGlow: "hsla(5, 40%, 72%, 0.18)",
       };
     }
     
     if (theme === "night") {
+      // Night: cool dusty rose/mauve - still elegant
       return {
-        base: "hsl(230 12% 85%)",
-        trail: "hsl(235 15% 78%)",
-        glow: "hsl(235 18% 75%)",
-        icon: "hsl(235 20% 72%)",
-        horizonGlow: "hsla(235, 15%, 78%, 0.12)",
+        base: "hsl(320 18% 82%)",
+        trail: "hsl(315 20% 75%)",
+        glow: "hsl(310 22% 72%)",
+        icon: "hsl(305 25% 70%)",
+        horizonGlow: "hsla(315, 20%, 75%, 0.14)",
       };
     }
     
-    // Day theme - soft golden sunrise/sunset
+    // Day theme - Rose Gold gradient: dusty pink to warm gold
     return {
-      base: "hsl(35 20% 90%)",
-      trail: inTwilightZone ? "hsl(30 28% 82%)" : "hsl(40 25% 85%)",
-      glow: "hsl(40 35% 78%)",
-      icon: "hsl(38 40% 75%)",
-      horizonGlow: inTwilightZone ? "hsla(30, 28%, 82%, 0.18)" : "hsla(40, 25%, 85%, 0.15)",
+      base: "hsl(18 40% 88%)",
+      trail: inTwilightZone ? "hsl(12 45% 78%)" : "hsl(15 42% 82%)",
+      glow: "hsl(25 50% 80%)",
+      icon: "hsl(20 55% 75%)",
+      horizonGlow: inTwilightZone ? "hsla(12, 45%, 78%, 0.20)" : "hsla(20, 42%, 82%, 0.16)",
     };
   };
   
@@ -254,7 +256,7 @@ export const RhythmArc = ({
             {/* Icon with breathing motion */}
             <g className="animate-[breathe_8s_ease-in-out_infinite]">
               {theme === "night" ? (
-                // Moon icon - cool silvery glow
+                // Moon icon - cool dusty rose/mauve glow
                 <g>
                   <circle
                     cx="0"
@@ -262,7 +264,7 @@ export const RhythmArc = ({
                     r="11"
                     fill={colors.icon}
                     opacity="0.95"
-                    filter={`drop-shadow(0 0 10px hsla(235, 20%, 72%, 0.4)) drop-shadow(0 0 20px hsla(235, 20%, 72%, 0.25))`}
+                    filter={`drop-shadow(0 0 10px hsla(310, 22%, 72%, 0.45)) drop-shadow(0 0 20px hsla(310, 22%, 72%, 0.28))`}
                   />
                   <circle
                     cx="3.5"
@@ -273,7 +275,7 @@ export const RhythmArc = ({
                   />
                 </g>
               ) : (
-                // Sun icon - warm golden glow
+                // Sun icon - warm rose gold glow
                 <g>
                   <circle
                     cx="0"
@@ -281,8 +283,8 @@ export const RhythmArc = ({
                     r="9"
                     fill={colors.icon}
                     filter={isOvertired 
-                      ? `drop-shadow(0 0 12px hsla(15, 35%, 65%, 0.5)) drop-shadow(0 0 24px hsla(15, 35%, 65%, 0.3))`
-                      : `drop-shadow(0 0 14px hsla(38, 40%, 75%, 0.5)) drop-shadow(0 0 28px hsla(38, 40%, 75%, 0.3))`
+                      ? `drop-shadow(0 0 12px hsla(350, 40%, 62%, 0.55)) drop-shadow(0 0 24px hsla(350, 40%, 62%, 0.35))`
+                      : `drop-shadow(0 0 14px hsla(20, 55%, 75%, 0.55)) drop-shadow(0 0 28px hsla(20, 55%, 75%, 0.35))`
                     }
                   />
                   {/* Sun rays */}
