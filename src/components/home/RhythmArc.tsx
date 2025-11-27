@@ -279,16 +279,15 @@ export const RhythmArc = ({
           )}
           {/* State message - positioned directly under arc apex */}
           <foreignObject
-            x={controlPoint.x - 90}
+            x={controlPoint.x - 120}
             y={controlPoint.y + 60}
-            width="180"
+            width="240"
             height="80"
           >
             <div className="w-full">
               <p 
                 className="text-[20px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
                 style={{
-                  wordSpacing: '100vw', // Force line breaks after each word
                   fontVariationSettings: '"wght" 700'
                 }}
               >
