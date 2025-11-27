@@ -342,54 +342,59 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   }
 
   return (
-    <div className="space-y-4 pb-6">
-      {/* Header */}
-      <div className="mx-2 pt-4">
-        <h1 className="text-2xl font-serif font-semibold text-foreground mb-4">History</h1>
+    <div className="space-y-5 pb-6">
+      {/* Header - Elegant with subtle accent */}
+      <div className="mx-4 pt-6">
+        <h1 className="text-2xl font-serif font-semibold text-foreground tracking-tight">History</h1>
+        <p className="text-sm text-muted-foreground mt-1">Your baby's journey over time</p>
       </div>
       
-      {/* Time Range Switcher */}
-      <div className="mx-2">
-        <div className="flex justify-center gap-2">
-        {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
-          <Button
-            key={range}
-            variant={timeRange === range ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTimeRange(range)}
-            className="text-xs"
-          >
-            {range === '1week' && '1 Week'}
-            {range === '6weeks' && '6 Weeks'}
-            {range === '3months' && '3 Months'}
-          </Button>
-        ))}
+      {/* Time Range Switcher - Elegant pill style */}
+      <div className="mx-4">
+        <div className="inline-flex p-1 rounded-full bg-gradient-to-b from-[hsl(18,35%,94%)] to-[hsl(15,30%,91%)] border border-border/30 shadow-sm">
+          {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
+            <button
+              key={range}
+              onClick={() => setTimeRange(range)}
+              className={`
+                px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-200
+                ${timeRange === range 
+                  ? 'bg-gradient-to-b from-white to-[hsl(18,30%,97%)] text-foreground shadow-sm border border-border/20' 
+                  : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
+            >
+              {range === '1week' && '1 Week'}
+              {range === '6weeks' && '6 Weeks'}
+              {range === '3months' && '3 Months'}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Collapsible Chart Sections */}
-      <div className="space-y-3 px-2">
+      {/* Collapsible Chart Sections - Warm elegant cards */}
+      <div className="space-y-3 px-4">
         {/* Night Sleep */}
-        <div className="rounded-xl bg-card border border-border/40 overflow-hidden">
+        <div className="rounded-2xl bg-gradient-to-b from-[hsl(18,38%,96%)] to-[hsl(15,32%,93%)] border border-[hsl(15,30%,88%)]/50 overflow-hidden shadow-[0_4px_20px_-6px_hsla(18,50%,50%,0.12)]">
           <button
             onClick={() => toggleChart('nightSleep')}
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/20 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <Moon className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[hsl(315,25%,78%)] to-[hsl(320,20%,72%)] flex items-center justify-center shadow-sm">
+                <Moon className="w-4 h-4 text-white" />
+              </div>
               <div className="text-left">
-                <h3 className="text-sm font-serif font-medium text-foreground">Night Sleep</h3>
-                <p className="text-xs text-muted-foreground">See how night sleep has shifted over time</p>
+                <h3 className="text-sm font-medium text-foreground">Night Sleep</h3>
+                <p className="text-xs text-muted-foreground">See how night sleep has shifted</p>
               </div>
             </div>
-            {expandedCharts['nightSleep'] ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-            ) : (
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            )}
+            </div>
           </button>
           {expandedCharts['nightSleep'] && (
-            <div className="px-2 pb-4">
+            <div className="px-3 pb-4 pt-1 border-t border-border/20">
               <TimelineChart
                 title="Night Sleep"
                 icon={<Moon className="w-4 h-4 text-foreground/70" />}
@@ -397,7 +402,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 timeRange={timeRange}
                 dataExtractor={extractNightSleep}
                 unit="h"
-                color="hsl(var(--secondary))"
+                color="hsl(315, 25%, 72%)"
                 yAxisFormatter={(v) => `${v.toFixed(0)}h`}
                 tooltipFormatter={(v) => v.toFixed(1)}
                 babyBirthday={household?.baby_birthday}
@@ -409,26 +414,26 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </div>
 
         {/* Day Naps */}
-        <div className="rounded-xl bg-card border border-border/40 overflow-hidden">
+        <div className="rounded-2xl bg-gradient-to-b from-[hsl(18,38%,96%)] to-[hsl(15,32%,93%)] border border-[hsl(15,30%,88%)]/50 overflow-hidden shadow-[0_4px_20px_-6px_hsla(18,50%,50%,0.12)]">
           <button
             onClick={() => toggleChart('dayNaps')}
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/20 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <Sun className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[hsl(25,55%,75%)] to-[hsl(20,50%,68%)] flex items-center justify-center shadow-sm">
+                <Sun className="w-4 h-4 text-white" />
+              </div>
               <div className="text-left">
-                <h3 className="text-sm font-serif font-medium text-foreground">Day Naps</h3>
-                <p className="text-xs text-muted-foreground">See the gradual consolidation that happens with age</p>
+                <h3 className="text-sm font-medium text-foreground">Day Naps</h3>
+                <p className="text-xs text-muted-foreground">Consolidation over time</p>
               </div>
             </div>
-            {expandedCharts['dayNaps'] ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-            ) : (
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            )}
+            </div>
           </button>
           {expandedCharts['dayNaps'] && (
-            <div className="px-2 pb-4">
+            <div className="px-3 pb-4 pt-1 border-t border-border/20">
               <TimelineChart
                 title="Day Naps"
                 icon={<Sun className="w-4 h-4 text-foreground/70" />}
@@ -436,7 +441,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 timeRange={timeRange}
                 dataExtractor={extractDayNaps}
                 unit="naps"
-                color="hsl(var(--secondary))"
+                color="hsl(25, 50%, 70%)"
                 yAxisFormatter={(v) => v.toFixed(0)}
                 tooltipFormatter={(v) => v.toFixed(0)}
                 babyBirthday={household?.baby_birthday}
@@ -448,26 +453,26 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </div>
 
         {/* Feed Volume */}
-        <div className="rounded-xl bg-card border border-border/40 overflow-hidden">
+        <div className="rounded-2xl bg-gradient-to-b from-[hsl(18,38%,96%)] to-[hsl(15,32%,93%)] border border-[hsl(15,30%,88%)]/50 overflow-hidden shadow-[0_4px_20px_-6px_hsla(18,50%,50%,0.12)]">
           <button
             onClick={() => toggleChart('feedVolume')}
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/20 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <Milk className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[hsl(345,40%,65%)] to-[hsl(350,38%,58%)] flex items-center justify-center shadow-sm">
+                <Milk className="w-4 h-4 text-white" />
+              </div>
               <div className="text-left">
-                <h3 className="text-sm font-serif font-medium text-foreground">Feed Volume</h3>
-                <p className="text-xs text-muted-foreground">Feeding amounts stabilize naturally in the mid-months</p>
+                <h3 className="text-sm font-medium text-foreground">Feed Volume</h3>
+                <p className="text-xs text-muted-foreground">Feeding patterns over time</p>
               </div>
             </div>
-            {expandedCharts['feedVolume'] ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-            ) : (
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            )}
+            </div>
           </button>
           {expandedCharts['feedVolume'] && (
-            <div className="px-2 pb-4">
+            <div className="px-3 pb-4 pt-1 border-t border-border/20">
               <TimelineChart
                 title="Feed Volume"
                 icon={<Milk className="w-4 h-4 text-foreground/70" />}
@@ -475,7 +480,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 timeRange={timeRange}
                 dataExtractor={extractFeedVolume}
                 unit="oz"
-                color="hsl(var(--secondary))"
+                color="hsl(345, 38%, 60%)"
                 yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
                 tooltipFormatter={(v) => v.toFixed(0)}
                 babyBirthday={household?.baby_birthday}
@@ -487,26 +492,26 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         </div>
 
         {/* Wake Windows */}
-        <div className="rounded-xl bg-card border border-border/40 overflow-hidden">
+        <div className="rounded-2xl bg-gradient-to-b from-[hsl(18,38%,96%)] to-[hsl(15,32%,93%)] border border-[hsl(15,30%,88%)]/50 overflow-hidden shadow-[0_4px_20px_-6px_hsla(18,50%,50%,0.12)]">
           <button
             onClick={() => toggleChart('wakeWindows')}
-            className="w-full px-4 py-3 flex items-center justify-between hover:bg-muted/20 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[hsl(15,45%,72%)] to-[hsl(12,42%,65%)] flex items-center justify-center shadow-sm">
+                <Clock className="w-4 h-4 text-white" />
+              </div>
               <div className="text-left">
-                <h3 className="text-sm font-serif font-medium text-foreground">Wake Windows</h3>
-                <p className="text-xs text-muted-foreground">Wake times stretch as babies grow</p>
+                <h3 className="text-sm font-medium text-foreground">Wake Windows</h3>
+                <p className="text-xs text-muted-foreground">Wake times stretch as baby grows</p>
               </div>
             </div>
-            {expandedCharts['wakeWindows'] ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-            ) : (
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            )}
+            </div>
           </button>
           {expandedCharts['wakeWindows'] && (
-            <div className="px-2 pb-4">
+            <div className="px-3 pb-4 pt-1 border-t border-border/20">
               <TimelineChart
                 title="Wake Windows"
                 icon={<Clock className="w-4 h-4 text-foreground/70" />}
@@ -514,7 +519,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
                 timeRange={timeRange}
                 dataExtractor={extractWakeWindows}
                 unit="h"
-                color="hsl(var(--secondary))"
+                color="hsl(15, 42%, 68%)"
                 yAxisFormatter={(v) => `${v.toFixed(1)}h`}
                 tooltipFormatter={(v) => v.toFixed(1)}
                 babyBirthday={household?.baby_birthday}
@@ -527,15 +532,15 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       </div>
 
       {/* Collective Pulse */}
-      <div className="px-2">
+      <div className="px-4">
         <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
-      {/* Long Term Trends Summary */}
-      <div className="mx-2">
-        <div className="rounded-xl bg-card border border-border/40 overflow-hidden">
-          <div className="px-4 py-4 border-b border-border/30">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+      {/* Long Term Trends Summary - Elegant summary card */}
+      <div className="mx-4">
+        <div className="rounded-2xl bg-gradient-to-b from-[hsl(18,38%,96%)] to-[hsl(15,32%,93%)] border border-[hsl(15,30%,88%)]/50 overflow-hidden shadow-[0_4px_20px_-6px_hsla(18,50%,50%,0.12)]">
+          <div className="px-4 py-3 border-b border-border/20 bg-gradient-to-r from-[hsl(345,30%,92%)] to-[hsl(15,35%,94%)]">
+            <h3 className="text-xs font-medium text-foreground/80 uppercase tracking-wider">
               Long Term Trends
             </h3>
           </div>
