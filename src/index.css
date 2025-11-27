@@ -311,7 +311,7 @@
     font-feature-settings: "tnum" 1;
     overflow-x: hidden;
     width: 100%;
-    background: radial-gradient(circle at center, #FFF8F0, #FAF9F6);
+    background: linear-gradient(180deg, #FFF8F5 0%, #FAEDEC 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
