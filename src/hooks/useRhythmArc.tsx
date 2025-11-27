@@ -78,16 +78,39 @@ export const useRhythmArc = ({
           ? startHour >= nightSleepStartHour || startHour < nightSleepEndHour
           : startHour >= nightSleepStartHour && startHour < nightSleepEndHour;
         
-        // Use appropriate duration for night sleep vs nap
-        if (isNightSleep) {
-          // Calculate expected night sleep duration
-          const nightDuration = nightSleepStartHour > nightSleepEndHour
-            ? (24 - nightSleepStartHour + nightSleepEndHour) * 60
-            : (nightSleepEndHour - nightSleepStartHour) * 60;
-          typicalDuration = nightDuration;
-        } else {
-          typicalDuration = 90; // 1.5 hours for naps
+        // Calculate age-based typical duration
+        let ageBasedDuration = 90; // Default nap duration
+        if (babyBirthday) {
+          try {
+            const birthDate = new Date(babyBirthday);
+            const ageInMonths = Math.floor(
+              (currentTime.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30)
+            );
+            
+            if (isNightSleep) {
+              // Age-appropriate night sleep durations (in minutes)
+              if (ageInMonths < 1) ageBasedDuration = 480; // 8 hours
+              else if (ageInMonths < 2) ageBasedDuration = 540; // 9 hours
+              else if (ageInMonths < 4) ageBasedDuration = 600; // 10 hours
+              else if (ageInMonths < 6) ageBasedDuration = 630; // 10.5 hours
+              else if (ageInMonths < 9) ageBasedDuration = 660; // 11 hours
+              else if (ageInMonths < 12) ageBasedDuration = 660; // 11 hours
+              else ageBasedDuration = 630; // 10.5 hours
+            } else {
+              // Age-appropriate nap durations (in minutes)
+              if (ageInMonths < 1) ageBasedDuration = 120; // 2 hours
+              else if (ageInMonths < 2) ageBasedDuration = 105; // 1.75 hours
+              else if (ageInMonths < 4) ageBasedDuration = 90; // 1.5 hours
+              else if (ageInMonths < 6) ageBasedDuration = 90; // 1.5 hours
+              else if (ageInMonths < 9) ageBasedDuration = 75; // 1.25 hours
+              else if (ageInMonths < 12) ageBasedDuration = 75; // 1.25 hours
+              else ageBasedDuration = 90; // 1.5 hours
+            }
+          } catch (e) {
+            console.error("Error calculating age-appropriate duration:", e);
+          }
         }
+        typicalDuration = ageBasedDuration;
       } else if (activities && activities.length > 0) {
         // Wake mode - find last nap end time
         const sortedNaps = activities
