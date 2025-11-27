@@ -100,16 +100,19 @@ export const RhythmArc = ({
     y: t1 * startPoint.y + t * controlPoint.y
   };
   
-  // Wedge path for sundial-style fill: confined between arc curve and baseline
-  // The baseline is the y-coordinate of the arc endpoints (arcStartEndY)
-  // Start slightly inward from the left edge for a softer appearance
+  // Wedge path for sundial-style fill: all edges converge at center anchor point
+  // Define center anchor point at bottom center of arc
   const baselineY = arcStartEndY;
-  const wedgeStartX = startPoint.x + 8; // 8px inward for rounded feel
+  const centerX = (startPoint.x + endPoint.x) / 2;
+  const centerY = baselineY;
+  
+  // Build wedge as triangular slice anchored at center
   const wedgePath = `
-    M ${wedgeStartX} ${baselineY}
-    L ${wedgeStartX} ${startPoint.y}
+    M ${centerX} ${centerY}
+    L ${startPoint.x} ${centerY}
+    L ${startPoint.x} ${startPoint.y}
     Q ${q0.x} ${q0.y} ${wedgePosition.x} ${wedgePosition.y}
-    L ${wedgePosition.x} ${baselineY}
+    L ${centerX} ${centerY}
     Z
   `;
   
