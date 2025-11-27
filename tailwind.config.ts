@@ -20,15 +20,31 @@ export default {
         num: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
       },
       letterSpacing: {
-        'rare': '-0.02em',
-        'rare-tight': '-0.03em',
+        'rare': '-0.015em',
+        'rare-tight': '-0.025em',
+        'caps': '0.04em', // For uppercase labels
       },
       fontWeight: {
-        'rare-light': '300',
-        'rare-normal': '400',
-        'rare-medium': '450',
+        'body': '400',
+        'label': '500',
+        'heading': '600',
+      },
+      lineHeight: {
+        'body': '1.6',
+        'heading': '1.3',
+      },
+      opacity: {
+        'icon': '0.88',
+        'icon-soft': '0.75',
       },
       colors: {
+        // Rare Beauty palette
+        'rose-clay': 'hsl(12, 50%, 81%)',
+        'dusty-blush': 'hsl(15, 45%, 76%)',
+        'terracotta': 'hsl(8, 45%, 60%)',
+        'berry-mauve': 'hsl(350, 35%, 46%)',
+        'warm-beige': 'hsl(20, 40%, 93%)',
+        // Standard tokens
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -103,15 +119,18 @@ export default {
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'card': 'var(--shadow-card)',
-        'warm': '0 4px 20px -4px hsla(18, 50%, 50%, 0.10), 0 2px 8px -2px hsla(18, 50%, 50%, 0.06)',
-        'warm-lg': '0 8px 32px -8px hsla(18, 50%, 50%, 0.14), 0 4px 16px -4px hsla(18, 50%, 50%, 0.08)',
+        // Rare Beauty diffused cinematic shadows (8% opacity)
+        'diffused': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 4px 12px -2px hsla(15, 50%, 40%, 0.08)',
+        'diffused-lg': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 6px 16px -3px hsla(15, 50%, 40%, 0.08), 0 12px 32px -6px hsla(15, 50%, 40%, 0.06)',
+        'glow-soft': '0 0 20px -5px hsla(15, 45%, 60%, 0.15)',
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 4px)", 
         sm: "calc(var(--radius) - 8px)",
-        sharp: "8px", // Sharp edges for dark mode performance dashboard
-        "3xl": "24px", // Warm nursery rounded corners
+        sharp: "8px",
+        "3xl": "24px",
+        "4xl": "28px", // Rare Beauty tactile cards
       },
       keyframes: {
         "accordion-down": {
