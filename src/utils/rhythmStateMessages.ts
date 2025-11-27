@@ -223,7 +223,7 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
     
     // Sleeping in: 30+ minutes later
     if (wakeDifference >= 30) {
-      return "Sleeping in";
+      return "Slept in today";
     }
   }
   
