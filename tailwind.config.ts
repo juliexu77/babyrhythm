@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["Fraunces", "Georgia", "serif"],
+        serif: ["Nunito", "Fraunces", "Georgia", "serif"],
         sans: ["Satoshi", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
         num: ["Satoshi", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
       },
@@ -96,9 +96,10 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)", 
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 4px)", 
+        sm: "calc(var(--radius) - 8px)",
         sharp: "8px", // Sharp edges for dark mode performance dashboard
+        "3xl": "24px", // Warm nursery rounded corners
       },
       keyframes: {
         "accordion-down": {
