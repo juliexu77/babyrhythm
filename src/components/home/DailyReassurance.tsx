@@ -384,14 +384,14 @@ export const DailyReassurance = ({
 
   return (
     <div className="mx-2 mb-6 relative z-20">
-      <div className="px-3 py-2 rounded-xl bg-gradient-to-b from-primary/8 via-primary/5 to-primary/3 border border-border/10">
-        <div className="flex items-start gap-2">
-          <IconComponent className="w-4 h-4 text-primary/60 mt-0.5 flex-shrink-0" />
+      <div className="px-4 py-3 rounded-2xl bg-gradient-to-b from-[hsl(22,45%,94%)] via-[hsl(18,40%,91%)] to-[hsl(16,36%,88%)] border border-[hsl(18,28%,85%)]/40 shadow-[inset_0_1px_0_0_hsla(30,60%,98%,0.5),0_2px_8px_-2px_hsla(18,45%,40%,0.08)] dark:bg-card dark:border-border/30 dark:shadow-none">
+        <div className="flex items-start gap-2.5">
+          <IconComponent className="w-4 h-4 text-primary/70 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-1">
               Noticed Today
             </h3>
-            <p className="text-sm text-foreground/70 leading-relaxed">
+            <p className="text-sm text-foreground/80 leading-relaxed">
               {reassuranceMessage}
             </p>
           </div>
