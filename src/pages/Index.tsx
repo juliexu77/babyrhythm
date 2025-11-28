@@ -724,14 +724,8 @@ const ongoingNap = (() => {
             {/* Soft studio-lighting gradient - whisper of warmth top to bottom */}
             <div className="absolute inset-0 bg-gradient-to-b from-[hsl(28,40%,94%)]/70 via-[hsl(25,35%,92%)]/40 to-transparent dark:from-transparent dark:via-transparent dusk:from-transparent dusk:via-transparent pointer-events-none" />
             
-            {/* Header with title and actions */}
-            <div className="relative mx-4 pt-6 pb-4">
-              <h1 className="text-2xl font-serif font-semibold text-[hsl(18,28%,32%)] dark:text-foreground dusk:text-foreground tracking-tight">History</h1>
-              <p className="text-sm text-[hsl(20,20%,55%)] dark:text-muted-foreground dusk:text-muted-foreground mt-1">Your activity timeline</p>
-            </div>
-            
             {/* Action buttons - elegant style */}
-            <div className="relative px-4 pb-4">
+            <div className="relative mx-4 pt-6 pb-4">
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
