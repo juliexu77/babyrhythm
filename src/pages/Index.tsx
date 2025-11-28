@@ -718,16 +718,16 @@ const ongoingNap = (() => {
         );
     case "settings":
       return <SettingsPage />;
-      case "history":
+    case "history":
         return (
           <div className="min-h-screen relative">
             {/* Soft studio-lighting gradient - whisper of warmth top to bottom */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[hsl(28,40%,94%)]/70 via-[hsl(25,35%,92%)]/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[hsl(28,40%,94%)]/70 via-[hsl(25,35%,92%)]/40 to-transparent dark:from-transparent dark:via-transparent dusk:from-transparent dusk:via-transparent pointer-events-none" />
             
             {/* Header with title and actions */}
             <div className="relative mx-4 pt-6 pb-4">
-              <h1 className="text-2xl font-serif font-semibold text-[hsl(18,28%,32%)] dark:text-foreground tracking-tight">History</h1>
-              <p className="text-sm text-[hsl(20,20%,55%)] dark:text-muted-foreground mt-1">Your activity timeline</p>
+              <h1 className="text-2xl font-serif font-semibold text-[hsl(18,28%,32%)] dark:text-foreground dusk:text-foreground tracking-tight">History</h1>
+              <p className="text-sm text-[hsl(20,20%,55%)] dark:text-muted-foreground dusk:text-muted-foreground mt-1">Your activity timeline</p>
             </div>
             
             {/* Action buttons - elegant style */}
@@ -735,14 +735,14 @@ const ongoingNap = (() => {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
-                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
+                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary dusk:text-primary hover:opacity-80 transition-opacity font-medium"
                 >
                   Pediatrician Report
                 </button>
-                <span className="text-[hsl(20,22%,78%)] dark:text-border">•</span>
+                <span className="text-[hsl(20,22%,78%)] dark:text-border dusk:text-border">•</span>
                 <button 
                   onClick={() => setShowCSVExport(true)}
-                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
+                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary dusk:text-primary hover:opacity-80 transition-opacity font-medium"
                 >
                   Export CSV
                 </button>
@@ -870,10 +870,10 @@ const ongoingNap = (() => {
                           return (
                             <div key={dateKey} className="mb-6">
                               {/* Day section with soft tonal block background - like warm paper */}
-                              <div className="bg-[hsl(24,30%,91%)]/45 dark:bg-card/25 rounded-xl px-3 py-3 -mx-1">
+                              <div className="bg-[hsl(24,30%,91%)]/45 dark:bg-card/25 dusk:bg-card/40 rounded-xl px-3 py-3 -mx-1">
                                 {/* Date Header - softer clay with increased letter spacing */}
                                 <div className="flex items-center justify-between pb-2 pt-1">
-                                  <h3 className="text-xs font-serif font-medium text-[hsl(20,25%,48%)] dark:text-foreground/80 uppercase tracking-widest">
+                                  <h3 className="text-xs font-serif font-medium text-[hsl(20,25%,48%)] dark:text-foreground/80 dusk:text-foreground/80 uppercase tracking-widest">
                                     {displayDate}
                                   </h3>
                                   
@@ -1006,8 +1006,8 @@ const ongoingNap = (() => {
                                 
                                 {/* Activities for this date - more breathing room */}
                                 <div className="relative space-y-2.5 pl-1">
-                                  {/* Continuous timeline line - warmed clay-rose */}
-                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-[hsl(18,25%,78%)] dark:bg-border/40"></div>
+                                {/* Continuous timeline line - warmed clay-rose */}
+                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-[hsl(18,25%,78%)] dark:bg-border/40 dusk:bg-border/40"></div>
                                   {(() => {
                                     // To detect night sleep for this day, we need to check:
                                     // 1. Sleeps that started TODAY and ended TODAY

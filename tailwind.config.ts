@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 export default {
   darkMode: ["class"],
@@ -383,5 +384,11 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // Custom dusk variant for dusk mode
+    plugin(function({ addVariant }) {
+      addVariant('dusk', '.dusk &');
+    }),
+  ],
 } satisfies Config;
