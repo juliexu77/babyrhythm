@@ -686,7 +686,8 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
   // Enable smart reminders - only when we have adaptive schedule
   useSmartReminders({ 
     schedule: adaptiveSchedule as any, // Type compatibility with old interface
-    enabled: remindersEnabled && hasTier3Data && !!adaptiveSchedule
+    enabled: remindersEnabled && hasTier3Data && !!adaptiveSchedule,
+    activities: activities
   });
 
   // Sync reminder state with localStorage

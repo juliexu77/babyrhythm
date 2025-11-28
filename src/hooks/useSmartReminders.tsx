@@ -3,19 +3,37 @@ import { useToast } from "@/hooks/use-toast";
 import { PredictedSchedule } from "@/utils/schedulePredictor";
 import { Bell, Moon, Milk } from "lucide-react";
 
+interface Activity {
+  id: string;
+  type: string;
+  logged_at: string;
+  details: any;
+}
+
 interface UseSmartRemindersProps {
   schedule: PredictedSchedule | null;
   enabled: boolean;
+  activities?: Activity[];
 }
 
 /**
  * Hook to manage smart reminders for upcoming schedule events
  * Shows notifications 15 minutes before naps and 30 minutes before feeds
+ * Skips wind-down reminders if baby is already sleeping
  */
-export function useSmartReminders({ schedule, enabled }: UseSmartRemindersProps) {
+export function useSmartReminders({ schedule, enabled, activities = [] }: UseSmartRemindersProps) {
   const { toast } = useToast();
   const shownRemindersRef = useRef<Set<string>>(new Set());
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check if baby is currently sleeping (ongoing nap with no end time)
+  const isBabySleeping = (): boolean => {
+    return activities.some(a => 
+      a.type === 'nap' && 
+      a.details?.startTime && 
+      !a.details?.endTime
+    );
+  };
 
   useEffect(() => {
     if (!schedule || !enabled) {
@@ -88,8 +106,8 @@ export function useSmartReminders({ schedule, enabled }: UseSmartRemindersProps)
         // Don't show if already shown
         if (shownRemindersRef.current.has(reminderKey)) return;
 
-        // Wind-down reminder 15 minutes before nap
-        if (event.type === 'nap' && minutesUntil <= 15 && minutesUntil > 0) {
+        // Wind-down reminder 15 minutes before nap - skip if baby is already sleeping
+        if (event.type === 'nap' && minutesUntil <= 15 && minutesUntil > 0 && !isBabySleeping()) {
           toast({
             title: "Wind-down time approaching",
             description: `Nap scheduled at ${event.time} — start calming activities`,
