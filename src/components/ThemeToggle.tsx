@@ -1,4 +1,4 @@
-import { Moon, Sun, Sunset } from "lucide-react";
+import { Sun, Sunset } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 
@@ -13,10 +13,8 @@ export function ThemeToggle({ showText = true }: ThemeToggleProps) {
     // Mark as manual override to prevent auto-switching for 1 hour
     localStorage.setItem('theme-manual-override', Date.now().toString());
     
-    // Cycle through: light -> dark -> dusk -> light
+    // Cycle through: light -> dusk -> light (dark theme removed)
     if (theme === 'light') {
-      setTheme('dark');
-    } else if (theme === 'dark') {
       setTheme('dusk');
     } else {
       setTheme('light');
@@ -33,8 +31,7 @@ export function ThemeToggle({ showText = true }: ThemeToggleProps) {
         className="h-10 w-10 p-0 bg-background/80 backdrop-blur-sm border-border/50 rounded-full relative overflow-hidden"
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 dusk:rotate-180 dusk:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 dusk:rotate-180 dusk:scale-0" />
+          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dusk:-rotate-90 dusk:scale-0" />
           <Sunset className="absolute h-5 w-5 rotate-90 scale-0 transition-all dusk:rotate-0 dusk:scale-100" />
         </div>
       </Button>
@@ -42,7 +39,6 @@ export function ThemeToggle({ showText = true }: ThemeToggleProps) {
   }
 
   const getThemeLabel = () => {
-    if (theme === 'dark') return 'Dark';
     if (theme === 'dusk') return 'Dusk';
     return 'Light';
   };
@@ -55,8 +51,7 @@ export function ThemeToggle({ showText = true }: ThemeToggleProps) {
       className="h-10 px-4 bg-background/80 backdrop-blur-sm border-border/50 min-w-fit whitespace-nowrap inline-flex items-center gap-2"
     >
       <span className="relative inline-block w-5 h-5 mr-1">
-        <Sun className="absolute inset-0 h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 dusk:rotate-180 dusk:scale-0" />
-        <Moon className="absolute inset-0 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 dusk:rotate-180 dusk:scale-0" />
+        <Sun className="absolute inset-0 h-5 w-5 rotate-0 scale-100 transition-all dusk:-rotate-90 dusk:scale-0" />
         <Sunset className="absolute inset-0 h-5 w-5 rotate-90 scale-0 transition-all dusk:rotate-0 dusk:scale-100" />
       </span>
       <span className="text-sm font-medium">
