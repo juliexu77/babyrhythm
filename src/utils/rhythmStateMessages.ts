@@ -107,30 +107,69 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
       napStartDate.setHours(napStartHours, napStartMinutes, 0, 0);
     }
     
-    const napMinutes = differenceInMinutes(currentTime, napStartDate);
+    const currentSleepMinutes = differenceInMinutes(currentTime, napStartDate);
     
-    // Check if this is overnight sleep (started yesterday or > 4 hours ago)
+    // Check if this is overnight sleep
     const startedYesterday = napStartDate.toDateString() !== currentTime.toDateString();
     const inNightWindow = isNightTime(currentHour, nightSleepStartHour, nightSleepEndHour);
-    const isOvernightSleep = startedYesterday || napMinutes > 240 || inNightWindow;
+    const isNightSleep = startedYesterday || currentSleepMinutes > 240 || inNightWindow;
     
-    if (isOvernightSleep) {
-      // Check if approaching average wake time (within 30 minutes)
-      const currentTotalMinutes = currentHour * 60 + currentMinute;
-      const avgWakeTotalMinutes = averageWakeHour * 60 + averageWakeMinute;
-      const minutesUntilWake = avgWakeTotalMinutes - currentTotalMinutes;
-      
-      // If within 30 minutes before or 15 minutes after expected wake time
-      if (minutesUntilWake > 0 && minutesUntilWake <= 30) {
-        return "May wake soon";
-      }
-      
-      // Past expected wake time but still sleeping
-      if (minutesUntilWake < 0 && minutesUntilWake >= -30) {
-        return "May wake soon";
-      }
-      
-      // Still in deep night sleep
+    // Calculate minutes to average wake time
+    const currentTotalMinutes = currentHour * 60 + currentMinute;
+    const avgWakeTotalMinutes = averageWakeHour * 60 + averageWakeMinute;
+    let minutesToAverageWakeTime = avgWakeTotalMinutes - currentTotalMinutes;
+    // Handle wrap-around for early morning
+    if (minutesToAverageWakeTime < -60) minutesToAverageWakeTime += 24 * 60;
+    
+    // Near wake window: within 30 min before or 15 min after expected wake
+    const isNearWakeWindow = (minutesToAverageWakeTime > 0 && minutesToAverageWakeTime <= 30) ||
+                             (minutesToAverageWakeTime < 0 && minutesToAverageWakeTime >= -15);
+    
+    // Find last micro-wake (short feed during night sleep)
+    const recentNightActivities = [...todayActivities, ...yesterdayActivities]
+      .filter(a => {
+        const activityTime = new Date(a.loggedAt || a.time);
+        return a.type === 'feed' && activityTime > napStartDate && activityTime < currentTime;
+      })
+      .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime());
+    
+    const lastMicroWake = recentNightActivities[0];
+    const minutesSinceLastMicroWake = lastMicroWake 
+      ? differenceInMinutes(currentTime, new Date(lastMicroWake.loggedAt || lastMicroWake.time))
+      : currentSleepMinutes; // If no micro-wake, use full sleep duration
+    
+    // Calculate total night sleep (for long sleep detection)
+    const totalNightSleepMinutes = currentSleepMinutes;
+    
+    // Near wake window - show "May wake soon"
+    if (isNearWakeWindow) {
+      return "May wake soon";
+    }
+    
+    // State 1: "Just drifted off" - very recent sleep start
+    if (currentSleepMinutes <= 10) {
+      return "Just drifted off";
+    }
+    
+    // State 5: "Long, deep slumber" - extended night sleep
+    if (isNightSleep && 
+        (totalNightSleepMinutes >= 360 || currentSleepMinutes >= 180) && 
+        minutesSinceLastMicroWake >= 20) {
+      return "Long, deep slumber";
+    }
+    
+    // States 2-4: Mid-sleep variety bucket
+    if (currentSleepMinutes > 10 && 
+        currentSleepMinutes <= 120 && 
+        minutesSinceLastMicroWake >= 10) {
+      // Rotate based on current minute to provide variety
+      const varietyMessages = ["Counting sheep", "Sleeping soundly", "Deep in dreamland"];
+      const rotationIndex = Math.floor(currentTime.getMinutes() / 20) % 3;
+      return varietyMessages[rotationIndex];
+    }
+    
+    // State 6: "Still snoozing" - night sleep fallback
+    if (isNightSleep && minutesToAverageWakeTime > 60) {
       return "Still snoozing";
     }
     
