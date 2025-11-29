@@ -146,9 +146,20 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
       return "May wake soon";
     }
     
-    // State 1: "Just drifted off" - very recent sleep start
-    if (currentSleepMinutes <= 10) {
+    // State 1: "Just drifted off" - very recent night sleep start
+    if (isNightSleep && currentSleepMinutes <= 10) {
       return "Just drifted off";
+    }
+    
+    // States 2-4: Mid-sleep variety bucket (night sleep only)
+    if (isNightSleep && 
+        currentSleepMinutes > 10 && 
+        currentSleepMinutes <= 120 && 
+        minutesSinceLastMicroWake >= 10) {
+      // Rotate based on current minute to provide variety
+      const varietyMessages = ["Counting sheep", "Sleeping soundly", "Deep in dreamland"];
+      const rotationIndex = Math.floor(currentTime.getMinutes() / 20) % 3;
+      return varietyMessages[rotationIndex];
     }
     
     // State 5: "Long, deep slumber" - extended night sleep
@@ -156,16 +167,6 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
         (totalNightSleepMinutes >= 360 || currentSleepMinutes >= 180) && 
         minutesSinceLastMicroWake >= 20) {
       return "Long, deep slumber";
-    }
-    
-    // States 2-4: Mid-sleep variety bucket
-    if (currentSleepMinutes > 10 && 
-        currentSleepMinutes <= 120 && 
-        minutesSinceLastMicroWake >= 10) {
-      // Rotate based on current minute to provide variety
-      const varietyMessages = ["Counting sheep", "Sleeping soundly", "Deep in dreamland"];
-      const rotationIndex = Math.floor(currentTime.getMinutes() / 20) % 3;
-      return varietyMessages[rotationIndex];
     }
     
     // State 6: "Still snoozing" - night sleep fallback
