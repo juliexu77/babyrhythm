@@ -280,21 +280,23 @@ export const DailyReassurance = ({
       ? recentWakeWindows.reduce((sum, w) => sum + w, 0) / recentWakeWindows.length 
       : 0;
 
-    // Decision logic - prioritize most notable pattern
-    
-    // Check cluster feeding first
+    // Collect all detected patterns for variety
+    type PatternMatch = { message: string; iconType: 'nap' | 'feed' | 'wake' | 'sparkles' };
+    const detectedPatterns: PatternMatch[] = [];
+
+    // Check cluster feeding
     if (isClusterFeeding) {
-      return { message: pick(messages.clusterFeeding), iconType: 'feed' as const };
+      detectedPatterns.push({ message: pick(messages.clusterFeeding), iconType: 'feed' });
     }
 
-    // Check first nap timing (earlier/later)
+    // Check first nap timing (earlier/later) - 45 min threshold
     if (todayNapStartTimes.length > 0 && recentFirstNapStartTimes.length >= 3 && avgRecentFirstNapStart > 0) {
       const firstNapToday = todayNapStartTimes[0];
-      if (firstNapToday < avgRecentFirstNapStart - 30) {
-        return { message: pick(messages.napEarlier), iconType: 'nap' as const };
+      if (firstNapToday < avgRecentFirstNapStart - 45) {
+        detectedPatterns.push({ message: pick(messages.napEarlier), iconType: 'nap' });
       }
-      if (firstNapToday > avgRecentFirstNapStart + 30) {
-        return { message: pick(messages.napLater), iconType: 'nap' as const };
+      if (firstNapToday > avgRecentFirstNapStart + 45) {
+        detectedPatterns.push({ message: pick(messages.napLater), iconType: 'nap' });
       }
     }
 
@@ -302,10 +304,10 @@ export const DailyReassurance = ({
     if (todayNapDurations.length > 0 && recentNapDurations.length >= 5) {
       const firstNap = todayNapDurations[0];
       if (firstNap < avgRecentNapDuration * 0.7 && firstNap < 50) {
-        return { message: pick(messages.napShorter), iconType: 'nap' as const };
+        detectedPatterns.push({ message: pick(messages.napShorter), iconType: 'nap' });
       }
       if (firstNap > avgRecentNapDuration * 1.3) {
-        return { message: pick(messages.napLonger), iconType: 'nap' as const };
+        detectedPatterns.push({ message: pick(messages.napLonger), iconType: 'nap' });
       }
     }
 
@@ -316,43 +318,48 @@ export const DailyReassurance = ({
       const avgRecentFirstFeed = recentFirstFeedTimes.reduce((sum, t) => sum + t, 0) / recentFirstFeedTimes.length;
       
       if (firstFeedTodayMins < avgRecentFirstFeed - 45) {
-        return { message: pick(messages.feedEarlier), iconType: 'feed' as const };
+        detectedPatterns.push({ message: pick(messages.feedEarlier), iconType: 'feed' });
       }
       if (firstFeedTodayMins > avgRecentFirstFeed + 45) {
-        return { message: pick(messages.feedLater), iconType: 'feed' as const };
+        detectedPatterns.push({ message: pick(messages.feedLater), iconType: 'feed' });
       }
     }
 
     // Check for heavier feeds
     if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume > recentTotalVolume * 1.25) {
-      return { message: pick(messages.feedsHeavier), iconType: 'feed' as const };
+      detectedPatterns.push({ message: pick(messages.feedsHeavier), iconType: 'feed' });
     }
 
     // Check for lighter feeds
     if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume < recentTotalVolume * 0.7) {
-      return { message: pick(messages.feedsLighter), iconType: 'feed' as const };
+      detectedPatterns.push({ message: pick(messages.feedsLighter), iconType: 'feed' });
     }
 
     // Check wake windows longer
     if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow > avgRecentWakeWindow * 1.25) {
-      return { message: pick(messages.wakeWindowsLonger), iconType: 'wake' as const };
+      detectedPatterns.push({ message: pick(messages.wakeWindowsLonger), iconType: 'wake' });
     }
 
     // Check wake windows shorter
     if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow < avgRecentWakeWindow * 0.75) {
-      return { message: pick(messages.wakeWindowsShorter), iconType: 'wake' as const };
+      detectedPatterns.push({ message: pick(messages.wakeWindowsShorter), iconType: 'wake' });
     }
 
     // Check all naps shorter
     if (todayNapDurations.length >= 2 && recentNapDurations.length >= 5 && avgTodayNapDuration < avgRecentNapDuration * 0.75) {
-      return { message: pick(messages.napShorter), iconType: 'nap' as const };
+      detectedPatterns.push({ message: pick(messages.napShorter), iconType: 'nap' });
     }
 
     // Check growth spurt pattern (more feeds + longer naps)
     if (todayFeeds.length >= recentFeeds.length / 7 * 1.4 && 
         todayNapDurations.length > 0 && 
         avgTodayNapDuration > avgRecentNapDuration * 1.15) {
-      return { message: pick(messages.growthSpurt), iconType: 'feed' as const };
+      detectedPatterns.push({ message: pick(messages.growthSpurt), iconType: 'feed' });
+    }
+
+    // If we found any patterns, randomly select one
+    if (detectedPatterns.length > 0) {
+      return detectedPatterns[Math.floor(Math.random() * detectedPatterns.length)];
     }
 
     // Check schedule alignment (everything within normal ranges)
