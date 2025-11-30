@@ -27,8 +27,15 @@ export const DailyReassurance = ({
       return { message: `Start logging to see how today unfolds.`, iconType: 'sparkles' as const };
     }
 
-    // Random selection helper
-    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+    // Stable selection helper - changes based on date + activity count + time block (every 4 hours)
+    // This creates a seed that only changes when: new day, activity count changes, or 4-hour block changes
+    const currentTime = new Date();
+    const dateKey = currentTime.toISOString().split('T')[0];
+    const timeBlock = Math.floor(currentTime.getHours() / 4); // 6 blocks per day (0-5)
+    const seedBase = `${dateKey}-${todayActivities.length}-${timeBlock}`;
+    const seed = seedBase.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const stableRandom = (index: number) => ((seed * (index + 1) * 9301 + 49297) % 233280) / 233280;
+    const pick = (arr: string[], index: number = 0) => arr[Math.floor(stableRandom(index) * arr.length)];
 
     // Message libraries
     const messages = {
@@ -286,17 +293,17 @@ export const DailyReassurance = ({
 
     // Check cluster feeding
     if (isClusterFeeding) {
-      detectedPatterns.push({ message: pick(messages.clusterFeeding), iconType: 'feed' });
+      detectedPatterns.push({ message: pick(messages.clusterFeeding, 1), iconType: 'feed' });
     }
 
     // Check first nap timing (earlier/later) - 45 min threshold
     if (todayNapStartTimes.length > 0 && recentFirstNapStartTimes.length >= 3 && avgRecentFirstNapStart > 0) {
       const firstNapToday = todayNapStartTimes[0];
       if (firstNapToday < avgRecentFirstNapStart - 45) {
-        detectedPatterns.push({ message: pick(messages.napEarlier), iconType: 'nap' });
+        detectedPatterns.push({ message: pick(messages.napEarlier, 2), iconType: 'nap' });
       }
       if (firstNapToday > avgRecentFirstNapStart + 45) {
-        detectedPatterns.push({ message: pick(messages.napLater), iconType: 'nap' });
+        detectedPatterns.push({ message: pick(messages.napLater, 3), iconType: 'nap' });
       }
     }
 
@@ -304,10 +311,10 @@ export const DailyReassurance = ({
     if (todayNapDurations.length > 0 && recentNapDurations.length >= 5) {
       const firstNap = todayNapDurations[0];
       if (firstNap < avgRecentNapDuration * 0.7 && firstNap < 50) {
-        detectedPatterns.push({ message: pick(messages.napShorter), iconType: 'nap' });
+        detectedPatterns.push({ message: pick(messages.napShorter, 4), iconType: 'nap' });
       }
       if (firstNap > avgRecentNapDuration * 1.3) {
-        detectedPatterns.push({ message: pick(messages.napLonger), iconType: 'nap' });
+        detectedPatterns.push({ message: pick(messages.napLonger, 5), iconType: 'nap' });
       }
     }
 
@@ -318,48 +325,49 @@ export const DailyReassurance = ({
       const avgRecentFirstFeed = recentFirstFeedTimes.reduce((sum, t) => sum + t, 0) / recentFirstFeedTimes.length;
       
       if (firstFeedTodayMins < avgRecentFirstFeed - 45) {
-        detectedPatterns.push({ message: pick(messages.feedEarlier), iconType: 'feed' });
+        detectedPatterns.push({ message: pick(messages.feedEarlier, 6), iconType: 'feed' });
       }
       if (firstFeedTodayMins > avgRecentFirstFeed + 45) {
-        detectedPatterns.push({ message: pick(messages.feedLater), iconType: 'feed' });
+        detectedPatterns.push({ message: pick(messages.feedLater, 7), iconType: 'feed' });
       }
     }
 
     // Check for heavier feeds
     if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume > recentTotalVolume * 1.25) {
-      detectedPatterns.push({ message: pick(messages.feedsHeavier), iconType: 'feed' });
+      detectedPatterns.push({ message: pick(messages.feedsHeavier, 8), iconType: 'feed' });
     }
 
     // Check for lighter feeds
     if (todayFeeds.length >= 2 && dailyVolumes.length >= 3 && todayTotalVolume < recentTotalVolume * 0.7) {
-      detectedPatterns.push({ message: pick(messages.feedsLighter), iconType: 'feed' });
+      detectedPatterns.push({ message: pick(messages.feedsLighter, 9), iconType: 'feed' });
     }
 
     // Check wake windows longer
     if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow > avgRecentWakeWindow * 1.25) {
-      detectedPatterns.push({ message: pick(messages.wakeWindowsLonger), iconType: 'wake' });
+      detectedPatterns.push({ message: pick(messages.wakeWindowsLonger, 10), iconType: 'wake' });
     }
 
     // Check wake windows shorter
     if (todayWakeWindows.length >= 1 && recentWakeWindows.length >= 3 && avgTodayWakeWindow < avgRecentWakeWindow * 0.75) {
-      detectedPatterns.push({ message: pick(messages.wakeWindowsShorter), iconType: 'wake' });
+      detectedPatterns.push({ message: pick(messages.wakeWindowsShorter, 11), iconType: 'wake' });
     }
 
     // Check all naps shorter
     if (todayNapDurations.length >= 2 && recentNapDurations.length >= 5 && avgTodayNapDuration < avgRecentNapDuration * 0.75) {
-      detectedPatterns.push({ message: pick(messages.napShorter), iconType: 'nap' });
+      detectedPatterns.push({ message: pick(messages.napShorter, 12), iconType: 'nap' });
     }
 
     // Check growth spurt pattern (more feeds + longer naps)
     if (todayFeeds.length >= recentFeeds.length / 7 * 1.4 && 
         todayNapDurations.length > 0 && 
         avgTodayNapDuration > avgRecentNapDuration * 1.15) {
-      detectedPatterns.push({ message: pick(messages.growthSpurt), iconType: 'feed' });
+      detectedPatterns.push({ message: pick(messages.growthSpurt, 13), iconType: 'feed' });
     }
 
-    // If we found any patterns, randomly select one
+    // If we found any patterns, select one using stable random
     if (detectedPatterns.length > 0) {
-      return detectedPatterns[Math.floor(Math.random() * detectedPatterns.length)];
+      const patternIndex = Math.floor(stableRandom(99) * detectedPatterns.length);
+      return detectedPatterns[patternIndex];
     }
 
     // Check schedule alignment (everything within normal ranges)
@@ -370,12 +378,12 @@ export const DailyReassurance = ({
       Math.abs(todayTotalVolume - recentTotalVolume) / recentTotalVolume < 0.2;
 
     if (napAligned && feedAligned) {
-      return { message: pick(messages.aligned), iconType: 'sparkles' as const };
+      return { message: pick(messages.aligned, 14), iconType: 'sparkles' as const };
     }
 
     // Default fallback
     if (todayNaps.length > 0 || todayFeeds.length > 0) {
-      return { message: pick(messages.fallback), iconType: 'sparkles' as const };
+      return { message: pick(messages.fallback, 15), iconType: 'sparkles' as const };
     }
 
     return { message: `Start logging to see how today unfolds.`, iconType: 'sparkles' as const };
