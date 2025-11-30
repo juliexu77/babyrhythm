@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Gem, Sparkles, MessageCircle, Puzzle, Utensils, Moon, X } from "lucide-react";
+import { Gem, Sparkles, MessageCircle, Puzzle, Lightbulb, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Drawer,
@@ -9,45 +9,12 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { getMilestonesForAge } from "@/data/developmentalMilestones";
 
 interface DevelopmentalMilestonesProps {
   babyBirthday?: string;
   babyName?: string;
 }
-
-// Placeholder milestone data structure - content to be provided by user
-interface MilestoneSet {
-  emergingSkills: string[];
-  communication: string[];
-  playCuriosity: string[];
-  feeding?: string[];
-  rhythmChanges?: string[];
-}
-
-// Will be populated with real content
-const getMilestonesForAge = (ageInWeeks: number): MilestoneSet => {
-  // Placeholder content - user will provide real milestones by age
-  return {
-    emergingSkills: [
-      "Developing new motor skills typical for this age",
-      "Growing stronger each day"
-    ],
-    communication: [
-      "Finding new ways to express themselves",
-      "Responding to familiar voices"
-    ],
-    playCuriosity: [
-      "Exploring the world with curiosity",
-      "Discovering cause and effect"
-    ],
-    feeding: [
-      "Feeding patterns evolving naturally"
-    ],
-    rhythmChanges: [
-      "Sleep rhythms adjusting as they grow"
-    ]
-  };
-};
 
 const getAgeLabel = (ageInWeeks: number): string => {
   if (ageInWeeks < 4) return `${ageInWeeks} week${ageInWeeks !== 1 ? 's' : ''}`;
@@ -61,7 +28,6 @@ const getAgeLabel = (ageInWeeks: number): string => {
 export const DevelopmentalMilestones = ({ babyBirthday, babyName }: DevelopmentalMilestonesProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Calculate age in weeks
   const getAgeInWeeks = (): number => {
     if (!babyBirthday) return 0;
     const birthDate = new Date(babyBirthday);
@@ -75,7 +41,7 @@ export const DevelopmentalMilestones = ({ babyBirthday, babyName }: Developmenta
   const ageLabel = getAgeLabel(ageInWeeks);
   const milestones = getMilestonesForAge(ageInWeeks);
 
-  if (!babyBirthday) return null;
+  if (!babyBirthday || !milestones) return null;
 
   return (
     <>
@@ -151,44 +117,23 @@ export const DevelopmentalMilestones = ({ babyBirthday, babyName }: Developmenta
               </ul>
             </div>
 
-            {/* Feeding (if present) */}
-            {milestones.feeding && milestones.feeding.length > 0 && (
+            {/* Tribal Tip (if present) */}
+            {milestones.tribalTip && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Utensils className="w-4 h-4 text-orange-500" />
-                  <h3 className="font-medium text-sm text-foreground">Feeding</h3>
+                  <Lightbulb className="w-4 h-4 text-yellow-500" />
+                  <h3 className="font-medium text-sm text-foreground">Good to Know</h3>
                 </div>
-                <ul className="space-y-1.5 pl-6">
-                  {milestones.feeding.map((item, i) => (
-                    <li key={i} className="text-sm text-muted-foreground leading-relaxed">
-                      • {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Rhythm Changes (if present) */}
-            {milestones.rhythmChanges && milestones.rhythmChanges.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Moon className="w-4 h-4 text-indigo-500" />
-                  <h3 className="font-medium text-sm text-foreground">Rhythm Changes</h3>
-                </div>
-                <ul className="space-y-1.5 pl-6">
-                  {milestones.rhythmChanges.map((item, i) => (
-                    <li key={i} className="text-sm text-muted-foreground leading-relaxed">
-                      • {item}
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-sm text-muted-foreground leading-relaxed pl-6">
+                  {milestones.tribalTip}
+                </p>
               </div>
             )}
 
             {/* Reassurance footer */}
             <div className="pt-4 border-t border-border/40">
               <p className="text-xs text-muted-foreground/80 text-center italic leading-relaxed">
-                All of these can appear anytime across several weeks — timing varies widely.
+                {milestones.reminder || "All of these can appear anytime across several weeks — timing varies widely."}
               </p>
             </div>
           </div>
