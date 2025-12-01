@@ -643,7 +643,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         )}
         <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col [&>button[data-state]]:hidden">{/* Hide close button */}
           <DialogHeader className="pb-4 flex-shrink-0">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <DialogTitle className="font-serif text-xl font-medium">
                 {editingActivity ? t('editActivity') : 'Log Activity'}
               </DialogTitle>
@@ -653,9 +653,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowVoiceRecorder(true)}
-                  className="h-9 w-9"
+                  className="h-8 w-8"
                 >
-                  <Mic className="h-5 w-5" />
+                  <Mic className="h-4 w-4 text-muted-foreground" />
                 </Button>
               )}
             </div>
