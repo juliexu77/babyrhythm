@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
-import { MinuteScrollPicker } from "./MinuteScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
 import { Plus, Milk, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Utensils, MoreVertical, Trash2, Ruler, Mic, Thermometer } from "lucide-react";
@@ -765,16 +764,30 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 {feedType === "nursing" && (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
-                      <MinuteScrollPicker
-                        value={minutesLeft}
-                        onChange={setMinutesLeft}
-                        label={t('leftSide')}
-                      />
-                      <MinuteScrollPicker
-                        value={minutesRight}
-                        onChange={setMinutesRight}
-                        label={t('rightSide')}
-                      />
+                      <div className="space-y-2">
+                        <Label>{t('leftSide')}</Label>
+                        <Input
+                          type="number"
+                          inputMode="numeric"
+                          placeholder="0"
+                          value={minutesLeft}
+                          onChange={(e) => setMinutesLeft(e.target.value)}
+                          className="text-center text-lg font-semibold"
+                        />
+                        <p className="text-xs text-muted-foreground text-center">minutes</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{t('rightSide')}</Label>
+                        <Input
+                          type="number"
+                          inputMode="numeric"
+                          placeholder="0"
+                          value={minutesRight}
+                          onChange={(e) => setMinutesRight(e.target.value)}
+                          className="text-center text-lg font-semibold"
+                        />
+                        <p className="text-xs text-muted-foreground text-center">minutes</p>
+                      </div>
                     </div>
                   </div>
                 )}
