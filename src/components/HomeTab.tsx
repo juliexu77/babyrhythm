@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer } from "lucide-react";
+import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RhythmArc } from "@/components/home/RhythmArc";
@@ -188,17 +188,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       setShowOnboarding(true);
     }
   }, [activities.length]);
-  
-  // Offer prefill after celebration closes
-  useEffect(() => {
-    const hasShownPrefill = localStorage.getItem('prefill_offered') === 'true';
-    const hasShownCelebration = localStorage.getItem('first_activity_celebrated') === 'true';
-    
-    if (!hasShownPrefill && hasShownCelebration && activities.length >= 1 && !showFirstActivityCelebration) {
-      setShowPrefillModal(true);
-      localStorage.setItem('prefill_offered', 'true');
-    }
-  }, [showFirstActivityCelebration, activities.length]);
 
   // P4: Pulse Rhythm tab after first nap
   useEffect(() => {
@@ -1289,7 +1278,7 @@ const lastDiaper = displayActivities
                 </div>
               </div>
               
-              <div className="pt-3 border-t border-border/20">
+              <div className="pt-3 border-t border-border/20 space-y-2">
                 <Button
                   onClick={() => onAddActivity()}
                   variant="default"
@@ -1298,6 +1287,15 @@ const lastDiaper = displayActivities
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Log first activity
+                </Button>
+                <Button
+                  onClick={() => setShowPrefillModal(true)}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Quick start with sample day
                 </Button>
               </div>
             </div>
