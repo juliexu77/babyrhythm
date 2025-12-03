@@ -207,13 +207,20 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (!effectiveBabyBirthday) return null;
     const birthDate = new Date(effectiveBabyBirthday);
     const today = new Date();
-    const totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
-                        (today.getMonth() - birthDate.getMonth());
+    
+    let totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                      (today.getMonth() - birthDate.getMonth());
+    
+    // If today's date is before the birth day in the current month, subtract 1 month
+    if (today.getDate() < birthDate.getDate()) {
+      totalMonths -= 1;
+    }
+    
     const months = Math.max(0, totalMonths);
     
-    // Calculate remaining weeks
+    // Calculate remaining weeks from the last "month-iversary"
     const monthsDate = new Date(birthDate);
-    monthsDate.setMonth(monthsDate.getMonth() + totalMonths);
+    monthsDate.setMonth(monthsDate.getMonth() + months);
     const daysDiff = Math.floor((today.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
     const weeks = Math.floor(daysDiff / 7);
     
