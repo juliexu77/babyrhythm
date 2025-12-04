@@ -65,55 +65,60 @@ export const FeedFrequency = ({ activities }: FeedFrequencyProps) => {
   const segmentDuration = feedData.isCurrentlyNight ? feedData.nightDuration : feedData.dayDuration;
   
   return (
-    <div className="w-full px-1 py-3">
-      {/* Single timeline that adapts to time of day */}
-      <div className="relative">
-        {/* Quiet horizontal line */}
-        <div className="relative h-[2px] w-full bg-border/30">
-          {currentFeeds.map((feedTime, idx) => {
-            let position;
-            if (feedData.isCurrentlyNight) {
-              // For night feeds, calculate position within night window
-              let relativeTime = feedTime;
-              if (feedTime >= feedData.nightStart) {
-                relativeTime = feedTime - feedData.nightStart;
+    <div className="w-full px-4 py-3">
+      {/* Scrollable container - scroll right to see earlier times */}
+      <div 
+        className="overflow-x-auto scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <div className="relative min-w-[500px]">
+          {/* Quiet horizontal line */}
+          <div className="relative h-[2px] w-full bg-border/30">
+            {currentFeeds.map((feedTime, idx) => {
+              let position;
+              if (feedData.isCurrentlyNight) {
+                // For night feeds, calculate position within night window
+                let relativeTime = feedTime;
+                if (feedTime >= feedData.nightStart) {
+                  relativeTime = feedTime - feedData.nightStart;
+                } else {
+                  relativeTime = feedTime + (24 * 60 - feedData.nightStart);
+                }
+                position = (relativeTime / feedData.nightDuration) * 100;
               } else {
-                relativeTime = feedTime + (24 * 60 - feedData.nightStart);
+                position = getPositionPercent(feedTime, feedData.morningStart, feedData.dayDuration);
               }
-              position = (relativeTime / feedData.nightDuration) * 100;
-            } else {
-              position = getPositionPercent(feedTime, feedData.morningStart, feedData.dayDuration);
-            }
-            
-            return (
-              <div
-                key={`feed-${idx}`}
-                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
-                style={{ left: `${position}%` }}
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-foreground/60" />
-              </div>
-            );
-          })}
-        </div>
-        
-        {/* Subtle time labels */}
-        <div className="flex items-center justify-between mt-1.5 text-[10px] text-muted-foreground/60">
-          <span>
-            {feedData.isCurrentlyNight 
-              ? format(new Date().setHours(feedData.nightStart / 60, 0), 'h a')
-              : format(new Date().setHours(feedData.morningStart / 60, 0), 'h a')
-            }
-          </span>
-          <span className="font-medium text-foreground/40">
-            {feedData.totalFeeds} {feedData.totalFeeds === 1 ? 'feed' : 'feeds'}
-          </span>
-          <span>
-            {feedData.isCurrentlyNight 
-              ? format(new Date().setHours(feedData.morningStart / 60, 0), 'h a')
-              : format(new Date().setHours(feedData.nightStart / 60, 0), 'h a')
-            }
-          </span>
+              
+              return (
+                <div
+                  key={`feed-${idx}`}
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
+                  style={{ left: `${position}%` }}
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-foreground/60" />
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Subtle time labels */}
+          <div className="flex items-center justify-between mt-1.5 text-[10px] text-muted-foreground/60">
+            <span>
+              {feedData.isCurrentlyNight 
+                ? format(new Date().setHours(feedData.nightStart / 60, 0), 'h a')
+                : format(new Date().setHours(feedData.morningStart / 60, 0), 'h a')
+              }
+            </span>
+            <span className="font-medium text-foreground/40">
+              {feedData.totalFeeds} {feedData.totalFeeds === 1 ? 'feed' : 'feeds'}
+            </span>
+            <span>
+              {feedData.isCurrentlyNight 
+                ? format(new Date().setHours(feedData.morningStart / 60, 0), 'h a')
+                : format(new Date().setHours(feedData.nightStart / 60, 0), 'h a')
+              }
+            </span>
+          </div>
         </div>
       </div>
     </div>
