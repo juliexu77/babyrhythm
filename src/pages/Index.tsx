@@ -500,6 +500,71 @@ const ongoingNap = (() => {
     }
   }, [user]);
 
+  // Auto-log wake up if enabled and it's past wake time
+  useEffect(() => {
+    const checkAutoLogWake = async () => {
+      // Need user profile and activities loaded
+      if (!userProfile || !activities.length || !household?.id || !user) return;
+      
+      const profile = userProfile as any;
+      
+      // Check if auto-log is enabled
+      if (!profile.auto_log_wake_enabled) return;
+      
+      // Get wake time from profile (default 7:00 AM)
+      const wakeHour = profile.night_sleep_end_hour ?? 7;
+      const wakeMinute = profile.night_sleep_end_minute ?? 0;
+      
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      // Check if it's past wake time today
+      const isPastWakeTime = currentHour > wakeHour || (currentHour === wakeHour && currentMinute >= wakeMinute);
+      if (!isPastWakeTime) return;
+      
+      // Find ongoing night sleep from today or yesterday
+      const ongoingNightSleep = activities.find(a => {
+        if (a.type !== 'nap' || a.details?.endTime) return false;
+        return a.details?.isNightSleep === true;
+      });
+      
+      if (!ongoingNightSleep) return;
+      
+      // Check if we've already auto-logged today (prevent duplicate auto-logs)
+      const autoLogKey = `auto_wake_logged_${household.id}_${now.toDateString()}`;
+      if (localStorage.getItem(autoLogKey)) return;
+      
+      // Format wake time for display
+      const wakeTimeFormatted = `${wakeHour > 12 ? wakeHour - 12 : wakeHour || 12}:${wakeMinute.toString().padStart(2, '0')} ${wakeHour >= 12 ? 'PM' : 'AM'}`;
+      
+      // Update the ongoing nap with end time in details
+      try {
+        await hookUpdateActivity(ongoingNightSleep.id, {
+          details: {
+            ...ongoingNightSleep.details,
+            endTime: wakeTimeFormatted,
+            autoLogged: true
+          }
+        } as any);
+        
+        // Mark as auto-logged today
+        localStorage.setItem(autoLogKey, 'true');
+        
+        toast({
+          title: "Good morning! ☀️",
+          description: `Auto-logged wake up at ${wakeTimeFormatted}`,
+        });
+        
+        console.log('✅ Auto-logged wake up at', wakeTimeFormatted);
+      } catch (error) {
+        console.error('Failed to auto-log wake:', error);
+      }
+    };
+    
+    checkAutoLogWake();
+  }, [userProfile, activities, household?.id, user, hookUpdateActivity, toast]);
+
   const handleProfileComplete = async () => {
     // Not needed anymore - household auto-created on login
     window.location.reload();
