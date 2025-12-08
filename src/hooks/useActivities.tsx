@@ -277,11 +277,11 @@ export function useActivities() {
     }
 
     try {
+      // RLS handles permissions - any household member can update
       const { data, error } = await supabase
         .from('activities')
         .update(updates)
         .eq('id', activityId)
-        .eq('created_by', user.id) // Only allow updating own activities
         .select()
         .single();
 

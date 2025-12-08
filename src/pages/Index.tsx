@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
@@ -501,8 +501,19 @@ const ongoingNap = (() => {
   }, [user]);
 
   // Auto-log wake up if enabled and it's past wake time
+  // Using a ref to track if we've already attempted to avoid infinite loops
+  const autoLogAttemptedRef = useRef(false);
+  
+  useEffect(() => {
+    // Reset the ref when household changes
+    autoLogAttemptedRef.current = false;
+  }, [household?.id]);
+  
   useEffect(() => {
     const checkAutoLogWake = async () => {
+      // Only attempt once per session to avoid loops
+      if (autoLogAttemptedRef.current) return;
+      
       // Need user profile and activities loaded
       if (!userProfile || !activities.length || !household?.id || !user) return;
       
@@ -534,6 +545,9 @@ const ongoingNap = (() => {
       // Check if we've already auto-logged today (prevent duplicate auto-logs)
       const autoLogKey = `auto_wake_logged_${household.id}_${now.toDateString()}`;
       if (localStorage.getItem(autoLogKey)) return;
+      
+      // Mark as attempted immediately to prevent re-runs
+      autoLogAttemptedRef.current = true;
       
       // Format wake time for display
       const wakeTimeFormatted = `${wakeHour > 12 ? wakeHour - 12 : wakeHour || 12}:${wakeMinute.toString().padStart(2, '0')} ${wakeHour >= 12 ? 'PM' : 'AM'}`;
