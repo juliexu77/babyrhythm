@@ -3,9 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RhythmArc } from "@/components/home/RhythmArc";
 import { FeedFrequency } from "@/components/home/FeedFrequency";
-import { useRhythmArc } from "@/hooks/useRhythmArc";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
@@ -93,14 +91,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     smartSuggestions
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
-  // Rhythm arc data
-  const rhythmArcData = useRhythmArc({
-    activities,
-    ongoingNap: passedOngoingNap,
-    nightSleepStartHour,
-    nightSleepEndHour,
-    babyBirthday: effectiveBabyBirthday,
-  });
 
   // Missed activity detection
   const missedActivitySuggestion = useMissedActivityDetection(
@@ -1415,9 +1405,6 @@ const lastDiaper = displayActivities
             </div>
           </div>
         )}
-
-        {/* Rhythm Arc */}
-        <RhythmArc {...rhythmArcData} />
 
         {/* Feed Frequency */}
         <div className="mt-4">
