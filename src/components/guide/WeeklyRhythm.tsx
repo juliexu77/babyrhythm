@@ -182,7 +182,10 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
             <div className="space-y-2.5">
               {weekData.map((day, dayIndex) => {
                 const isToday = dayIndex === 0;
-                const dayLabel = isToday ? 'Today' : format(new Date(day.date), 'EEE');
+                // Parse date safely - day.date is in yyyy-MM-dd format
+                const [year, month, dayNum] = day.date.split('-').map(Number);
+                const parsedDate = new Date(year, month - 1, dayNum);
+                const dayLabel = isToday ? 'Today' : format(parsedDate, 'EEE');
                 const hasNaps = day.naps.length > 0;
                 
                 return (
