@@ -11,7 +11,8 @@ import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
-import { NextNeedHero } from "@/components/home/NextNeedHero";
+import { QuickLogBar } from "@/components/home/QuickLogBar";
+import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { SmartQuickActions } from "@/components/home/SmartQuickActions";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
@@ -32,7 +33,6 @@ import { FirstActivityCelebration } from "@/components/FirstActivityCelebration"
 import { PrefillDayModal } from "@/components/PrefillDayModal";
 
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
-import { DailyReassurance } from "@/components/home/DailyReassurance";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { generateAdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -1383,6 +1383,54 @@ const lastDiaper = displayActivities
     <div className="pb-24">
       <div className="pt-2 space-y-6">
 
+        {/* Quick Log Bar - at very top */}
+        <QuickLogBar
+          onLogActivity={async (type, time) => {
+            setIsQuickLogging(true);
+            try {
+              if (type === 'nap') {
+                await addActivity?.('nap', { startTime: time }, new Date(), time);
+                toast({ title: "Nap started", description: `Started at ${time}` });
+              } else if (type === 'feed') {
+                const recentFeed = activities
+                  .filter(a => a.type === 'feed' && a.details?.quantity)
+                  .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
+                
+                const feedDetails: any = {};
+                if (recentFeed?.details?.quantity) {
+                  feedDetails.quantity = recentFeed.details.quantity;
+                  if (recentFeed.details.unit) feedDetails.unit = recentFeed.details.unit;
+                  if (recentFeed.details.feedType) feedDetails.feedType = recentFeed.details.feedType;
+                }
+                
+                await addActivity?.('feed', feedDetails, new Date(), time);
+                const amountText = feedDetails.quantity ? ` (${feedDetails.quantity}${feedDetails.unit || 'ml'})` : '';
+                toast({ title: "Feeding logged", description: `Logged at ${time}${amountText}` });
+              } else if (type === 'diaper') {
+                await addActivity?.('diaper', {}, new Date(), time);
+                toast({ title: "Diaper change logged", description: `Logged at ${time}` });
+              }
+            } catch (error) {
+              toast({ 
+                title: "Error", 
+                description: "Could not log activity", 
+                variant: "destructive" 
+              });
+            } finally {
+              setIsQuickLogging(false);
+            }
+          }}
+          isLoading={isQuickLogging}
+        />
+
+        {/* Weekly Rhythm - nap bars visualization */}
+        {activities.length > 0 && (
+          <WeeklyRhythm 
+            activities={activities}
+            babyName={babyName || 'Baby'}
+          />
+        )}
+
         {/* Baby Info - Centered above arc */}
         {babyName && babyAge && (
           <div className="px-4 pb-0 pt-1">
@@ -1567,24 +1615,6 @@ const lastDiaper = displayActivities
             </div>
         )}
 
-        {/* Daily Reassurance */}
-        <DailyReassurance
-          activities={activities}
-          babyName={babyName || 'Baby'}
-          nightSleepStartHour={nightSleepStartHour}
-          nightSleepEndHour={nightSleepEndHour}
-        />
-
-        {/* Zone 1: Next Need Hero */}
-        <NextNeedHero
-          babyName={babyName || 'Baby'}
-          babyAge={babyAgeInWeeks}
-          currentActivity={currentActivity}
-          nextPrediction={nextPrediction}
-          onLogActivity={onAddActivity}
-          onWakeUp={onEndNap}
-          ageBasedWakeWindow="2–2.5 hours"
-        />
 
         {/* Zone 2: Smart Quick Actions */}
           <SmartQuickActions
