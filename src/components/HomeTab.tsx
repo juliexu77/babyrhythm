@@ -1383,7 +1383,30 @@ const lastDiaper = displayActivities
     <div className="pb-24">
       <div className="pt-2 space-y-6">
 
-        {/* Quick Log Bar - at very top */}
+        {/* Baby Info - at very top */}
+        {babyName && babyAge && (
+          <div className="px-4 pb-0 pt-1">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-row items-center justify-center gap-2 text-sm">
+                <h2 className="font-serif font-semibold text-foreground">
+                  {babyName}
+                </h2>
+                <HeartPulse className="w-3 h-3 text-muted-foreground/50" />
+                <p className="text-muted-foreground text-xs font-sans">
+                  {babyAge.months > 0 && `${babyAge.months} ${babyAge.months === 1 ? 'month' : 'months'}`}
+                  {babyAge.months > 0 && babyAge.weeks > 0 && ', '}
+                  {babyAge.weeks > 0 && `${babyAge.weeks} ${babyAge.weeks === 1 ? 'week' : 'weeks'}`}
+                </p>
+              </div>
+              <DevelopmentalMilestones 
+                babyBirthday={effectiveBabyBirthday} 
+                babyName={babyName}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Quick Log Bar */}
         <QuickLogBar
           onLogActivity={async (type, time) => {
             setIsQuickLogging(true);
@@ -1429,29 +1452,6 @@ const lastDiaper = displayActivities
             activities={activities}
             babyName={babyName || 'Baby'}
           />
-        )}
-
-        {/* Baby Info - Centered above arc */}
-        {babyName && babyAge && (
-          <div className="px-4 pb-0 pt-1">
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex flex-row items-center justify-center gap-2 text-sm">
-                <h2 className="font-serif font-semibold text-foreground">
-                  {babyName}
-                </h2>
-                <HeartPulse className="w-3 h-3 text-muted-foreground/50" />
-                <p className="text-muted-foreground text-xs font-sans">
-                  {babyAge.months > 0 && `${babyAge.months} ${babyAge.months === 1 ? 'month' : 'months'}`}
-                  {babyAge.months > 0 && babyAge.weeks > 0 && ', '}
-                  {babyAge.weeks > 0 && `${babyAge.weeks} ${babyAge.weeks === 1 ? 'week' : 'weeks'}`}
-                </p>
-              </div>
-              <DevelopmentalMilestones 
-                babyBirthday={effectiveBabyBirthday} 
-                babyName={babyName}
-              />
-            </div>
-          </div>
         )}
 
         {/* Feed Frequency */}
@@ -1616,50 +1616,6 @@ const lastDiaper = displayActivities
         )}
 
 
-        {/* Zone 2: Smart Quick Actions */}
-          <SmartQuickActions
-            suggestions={smartSuggestions}
-            onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
-            activities={activities}
-            addActivity={addActivity}
-            onQuickLog={async (type, time) => {
-              setIsQuickLogging(true);
-              try {
-                if (type === 'nap') {
-                  await addActivity?.('nap', { startTime: time }, new Date(), time);
-                  toast({ title: "Nap started", description: `Started at ${time}` });
-                } else if (type === 'feed') {
-                  // Get most recent feed with quantity to auto-populate
-                  const recentFeed = activities
-                    .filter(a => a.type === 'feed' && a.details?.quantity)
-                    .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
-                  
-                  const feedDetails: any = {};
-                  if (recentFeed?.details?.quantity) {
-                    feedDetails.quantity = recentFeed.details.quantity;
-                    if (recentFeed.details.unit) feedDetails.unit = recentFeed.details.unit;
-                    if (recentFeed.details.feedType) feedDetails.feedType = recentFeed.details.feedType;
-                  }
-                  
-                  await addActivity?.('feed', feedDetails, new Date(), time);
-                  const amountText = feedDetails.quantity ? ` (${feedDetails.quantity}${feedDetails.unit || 'ml'})` : '';
-                  toast({ title: "Feeding logged", description: `Logged at ${time}${amountText}` });
-                } else if (type === 'diaper') {
-                  await addActivity?.('diaper', {}, new Date(), time);
-                  toast({ title: "Diaper change logged", description: `Logged at ${time}` });
-                }
-              } catch (error) {
-                toast({ 
-                  title: "Error", 
-                  description: "Could not log activity", 
-                  variant: "destructive" 
-                });
-              } finally {
-                setIsQuickLogging(false);
-              }
-            }}
-            isQuickLogging={isQuickLogging}
-          />
 
         {/* Today's Story - moved to bottom */}
         <DailyStoryCircles
