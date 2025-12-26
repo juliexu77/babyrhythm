@@ -221,9 +221,27 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
               {weekData.map((day, dayIndex) => {
                 const isToday = dayIndex === 0;
                 // Parse date safely - day.date is in yyyy-MM-dd format
-                const [year, month, dayNum] = day.date.split('-').map(Number);
-                const parsedDate = new Date(year, month - 1, dayNum);
-                const dayLabel = isToday ? 'Today' : format(parsedDate, 'EEE');
+                let dayLabel = 'Day';
+                try {
+                  if (isToday) {
+                    dayLabel = 'Today';
+                  } else if (day.date && typeof day.date === 'string' && day.date.includes('-')) {
+                    const parts = day.date.split('-');
+                    if (parts.length === 3) {
+                      const year = parseInt(parts[0], 10);
+                      const month = parseInt(parts[1], 10);
+                      const dayNum = parseInt(parts[2], 10);
+                      if (!isNaN(year) && !isNaN(month) && !isNaN(dayNum)) {
+                        const parsedDate = new Date(year, month - 1, dayNum);
+                        if (!isNaN(parsedDate.getTime())) {
+                          dayLabel = format(parsedDate, 'EEE');
+                        }
+                      }
+                    }
+                  }
+                } catch {
+                  dayLabel = isToday ? 'Today' : 'Day';
+                }
                 const hasNaps = day.naps.length > 0;
                 
                 return (
