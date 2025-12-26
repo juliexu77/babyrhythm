@@ -38,7 +38,7 @@ import { generateAdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiv
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { OnboardingTutorial } from "@/components/onboarding/OnboardingTutorial";
 import { ChevronDown } from "lucide-react";
-import { DevelopmentalMilestones } from "@/components/home/DevelopmentalMilestones";
+
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -1398,10 +1398,6 @@ const lastDiaper = displayActivities
                   {babyAge.weeks > 0 && `${babyAge.weeks} ${babyAge.weeks === 1 ? 'week' : 'weeks'}`}
                 </p>
               </div>
-              <DevelopmentalMilestones 
-                babyBirthday={effectiveBabyBirthday} 
-                babyName={babyName}
-              />
             </div>
           </div>
         )}
