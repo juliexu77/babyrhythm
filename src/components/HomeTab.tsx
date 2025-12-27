@@ -13,7 +13,7 @@ import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { QuickLogBar } from "@/components/home/QuickLogBar";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
-import { SmartQuickActions } from "@/components/home/SmartQuickActions";
+import { RightNowStatus } from "@/components/home/RightNowStatus";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 
@@ -1449,6 +1449,24 @@ const lastDiaper = displayActivities
             babyName={babyName || 'Baby'}
           />
         )}
+
+        {/* Right Now / What's Next Status */}
+        <RightNowStatus
+          currentActivity={currentActivity}
+          nextPrediction={nextPrediction}
+          onWokeEarly={() => onEndNap?.()}
+          onStillAsleep={() => {}}
+          onStartNap={() => onAddActivity('nap')}
+          onEndFeed={() => {}}
+          babyName={babyName || 'Baby'}
+          babyAge={babyAgeMonths}
+          activities={activities}
+          suggestions={smartSuggestions}
+          onAddFeed={() => onAddActivity('feed')}
+          onLogPrediction={(type) => onAddActivity(type)}
+          nightSleepStartHour={nightSleepStartHour}
+          nightSleepEndHour={nightSleepEndHour}
+        />
 
         {/* Feed Frequency */}
         <div className="mt-4">
