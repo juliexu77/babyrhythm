@@ -1485,6 +1485,24 @@ const lastDiaper = displayActivities
             </div>
         )}
 
+        {/* Right Now / What's Next Status */}
+        <RightNowStatus
+          currentActivity={currentActivity}
+          nextPrediction={nextPrediction}
+          onWokeEarly={() => onEndNap?.()}
+          onStillAsleep={() => {}}
+          onStartNap={() => onAddActivity('nap')}
+          onEndFeed={() => {}}
+          babyName={babyName || 'Baby'}
+          babyAge={babyAgeMonths}
+          activities={activities}
+          suggestions={smartSuggestions}
+          onAddFeed={() => onAddActivity('feed')}
+          onLogPrediction={(type) => onAddActivity(type)}
+          nightSleepStartHour={nightSleepStartHour}
+          nightSleepEndHour={nightSleepEndHour}
+        />
+
         {/* Quick Log Bar */}
         <QuickLogBar
           onLogActivity={async (type, time) => {
@@ -1532,24 +1550,6 @@ const lastDiaper = displayActivities
             babyName={babyName || 'Baby'}
           />
         )}
-
-        {/* Right Now / What's Next Status */}
-        <RightNowStatus
-          currentActivity={currentActivity}
-          nextPrediction={nextPrediction}
-          onWokeEarly={() => onEndNap?.()}
-          onStillAsleep={() => {}}
-          onStartNap={() => onAddActivity('nap')}
-          onEndFeed={() => {}}
-          babyName={babyName || 'Baby'}
-          babyAge={babyAgeMonths}
-          activities={activities}
-          suggestions={smartSuggestions}
-          onAddFeed={() => onAddActivity('feed')}
-          onLogPrediction={(type) => onAddActivity(type)}
-          nightSleepStartHour={nightSleepStartHour}
-          nightSleepEndHour={nightSleepEndHour}
-        />
 
         {/* Feed Frequency */}
         <div className="mt-4">
