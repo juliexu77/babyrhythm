@@ -22,7 +22,6 @@ import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generateAdaptiveSchedule, type AdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
-import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { GrowthIndicators } from "@/components/home/GrowthIndicators";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
@@ -1359,13 +1358,6 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
                 />
               )}
               
-              {/* This Week's Rhythm - Nap Barcode Visualization */}
-              {activities.length > 0 && (
-                <WeeklyRhythm 
-                  activities={activities}
-                  babyName={babyName}
-                />
-              )}
             </>
           )}
 
