@@ -22,9 +22,10 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { useTravelDays } from "@/hooks/useTravelDays";
 import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, User, Undo2, Filter, Share, X, Sun, Bell, Settings } from "lucide-react";
+import { Calendar, User, Undo2, Filter, Share, X, Sun, Bell, Settings, Plane } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { 
@@ -62,6 +63,7 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { trackCreate, trackUpdate, trackDelete, undo, canUndo, undoCount } = useActivityUndo();
+  const { travelDayDates, isTravelDay, toggleTravelDay } = useTravelDays();
   const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
   const [hasEverBeenCollaborator, setHasEverBeenCollaborator] = useState<boolean | null>(null);
@@ -777,7 +779,7 @@ const ongoingNap = (() => {
           percentile={percentile}
         />;
       case "trends":
-        return <TrendsTab activities={activities} />;
+        return <TrendsTab activities={activities} travelDayDates={travelDayDates} />;
       case "rhythm":
         return (
           <ErrorBoundary onRetry={() => setActiveTab("home")}>
@@ -944,11 +946,39 @@ const ongoingNap = (() => {
                             <div key={dateKey} className="mb-6">
                               {/* Day section with soft tonal block background - like warm paper */}
                               <div className="bg-[hsl(24,30%,91%)]/45 dark:bg-card/25 dusk:bg-card/40 rounded-xl px-3 py-3 -mx-1">
-                                {/* Date Header - softer clay with increased letter spacing */}
+                                {/* Date Header - tappable to mark as travel day */}
                                 <div className="flex items-center justify-between pb-2 pt-1">
-                                  <h3 className="text-xs font-serif font-medium text-[hsl(20,25%,48%)] dark:text-foreground/80 dusk:text-foreground/80 uppercase tracking-widest">
-                                    {displayDate}
-                                  </h3>
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const isNowTravel = await toggleTravelDay(dateKey);
+                                        toast({
+                                          title: isNowTravel ? "Marked as travel day" : "Removed travel day",
+                                          description: isNowTravel 
+                                            ? "This day will be excluded from trends and patterns" 
+                                            : "This day will now be included in analytics",
+                                        });
+                                      } catch (error) {
+                                        toast({
+                                          title: "Error",
+                                          description: "Could not update travel day status",
+                                          variant: "destructive"
+                                        });
+                                      }
+                                    }}
+                                    className="flex items-center gap-1.5 group"
+                                  >
+                                    <h3 className={`text-xs font-serif font-medium uppercase tracking-widest transition-colors ${
+                                      isTravelDay(dateKey) 
+                                        ? "text-primary dark:text-primary dusk:text-primary" 
+                                        : "text-[hsl(20,25%,48%)] dark:text-foreground/80 dusk:text-foreground/80 group-hover:text-primary/70"
+                                    }`}>
+                                      {displayDate}
+                                    </h3>
+                                    {isTravelDay(dateKey) && (
+                                      <Plane className="h-3 w-3 text-primary" />
+                                    )}
+                                  </button>
                                   
                   {/* Filter Button - Show on first date (today) */}
                   {index === 0 && (
