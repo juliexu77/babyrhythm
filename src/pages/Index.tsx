@@ -1107,8 +1107,8 @@ const ongoingNap = (() => {
                   )}
                                 </div>
                                 
-                                {/* Activities for this date - more breathing room */}
-                                <div className="relative space-y-2.5 pl-1">
+                                {/* Activities for this date - dense layout */}
+                                <div className="relative space-y-0 pl-1">
                                 {/* Continuous timeline line - warmed clay-rose */}
                                   <div className="absolute left-[20px] top-0 bottom-0 w-px bg-[hsl(18,25%,78%)] dark:bg-border/40 dusk:bg-border/40"></div>
                                   {(() => {

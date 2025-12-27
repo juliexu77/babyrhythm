@@ -259,7 +259,7 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   };
 
   return (
-    <div className="relative flex items-center py-0.5 group transition-colors">
+    <div className="relative flex items-center py-px group transition-colors">
       {/* Icon - warm clay stroke color, uses foreground for dark/dusk */}
       <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-[hsl(18,28%,52%)] dark:text-foreground/70 dusk:text-foreground/70" style={{ marginLeft: '8px' }}>
         {getActivityIcon(activity.type)}
