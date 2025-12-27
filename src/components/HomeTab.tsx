@@ -1402,6 +1402,89 @@ const lastDiaper = displayActivities
           </div>
         )}
 
+        {/* Missed Activity Prompt - at top of home */}
+        {missedActivitySuggestion && (
+            <div className="px-4">
+              <MissedActivityPrompt
+                suggestion={missedActivitySuggestion}
+                onAccept={async () => {
+                  const { activityType, subType, suggestedTime } = missedActivitySuggestion;
+                  
+                  // Store acceptance timestamp to prevent re-showing immediately
+                  const acceptKey = `accepted-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd-HH:mm')}`;
+                  localStorage.setItem(acceptKey, Date.now().toString());
+                  
+                  if (subType === 'morning-wake') {
+                    // For morning wake, end the ongoing night sleep with the suggested time
+                    if (ongoingNap && addActivity) {
+                      try {
+                        const { supabase } = await import('@/integrations/supabase/client');
+                        
+                        const { error } = await supabase
+                          .from('activities')
+                          .update({ details: { ...ongoingNap.details, endTime: suggestedTime } })
+                          .eq('id', ongoingNap.id);
+                        
+                        if (error) throw error;
+                        
+                        // Force a refetch by triggering activity list refresh
+                        window.dispatchEvent(new CustomEvent('refetch-activities'));
+                        
+                        toast({
+                          title: "Morning wake logged",
+                          description: `Woke up at ${suggestedTime}`,
+                        });
+                      } catch (error) {
+                        logError('End sleep', error);
+                        toast({
+                          title: "Error",
+                          description: "Could not log wake time",
+                          variant: "destructive"
+                        });
+                      }
+                    }
+                  } else {
+                    // For other activities, add them with suggested time but ensure correct fields
+                    if (activityType === 'nap') {
+                      // Bedtime/first-nap: create nap with startTime set to the suggested time
+                      await addActivity?.('nap', { startTime: suggestedTime }, new Date(), suggestedTime);
+                      toast({
+                        title: "Nap started",
+                        description: `Start time set to ${suggestedTime}`,
+                      });
+                    } else {
+                      // Feeds and others: rely on server to set logged_at from suggestedTime
+                      await addActivity?.(activityType, {}, new Date(), suggestedTime);
+                      toast({
+                        title: "Activity logged",
+                        description: `${activityType} recorded at ${suggestedTime}`,
+                      });
+                    }
+                  }
+                }}
+                onEdit={() => {
+                  const { activityType, subType } = missedActivitySuggestion;
+                  
+                  if (subType === 'morning-wake' && ongoingNap) {
+                    // For morning wake, open the edit modal for the ongoing nap
+                    onEditActivity(ongoingNap);
+                  } else {
+                    // For other activities, open the add activity modal
+                    onAddActivity?.(activityType);
+                  }
+                }}
+                onDismiss={() => {
+                  const { activityType, subType } = missedActivitySuggestion;
+                  const dismissalKey = `missed-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
+                  localStorage.setItem(dismissalKey, 'true');
+                  
+                  // Force re-render to hide the prompt
+                  window.dispatchEvent(new CustomEvent('refetch-activities'));
+                }}
+              />
+            </div>
+        )}
+
         {/* Quick Log Bar */}
         <QuickLogBar
           onLogActivity={async (type, time) => {
@@ -1546,88 +1629,6 @@ const lastDiaper = displayActivities
         />
 
 
-        {/* Missed Activity Prompt - Show above Right Now card */}
-        {missedActivitySuggestion && (
-            <div className="px-4">
-              <MissedActivityPrompt
-                suggestion={missedActivitySuggestion}
-                onAccept={async () => {
-                  const { activityType, subType, suggestedTime } = missedActivitySuggestion;
-                  
-                  // Store acceptance timestamp to prevent re-showing immediately
-                  const acceptKey = `accepted-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd-HH:mm')}`;
-                  localStorage.setItem(acceptKey, Date.now().toString());
-                  
-                  if (subType === 'morning-wake') {
-                    // For morning wake, end the ongoing night sleep with the suggested time
-                    if (ongoingNap && addActivity) {
-                      try {
-                        const { supabase } = await import('@/integrations/supabase/client');
-                        
-                        const { error } = await supabase
-                          .from('activities')
-                          .update({ details: { ...ongoingNap.details, endTime: suggestedTime } })
-                          .eq('id', ongoingNap.id);
-                        
-                        if (error) throw error;
-                        
-                        // Force a refetch by triggering activity list refresh
-                        window.dispatchEvent(new CustomEvent('refetch-activities'));
-                        
-                        toast({
-                          title: "Morning wake logged",
-                          description: `Woke up at ${suggestedTime}`,
-                        });
-                      } catch (error) {
-                        logError('End sleep', error);
-                        toast({
-                          title: "Error",
-                          description: "Could not log wake time",
-                          variant: "destructive"
-                        });
-                      }
-                    }
-                  } else {
-                    // For other activities, add them with suggested time but ensure correct fields
-                    if (activityType === 'nap') {
-                      // Bedtime/first-nap: create nap with startTime set to the suggested time
-                      await addActivity?.('nap', { startTime: suggestedTime }, new Date(), suggestedTime);
-                      toast({
-                        title: "Nap started",
-                        description: `Start time set to ${suggestedTime}`,
-                      });
-                    } else {
-                      // Feeds and others: rely on server to set logged_at from suggestedTime
-                      await addActivity?.(activityType, {}, new Date(), suggestedTime);
-                      toast({
-                        title: "Activity logged",
-                        description: `${activityType} recorded at ${suggestedTime}`,
-                      });
-                    }
-                  }
-                }}
-                onEdit={() => {
-                  const { activityType, subType } = missedActivitySuggestion;
-                  
-                  if (subType === 'morning-wake' && ongoingNap) {
-                    // For morning wake, open the edit modal for the ongoing nap
-                    onEditActivity(ongoingNap);
-                  } else {
-                    // For other activities, open the add activity modal
-                    onAddActivity?.(activityType);
-                  }
-                }}
-                onDismiss={() => {
-                  const { activityType, subType } = missedActivitySuggestion;
-                  const dismissalKey = `missed-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
-                  localStorage.setItem(dismissalKey, 'true');
-                  
-                  // Force re-render to hide the prompt
-                  window.dispatchEvent(new CustomEvent('refetch-activities'));
-                }}
-              />
-            </div>
-        )}
 
 
 
