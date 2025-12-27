@@ -494,6 +494,38 @@ export type Database = {
         }
         Relationships: []
       }
+      travel_days: {
+        Row: {
+          created_at: string
+          created_by: string
+          date: string
+          household_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          date: string
+          household_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date?: string
+          household_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_days_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

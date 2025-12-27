@@ -14,15 +14,22 @@ import { subDays, startOfDay, eachDayOfInterval } from "date-fns";
 
 interface TrendsTabProps {
   activities: Activity[];
+  travelDayDates?: string[];
 }
 
 type TimeRange = '1week' | '6weeks' | '3months';
 
-export const TrendsTab = ({ activities }: TrendsTabProps) => {
+export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [timeRange, setTimeRange] = useState<TimeRange>('1week');
   const [expandedCharts, setExpandedCharts] = useState<Record<string, boolean>>({});
+
+  // Helper to check if a date is a travel day
+  const isTravelDay = (date: Date): boolean => {
+    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return travelDayDates.includes(dateKey);
+  };
 
   // Helper to parse time to minutes
   const parseTimeToMinutes = (timeStr: string) => {
@@ -48,7 +55,8 @@ export const TrendsTab = ({ activities }: TrendsTabProps) => {
     // Get data for different time periods
     const getMetricsForPeriod = (daysBack: number) => {
       const startDate = startOfDay(subDays(yesterday, daysBack));
-      const days = eachDayOfInterval({ start: startDate, end: yesterday });
+      const days = eachDayOfInterval({ start: startDate, end: yesterday })
+        .filter(day => !isTravelDay(day)); // Exclude travel days
       
       const dailyData = days.map(day => {
         const dayActivities = getActivitiesByDate(activities, day);
