@@ -16,9 +16,9 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
 
   return (
     <div className="mx-3 mb-4">
-      {/* Thicker, more tactile container - reduced height, increased padding */}
-      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-b from-[hsl(18,42%,90%)] to-[hsl(15,38%,86%)] rounded-2xl border border-[hsl(18,30%,80%)]/40 shadow-[0_4px_14px_-4px_hsla(18,40%,45%,0.10),0_2px_6px_-2px_hsla(18,40%,45%,0.06)] dark:from-card dark:to-card dark:border-border/30 dark:shadow-none">
-        <span className="text-[11px] font-medium text-[hsl(20,25%,45%)] dark:text-muted-foreground tracking-wide uppercase mr-auto">
+      {/* Thicker, more tactile container - uses design system tokens */}
+      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark rounded-2xl border border-border/40 shadow-card dark:from-card dark:to-card dark:border-border/30 dark:shadow-none dusk:from-card dusk:to-card dusk:border-border/30 dusk:shadow-none">
+        <span className="text-[11px] font-medium text-muted-foreground tracking-wide uppercase mr-auto">
           Quick log
         </span>
         <Button
@@ -26,30 +26,30 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
           variant="outline"
           onClick={() => handleQuickLog('feed')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-[hsl(25,45%,95%)]/60 hover:bg-[hsl(25,45%,95%)]/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
+          className="flex-1 h-10 rounded-xl bg-background/60 hover:bg-background/80 border-border/50 shadow-soft dark:bg-card dark:border-border/30 dark:hover:bg-accent/10 dusk:bg-card dusk:border-border/30 dusk:hover:bg-accent/10"
         >
-          <Milk className="w-4.5 h-4.5 text-[hsl(12,40%,50%)] dark:text-foreground/80" />
+          <Milk className="w-4.5 h-4.5 text-primary dark:text-foreground/80 dusk:text-foreground/80" />
         </Button>
         <Button
           size="sm"
           variant="outline"
           onClick={() => handleQuickLog('nap')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-[hsl(25,45%,95%)]/60 hover:bg-[hsl(25,45%,95%)]/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
+          className="flex-1 h-10 rounded-xl bg-background/60 hover:bg-background/80 border-border/50 shadow-soft dark:bg-card dark:border-border/30 dark:hover:bg-accent/10 dusk:bg-card dusk:border-border/30 dusk:hover:bg-accent/10"
         >
-          <Moon className="w-4.5 h-4.5 text-[hsl(18,35%,52%)] dark:text-foreground/80" />
+          <Moon className="w-4.5 h-4.5 text-muted-foreground dark:text-foreground/80 dusk:text-foreground/80" />
         </Button>
         <Button
           size="sm"
           variant="outline"
           onClick={() => handleQuickLog('diaper')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-[hsl(25,45%,95%)]/60 hover:bg-[hsl(25,45%,95%)]/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
+          className="flex-1 h-10 rounded-xl bg-background/60 hover:bg-background/80 border-border/50 shadow-soft dark:bg-card dark:border-border/30 dark:hover:bg-accent/10 dusk:bg-card dusk:border-border/30 dusk:hover:bg-accent/10"
         >
-          <Droplet className="w-4.5 h-4.5 text-[hsl(20,30%,48%)] dark:text-foreground/80" />
+          <Droplet className="w-4.5 h-4.5 text-muted-foreground dark:text-foreground/80 dusk:text-foreground/80" />
         </Button>
       </div>
-      <p className="text-[10px] text-center text-[hsl(20,22%,52%)] dark:text-muted-foreground mt-2">
+      <p className="text-[10px] text-center text-muted-foreground mt-2">
         Tap to log with current time—adjust details later if needed
       </p>
     </div>
