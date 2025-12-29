@@ -824,28 +824,19 @@ const ongoingNap = (() => {
               </div>
             </div>
             
+            {/* Hint about travel day feature */}
+            <p className="text-xs italic text-muted-foreground px-4 pb-2">
+              Tap a date to mark as travel day and exclude from trends
+            </p>
+            
             {/* Activities Timeline - increased spacing */}
             <div className="relative px-4 py-4">
               <div className="space-y-6 pb-20">
-                {activities.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No activities yet. Start adding activities to see your timeline!</p>
-                  </div>
-                ) : (
-                  (() => {
+                {(() => {
                     // Filter activities by selected types
                     const filteredActivities = activities.filter(activity => 
                       selectedActivityTypes.includes(activity.type)
                     );
-                    
-                    // Show message if filter results in no activities
-                    if (filteredActivities.length === 0) {
-                      return (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <p>No activities match the selected filters.</p>
-                        </div>
-                      );
-                    }
                     
                     // Group activities by date
                     const activityGroups: { [date: string]: typeof filteredActivities } = {};
@@ -864,6 +855,17 @@ const ongoingNap = (() => {
                       }
                       activityGroups[localDateString].push(activity);
                     });
+
+                    // Generate date keys for the last 14 days to ensure we show dates even with no activities
+                    const nowDate = new Date();
+                    for (let i = 0; i < 14; i++) {
+                      const d = new Date(nowDate);
+                      d.setDate(d.getDate() - i);
+                      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                      if (!activityGroups[key]) {
+                        activityGroups[key] = [];
+                      }
+                    }
 
                     // Sort activities within each date group by actual activity time (descending - newest first)
                     Object.keys(activityGroups).forEach(dateKey => {
@@ -1293,7 +1295,7 @@ const ongoingNap = (() => {
                       </>
                     );
                   })()
-                )}
+                }
               </div>
             </div>
           </div>
