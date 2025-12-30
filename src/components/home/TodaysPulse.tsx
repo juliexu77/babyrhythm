@@ -191,7 +191,7 @@ export const TodaysPulse = ({
             <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-accent/5 transition-colors border-t border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-amber-500" />
+                  <Lightbulb className="w-4 h-4 text-primary" />
                   <span className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
                     What This Means
                   </span>

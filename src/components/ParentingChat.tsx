@@ -679,8 +679,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                         {formatText(emphasizeMicrolearning(msg.content))}
                       </div>
                       {msg.role === "assistant" && msg.liked && (
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
-                          <Heart className="w-3.5 h-3.5 text-white fill-white" />
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-destructive rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                          <Heart className="w-3.5 h-3.5 text-destructive-foreground fill-destructive-foreground" />
                         </div>
                       )}
                     </div>
@@ -720,8 +720,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                   {formatText(emphasizeMicrolearning(msg.content))}
                 </div>
                 {msg.role === "assistant" && msg.liked && (
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
-                    <Heart className="w-3.5 h-3.5 text-white fill-white" />
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-destructive rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                    <Heart className="w-3.5 h-3.5 text-destructive-foreground fill-destructive-foreground" />
                   </div>
                 )}
               </div>

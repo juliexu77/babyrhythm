@@ -91,7 +91,7 @@ export const RhythmUnlockedModal = ({ isOpen, onClose, babyName, totalLogs }: Rh
                 style={{ width: `${progress}%` }}
               />
               <div 
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/30 to-transparent"
                 style={{ 
                   animation: 'shimmer-fast 1s infinite',
                   width: `${progress}%`
