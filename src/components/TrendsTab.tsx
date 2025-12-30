@@ -350,53 +350,51 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
   }
 
   return (
-    <div className="space-y-5 pb-6 pt-6">
-      {/* Time Range Switcher - Centered elegant pill style */}
+    <div className="space-y-6 pb-6 pt-4">
+      {/* Time Range Switcher - Strava-style segmented control */}
       <div className="flex justify-center px-4">
-        <div className="inline-flex p-1 rounded-full bg-muted/60 border border-border/30 shadow-sm dark:bg-card/50 dark:border-border/20">
+        <div className="inline-flex bg-muted rounded-strava p-0.5">
           {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
               className={`
-                px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-200
+                px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-strava transition-all duration-200
                 ${timeRange === range 
-                  ? 'bg-card text-foreground shadow-sm border border-border/20 dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/30' 
+                  ? 'bg-background text-foreground shadow-sm' 
                   : 'text-muted-foreground hover:text-foreground'
                 }
               `}
             >
-              {range === '1week' && '1 Week'}
-              {range === '6weeks' && '6 Weeks'}
-              {range === '3months' && '3 Months'}
+              {range === '1week' && '1W'}
+              {range === '6weeks' && '6W'}
+              {range === '3months' && '3M'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Collapsible Chart Sections - Each with unique gradient */}
-      <div className="space-y-3 px-4">
-        {/* Night Sleep - Dusty rose-neutral (no purple/lavender) */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(18,38%,92%)] via-[hsl(15,35%,89%)] to-[hsl(12,32%,86%)] dark:from-[hsl(18,30%,18%)] dark:via-[hsl(15,25%,15%)] dark:to-[hsl(12,20%,12%)] border border-[hsl(15,30%,82%)]/60 dark:border-[hsl(15,25%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(15,40%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(15,35%,20%,0.4)]">
+      {/* Collapsible Chart Sections - Strava-style list items */}
+      <div className="space-y-px px-4">
+        {/* Night Sleep */}
+        <div className="bg-card rounded-t-strava border border-border overflow-hidden">
           <button
             onClick={() => toggleChart('nightSleep')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(18,35%,65%)] to-[hsl(12,38%,55%)] dark:from-[hsl(18,40%,50%)] dark:to-[hsl(12,35%,40%)] flex items-center justify-center shadow-md">
-                <Moon className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Moon className="w-5 h-5 text-primary" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-semibold text-foreground">Night Sleep</h3>
-                <p className="text-xs text-muted-foreground">See how night sleep has shifted</p>
+                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Night Sleep</h3>
+                <p className="text-xs text-muted-foreground">Hours per night</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(15,30%,45%)] dark:text-[hsl(15,35%,65%)]" />
-            </div>
+            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['nightSleep'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(15,25%,82%)]/40 dark:border-[hsl(15,25%,30%)]/40">
+            <div className="px-4 pb-4 border-t border-border">
               <TimelineChart
                 title="Night Sleep"
                 icon={<Moon className="w-4 h-4 text-foreground/70" />}
@@ -404,7 +402,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 timeRange={timeRange}
                 dataExtractor={extractNightSleep}
                 unit="h"
-                color="hsl(15, 35%, 58%)"
+                color="hsl(var(--primary))"
                 yAxisFormatter={(v) => `${v.toFixed(0)}h`}
                 tooltipFormatter={(v) => v.toFixed(1)}
                 babyBirthday={household?.baby_birthday}
@@ -415,27 +413,25 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
           )}
         </div>
 
-        {/* Day Naps - Warm clay (like bottle cap in inspiration) */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(22,42%,91%)] via-[hsl(20,38%,88%)] to-[hsl(18,35%,85%)] dark:from-[hsl(22,35%,18%)] dark:via-[hsl(20,30%,15%)] dark:to-[hsl(18,25%,12%)] border border-[hsl(20,32%,80%)]/60 dark:border-[hsl(20,35%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(20,45%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(20,40%,20%,0.4)]">
+        {/* Day Naps */}
+        <div className="bg-card border-x border-border overflow-hidden">
           <button
             onClick={() => toggleChart('dayNaps')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(22,45%,60%)] to-[hsl(18,48%,50%)] dark:from-[hsl(22,50%,48%)] dark:to-[hsl(18,45%,38%)] flex items-center justify-center shadow-md">
-                <Sun className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-accent/50 flex items-center justify-center">
+                <Sun className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-semibold text-foreground">Day Naps</h3>
-                <p className="text-xs text-muted-foreground">Consolidation over time</p>
+                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Day Naps</h3>
+                <p className="text-xs text-muted-foreground">Naps per day</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(20,40%,42%)] dark:text-[hsl(20,45%,60%)]" />
-            </div>
+            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['dayNaps'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(20,30%,80%)]/40 dark:border-[hsl(20,35%,30%)]/40">
+            <div className="px-4 pb-4 border-t border-border">
               <TimelineChart
                 title="Day Naps"
                 icon={<Sun className="w-4 h-4 text-foreground/70" />}
@@ -443,7 +439,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 timeRange={timeRange}
                 dataExtractor={extractDayNaps}
                 unit="naps"
-                color="hsl(20, 45%, 55%)"
+                color="hsl(var(--accent-foreground))"
                 yAxisFormatter={(v) => v.toFixed(0)}
                 tooltipFormatter={(v) => v.toFixed(0)}
                 babyBirthday={household?.baby_birthday}
@@ -454,27 +450,25 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
           )}
         </div>
 
-        {/* Feed Volume - Cinnamon-rose (muted, not bright) */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(12,38%,91%)] via-[hsl(10,35%,88%)] to-[hsl(8,32%,85%)] dark:from-[hsl(12,30%,18%)] dark:via-[hsl(10,25%,15%)] dark:to-[hsl(8,20%,12%)] border border-[hsl(10,28%,80%)]/60 dark:border-[hsl(10,30%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(10,42%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(10,38%,20%,0.4)]">
+        {/* Feed Volume */}
+        <div className="bg-card border-x border-border overflow-hidden">
           <button
             onClick={() => toggleChart('feedVolume')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(12,42%,58%)] to-[hsl(8,45%,48%)] dark:from-[hsl(12,48%,48%)] dark:to-[hsl(8,45%,38%)] flex items-center justify-center shadow-md">
-                <Milk className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                <Milk className="w-5 h-5 text-secondary-foreground" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-semibold text-foreground">Feed Volume</h3>
-                <p className="text-xs text-muted-foreground">Feeding patterns over time</p>
+                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Feed Volume</h3>
+                <p className="text-xs text-muted-foreground">Daily intake</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(10,35%,42%)] dark:text-[hsl(10,40%,60%)]" />
-            </div>
+            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['feedVolume'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(10,25%,80%)]/40 dark:border-[hsl(10,30%,30%)]/40">
+            <div className="px-4 pb-4 border-t border-border">
               <TimelineChart
                 title="Feed Volume"
                 icon={<Milk className="w-4 h-4 text-foreground/70" />}
@@ -482,7 +476,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 timeRange={timeRange}
                 dataExtractor={extractFeedVolume}
                 unit="oz"
-                color="hsl(12, 42%, 52%)"
+                color="hsl(var(--secondary-foreground))"
                 yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
                 tooltipFormatter={(v) => v.toFixed(0)}
                 babyBirthday={household?.baby_birthday}
@@ -493,27 +487,25 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
           )}
         </div>
 
-        {/* Wake Windows - Muted terracotta-rose (not bright orange) */}
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(16,40%,90%)] via-[hsl(14,36%,87%)] to-[hsl(12,33%,84%)] dark:from-[hsl(16,32%,18%)] dark:via-[hsl(14,28%,15%)] dark:to-[hsl(12,24%,12%)] border border-[hsl(14,30%,79%)]/60 dark:border-[hsl(14,32%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(14,40%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(14,36%,20%,0.4)]">
+        {/* Wake Windows */}
+        <div className="bg-card rounded-b-strava border border-border overflow-hidden">
           <button
             onClick={() => toggleChart('wakeWindows')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(16,45%,58%)] to-[hsl(12,48%,48%)] dark:from-[hsl(16,50%,48%)] dark:to-[hsl(12,45%,38%)] flex items-center justify-center shadow-md">
-                <Clock className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Clock className="w-5 h-5 text-muted-foreground" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-semibold text-foreground">Wake Windows</h3>
-                <p className="text-xs text-muted-foreground">Wake times stretch as baby grows</p>
+                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Wake Windows</h3>
+                <p className="text-xs text-muted-foreground">Average awake time</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`}>
-              <ChevronDown className="w-4 h-4 text-[hsl(14,38%,42%)] dark:text-[hsl(14,42%,60%)]" />
-            </div>
+            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['wakeWindows'] && (
-            <div className="px-3 pb-4 pt-1 border-t border-[hsl(14,28%,79%)]/40 dark:border-[hsl(14,32%,30%)]/40">
+            <div className="px-4 pb-4 border-t border-border">
               <TimelineChart
                 title="Wake Windows"
                 icon={<Clock className="w-4 h-4 text-foreground/70" />}
@@ -521,7 +513,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 timeRange={timeRange}
                 dataExtractor={extractWakeWindows}
                 unit="h"
-                color="hsl(16, 45%, 54%)"
+                color="hsl(var(--muted-foreground))"
                 yAxisFormatter={(v) => `${v.toFixed(1)}h`}
                 tooltipFormatter={(v) => v.toFixed(1)}
                 babyBirthday={household?.baby_birthday}
@@ -538,12 +530,12 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
-      {/* Long Term Trends Summary - Warm rose-beige card (no lavender) */}
+      {/* Long Term Trends Summary - Strava-style card */}
       <div className="mx-4">
-        <div className="rounded-2xl bg-gradient-to-br from-[hsl(20,38%,91%)] via-[hsl(18,35%,89%)] to-[hsl(16,32%,86%)] dark:from-[hsl(20,30%,16%)] dark:via-[hsl(18,25%,14%)] dark:to-[hsl(16,20%,12%)] border border-[hsl(18,28%,80%)]/50 dark:border-[hsl(18,25%,30%)]/40 overflow-hidden shadow-[0_6px_20px_-6px_hsla(18,40%,45%,0.14)] dark:shadow-[0_6px_20px_-6px_hsla(18,35%,20%,0.4)]">
-          <div className="px-4 py-3 border-b border-[hsl(18,25%,82%)]/30 dark:border-[hsl(18,22%,30%)]/30 bg-gradient-to-r from-[hsl(22,35%,88%)] via-[hsl(18,38%,89%)] to-[hsl(15,40%,90%)] dark:from-[hsl(22,28%,17%)] dark:via-[hsl(18,25%,15%)] dark:to-[hsl(15,22%,14%)]">
-            <h3 className="text-xs font-semibold text-foreground/80 uppercase tracking-wider">
-              Long Term Trends
+        <div className="bg-card rounded-strava border border-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+              Summary
             </h3>
           </div>
           <div className="px-4 py-4">
