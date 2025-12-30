@@ -170,15 +170,15 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
   };
 
   return (
-    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+    <div className="mx-2 mb-6 rounded-strava bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Header */}
         <div className="px-4 py-5 border-b border-border/30">
           <CollapsibleTrigger className="w-full" onClick={() => setIsOpen(!isOpen)}>
             <div className="flex items-center justify-between">
               <div className="flex-1 text-left">
-                <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                  This Week&apos;s Rhythm
+                <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
+                  This Week's Rhythm
                 </h3>
                 {subtitle && (
                   <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
@@ -206,7 +206,7 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
                   return (
                     <span
                       key={pos}
-                      className="absolute text-[9px] text-muted-foreground/60"
+                      className="absolute text-[9px] font-medium text-muted-foreground/60 uppercase tracking-wide"
                       style={{ left: pos === 1 ? 'auto' : `${pos * 100}%`, right: pos === 1 ? '0' : 'auto' }}
                     >
                       {label}
@@ -246,7 +246,7 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
                 
                 return (
                   <div key={day.date} className="flex items-center gap-3">
-                    <span className={`text-xs font-medium w-12 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    <span className={`text-[11px] font-bold uppercase tracking-wide w-12 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
                       {dayLabel}
                     </span>
                     <div className="flex-1 relative h-[15px] bg-muted/20 rounded-full">
@@ -268,14 +268,14 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
                                   onClick={() => setSelectedNap({ startTime: nap.startTime, endTime: nap.endTime })}
                                 />
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-3">
+                              <PopoverContent className="w-auto p-3 rounded-strava">
                                 <div className="text-sm">
-                                  <div className="font-medium text-foreground mb-1">Nap Time</div>
-                                  <div className="text-muted-foreground">
-                                    {nap.startTime} - {nap.endTime}
+                                  <div className="text-[11px] font-bold uppercase tracking-wide text-foreground mb-1">Nap Time</div>
+                                  <div className="text-muted-foreground font-num">
+                                    {nap.startTime} – {nap.endTime}
                                   </div>
-                                  <div className="text-xs text-muted-foreground/70 mt-1">
-                                    {Math.round(nap.durationMinutes)} minutes
+                                  <div className="text-xs text-muted-foreground/70 mt-1 font-num">
+                                    {Math.round(nap.durationMinutes)} min
                                   </div>
                                 </div>
                               </PopoverContent>
@@ -283,7 +283,7 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
                           );
                         })
                       ) : (
-                        <span className="absolute left-2 top-0 text-[9px] text-muted-foreground/40 leading-[15px]">No naps</span>
+                        <span className="absolute left-2 top-0 text-[9px] text-muted-foreground/40 leading-[15px] uppercase tracking-wide">No naps</span>
                       )}
                     </div>
                   </div>

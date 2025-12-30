@@ -86,14 +86,14 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
+      <div className="rounded-strava bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
         <div className="px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30">
-          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+          <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
             Collective Pulse
           </h3>
         </div>
         <div className="px-4 py-3">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">
             Loading...
           </p>
         </div>
@@ -104,12 +104,12 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   // Show message when data not yet computed
   if (!cohortStats) {
     return (
-      <div className="rounded-xl bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
+      <div className="rounded-strava bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-muted/20 transition-colors"
         >
-          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+          <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
             Collective Pulse
           </h3>
           {isExpanded ? (
@@ -146,7 +146,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     return (
       <div className="flex items-center gap-1 text-xs text-muted-foreground">
         <Icon className="w-3 h-3" />
-        <span>{Math.abs(change).toFixed(1)}{cohortStats.night_sleep_hours ? 'h' : ''}</span>
+        <span className="font-num">{Math.abs(change).toFixed(1)}{cohortStats.night_sleep_hours ? 'h' : ''}</span>
       </div>
     );
   };
@@ -158,13 +158,13 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     (regressionInfo ? ` Note: Your baby is in the ${regressionInfo.name} regression window, where ${regressionInfo.description.toLowerCase()}` : '');
 
   return (
-    <div className="rounded-xl bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
+    <div className="rounded-strava bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
       {/* Header - Always visible and clickable */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-muted/20 transition-colors"
       >
-        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+        <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
           Collective Pulse
         </h3>
         {isExpanded ? (
@@ -180,10 +180,10 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
           {/* Micro Stats - Now at the top */}
           <div className="px-4 pt-4 pb-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-card rounded-lg p-3">
-                <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Night Sleep</div>
+              <div className="bg-card rounded-strava p-3">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Avg Night Sleep</div>
                 <div className="flex items-baseline gap-2">
-                  <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
+                  <div className="text-2xl font-num font-bold text-foreground tracking-tight">
                     {cohortStats.night_sleep_hours?.toFixed(1) || '—'} <span className="text-base text-muted-foreground font-normal">h</span>
                   </div>
                   {renderChange(cohortStats.night_sleep_change)}
@@ -194,10 +194,10 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
                   </div>
                 )}
               </div>
-              <div className="bg-card rounded-lg p-3">
-                <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Naps/Day</div>
+              <div className="bg-card rounded-strava p-3">
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Avg Naps/Day</div>
                 <div className="flex items-baseline gap-2">
-                  <div className="text-2xl font-num font-semibold text-foreground tracking-tight">
+                  <div className="text-2xl font-num font-bold text-foreground tracking-tight">
                     {formatNaps(cohortStats.naps_per_day)}
                   </div>
                   {renderChange(cohortStats.naps_per_day_change)}
