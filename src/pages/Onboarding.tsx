@@ -27,7 +27,7 @@ const Onboarding = () => {
       {/* Theme Toggle */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">
         <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full blur opacity-75 animate-pulse"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-strava blur opacity-75 animate-pulse"></div>
           <ThemeToggle showText={false} />
         </div>
       </div>
@@ -37,20 +37,20 @@ const Onboarding = () => {
         <div className="max-w-md mx-auto text-center space-y-10">
           {/* Logo */}
           <div className="flex flex-col items-center justify-center leading-none">
-            <span className="text-2xl font-sans font-bold text-primary tracking-tight">
-              BABYRHYTHM
+            <span className="text-xl font-sans font-bold text-primary tracking-wider uppercase">
+              BabyRhythm
             </span>
           </div>
 
           {/* Welcome Message */}
           <div className="space-y-8">
-            <h1 className="text-[22px] md:text-[36px] font-serif font-medium tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
+            <h1 className="text-2xl md:text-4xl font-sans font-bold tracking-tight text-foreground uppercase">
               Where intuition meets intelligence
             </h1>
-            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal mt-8 text-foreground/80">
+            <p className="text-sm md:text-base leading-relaxed font-normal mt-8 text-muted-foreground">
               BabyRhythm learns your baby's natural patterns from the moment you log your first nap, feed, or diaper — gently predicting what comes next with insights that grow smarter every day.
             </p>
-            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal text-foreground/80">
+            <p className="text-sm md:text-base leading-relaxed font-normal text-muted-foreground">
               Built to adapt to your baby's rhythm — so you feel calm, connected, and in sync.
             </p>
           </div>
@@ -59,9 +59,9 @@ const Onboarding = () => {
           <div className="pt-6">
             <Button
               onClick={handleGetStarted}
-              className="w-full rounded-full py-[14px] px-8 text-base font-semibold"
+              className="w-full rounded-strava py-3 px-8 text-sm font-bold tracking-wide uppercase"
             >
-              Begin your rhythm
+              Begin Your Rhythm
             </Button>
           </div>
         </div>

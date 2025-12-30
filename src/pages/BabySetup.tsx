@@ -118,20 +118,20 @@ const BabySetup = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
-            Let's meet your baby.
+          <h1 className="text-xl font-sans font-bold text-foreground tracking-wide uppercase">
+            Let's Meet Your Baby
           </h1>
-          <p className="text-sm text-muted-foreground font-light leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             So we can understand their rhythm and help you stay in tune.
           </p>
         </div>
 
         {/* Form */}
-        <Card className="border-border bg-card/50 backdrop-blur shadow-card">
+        <Card className="border-border bg-card/50 backdrop-blur shadow-card rounded-strava">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="babyName" className="text-sm font-medium">
+                <Label htmlFor="babyName" className="text-xs font-bold tracking-wide uppercase">
                   Baby's Name
                 </Label>
                 <Input
@@ -142,12 +142,12 @@ const BabySetup = () => {
                   placeholder="e.g., Emma"
                   required
                   disabled={isLoading}
-                  className="text-sm"
+                  className="text-sm rounded-strava"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="babyBirthday" className="text-sm font-medium">
+                <Label htmlFor="babyBirthday" className="text-xs font-bold tracking-wide uppercase">
                   Birthday
                 </Label>
                 <Input
@@ -157,21 +157,21 @@ const BabySetup = () => {
                   onChange={(e) => setBabyBirthday(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="text-sm"
+                  className="text-sm rounded-strava"
                 />
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-4">
-                  <Label className="text-sm font-medium">
+                  <Label className="text-xs font-bold tracking-wide uppercase">
                     Sleep Schedule
                   </Label>
                   
-                    <div className="bg-accent/20 rounded-xl p-4 space-y-4">
+                  <div className="bg-accent/20 rounded-strava p-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="text-center flex-1">
-                        <div className="text-xs text-muted-foreground mb-1">Bedtime</div>
-                        <div className="text-2xl font-num font-semibold text-foreground">
+                        <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider font-medium">Bedtime</div>
+                        <div className="text-2xl font-num font-bold text-foreground">
                           {formatTime(bedtimeHour, bedtimeMinute)}
                         </div>
                       </div>
@@ -179,8 +179,8 @@ const BabySetup = () => {
                         <div className="w-12 h-0.5 bg-primary/30"></div>
                       </div>
                       <div className="text-center flex-1">
-                        <div className="text-xs text-muted-foreground mb-1">Wake Time</div>
-                        <div className="text-2xl font-num font-semibold text-foreground">
+                        <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider font-medium">Wake Time</div>
+                        <div className="text-2xl font-num font-bold text-foreground">
                           {formatTime(wakeHour, wakeMinute)}
                         </div>
                       </div>
@@ -188,7 +188,7 @@ const BabySetup = () => {
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <div className="text-xs text-muted-foreground">Adjust bedtime</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Adjust bedtime</div>
                         <Slider
                           min={18 * 12}
                           max={23 * 12 + 11}
@@ -204,14 +204,14 @@ const BabySetup = () => {
                           disabled={isLoading}
                           className="w-full"
                         />
-                        <div className="flex justify-between text-xs text-muted-foreground">
+                        <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wide">
                           <span>6:00 PM</span>
                           <span>11:55 PM</span>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <div className="text-xs text-muted-foreground">Adjust wake time</div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Adjust wake time</div>
                         <Slider
                           min={5 * 12}
                           max={10 * 12 + 11}
@@ -227,7 +227,7 @@ const BabySetup = () => {
                           disabled={isLoading}
                           className="w-full"
                         />
-                        <div className="flex justify-between text-xs text-muted-foreground">
+                        <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wide">
                           <span>5:00 AM</span>
                           <span>10:55 AM</span>
                         </div>
@@ -247,7 +247,7 @@ const BabySetup = () => {
                 </p>
                 <Button
                   type="submit"
-                  className="w-full font-semibold"
+                  className="w-full font-bold tracking-wide uppercase rounded-strava"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating..." : "Continue"}
