@@ -243,13 +243,13 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
 
   return (
     <div className="space-y-2">
-      {label && <Label className="text-sm font-medium">{label}</Label>}
+      {label && <Label className="mb-2 block">{label}</Label>}
       
-      {/* Combined Date and Time Selector */}
-      <div className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background">
+      {/* Combined Date and Time Selector - Strava style */}
+      <div className="flex gap-1 rounded-strava bg-muted p-3 items-center justify-center">
         {/* Date - Scrollable */}
         <div className="relative flex flex-col items-center">
-          <div className="text-[10px] text-muted-foreground/30 absolute -top-3 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40 absolute -top-2 z-10 pointer-events-none">
             {selectedDateIndex > 0 ? formatDateLabel(dates[selectedDateIndex - 1]) : ''}
           </div>
           <div 
@@ -274,9 +274,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {dates.map((date, index) => (
               <div
                 key={index}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                className={`h-8 flex items-center justify-center text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors snap-center whitespace-nowrap ${
                   selectedDateIndex === index 
-                    ? 'text-foreground font-bold' 
+                    ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => {
@@ -289,15 +289,15 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
           </div>
-          <div className="text-[10px] text-muted-foreground/30 absolute -bottom-3 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40 absolute -bottom-2 z-10 pointer-events-none">
             {selectedDateIndex < dates.length - 1 ? formatDateLabel(dates[selectedDateIndex + 1]) : ''}
           </div>
         </div>
 
-        <span className="text-muted-foreground text-sm">-</span>
+        <span className="text-muted-foreground text-sm font-bold">-</span>
         {/* Hours - Scrollable */}
         <div className="relative flex flex-col items-center">
-          <div className="text-[10px] text-muted-foreground/30 absolute -top-3 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold text-muted-foreground/40 absolute -top-2 z-10 pointer-events-none">
             {selectedHour === 1 ? 12 : selectedHour - 1}
           </div>
           <div 
@@ -312,9 +312,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {hours.map((hour, index) => (
               <div
                 key={`hour-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors snap-center ${
                   selectedHour === hour 
-                    ? 'text-foreground font-bold' 
+                    ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => {
@@ -327,16 +327,16 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
           </div>
-          <div className="text-[10px] text-muted-foreground/30 absolute -bottom-3 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold text-muted-foreground/40 absolute -bottom-2 z-10 pointer-events-none">
             {selectedHour === 12 ? 1 : selectedHour + 1}
           </div>
         </div>
 
-        <span className="text-muted-foreground text-sm">:</span>
+        <span className="text-muted-foreground text-sm font-bold">:</span>
 
         {/* Minutes - Scrollable */}
         <div className="relative flex flex-col items-center">
-          <div className="text-[10px] text-muted-foreground/30 absolute -top-3 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold text-muted-foreground/40 absolute -top-2 z-10 pointer-events-none">
             {(selectedMinute === 0 ? 59 : selectedMinute - 1).toString().padStart(2, '0')}
           </div>
           <div 
@@ -351,9 +351,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {minutes.map((minute, index) => (
               <div
                 key={`minute-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors snap-center ${
                   selectedMinute === minute 
-                    ? 'text-foreground font-bold' 
+                    ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => {
@@ -366,20 +366,19 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
           </div>
-          <div className="text-[10px] text-muted-foreground/30 absolute -bottom-3 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold text-muted-foreground/40 absolute -bottom-2 z-10 pointer-events-none">
             {(selectedMinute === 59 ? 0 : selectedMinute + 1).toString().padStart(2, '0')}
           </div>
         </div>
 
-        {/* AM/PM - Single toggle button */}
+        {/* AM/PM - Strava style toggle */}
         <div className="flex">
           <button
-            className="px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors bg-primary/10 hover:bg-primary/20 text-foreground font-bold border border-primary/30"
+            className="px-3 py-1.5 rounded-strava text-xs font-bold uppercase tracking-wider cursor-pointer transition-all bg-primary text-primary-foreground hover:opacity-90"
             onClick={() => {
               const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
               setHasUserInteracted(true);
               setSelectedPeriod(newPeriod);
-              // Save last used period
               try { 
                 localStorage.setItem('lastUsedPeriod', newPeriod); 
               } catch (e) {}
