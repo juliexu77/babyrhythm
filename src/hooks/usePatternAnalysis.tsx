@@ -19,9 +19,22 @@ export interface PatternInsight {
   };
 }
 
-export const usePatternAnalysis = (activities: Activity[]) => {
+// Helper to format date as YYYY-MM-DD for travel day comparison
+const formatDateKey = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+export const usePatternAnalysis = (activities: Activity[], travelDayDates: string[] = []) => {
   const { t } = useLanguage();
   const { isNightTimeString } = useNightSleepWindow();
+
+  // Helper to check if an activity is from a travel day
+  const isFromTravelDay = (activity: Activity): boolean => {
+    if (!activity.loggedAt) return false;
+    const activityDate = new Date(activity.loggedAt);
+    const dateKey = formatDateKey(activityDate);
+    return travelDayDates.includes(dateKey);
+  };
   
   const getTimeInMinutes = (timeString: string) => {
     const [time, period] = timeString.split(' ');
@@ -34,9 +47,12 @@ export const usePatternAnalysis = (activities: Activity[]) => {
 
   const analyzePatterns = (): PatternInsight[] => {
     const insights: PatternInsight[] = [];
+    
+    // Filter out activities from travel days for pattern analysis
+    const filteredActivities = activities.filter(a => !isFromTravelDay(a));
 
     // Analyze feeding patterns
-    const feeds = activities.filter(a => a.type === 'feed');
+    const feeds = filteredActivities.filter(a => a.type === 'feed');
     if (feeds.length >= 3) {
       const intervals: Array<{ interval: number; feed1: Activity; feed2: Activity }> = [];
       for (let i = 1; i < feeds.length; i++) {
@@ -114,7 +130,7 @@ export const usePatternAnalysis = (activities: Activity[]) => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     
-    const naps = activities.filter(a => {
+    const naps = filteredActivities.filter(a => {
       if (a.type !== 'nap') return false;
       if (!a.loggedAt) return true; // Include if no timestamp (fallback)
       const activityDate = new Date(a.loggedAt);
@@ -284,7 +300,7 @@ export const usePatternAnalysis = (activities: Activity[]) => {
     const bedtimes: Array<{ time: number; activity: Activity; date: string }> = [];
     const activitiesByDate = new Map<string, Activity[]>();
     
-    activities.forEach(activity => {
+    filteredActivities.forEach(activity => {
       if (!activity.loggedAt) return;
       const date = new Date(activity.loggedAt);
       const dateKey = date.toDateString();

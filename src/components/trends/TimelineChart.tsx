@@ -33,7 +33,13 @@ interface TimelineChartProps {
   babyBirthday?: string;
   metricType?: 'nightSleep' | 'dayNaps' | 'feedVolume' | 'wakeWindows';
   showBaseline?: boolean;
+  travelDayDates?: string[];
 }
+
+// Helper to format date as YYYY-MM-DD for travel day comparison
+const formatDateKey = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
 
 // Helper to get warm, natural language explanation for each chart
 const getChartExplanation = (
@@ -97,12 +103,19 @@ export const TimelineChart = ({
   tooltipFormatter = (v) => v.toFixed(1),
   babyBirthday,
   metricType,
-  showBaseline = false
+  showBaseline = false,
+  travelDayDates = []
 }: TimelineChartProps) => {
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState<number | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+
+  // Helper to check if a date is a travel day
+  const isTravelDay = (date: Date): boolean => {
+    const dateKey = formatDateKey(date);
+    return travelDayDates.includes(dateKey);
+  };
 
   const { chartData, weeks, days } = useMemo(() => {
     const now = new Date();
@@ -121,10 +134,20 @@ export const TimelineChart = ({
       const days = eachDayOfInterval({ start: startDate, end: endDate });
       
       const data = days.map(day => {
+        // Skip travel days - show as 0/no data
+        const dateKey = formatDateKey(day);
+        if (travelDayDates.includes(dateKey)) {
+          return {
+            label: format(day, 'EEE'),
+            value: 0,
+            isTravelDay: true
+          };
+        }
         const value = dataExtractor(activities, day);
         return {
           label: format(day, 'EEE'), // Mon, Tue, etc.
-          value: value
+          value: value,
+          isTravelDay: false
         };
       });
       
@@ -134,13 +157,15 @@ export const TimelineChart = ({
     // Get all weeks in the range
     const weeks = eachWeekOfInterval({ start: startDate, end: endDate }, { weekStartsOn: 1 });
     
-    // Calculate weekly averages
+    // Calculate weekly averages, excluding travel days
     const data = weeks.map(weekStart => {
       const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
       const daysInWeek = eachDayOfInterval({ start: weekStart, end: weekEnd > endDate ? endDate : weekEnd });
       
-      // Get values for each day in the week
-      const dailyValues = daysInWeek.map(day => dataExtractor(activities, day));
+      // Get values for each day in the week, excluding travel days
+      const dailyValues = daysInWeek
+        .filter(day => !travelDayDates.includes(formatDateKey(day)))
+        .map(day => dataExtractor(activities, day));
       
       // Filter out zeros and calculate average
       const nonZeroValues = dailyValues.filter(v => v > 0);
@@ -155,7 +180,7 @@ export const TimelineChart = ({
     });
     
     return { chartData: data, weeks, days: [] };
-  }, [activities, timeRange, dataExtractor]);
+  }, [activities, timeRange, dataExtractor, travelDayDates]);
 
   // Fetch cohort ranges for the timeline
   const { data: cohortRanges } = useTimelineCohortRanges(babyBirthday, weeks, metricType);

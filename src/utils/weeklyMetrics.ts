@@ -1,4 +1,4 @@
-import { startOfWeek, endOfWeek, subWeeks, isWithinInterval, parseISO } from "date-fns";
+import { startOfWeek, endOfWeek, subWeeks, isWithinInterval, parseISO, format } from "date-fns";
 import { isDaytimeNap } from "./napClassification";
 import { Activity } from "@/components/ActivityCard";
 
@@ -10,14 +10,26 @@ interface WeeklyMetrics {
   wakeWindowAvg: number;
 }
 
+// Helper to format date as YYYY-MM-DD for travel day comparison
+const formatDateKey = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export const calculateWeeklyMetrics = (
   activities: Activity[],
   nightSleepStartHour: number,
   nightSleepEndHour: number,
-  numberOfWeeks: number = 6
+  numberOfWeeks: number = 6,
+  travelDayDates: string[] = [] // Add travel days parameter
 ): WeeklyMetrics[] => {
   const now = new Date();
   const weeks: WeeklyMetrics[] = [];
+
+  // Helper to check if a date is a travel day
+  const isTravelDay = (date: Date): boolean => {
+    const dateKey = formatDateKey(date);
+    return travelDayDates.includes(dateKey);
+  };
 
   // Helper to parse time to minutes
   const parseTimeToMinutes = (timeStr: string) => {
@@ -43,6 +55,9 @@ export const calculateWeeklyMetrics = (
       today.setHours(0, 0, 0, 0);
       const activityDay = new Date(activityDate);
       activityDay.setHours(0, 0, 0, 0);
+      
+      // Exclude travel days from calculations
+      if (isTravelDay(activityDay)) return false;
       
       return isWithinInterval(activityDate, { start: weekStart, end: weekEnd }) && 
              activityDay < today;

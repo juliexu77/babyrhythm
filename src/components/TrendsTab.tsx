@@ -408,6 +408,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 babyBirthday={household?.baby_birthday}
                 metricType="nightSleep"
                 showBaseline={false}
+                travelDayDates={travelDayDates}
               />
             </div>
           )}
@@ -445,6 +446,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 babyBirthday={household?.baby_birthday}
                 metricType="dayNaps"
                 showBaseline={false}
+                travelDayDates={travelDayDates}
               />
             </div>
           )}
@@ -482,6 +484,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 babyBirthday={household?.baby_birthday}
                 metricType="feedVolume"
                 showBaseline={false}
+                travelDayDates={travelDayDates}
               />
             </div>
           )}
