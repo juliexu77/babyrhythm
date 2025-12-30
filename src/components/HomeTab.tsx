@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FeedFrequency } from "@/components/home/FeedFrequency";
+
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
@@ -28,7 +28,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { logError } from "@/utils/logger";
 import { TodaysStory } from "@/components/home/TodaysStory";
 import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
-import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
+import { TomorrowPreview } from "@/components/home/TomorrowPreview";
 import { FirstActivityCelebration } from "@/components/FirstActivityCelebration";
 import { PrefillDayModal } from "@/components/PrefillDayModal";
 
@@ -1551,10 +1551,6 @@ const lastDiaper = displayActivities
           />
         )}
 
-        {/* Feed Frequency */}
-        <div className="mt-4">
-          <FeedFrequency activities={activities} />
-        </div>
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
@@ -1632,14 +1628,12 @@ const lastDiaper = displayActivities
 
 
 
-        {/* Today's Story - moved to bottom */}
-        <DailyStoryCircles
+        {/* Tomorrow Preview */}
+        <TomorrowPreview
           activities={activities}
           babyName={babyName}
-          babyPhotoUrl={household?.baby_photo_url}
-          onSelectDay={(date, dayActivities) => {
-            setSelectedStoryDate(date);
-            setSelectedStoryActivities(dayActivities);
+          onClick={() => {
+            setSelectedStoryDate(null);
             setShowTodaysStory(true);
           }}
         />
