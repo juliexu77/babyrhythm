@@ -16,15 +16,21 @@ interface NapData {
 interface WeeklyRhythmProps {
   activities: any[];
   babyName: string;
+  travelDayDates?: string[];
 }
 
-export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
+export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: WeeklyRhythmProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const [selectedNap, setSelectedNap] = useState<{ startTime: string; endTime: string } | null>(null);
   const [subtitle, setSubtitle] = useState<string>("");
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
-  // Get last 7 days of nap data
+  // Helper to check if a date is a travel day
+  const isTravelDay = (dateStr: string): boolean => {
+    return travelDayDates.includes(dateStr);
+  };
+
+  // Get last 7 days of nap data, excluding travel days
   const getLast7DaysNaps = (): NapData[] => {
     const today = startOfDay(new Date());
     const days: NapData[] = [];
@@ -33,6 +39,12 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
     for (let i = 0; i <= 6; i++) {
       const date = subDays(today, i);
       const dateStr = format(date, 'yyyy-MM-dd');
+      
+      // Skip travel days - show them as empty
+      if (isTravelDay(dateStr)) {
+        days.push({ date: dateStr, naps: [] });
+        continue;
+      }
       
       // Filter naps for this day using actual nap start time - only show daytime naps
       const dayNaps = activities

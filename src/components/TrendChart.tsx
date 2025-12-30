@@ -19,9 +19,15 @@ import { MetricSparkline } from "@/components/insights/MetricSparkline";
 
 interface TrendChartProps {
   activities: Activity[];
+  travelDayDates?: string[];
 }
 
-export const TrendChart = ({ activities = [] }: TrendChartProps) => {
+// Helper to format date as YYYY-MM-DD for travel day comparison
+const formatDateKey = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+export const TrendChart = ({ activities = [], travelDayDates = [] }: TrendChartProps) => {
   const { t, language } = useLanguage();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const { household } = useHousehold();
@@ -33,6 +39,12 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const maxDaysBack = 30;
   const canGoBack = daysOffset < maxDaysBack - 7;
   const canGoForward = daysOffset > 0;
+
+  // Helper to check if a date is a travel day
+  const isTravelDay = (date: Date): boolean => {
+    const dateKey = formatDateKey(date);
+    return travelDayDates.includes(dateKey);
+  };
 
   // Determine preferred unit from last feed entry
   const getPreferredUnit = () => {
@@ -78,7 +90,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     };
   };
 
-  // Calculate real feed volume data for the past 7 days (including today)
+  // Calculate real feed volume data for the past 7 days (including today), excluding travel days
   const generateFeedData = () => {
     const days = 7;
     const data = [];
@@ -89,8 +101,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset);
       
+      // Skip travel days - show them as 0/no data
+      const isTravel = isTravelDay(date);
+      
       // Use shared date filtering utility (same as Log tab)
-      const dayActivities = getActivitiesByDate(activities, date);
+      const dayActivities = isTravel ? [] : getActivitiesByDate(activities, date);
       const dayFeeds = dayActivities.filter(a => a.type === "feed");
       
       let totalValue = 0;
@@ -187,7 +202,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     return 0;
   };
 
-  // Calculate real nap duration data for the past 7 days (including today)
+  // Calculate real nap duration data for the past 7 days (including today), excluding travel days
   const generateNapData = () => {
     const days = 7;
     const data = [];
@@ -199,8 +214,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       date.setDate(date.getDate() - i - daysOffset);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
+      // Skip travel days - show them as 0/no data
+      const isTravel = isTravelDay(date);
+      
       // Use shared date filtering utility (same as Log tab)
-      const dayActivities = getActivitiesByDate(activities, date);
+      const dayActivities = isTravel ? [] : getActivitiesByDate(activities, date);
       const dayNaps = dayActivities.filter(a => a.type === "nap");
       
       // Use shared utility to check if nap is daytime
@@ -258,8 +276,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset - 7); // Previous week
       
+      // Skip travel days
+      const isTravel = isTravelDay(date);
+      
       // Use shared date filtering utility
-      const dayActivities = getActivitiesByDate(activities, date);
+      const dayActivities = isTravel ? [] : getActivitiesByDate(activities, date);
       const dayFeeds = dayActivities.filter(a => a.type === "feed");
       
       let totalValue = 0;
@@ -301,8 +322,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset - 7); // Previous week
       
+      // Skip travel days
+      const isTravel = isTravelDay(date);
+      
       // Use shared date filtering utility
-      const dayActivities = getActivitiesByDate(activities, date);
+      const dayActivities = isTravel ? [] : getActivitiesByDate(activities, date);
       const dayNaps = dayActivities.filter(a => a.type === "nap");
       
       let totalHours = 0;
@@ -452,7 +476,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const avgNapLine = (napSummary.avgDuration / maxNapValue) * 100;
 
   // Calculate weekly metrics for sparklines
-  const weeklyMetrics = calculateWeeklyMetrics(activities, nightSleepStartHour, nightSleepEndHour, 6);
+  const weeklyMetrics = calculateWeeklyMetrics(activities, nightSleepStartHour, nightSleepEndHour, 6, travelDayDates);
 
   return (
     <div className="px-4 py-2.5 space-y-4">

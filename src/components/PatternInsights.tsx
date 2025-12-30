@@ -7,12 +7,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PatternInsightsProps {
   activities: Activity[];
+  travelDayDates?: string[];
 }
 
-export const PatternInsights = ({ activities }: PatternInsightsProps) => {
+export const PatternInsights = ({ activities, travelDayDates = [] }: PatternInsightsProps) => {
   const { t } = useLanguage();
   const [expandedInsight, setExpandedInsight] = useState<number | null>(null);
-  const { insights } = usePatternAnalysis(activities);
+  const { insights } = usePatternAnalysis(activities, travelDayDates);
 
   const getConfidenceColor = (confidence: 'high' | 'medium' | 'low') => {
     switch (confidence) {

@@ -58,9 +58,10 @@ interface HomeTabProps {
   showBadge?: boolean;
   percentile?: number | null;
   addActivity?: (type: string, details?: any, activityDate?: Date, activityTime?: string) => Promise<void>;
+  travelDayDates?: string[];
 }
 
-export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile, addActivity }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile, addActivity, travelDayDates = [] }: HomeTabProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
@@ -1529,6 +1530,7 @@ const lastDiaper = displayActivities
           <WeeklyRhythm 
             activities={activities}
             babyName={babyName || 'Baby'}
+            travelDayDates={travelDayDates}
           />
         )}
 

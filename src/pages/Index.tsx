@@ -777,6 +777,7 @@ const ongoingNap = (() => {
           userRole={currentUserRole}
           showBadge={showBadge}
           percentile={percentile}
+          travelDayDates={travelDayDates}
         />;
       case "trends":
         return <TrendsTab activities={activities} travelDayDates={travelDayDates} />;
