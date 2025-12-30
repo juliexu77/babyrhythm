@@ -111,26 +111,18 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-6 bg-background">
-      {/* Soft organic glow - subtle warm halo */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px] pointer-events-none"
-        style={{ background: 'radial-gradient(circle, hsla(18, 50%, 80%, 0.4) 0%, hsla(15, 40%, 85%, 0.2) 50%, transparent 70%)' }}
-      />
-      
       <div className="w-full max-w-md relative z-10">
         
-        {/* Header */}
+        {/* Header - Strava style */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-6 relative">
-            {/* Subtle warm glow - no animation, organic feel */}
-            <div className="absolute w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/15 rounded-full blur-2xl opacity-60"></div>
-            <Activity className="auth-icon w-7 h-7 text-primary relative z-10" strokeWidth={1.5} />
+          <div className="flex items-center justify-center mb-4">
+            <Activity className="w-8 h-8 text-primary" strokeWidth={2.5} />
           </div>
-          <h1 className="text-[22px] md:text-[36px] font-serif font-medium mb-6 tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
-            Step into the rhythm
+          <h1 className="text-xl font-bold uppercase tracking-wider text-foreground mb-3">
+            BabyRhythm
           </h1>
-          <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal max-w-md mx-auto text-muted-foreground">
-            Create an account to start tracking and reflecting your baby's day — and let BabyRhythm guide you toward balance, predictability, and peace of mind.
+          <p className="text-sm text-muted-foreground">
+            Track your baby's daily rhythm
           </p>
         </div>
 
@@ -143,9 +135,10 @@ const Auth = () => {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <Button
                   type="button"
+                  variant="outline"
                   onClick={handleGoogleSignIn}
                   disabled={isLoading}
-                  className="w-full font-sans font-medium rounded-xl"
+                  className="w-full"
                 >
                   <img src="/google-logo.svg" alt="Google" className="mr-2 h-4 w-4" />
                   Sign up with Google
@@ -153,10 +146,10 @@ const Auth = () => {
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                    <span className="w-full border-t border-border" />
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="px-2 font-sans text-xs uppercase tracking-wider text-muted-foreground">
+                  <div className="relative flex justify-center">
+                    <span className="px-2 bg-card text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Or continue with email
                     </span>
                   </div>
@@ -171,7 +164,6 @@ const Auth = () => {
                     placeholder={t('fullName')}
                     required
                     disabled={isLoading}
-                    className="bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -183,11 +175,10 @@ const Auth = () => {
                     placeholder={t('enterEmail')}
                     required
                     disabled={isLoading}
-                    className="bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password" className="text-sm font-medium">{t('password')}</Label>
+                  <Label htmlFor="signup-password">{t('password')}</Label>
                   <Input
                     id="signup-password"
                     name="signup-password"
@@ -195,12 +186,11 @@ const Auth = () => {
                     placeholder={t('enterPassword')}
                     required
                     disabled={isLoading}
-                    className="text-sm bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-sans font-medium rounded-xl shadow-[inset_0_1px_2px_hsla(30,50%,97%,0.3)]" 
+                  className="w-full" 
                   disabled={isLoading}
                 >
                   {isLoading ? t('settingUp') : t('createAccount')}
@@ -210,9 +200,10 @@ const Auth = () => {
               <form onSubmit={handleSignIn} className="space-y-4">
                 <Button
                   type="button"
+                  variant="outline"
                   onClick={handleGoogleSignIn}
                   disabled={isLoading}
-                  className="w-full font-sans font-medium rounded-xl"
+                  className="w-full"
                 >
                   <img src="/google-logo.svg" alt="Google" className="mr-2 h-4 w-4" />
                   Sign in with Google
@@ -220,10 +211,10 @@ const Auth = () => {
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                    <span className="w-full border-t border-border" />
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="px-2 font-sans text-xs uppercase tracking-wider text-muted-foreground">
+                  <div className="relative flex justify-center">
+                    <span className="px-2 bg-card text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Or continue with email
                     </span>
                   </div>
@@ -238,11 +229,10 @@ const Auth = () => {
                     placeholder={t('enterEmail')}
                     required
                     disabled={isLoading}
-                    className="bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password" className="text-sm font-medium">{t('password')}</Label>
+                  <Label htmlFor="signin-password">{t('password')}</Label>
                   <Input
                     id="signin-password"
                     name="signin-password"
@@ -250,12 +240,11 @@ const Auth = () => {
                     placeholder={t('enterPassword')}
                     required
                     disabled={isLoading}
-                    className="text-sm bg-transparent border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-sans font-medium rounded-xl shadow-[inset_0_1px_2px_hsla(30,50%,97%,0.3)]" 
+                  className="w-full" 
                   disabled={isLoading}
                 >
                   {isLoading ? t('loading') : t('signIn')}
@@ -266,14 +255,14 @@ const Auth = () => {
         </Card>
         
         {/* Toggle between sign up and sign in */}
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           {mode === 'signup' ? (
             <>
               Already have an account?{' '}
               <button
                 type="button"
                 onClick={() => setMode('signin')}
-                className="text-primary hover:underline"
+                className="font-bold uppercase tracking-wider text-primary hover:opacity-80 transition-opacity"
               >
                 Sign in
               </button>
@@ -284,7 +273,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setMode('signup')}
-                className="text-primary hover:underline"
+                className="font-bold uppercase tracking-wider text-primary hover:opacity-80 transition-opacity"
               >
                 Sign up
               </button>
