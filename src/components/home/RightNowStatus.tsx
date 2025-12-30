@@ -97,52 +97,43 @@ export const RightNowStatus = ({
   };
 
   return (
-    <div className="px-5 py-4 space-y-4">
-      {/* Main Status Card - Calm inspired with soft gradients */}
-      <div className={`relative overflow-hidden rounded-[28px] bg-gradient-to-br ${getActivityGradient()} backdrop-blur-sm`}>
-        {/* Subtle inner glow */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-        
-        <div className="relative p-6 space-y-5">
-          {/* Status Header with Icon */}
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-card/80 shadow-soft text-primary/80">
-              {getActivityIcon()}
-            </div>
-            <div className="flex-1 pt-1">
-              <p className="text-xl font-serif font-medium text-foreground leading-snug">
-                {currentActivity.statusText}
-              </p>
-              <div className="flex items-center gap-2 mt-1.5 text-sm text-muted-foreground">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{formatDuration(currentActivity.duration)}</span>
-                <span className="text-muted-foreground/50">·</span>
-                <span>since {currentActivity.startTime}</span>
-              </div>
-            </div>
+    <div className="px-4 py-6 space-y-5">
+      {/* Main Status - Headspace inspired: warm, friendly, spacious */}
+      <div className="rounded-[32px] bg-secondary/40 p-6">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center text-primary">
+            {getActivityIcon()}
           </div>
-          
-          {/* Proactive Actions - Soft pill buttons */}
-          {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
-            <div className="flex gap-2.5">
-              <button
-                onClick={onWokeEarly}
-                className="flex-1 py-2.5 px-4 rounded-full bg-card/70 text-sm text-foreground/80 hover:bg-card hover:text-foreground transition-all duration-200 shadow-sm"
-              >
-                {currentActivity.isPastAnticipatedWake ? 'Mark awake' : 'Woke early'}
-              </button>
-              <button
-                onClick={onStillAsleep}
-                className="flex-1 py-2.5 px-4 rounded-full bg-card/70 text-sm text-foreground/80 hover:bg-card hover:text-foreground transition-all duration-200 shadow-sm"
-              >
-                Still asleep
-              </button>
-            </div>
-          )}
+          <div className="flex-1">
+            <p className="text-lg font-medium text-foreground leading-tight">
+              {currentActivity.statusText}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {formatDuration(currentActivity.duration)} · since {currentActivity.startTime}
+            </p>
+          </div>
         </div>
+        
+        {/* Action buttons - friendly pill style */}
+        {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
+          <div className="flex gap-3 mt-5">
+            <button
+              onClick={onWokeEarly}
+              className="flex-1 py-3 px-5 rounded-full bg-card text-foreground text-sm font-medium shadow-sm hover:shadow-md transition-shadow"
+            >
+              {currentActivity.isPastAnticipatedWake ? 'Mark awake' : 'Woke early'}
+            </button>
+            <button
+              onClick={onStillAsleep}
+              className="flex-1 py-3 px-5 rounded-full bg-card text-foreground text-sm font-medium shadow-sm hover:shadow-md transition-shadow"
+            >
+              Still asleep
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* What's Next Card - Gentle, inviting */}
+      {/* What's Next - clean, tappable card */}
       {nextPrediction && (
         <button
           onClick={() => {
@@ -154,40 +145,37 @@ export const RightNowStatus = ({
               onLogPrediction(activityType);
             }
           }}
-          className="w-full text-left group"
+          className="w-full text-left"
         >
-          <div className="rounded-[24px] bg-card/50 backdrop-blur-sm p-5 transition-all duration-300 hover:bg-card/70 hover:shadow-soft">
-            <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-2">
-              Coming Up
+          <div className="rounded-[24px] bg-card p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
+              Coming up
             </p>
-            <p className="text-lg font-serif text-foreground/90 leading-snug group-hover:text-foreground transition-colors">
+            <p className="text-base font-medium text-foreground">
               {nextPrediction.activity}
             </p>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-sm text-muted-foreground">{nextPrediction.timeRange}</span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs bg-primary/10 text-primary/80">
-                {nextPrediction.countdown}
-              </span>
-            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {nextPrediction.timeRange} · {nextPrediction.countdown}
+            </p>
           </div>
         </button>
       )}
 
-      {/* Suggestions - Soft, actionable cards */}
+      {/* Suggestions - simple list style */}
       {suggestions.length > 0 && (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {suggestions.slice(0, 2).map((suggestion) => (
             <button
               key={suggestion.id}
               onClick={suggestion.onClick}
-              className="w-full text-left group"
+              className="w-full text-left"
             >
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-card/40 hover:bg-card/60 transition-all duration-200">
-                <div className="p-2 rounded-xl bg-secondary/30 text-foreground/60 group-hover:text-foreground/80 transition-colors">
+              <div className="flex items-center gap-4 p-4 rounded-[20px] bg-card shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-foreground/70">
                   {suggestion.icon}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors">
+                  <p className="text-sm font-medium text-foreground">
                     {suggestion.title}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
