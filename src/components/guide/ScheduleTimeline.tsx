@@ -244,11 +244,11 @@ export const ScheduleTimeline = ({
   const getConfidenceIndicator = (confidence?: 'high' | 'medium' | 'low') => {
     switch (confidence) {
       case 'high':
-        return { color: 'bg-green-500', dot: '●', label: 'High confidence' };
+        return { color: 'bg-primary', dot: '●', label: 'High confidence' };
       case 'medium':
-        return { color: 'bg-amber-500', dot: '●', label: 'Medium confidence' };
+        return { color: 'bg-accent', dot: '●', label: 'Medium confidence' };
       case 'low':
-        return { color: 'bg-gray-400', dot: '●', label: 'Low confidence' };
+        return { color: 'bg-muted-foreground', dot: '●', label: 'Low confidence' };
       default:
         return { color: 'bg-primary', dot: '●', label: 'Predicted' };
     }
