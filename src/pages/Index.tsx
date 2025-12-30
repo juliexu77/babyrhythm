@@ -1341,12 +1341,8 @@ const ongoingNap = (() => {
 return (
     <ErrorBoundary onRetry={() => { refetchHousehold(); refetchActivities(); }}>
       <div className="min-h-screen pb-16 overflow-x-hidden w-full bg-background">
-        {/* Sticky Header - Strava-inspired */}
-        <header className={`sticky top-0 z-40 transition-all duration-200 ${
-          isScrolled 
-            ? 'bg-background/95 backdrop-blur-md border-b border-border shadow-sm' 
-            : 'bg-background border-b border-transparent'
-        }`}>
+        {/* Fixed Header - Strava-inspired */}
+        <header className="fixed top-0 left-0 right-0 z-40 bg-background border-b border-border">
           <div className="flex items-center justify-between h-14 px-4 pt-safe">
             {/* Left side - Empty for balance */}
             <div className="w-10" />
@@ -1378,10 +1374,12 @@ return (
             </Button>
           </div>
         </header>
-
+        
+        {/* Spacer to prevent content from going under fixed header */}
+        <div className="h-14 pt-safe" />
 
         {activeTab === 'home' && recentCollaboratorActivity && (
-          <div className="sticky top-16 z-20 bg-accent/80 text-foreground border-b border-border px-4 py-2 text-sm text-center animate-in slide-in-from-top">
+          <div className="fixed top-14 left-0 right-0 z-30 bg-accent/80 text-foreground border-b border-border px-4 py-2 text-sm text-center animate-in slide-in-from-top">
             <span className="font-medium">{recentCollaboratorActivity.userName}</span> just {recentCollaboratorActivity.activityType} {babyProfile?.name || 'baby'}
             <button
               onClick={() => setRecentCollaboratorActivity(null)}
