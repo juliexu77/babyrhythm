@@ -572,7 +572,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                   className="text-xs text-white/40 uppercase tracking-widest animate-story-closure-fade"
                   style={{ animationDelay: '1s' }}
                 >
-                  Goodnight · rhythm saved
+                  Tomorrow awaits · rhythm continues
                 </div>
               </div>
             </div>

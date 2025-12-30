@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Moon, Milk, Sun } from "lucide-react";
 
 interface RightNowStatusProps {
   currentActivity: {
@@ -54,164 +52,118 @@ export const RightNowStatus = ({
   nightSleepStartHour,
   nightSleepEndHour
 }: RightNowStatusProps) => {
-  const topSuggestions = suggestions
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, 3);
     
   if (!currentActivity) {
     return (
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
-        <div className="px-4 py-5">
-          <div className="text-center py-8">
-            <p className="text-sm text-muted-foreground">No recent activity detected</p>
-            <p className="text-xs text-muted-foreground mt-1">Log an activity to get started</p>
-          </div>
-        </div>
+      <div className="px-4 py-6">
+        <p className="text-sm text-muted-foreground text-center">
+          No recent activity detected
+        </p>
       </div>
     );
   }
 
-  return (
-    <>
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
-        <div className="px-4 py-5">
-          {/* Current Status */}
-          <div className="mb-3">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
-              Right Now
-            </h3>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && <Moon className="w-5 h-5 text-primary" />}
-                {currentActivity.type === 'feeding' && <Milk className="w-5 h-5 text-primary" />}
-                {currentActivity.type === 'awake' && <Sun className="w-5 h-5 text-primary" />}
-              </div>
-              <div>
-                <p className="text-base font-semibold text-foreground">
-                  {currentActivity.statusText}
-                </p>
-              </div>
-            </div>
-          </div>
+  // Format duration into readable text
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  };
 
-        {/* What's Next - Moved above Suggested Actions */}
-        {nextPrediction && (
-          <div className="mt-3 pt-3 border-t border-border/30">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
-              What's Next
-            </h3>
+  return (
+    <div className="px-4 py-6 space-y-6">
+      {/* Current Status - Typographic, minimal */}
+      <div>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
+          Right Now
+        </p>
+        <p className="text-2xl font-serif font-light text-foreground leading-tight">
+          {currentActivity.statusText}
+        </p>
+        <p className="text-sm text-muted-foreground mt-1 font-mono">
+          {formatDuration(currentActivity.duration)} · since {currentActivity.startTime}
+        </p>
+        
+        {/* Proactive Actions - Inline, minimal */}
+        {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
+          <div className="flex gap-3 mt-4">
             <button
-              onClick={() => {
-                if (onLogPrediction) {
-                  // Determine activity type from prediction text
-                  const activityType = nextPrediction.activity.toLowerCase().includes('nap') || 
-                                       nextPrediction.activity.toLowerCase().includes('sleep') 
-                    ? 'nap' 
-                    : 'feed';
-                  onLogPrediction(activityType);
-                }
-              }}
-              className="w-full p-3 bg-muted/20 hover:bg-muted/30 rounded-lg border border-border/30 transition-colors text-left active:scale-[0.98]"
+              onClick={onWokeEarly}
+              className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
             >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-foreground">
-                  {nextPrediction.activity}
-                </p>
-                {nextPrediction.confidence && (
-                  <Badge variant="secondary" className="text-xs">
-                    {nextPrediction.confidence} confidence
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  Expected: {nextPrediction.timeRange}
-                </p>
-                <p className="text-xs text-muted-foreground font-mono">
-                  {nextPrediction.countdown}
-                </p>
-              </div>
+              {currentActivity.isPastAnticipatedWake ? 'Mark awake' : 'Woke early'}
+            </button>
+            <button
+              onClick={onStillAsleep}
+              className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+            >
+              Still asleep
             </button>
           </div>
         )}
+      </div>
 
-        {/* Suggested Actions */}
-        {suggestions.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-border/30">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
-              Suggested Actions
-            </h3>
-            <div className="space-y-3">
-              {suggestions.slice(0, 3).map((suggestion) => (
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-border/50 via-border/30 to-transparent" />
+
+      {/* What's Next - Editorial style */}
+      {nextPrediction && (
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
+            What's Next
+          </p>
+          <button
+            onClick={() => {
+              if (onLogPrediction) {
+                const activityType = nextPrediction.activity.toLowerCase().includes('nap') || 
+                                     nextPrediction.activity.toLowerCase().includes('sleep') 
+                  ? 'nap' 
+                  : 'feed';
+                onLogPrediction(activityType);
+              }
+            }}
+            className="w-full text-left group"
+          >
+            <p className="text-lg font-serif text-foreground/90 leading-snug group-hover:text-foreground transition-colors">
+              {nextPrediction.activity}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              <span className="font-mono">{nextPrediction.timeRange}</span>
+              <span className="mx-2">·</span>
+              <span className="font-mono">{nextPrediction.countdown}</span>
+            </p>
+          </button>
+        </div>
+      )}
+
+      {/* Suggested Actions - Minimal list */}
+      {suggestions.length > 0 && (
+        <>
+          <div className="h-px bg-gradient-to-r from-border/50 via-border/30 to-transparent" />
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
+              Suggestions
+            </p>
+            <div className="space-y-2">
+              {suggestions.slice(0, 2).map((suggestion) => (
                 <button
                   key={suggestion.id}
                   onClick={suggestion.onClick}
-                  className="w-full p-2.5 bg-muted/20 hover:bg-muted/40 rounded-lg border border-border/30 transition-colors text-left"
+                  className="w-full text-left py-2 group"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      {suggestion.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {suggestion.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {suggestion.subtitle}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-foreground/80 group-hover:text-foreground transition-colors">
+                    {suggestion.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {suggestion.subtitle}
+                  </p>
                 </button>
               ))}
             </div>
           </div>
-        )}
-
-        {/* Proactive Action Buttons */}
-        <div className="flex gap-2 mt-3">
-          {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onWokeEarly}
-                className="flex-1 text-sm border-0"
-              >
-                {currentActivity.isPastAnticipatedWake ? 'Mark as awake' : 'Woke up early'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onStillAsleep}
-                className="flex-1 text-sm border-0"
-              >
-                Still asleep
-              </Button>
-            </>
-          )}
-          {currentActivity.type === 'awake' && nextPrediction?.activity.includes('Nap') && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onStartNap}
-              className="flex-1 text-xs"
-            >
-              Start nap timer
-            </Button>
-          )}
-          {currentActivity.type === 'feeding' && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onEndFeed}
-              className="flex-1 text-xs"
-            >
-              End feed
-            </Button>
-          )}
-        </div>
-        </div>
-      </div>
-    </>
+        </>
+      )}
+    </div>
   );
 };
