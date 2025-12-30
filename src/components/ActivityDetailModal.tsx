@@ -25,11 +25,11 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case "feed": return "text-pink-600 bg-pink-50";
-      case "diaper": return "text-amber-600 bg-amber-50";
-      case "nap": return "text-blue-600 bg-blue-50";
-      case "note": return "text-green-600 bg-green-50";
-      default: return "text-gray-600 bg-gray-50";
+      case "feed": return "text-primary bg-primary/10";
+      case "diaper": return "text-accent-foreground bg-accent/50";
+      case "nap": return "text-primary bg-primary/10";
+      case "note": return "text-muted-foreground bg-muted";
+      default: return "text-muted-foreground bg-muted";
     }
   };
 

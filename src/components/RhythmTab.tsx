@@ -317,13 +317,13 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
   
   // Get icon color for each pattern
   const getPatternColor = (pattern: string): string => {
-    if (pattern === "Smooth Flow") return "text-amber-600";
-    if (pattern === "Building Rhythm") return "text-green-600";
+    if (pattern === "Smooth Flow") return "text-primary";
+    if (pattern === "Building Rhythm") return "text-primary";
     if (pattern === "In Sync") return "text-primary";
-    if (pattern === "Extra Sleepy") return "text-blue-600";
-    if (pattern === "Active Feeding") return "text-purple-600";
-    if (pattern === "Off Rhythm") return "text-slate-600";
-    return "text-green-600";
+    if (pattern === "Extra Sleepy") return "text-muted-foreground";
+    if (pattern === "Active Feeding") return "text-primary";
+    if (pattern === "Off Rhythm") return "text-muted-foreground";
+    return "text-primary";
   };
 
   // Calculate last month's data for progress comparison (safe even without household)

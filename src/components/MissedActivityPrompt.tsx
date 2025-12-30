@@ -29,14 +29,14 @@ export const MissedActivityPrompt = ({
   };
 
   return (
-    <div className="p-4 bg-purple-50/80 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+    <div className="p-4 bg-accent/30 border border-border rounded-strava">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 mt-0.5">
-          <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          <Clock className="h-5 w-5 text-primary" />
         </div>
         
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-3">
+          <p className="text-sm font-medium text-foreground mb-3">
             {suggestion.message}
           </p>
           
@@ -46,7 +46,7 @@ export const MissedActivityPrompt = ({
               variant="default"
               onClick={handleAccept}
               disabled={isLoading}
-              className="bg-primary hover:bg-primary/90"
+              className="rounded-strava"
             >
               {isLoading ? "Logging..." : "Yes, log it"}
             </Button>
@@ -56,7 +56,7 @@ export const MissedActivityPrompt = ({
               variant="outline"
               onClick={onEdit}
               disabled={isLoading}
-              className="border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+              className="rounded-strava"
             >
               Edit
             </Button>
@@ -66,20 +66,19 @@ export const MissedActivityPrompt = ({
               variant="ghost"
               onClick={onDismiss}
               disabled={isLoading}
-              className="text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30"
             >
               No
             </Button>
           </div>
           
-          <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 opacity-75">
+          <p className="text-xs text-muted-foreground mt-2">
             Based on your regular patterns
           </p>
         </div>
         
         <button
           onClick={onDismiss}
-          className="flex-shrink-0 text-purple-400 hover:text-purple-600 dark:text-purple-500 dark:hover:text-purple-300 transition-colors"
+          className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Dismiss"
         >
           <X className="h-4 w-4" />
