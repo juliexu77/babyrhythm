@@ -801,37 +801,33 @@ const ongoingNap = (() => {
       return <SettingsPage />;
     case "history":
         return (
-          <div className="min-h-screen relative">
-            {/* Soft studio-lighting gradient - whisper of warmth top to bottom */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[hsl(28,40%,94%)]/70 via-[hsl(25,35%,92%)]/40 to-transparent dark:from-transparent dark:via-transparent dusk:from-transparent dusk:via-transparent pointer-events-none" />
-            
-            {/* Action buttons - elegant style */}
-            <div className="relative mx-4 pt-6 pb-4">
-              <div className="flex items-center gap-3">
+          <div className="min-h-screen bg-background">
+            {/* Action buttons - Strava-style */}
+            <div className="mx-4 pt-4 pb-2">
+              <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
-                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary dusk:text-primary hover:opacity-80 transition-opacity font-medium"
+                  className="text-sm font-bold uppercase tracking-wide text-primary hover:opacity-80 transition-opacity"
                 >
-                  Pediatrician Report
+                  Report
                 </button>
-                <span className="text-[hsl(20,22%,78%)] dark:text-border dusk:text-border">•</span>
                 <button 
                   onClick={() => setShowCSVExport(true)}
-                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary dusk:text-primary hover:opacity-80 transition-opacity font-medium"
+                  className="text-sm font-bold uppercase tracking-wide text-primary hover:opacity-80 transition-opacity"
                 >
-                  Export CSV
+                  Export
                 </button>
               </div>
             </div>
             
             {/* Hint about travel day feature */}
-            <p className="text-xs italic text-muted-foreground px-4 pb-2">
-              Tap a date to mark as travel day and exclude from trends
+            <p className="text-xs text-muted-foreground px-4 pb-3">
+              Tap a date to mark as travel day
             </p>
             
-            {/* Activities Timeline - increased spacing */}
-            <div className="relative px-4 py-4">
-              <div className="space-y-6 pb-20">
+            {/* Activities Timeline - Strava list style */}
+            <div className="px-4 pb-20">
+              <div className="space-y-4">
                 {(() => {
                     // Filter activities by selected types
                     const filteredActivities = activities.filter(activity => 
@@ -945,11 +941,11 @@ const ongoingNap = (() => {
                           }
 
                           return (
-                            <div key={dateKey} className="mb-6">
-                              {/* Day section with soft tonal block background - like warm paper */}
-                              <div className="bg-[hsl(24,30%,91%)]/45 dark:bg-card/25 dusk:bg-card/40 rounded-xl px-3 py-3 -mx-1">
+                            <div key={dateKey} className="mb-4">
+                              {/* Day section - Strava card style */}
+                              <div className="bg-card rounded-strava border border-border overflow-hidden">
                                 {/* Date Header - tappable to mark as travel day */}
-                                <div className="flex items-center justify-between pb-2 pt-1">
+                                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                                   <button
                                     onClick={async () => {
                                       try {
@@ -968,17 +964,17 @@ const ongoingNap = (() => {
                                         });
                                       }
                                     }}
-                                    className="flex items-center gap-1.5 group"
+                                    className="flex items-center gap-2 group"
                                   >
-                                    <h3 className={`text-xs font-serif font-medium uppercase tracking-widest transition-colors ${
+                                    <h3 className={`text-xs font-bold uppercase tracking-wider transition-colors ${
                                       isTravelDay(dateKey) 
-                                        ? "text-primary dark:text-primary dusk:text-primary" 
-                                        : "text-[hsl(20,25%,48%)] dark:text-foreground/80 dusk:text-foreground/80 group-hover:text-primary/70"
+                                        ? "text-primary" 
+                                        : "text-foreground group-hover:text-primary"
                                     }`}>
                                       {displayDate}
                                     </h3>
                                     {isTravelDay(dateKey) && (
-                                      <Plane className="h-3 w-3 text-primary" />
+                                      <Plane className="h-3.5 w-3.5 text-primary" />
                                     )}
                                   </button>
                                   
@@ -1109,10 +1105,8 @@ const ongoingNap = (() => {
                   )}
                                 </div>
                                 
-                                {/* Activities for this date - dense layout */}
-                                <div className="relative space-y-0 pl-1">
-                                {/* Continuous timeline line - warmed clay-rose */}
-                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-[hsl(18,25%,78%)] dark:bg-border/40 dusk:bg-border/40"></div>
+                                {/* Activities for this date - Strava list style */}
+                                <div className="divide-y divide-border">
                                   {(() => {
                                     // To detect night sleep for this day, we need to check:
                                     // 1. Sleeps that started TODAY and ended TODAY
@@ -1265,19 +1259,15 @@ const ongoingNap = (() => {
                           );
                         })}
 
-                        {/* Show More/Less Button with gradient overlay */}
+                        {/* Show More/Less Button - Strava style */}
                         {sortedDates.length > visibleDates.length && !showFullTimeline && (
-                          <div className="relative pt-8">
-                            {/* Gradient overlay */}
-                            <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background/0 to-background pointer-events-none" />
-                            <div className="text-center relative">
-                              <button
-                                onClick={() => setShowFullTimeline(!showFullTimeline)}
-                                className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
-                              >
-                                {`Show ${sortedDates.length - visibleDates.length} more days`}
-                              </button>
-                            </div>
+                          <div className="text-center pt-4">
+                            <button
+                              onClick={() => setShowFullTimeline(!showFullTimeline)}
+                              className="text-sm font-bold uppercase tracking-wide text-primary hover:opacity-80 transition-opacity"
+                            >
+                              Show {sortedDates.length - visibleDates.length} more days
+                            </button>
                           </div>
                         )}
                         
@@ -1286,7 +1276,7 @@ const ongoingNap = (() => {
                           <div className="text-center pt-4">
                             <button
                               onClick={() => setShowFullTimeline(false)}
-                              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
+                              className="text-sm font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
                             >
                               Show less
                             </button>
