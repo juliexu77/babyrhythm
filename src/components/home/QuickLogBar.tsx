@@ -15,43 +15,57 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
   };
 
   return (
-    <div className="mx-3 mb-4">
-      {/* Thicker, more tactile container - uses design system tokens */}
-      <div className="flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark rounded-2xl border border-border/40 shadow-card dark:from-card dark:to-card dark:border-border/30 dark:shadow-none dusk:from-card dusk:to-card dusk:border-border/30 dusk:shadow-none">
-        <span className="text-[11px] font-medium text-muted-foreground tracking-wide uppercase mr-auto">
-          Quick log
-        </span>
-        <Button
-          size="sm"
-          variant="outline"
+    <div className="mx-4 mb-5">
+      {/* Strava-style action bar - bold labels, clean layout */}
+      <div className="flex items-center gap-3">
+        <button
           onClick={() => handleQuickLog('feed')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-background/60 hover:bg-background/80 border-border/50 shadow-soft dark:bg-card dark:border-border/30 dark:hover:bg-accent/10 dusk:bg-card dusk:border-border/30 dusk:hover:bg-accent/10"
+          className="flex-1 flex items-center justify-center gap-2 py-4 px-3 
+                     bg-card border border-border rounded-strava
+                     hover:bg-accent/10 active:bg-accent/20 
+                     transition-colors disabled:opacity-50
+                     dark:bg-card dark:border-border/50
+                     dusk:bg-card dusk:border-border/50"
         >
-          <Milk className="w-4.5 h-4.5 text-primary dark:text-foreground/80 dusk:text-foreground/80" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
+          <Milk className="w-5 h-5 text-primary" />
+          <span className="text-sm font-semibold uppercase tracking-caps text-foreground">
+            Feed
+          </span>
+        </button>
+        
+        <button
           onClick={() => handleQuickLog('nap')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-background/60 hover:bg-background/80 border-border/50 shadow-soft dark:bg-card dark:border-border/30 dark:hover:bg-accent/10 dusk:bg-card dusk:border-border/30 dusk:hover:bg-accent/10"
+          className="flex-1 flex items-center justify-center gap-2 py-4 px-3 
+                     bg-card border border-border rounded-strava
+                     hover:bg-accent/10 active:bg-accent/20 
+                     transition-colors disabled:opacity-50
+                     dark:bg-card dark:border-border/50
+                     dusk:bg-card dusk:border-border/50"
         >
-          <Moon className="w-4.5 h-4.5 text-muted-foreground dark:text-foreground/80 dusk:text-foreground/80" />
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
+          <Moon className="w-5 h-5 text-muted-foreground" />
+          <span className="text-sm font-semibold uppercase tracking-caps text-foreground">
+            Sleep
+          </span>
+        </button>
+        
+        <button
           onClick={() => handleQuickLog('diaper')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-background/60 hover:bg-background/80 border-border/50 shadow-soft dark:bg-card dark:border-border/30 dark:hover:bg-accent/10 dusk:bg-card dusk:border-border/30 dusk:hover:bg-accent/10"
+          className="flex-1 flex items-center justify-center gap-2 py-4 px-3 
+                     bg-card border border-border rounded-strava
+                     hover:bg-accent/10 active:bg-accent/20 
+                     transition-colors disabled:opacity-50
+                     dark:bg-card dark:border-border/50
+                     dusk:bg-card dusk:border-border/50"
         >
-          <Droplet className="w-4.5 h-4.5 text-muted-foreground dark:text-foreground/80 dusk:text-foreground/80" />
-        </Button>
+          <Droplet className="w-5 h-5 text-muted-foreground" />
+          <span className="text-sm font-semibold uppercase tracking-caps text-foreground">
+            Diaper
+          </span>
+        </button>
       </div>
-      <p className="text-[10px] text-center text-muted-foreground mt-2">
-        Tap to log with current time—adjust details later if needed
-      </p>
     </div>
   );
 };

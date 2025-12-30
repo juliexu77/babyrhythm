@@ -55,8 +55,8 @@ export const RightNowStatus = ({
     
   if (!currentActivity) {
     return (
-      <div className="px-4 py-6">
-        <div className="border-b border-border/30 pb-4">
+      <div className="mx-4 mb-4">
+        <div className="bg-card border border-border rounded-strava p-4">
           <p className="text-sm text-muted-foreground">
             No recent activity
           </p>
@@ -65,13 +65,21 @@ export const RightNowStatus = ({
     );
   }
 
-  // Format duration into readable text
+  // Format duration - Strava style with big numbers
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    if (hours === 0) return { value: mins, unit: 'min' };
-    if (mins === 0) return { value: hours, unit: hours === 1 ? 'hr' : 'hrs' };
-    return { value: `${hours}:${mins.toString().padStart(2, '0')}`, unit: 'hrs' };
+    if (hours === 0) return { value: mins.toString(), unit: 'min' };
+    if (mins === 0) return { value: hours.toString(), unit: hours === 1 ? 'hr' : 'hrs' };
+    return { value: `${hours}:${mins.toString().padStart(2, '0')}`, unit: '' };
+  };
+
+  // Get activity label - uppercase Strava style
+  const getActivityLabel = () => {
+    if (currentActivity.type === 'napping') return 'NAP TIME';
+    if (currentActivity.type === 'sleeping') return 'NIGHT SLEEP';
+    if (currentActivity.type === 'feeding') return 'FEEDING';
+    return 'AWAKE';
   };
 
   // Get icon for current activity
@@ -85,24 +93,19 @@ export const RightNowStatus = ({
     return <Sun className="w-5 h-5" />;
   };
 
-  // Get activity label
-  const getActivityLabel = () => {
-    if (currentActivity.type === 'napping') return 'Nap';
-    if (currentActivity.type === 'sleeping') return 'Night Sleep';
-    if (currentActivity.type === 'feeding') return 'Feeding';
-    return 'Awake';
-  };
-
   const duration = formatDuration(currentActivity.duration);
 
   return (
-    <div className="px-4 py-2">
-      {/* Main Activity - Strava style: big numbers, clean layout */}
-      <div className="border-b border-border/30 pb-5 mb-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            {getActivityIcon()}
-            <span className="text-sm font-medium uppercase tracking-wide">
+    <div className="mx-4 space-y-3">
+      {/* Main Activity Card - Strava style: big stats, clean layout */}
+      <div className="bg-card border border-border rounded-strava overflow-hidden">
+        {/* Header */}
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="text-primary">
+              {getActivityIcon()}
+            </div>
+            <span className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
               {getActivityLabel()}
             </span>
           </div>
@@ -111,41 +114,49 @@ export const RightNowStatus = ({
           </span>
         </div>
         
-        {/* Big stat display */}
-        <div className="flex items-baseline gap-1 mb-4">
-          <span className="text-5xl font-bold tracking-tight text-foreground">
-            {duration.value}
-          </span>
-          <span className="text-lg text-muted-foreground font-medium">
-            {duration.unit}
-          </span>
+        {/* Big stat display - Strava's signature look */}
+        <div className="px-4 pb-2">
+          <div className="flex items-baseline gap-1">
+            <span className="text-stat-xl text-foreground">
+              {duration.value}
+            </span>
+            {duration.unit && (
+              <span className="text-lg font-medium text-muted-foreground">
+                {duration.unit}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Status text */}
-        <p className="text-sm text-muted-foreground mb-4">
-          {currentActivity.statusText}
-        </p>
+        <div className="px-4 pb-4">
+          <p className="text-sm text-muted-foreground">
+            {currentActivity.statusText}
+          </p>
+        </div>
         
-        {/* Action buttons - Strava style: bold, full-width options */}
+        {/* Action buttons - Strava style: bold, full-width */}
         {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
-          <div className="flex gap-2">
+          <div className="border-t border-border flex">
             <button
               onClick={onWokeEarly}
-              className="flex-1 py-3 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold"
+              className="flex-1 py-4 text-sm font-semibold text-primary hover:bg-accent/10 
+                         active:bg-accent/20 transition-colors border-r border-border"
             >
-              {currentActivity.isPastAnticipatedWake ? 'Mark Awake' : 'Woke Early'}
+              {currentActivity.isPastAnticipatedWake ? 'MARK AWAKE' : 'WOKE EARLY'}
             </button>
             <button
               onClick={onStillAsleep}
-              className="flex-1 py-3 px-4 rounded-lg border border-border text-foreground text-sm font-semibold"
+              className="flex-1 py-4 text-sm font-semibold text-foreground hover:bg-accent/10 
+                         active:bg-accent/20 transition-colors"
             >
-              Still Asleep
+              STILL ASLEEP
             </button>
           </div>
         )}
       </div>
 
-      {/* What's Next - Activity feed item style */}
+      {/* What's Next Card - Activity feed item style */}
       {nextPrediction && (
         <button
           onClick={() => {
@@ -157,11 +168,12 @@ export const RightNowStatus = ({
               onLogPrediction(activityType);
             }
           }}
-          className="w-full text-left border-b border-border/30 pb-4 mb-4 group"
+          className="w-full bg-card border border-border rounded-strava p-4 
+                     hover:bg-accent/5 active:bg-accent/10 transition-colors text-left group"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+              <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground mb-1">
                 Up Next
               </p>
               <p className="text-base font-semibold text-foreground">
@@ -176,21 +188,25 @@ export const RightNowStatus = ({
         </button>
       )}
 
-      {/* Suggestions - Simple list items */}
+      {/* Quick Actions - Simple list items with chevrons */}
       {suggestions.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
-            Quick Actions
-          </p>
-          {suggestions.slice(0, 2).map((suggestion) => (
+        <div className="bg-card border border-border rounded-strava overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
+            <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
+              Quick Actions
+            </p>
+          </div>
+          {suggestions.slice(0, 2).map((suggestion, index) => (
             <button
               key={suggestion.id}
               onClick={suggestion.onClick}
-              className="w-full text-left group"
+              className={`w-full text-left group ${
+                index < suggestions.slice(0, 2).length - 1 ? 'border-b border-border' : ''
+              }`}
             >
-              <div className="flex items-center justify-between py-3 border-b border-border/20">
+              <div className="flex items-center justify-between p-4 hover:bg-accent/5 active:bg-accent/10 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-secondary/30 flex items-center justify-center text-muted-foreground">
                     {suggestion.icon}
                   </div>
                   <div>

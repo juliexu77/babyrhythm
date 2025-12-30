@@ -19,20 +19,30 @@ export default {
         display: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
         serif: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
         num: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
+        // Strava-style athletic fonts
+        athletic: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
       },
       letterSpacing: {
         'rare': '-0.015em',
         'rare-tight': '-0.025em',
-        'caps': '0.04em', // For uppercase labels
+        'caps': '0.08em', // Strava uses wider letter-spacing for uppercase
+        'tight': '-0.02em', // Tight tracking for large numbers
       },
       fontWeight: {
         'body': '400',
-        'label': '500',
-        'heading': '600',
+        'label': '600', // Strava uses bolder labels
+        'heading': '700', // Bold headings
+        'stat': '800', // Extra bold for stats
       },
       lineHeight: {
-        'body': '1.6',
-        'heading': '1.3',
+        'body': '1.5',
+        'heading': '1.2', // Tighter for headlines
+        'stat': '1.0', // Very tight for large numbers
+      },
+      fontSize: {
+        'stat-xl': ['3.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '800' }],
+        'stat-lg': ['2.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'stat-md': ['1.75rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
       },
       opacity: {
         'icon': '0.88',
@@ -140,9 +150,12 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 4px)", 
         sm: "calc(var(--radius) - 8px)",
-        sharp: "8px",
-        "3xl": "24px",
-        "4xl": "28px", // Rare Beauty tactile cards
+        sharp: "4px", // Strava uses sharper corners
+        "3xl": "16px", // Less rounded for Strava aesthetic
+        "4xl": "20px",
+        // Strava-style card radiuses
+        "strava": "12px",
+        "strava-sm": "8px",
       },
       keyframes: {
         "accordion-down": {

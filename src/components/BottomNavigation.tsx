@@ -12,20 +12,20 @@ interface BottomNavigationProps {
 export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addButtonRef }: BottomNavigationProps) => {
   const { t } = useLanguage();
   
-const leftTabs = [
-    { id: "home", label: "Home", icon: Home },
-    { id: "trends", label: "Trends", icon: TrendingUp },
+  const leftTabs = [
+    { id: "home", label: "HOME", icon: Home },
+    { id: "trends", label: "TRENDS", icon: TrendingUp },
   ];
   
   const rightTabs = [
-    { id: "rhythm", label: "Guide", icon: Activity },
-    { id: "history", label: "History", icon: List },
+    { id: "rhythm", label: "GUIDE", icon: Activity },
+    { id: "history", label: "HISTORY", icon: List },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background/60 backdrop-blur-lg border-t border-border/50 z-50">
-      <div className="max-w-md mx-auto px-4 py-1.5 pb-4">
-        <div className="grid grid-cols-5 gap-2 items-center justify-items-center">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
+      <div className="max-w-md mx-auto px-2">
+        <div className="grid grid-cols-5 items-center h-16">
           {/* Left tabs */}
           {leftTabs.map((tab) => {
             const Icon = tab.icon;
@@ -36,32 +36,31 @@ const leftTabs = [
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 data-tab={tab.id}
-                className={`flex flex-col items-center space-y-0.5 transition-colors ${
+                className={`flex flex-col items-center justify-center h-full transition-colors ${
                   isActive 
                     ? "text-primary" 
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Icon 
-                  className="w-6 h-6" 
-                  fill={isActive && tab.id === 'home' ? 'currentColor' : 'none'}
-                  strokeWidth={isActive && tab.id === 'home' ? 0 : 2}
+                  className="w-6 h-6 mb-0.5" 
+                  strokeWidth={isActive ? 2.5 : 2}
                 />
-                <span className="text-xs font-serif font-medium">{tab.label}</span>
+                <span className="text-[10px] font-semibold tracking-caps">{tab.label}</span>
               </button>
             );
           })}
 
-          {/* Central Add Button */}
+          {/* Central Add Button - Strava style: prominent, circular */}
           <div className="flex justify-center">
             <button
               ref={addButtonRef}
               onClick={onAddActivity}
-              className="w-14 h-14 bg-primary rounded-full 
+              className="w-14 h-14 -mt-4 bg-primary rounded-full 
                        flex items-center justify-center shadow-lg
-                       hover:scale-105 transition-transform duration-200"
+                       hover:scale-105 active:scale-95 transition-transform duration-150"
             >
-              <Plus className="w-6 h-6 text-primary-foreground" />
+              <Plus className="w-7 h-7 text-primary-foreground" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -75,19 +74,24 @@ const leftTabs = [
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 data-tab={tab.id}
-                className={`flex flex-col items-center space-y-0.5 transition-colors ${
+                className={`flex flex-col items-center justify-center h-full transition-colors ${
                   isActive 
                     ? "text-primary" 
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-6 h-6" />
-                <span className="text-xs font-serif font-medium">{tab.label}</span>
+                <Icon 
+                  className="w-6 h-6 mb-0.5" 
+                  strokeWidth={isActive ? 2.5 : 2}
+                />
+                <span className="text-[10px] font-semibold tracking-caps">{tab.label}</span>
               </button>
             );
           })}
         </div>
       </div>
+      {/* Safe area for iOS */}
+      <div className="h-safe-area-inset-bottom bg-background" />
     </div>
   );
 };
