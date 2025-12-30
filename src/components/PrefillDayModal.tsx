@@ -206,8 +206,8 @@ export const PrefillDayModal = ({
             />
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
-            <p className="text-xs text-blue-900 dark:text-blue-100 leading-relaxed">
+          <div className="bg-accent/30 rounded-strava p-3 border border-border">
+            <p className="text-xs text-foreground leading-relaxed">
               <strong>Note:</strong> You can edit or delete any of these activities afterward. This is just to help you see predictions and patterns right away!
             </p>
           </div>

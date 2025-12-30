@@ -569,7 +569,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Subtle bottom text only */}
               <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
                 <div 
-                  className="text-xs text-white/40 uppercase tracking-widest animate-story-closure-fade"
+                  className="text-xs text-primary-foreground/40 uppercase tracking-widest animate-story-closure-fade"
                   style={{ animationDelay: '1s' }}
                 >
                   Tomorrow awaits · rhythm continues

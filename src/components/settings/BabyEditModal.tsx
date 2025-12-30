@@ -219,7 +219,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
               </Button>
             </div>
             {babySexSaveStatus === "saved" && (
-              <p className="text-xs text-green-600 mt-1">Saved</p>
+              <p className="text-xs text-primary mt-1">Saved</p>
             )}
             {babySexSaveStatus === "error" && (
               <p className="text-xs text-destructive mt-1">Failed to save</p>

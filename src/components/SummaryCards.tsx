@@ -70,7 +70,7 @@ export const SummaryCards = ({ activities }: SummaryCardsProps) => {
           <div className="text-3xl font-num font-semibold text-[hsl(18,30%,30%)] dark:font-bold dark:text-primary">
             {napActivities.length}
           </div>
-          <div className="text-sm text-blue-600 font-medium">
+          <div className="text-sm text-primary font-medium">
             {formatNapTime(totalNapTime)}
           </div>
         </div>
