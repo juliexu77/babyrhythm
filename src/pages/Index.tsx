@@ -1351,43 +1351,43 @@ const ongoingNap = (() => {
 return (
     <ErrorBoundary onRetry={() => { refetchHousehold(); refetchActivities(); }}>
       <div className="min-h-screen pb-16 overflow-x-hidden w-full bg-background">
-        <div className={`sticky top-0 z-30 bg-background/60 backdrop-blur-sm border-b border-border/20 pt-12 pb-3 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
-          <div className="flex items-center justify-between w-full px-4">
-            {/* Left side - Empty */}
-            <div className="flex items-center gap-2 w-20">
-            </div>
+        {/* Sticky Header - Strava-inspired */}
+        <header className={`sticky top-0 z-40 transition-all duration-200 ${
+          isScrolled 
+            ? 'bg-background/95 backdrop-blur-md border-b border-border shadow-sm' 
+            : 'bg-background border-b border-transparent'
+        }`}>
+          <div className="flex items-center justify-between h-14 px-4 pt-safe">
+            {/* Left side - Empty for balance */}
+            <div className="w-10" />
             
-            {/* Center - Tab name */}
-            <div className="flex-1 flex justify-center">
-              <h1 className="text-base font-serif font-bold text-foreground">
-                {activeTab === 'home' && 'Home'}
-                {activeTab === 'rhythm' && 'Rhythm'}
-                {activeTab === 'trends' && 'Trends'}
-                {activeTab === 'history' && 'History'}
-                {activeTab === 'settings' && 'Settings'}
-              </h1>
-            </div>
+            {/* Center - Tab name in bold uppercase */}
+            <h1 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              {activeTab === 'home' && 'Today'}
+              {activeTab === 'rhythm' && 'Rhythm'}
+              {activeTab === 'trends' && 'Trends'}
+              {activeTab === 'history' && 'History'}
+              {activeTab === 'settings' && 'Settings'}
+            </h1>
             
-            {/* Right side - Settings gear */}
-            <div className="flex items-center gap-2 w-20 justify-end">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => {
-                  if (activeTab === "settings") {
-                    setActiveTab(previousTab);
-                  } else {
-                    setPreviousTab(activeTab);
-                    setActiveTab("settings");
-                  }
-                }}
-                className="p-2"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-            </div>
+            {/* Right side - Settings icon */}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => {
+                if (activeTab === "settings") {
+                  setActiveTab(previousTab);
+                } else {
+                  setPreviousTab(activeTab);
+                  setActiveTab("settings");
+                }
+              }}
+              className="w-10 h-10"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
           </div>
-        </div>
+        </header>
 
 
         {activeTab === 'home' && recentCollaboratorActivity && (
