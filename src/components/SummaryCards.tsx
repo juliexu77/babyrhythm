@@ -1,5 +1,5 @@
 import { Activity } from "./ActivityCard";
-import { Baby, Clock } from "lucide-react";
+import { Baby, Moon, Droplets } from "lucide-react";
 
 interface SummaryCardsProps {
   activities: Activity[];
@@ -8,6 +8,7 @@ interface SummaryCardsProps {
 export const SummaryCards = ({ activities }: SummaryCardsProps) => {
   const feedActivities = activities.filter(a => a.type === "feed");
   const napActivities = activities.filter(a => a.type === "nap");
+  const diaperActivities = activities.filter(a => a.type === "diaper");
   
   const totalOunces = feedActivities.reduce((sum, feed) => {
     const quantity = parseFloat(feed.details.quantity || "0");
@@ -16,7 +17,6 @@ export const SummaryCards = ({ activities }: SummaryCardsProps) => {
 
   const totalNapTime = napActivities.reduce((sum, nap) => {
     if (nap.details.startTime && nap.details.endTime) {
-      // Simple calculation - assumes same day
       const start = new Date(`2000/01/01 ${nap.details.startTime}`);
       const end = new Date(`2000/01/01 ${nap.details.endTime}`);
       const diff = end.getTime() - start.getTime();
@@ -35,44 +35,59 @@ export const SummaryCards = ({ activities }: SummaryCardsProps) => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 mb-8">
-      {/* Total Feeds Card */}
-      <div className="bg-gradient-to-br from-[hsl(18,40%,92%)] to-[hsl(15,38%,88%)]/50 dark:from-card dark:to-card rounded-xl p-6 border border-[hsl(15,35%,80%)]/30 dark:border-border/30">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-feed flex items-center justify-center">
-            <Baby className="w-5 h-5 text-[hsl(30,50%,97%)]" />
-          </div>
-          <div className="text-sm font-medium text-[hsl(12,40%,40%)] dark:text-foreground/70 uppercase tracking-wide">
-            Total Feeds
+    <div className="grid grid-cols-3 gap-3 mb-6">
+      {/* Feeds Card */}
+      <div className="bg-card rounded-strava p-4 border border-border">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-feed flex items-center justify-center">
+            <Baby className="w-4 h-4 text-primary-foreground" />
           </div>
         </div>
-        <div className="space-y-1">
-          <div className="text-3xl font-num font-semibold text-[hsl(12,35%,30%)] dark:font-bold dark:text-primary">
-            {feedActivities.length}
-          </div>
-          <div className="text-sm text-[hsl(15,30%,45%)] dark:text-muted-foreground font-medium">
-            {totalOunces.toFixed(1)} oz total
-          </div>
+        <div className="text-2xl font-num font-bold text-foreground tracking-tight">
+          {feedActivities.length}
         </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-strava">
+          Feeds
+        </div>
+        {totalOunces > 0 && (
+          <div className="text-xs text-primary font-medium mt-1">
+            {totalOunces.toFixed(1)} oz
+          </div>
+        )}
       </div>
 
-      {/* Total Naps Card */}
-      <div className="bg-gradient-to-br from-[hsl(22,38%,91%)] to-[hsl(20,35%,87%)]/50 dark:from-card dark:to-card rounded-xl p-6 border border-[hsl(20,32%,80%)]/30 dark:border-border/30">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-nap flex items-center justify-center">
-            <Clock className="w-5 h-5 text-[hsl(30,50%,97%)]" />
-          </div>
-          <div className="text-sm font-medium text-[hsl(18,35%,42%)] dark:text-foreground/70 uppercase tracking-wide">
-            Total Naps
+      {/* Naps Card */}
+      <div className="bg-card rounded-strava p-4 border border-border">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-nap flex items-center justify-center">
+            <Moon className="w-4 h-4 text-primary-foreground" />
           </div>
         </div>
-        <div className="space-y-1">
-          <div className="text-3xl font-num font-semibold text-[hsl(18,30%,30%)] dark:font-bold dark:text-primary">
-            {napActivities.length}
-          </div>
-          <div className="text-sm text-primary font-medium">
+        <div className="text-2xl font-num font-bold text-foreground tracking-tight">
+          {napActivities.length}
+        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-strava">
+          Naps
+        </div>
+        {totalNapTime > 0 && (
+          <div className="text-xs text-primary font-medium mt-1">
             {formatNapTime(totalNapTime)}
           </div>
+        )}
+      </div>
+
+      {/* Diapers Card */}
+      <div className="bg-card rounded-strava p-4 border border-border">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-diaper flex items-center justify-center">
+            <Droplets className="w-4 h-4 text-primary-foreground" />
+          </div>
+        </div>
+        <div className="text-2xl font-num font-bold text-foreground tracking-tight">
+          {diaperActivities.length}
+        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-strava">
+          Diapers
         </div>
       </div>
     </div>
