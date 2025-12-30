@@ -640,10 +640,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             </Button>
           </DialogTrigger>
         )}
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col [&>button[data-state]]:hidden">{/* Hide close button */}
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col [&>button[data-state]]:hidden">
           <DialogHeader className="pb-4 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <DialogTitle className="font-serif text-xl font-medium">
+            <div className="flex items-center justify-between">
+              <DialogTitle>
                 {editingActivity ? t('editActivity') : 'Log Activity'}
               </DialogTitle>
               {!editingActivity && (
@@ -661,9 +661,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto px-1 -mx-1">
-            <div className="space-y-4">{/* Content wrapper */}
+            <div className="space-y-4">
             
-            {/* Activity Type Selection - Clean Grid */}
+            {/* Activity Type Selection - Strava style grid */}
             <div className="grid grid-cols-3 gap-2">
               {[
                 { type: "feed", icon: Milk, label: t('feeding') },
@@ -673,20 +673,19 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 { type: "note", icon: StickyNote, label: t('note') },
                 { type: "photo", icon: Camera, label: t('photo') }
               ].map(({ type, icon: Icon, label }) => (
-                <Button
+                <button
                   key={type}
                   type="button"
-                  variant={activityType === type ? "default" : "outline"}
-                  className={`h-12 flex-col gap-1 transition-all ${
+                  className={`h-14 rounded-strava flex flex-col items-center justify-center gap-1 transition-all ${
                     activityType === type 
-                      ? 'bg-primary text-primary-foreground shadow-lg ring-2 ring-primary/30' 
-                      : 'hover:bg-muted border-0 opacity-50 hover:opacity-70'
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                   onClick={() => setActivityType(type as any)}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="text-xs font-medium">{label}</span>
-                </Button>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                </button>
               ))}
             </div>
 
@@ -694,26 +693,25 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "feed" && (
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
+                  <Label className="mb-3 block">{t('type')}</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                      { type: "bottle", icon: Milk, label: t('bottle') },
                       { type: "nursing", icon: Milk, label: t('nursing') }
                     ].map(({ type, icon: Icon, label }) => (
-                      <Button
+                      <button
                         key={type}
                         type="button"
-                        variant={feedType === type ? "default" : "outline"}
-                        className={`h-10 flex-col gap-1 text-xs ${
+                        className={`h-12 rounded-strava flex items-center justify-center gap-2 transition-all ${
                           feedType === type 
                             ? 'bg-primary text-primary-foreground' 
-                            : 'hover:bg-muted border-0'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                         onClick={() => setFeedType(type as any)}
                       >
-                        <Icon className="h-3 w-3" />
-                        {label}
-                      </Button>
+                        <Icon className="h-4 w-4" />
+                        <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -732,17 +730,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <div className="space-y-3">
                     <div className="flex items-end gap-3">
                       <div className="flex-1">
-                        <Label className="text-sm font-medium mb-2 block">{t('amount')}</Label>
-                        <Button
+                        <Label className="mb-2 block">{t('amount')}</Label>
+                        <button
                           type="button"
-                          variant="outline"
-                          className="w-full h-12 text-left border-0"
+                          className="w-full h-12 rounded-strava bg-muted text-left px-4 text-sm font-medium hover:bg-muted/80 transition-colors"
                           onClick={() => setShowKeypad(true)}
                         >
                           <span className="text-foreground">
                             {quantity ? `${quantity} ${unit}` : t('tapToEnterAmount')}
                           </span>
-                        </Button>
+                        </button>
                       </div>
                       <div className="flex items-center space-x-2 pb-2">
                         <Checkbox
@@ -793,14 +790,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 )}
 
                 <div>
-                  <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
+                  <Label htmlFor="feed-note" className="mb-2 block">{t('notes')}</Label>
                   <Textarea
                     id="feed-note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder={t('additionalNotesFeeding')}
                     rows={3}
-                    className="resize-none"
+                    className="resize-none rounded-strava"
                   />
                 </div>
               </div>
@@ -819,74 +816,69 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 />
                 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
+                  <Label className="mb-3 block">{t('type')}</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { type: "wet", label: t('wet') },
                       { type: "poopy", label: t('poopy') },
                       { type: "both", label: t('both') }
                     ].map(({ type, label }) => (
-                      <Button
+                      <button
                         key={type}
                         type="button"
-                        variant={diaperType === type ? "default" : "outline"}
-                        className={`h-12 ${
+                        className={`h-12 rounded-strava flex items-center justify-center transition-all ${
                           diaperType === type 
                             ? 'bg-primary text-primary-foreground' 
-                            : 'hover:bg-muted border-0'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
                         }`}
                         onClick={() => setDiaperType(type as any)}
                       >
-                        {label}
-                      </Button>
+                        <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between py-3">
-                    <Label className="text-sm">{t('leak')}</Label>
-                    <Button
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-3 border-b border-border">
+                    <Label className="text-sm text-foreground">{t('leak')}</Label>
+                    <button
                       type="button"
-                      variant={hasLeak ? "default" : "outline"}
-                      size="sm"
-                      className={`h-8 px-4 ${
+                      className={`h-8 px-4 rounded-strava text-xs font-bold uppercase tracking-wider transition-all ${
                         hasLeak 
                           ? 'bg-primary text-primary-foreground' 
-                          : 'hover:bg-muted border-0'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                       onClick={() => setHasLeak(!hasLeak)}
                     >
                       {hasLeak ? t('yes') : t('no')}
-                    </Button>
+                    </button>
                   </div>
-                  <div className="flex items-center justify-between py-3">
-                    <Label className="text-sm">{t('diaperingCream')}</Label>
-                    <Button
+                  <div className="flex items-center justify-between py-3 border-b border-border">
+                    <Label className="text-sm text-foreground">{t('diaperingCream')}</Label>
+                    <button
                       type="button"
-                      variant={hasCream ? "default" : "outline"}
-                      size="sm"
-                      className={`h-8 px-4 ${
+                      className={`h-8 px-4 rounded-strava text-xs font-bold uppercase tracking-wider transition-all ${
                         hasCream 
                           ? 'bg-primary text-primary-foreground' 
-                          : 'hover:bg-muted border-0'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                       onClick={() => setHasCream(!hasCream)}
                     >
                       {hasCream ? t('yes') : t('no')}
-                    </Button>
+                    </button>
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
+                  <Label htmlFor="diaper-note" className="mb-2 block">{t('notes')}</Label>
                   <Textarea
                     id="diaper-note"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder={t('additionalNotesDiaper')}
                     rows={3}
-                    className="resize-none"
+                    className="resize-none rounded-strava"
                   />
                 </div>
               </div>
@@ -1201,16 +1193,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             )}
 
 
-            </div>{/* End content wrapper */}
-          </div>{/* End scrollable area */}
+            </div>
+          </div>
 
-            <div className="space-y-3 pt-4 border-t flex-shrink-0">{/* Buttons section */}
+            <div className="space-y-3 pt-4 border-t border-border flex-shrink-0">
               <div className="flex gap-3">
                 <Button 
                   type="button"
                   variant="outline" 
                   onClick={() => onClose ? onClose() : setInternalOpen(false)} 
-                  className="flex-1 h-12 border-0"
+                  className="flex-1 h-12"
                 >
                   Cancel
                 </Button>
@@ -1219,7 +1211,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   type="button"
                   onClick={handleSubmit} 
                   disabled={uploadingPhoto || isSaving}
-                  className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="flex-1 h-12"
                 >
                   {uploadingPhoto ? 'Uploading…' : isSaving ? 'Saving…' : (editingActivity ? 'Update' : 'Save')}
                 </Button>
@@ -1245,13 +1237,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         }
                       }
                     }}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
+                    className="text-xs font-bold uppercase tracking-wider text-destructive hover:opacity-80 transition-opacity"
                   >
                     Delete this activity
                   </button>
                 </div>
               )}
-            </div>{/* End buttons section */}
+            </div>
         </DialogContent>
       </Dialog>
       
