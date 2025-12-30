@@ -1383,25 +1383,6 @@ const lastDiaper = displayActivities
     <div className="pb-24">
       <div className="pt-2 space-y-6">
 
-        {/* Baby Info - at very top */}
-        {babyName && babyAge && (
-          <div className="px-4 pb-0 pt-1">
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex flex-row items-center justify-center gap-2 text-sm">
-                <h2 className="font-serif font-semibold text-foreground">
-                  {babyName}
-                </h2>
-                <HeartPulse className="w-3 h-3 text-muted-foreground/50" />
-                <p className="text-muted-foreground text-xs font-sans">
-                  {babyAge.months > 0 && `${babyAge.months} ${babyAge.months === 1 ? 'month' : 'months'}`}
-                  {babyAge.months > 0 && babyAge.weeks > 0 && ', '}
-                  {babyAge.weeks > 0 && `${babyAge.weeks} ${babyAge.weeks === 1 ? 'week' : 'weeks'}`}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Missed Activity Prompt - at top of home */}
         {missedActivitySuggestion && (
             <div className="px-4">
