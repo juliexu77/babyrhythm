@@ -13,7 +13,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
   const { t } = useLanguage();
   
   const leftTabs = [
-    { id: "home", label: "HOME", icon: Home },
+    { id: "home", label: "TODAY", icon: Home },
     { id: "trends", label: "TRENDS", icon: TrendingUp },
   ];
   

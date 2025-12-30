@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Delete } from "lucide-react";
 
 interface NumericKeypadProps {
@@ -82,88 +81,88 @@ useEffect(() => {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-sm [&>button[data-state]]:hidden">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-lg font-serif font-medium text-center">
+          <DialogTitle className="text-center">
             {title}
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* Display */}
-          <div className="bg-muted/50 rounded-lg p-4">
+          {/* Display - Strava style */}
+          <div className="bg-muted rounded-strava p-4">
             <div className="relative flex items-center justify-center">
-              <div className="text-3xl font-num font-bold text-foreground">
+              <div className="text-4xl font-bold text-foreground tabular-nums">
                 {value || "0"}
               </div>
               <div className="absolute right-0">
-                <ToggleGroup 
-                  type="single" 
-                  value={unit} 
-                  onValueChange={(value) => {
-                    if (value) {
-                      onUnitChange?.(value);
-                      try { localStorage.setItem('lastUsedUnit', value); } catch (e) {}
-                    }
-                  }}
-                  className="rounded-lg overflow-hidden"
-                >
-                  <ToggleGroupItem 
-                    value="oz" 
-                    className="h-10 px-4 border border-input data-[state=on]:bg-accent data-[state=on]:text-accent-foreground data-[state=on]:border-accent data-[state=off]:bg-background"
+                <div className="flex rounded-strava overflow-hidden border border-border">
+                  <button
+                    className={`h-10 px-4 text-xs font-bold uppercase tracking-wider transition-all ${
+                      unit === 'oz' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-background text-muted-foreground hover:bg-muted'
+                    }`}
+                    onClick={() => {
+                      onUnitChange?.('oz');
+                      try { localStorage.setItem('lastUsedUnit', 'oz'); } catch (e) {}
+                    }}
                   >
                     oz
-                  </ToggleGroupItem>
-                  <ToggleGroupItem 
-                    value="ml" 
-                    className="h-10 px-4 border border-input data-[state=on]:bg-accent data-[state=on]:text-accent-foreground data-[state=on]:border-accent data-[state=off]:bg-background"
+                  </button>
+                  <button
+                    className={`h-10 px-4 text-xs font-bold uppercase tracking-wider transition-all ${
+                      unit === 'ml' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-background text-muted-foreground hover:bg-muted'
+                    }`}
+                    onClick={() => {
+                      onUnitChange?.('ml');
+                      try { localStorage.setItem('lastUsedUnit', 'ml'); } catch (e) {}
+                    }}
                   >
-                    mL
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                    ml
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Keypad */}
+          {/* Keypad - Strava style */}
           <div className="grid grid-cols-3 gap-2">
             {/* Numbers 1-9 */}
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-              <Button
+              <button
                 key={num}
-                variant="outline"
-                className="h-12 text-lg font-medium hover:bg-muted"
+                className="h-14 rounded-strava bg-muted text-lg font-bold hover:bg-muted/80 transition-colors"
                 onClick={() => handleNumber(num.toString())}
               >
                 {num}
-              </Button>
+              </button>
             ))}
             
             {/* Bottom row: decimal, 0, backspace */}
-            <Button
-              variant="outline"
-              className="h-12 text-lg font-medium hover:bg-muted"
+            <button
+              className="h-14 rounded-strava bg-muted text-lg font-bold hover:bg-muted/80 transition-colors"
               onClick={handleDecimal}
             >
               .
-            </Button>
-            <Button
-              variant="outline"
-              className="h-12 text-lg font-medium hover:bg-muted"
+            </button>
+            <button
+              className="h-14 rounded-strava bg-muted text-lg font-bold hover:bg-muted/80 transition-colors"
               onClick={() => handleNumber("0")}
             >
               0
-            </Button>
-            <Button
-              variant="outline"
-              className="h-12 hover:bg-muted"
+            </button>
+            <button
+              className="h-14 rounded-strava bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
               onClick={handleBackspace}
             >
               <Delete className="h-5 w-5" />
-            </Button>
+            </button>
           </div>
 
           {/* Submit button */}
           <Button
-            className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full h-12"
             onClick={handleSubmit}
             disabled={!value || parseFloat(value) <= 0}
           >
