@@ -1,16 +1,13 @@
-import { Clock, Milk, Droplet, Moon, StickyNote, Utensils, Camera } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Clock, Milk, Droplet, Moon, StickyNote, Utensils, Camera, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export interface Activity {
   id: string;
   type: "feed" | "diaper" | "nap" | "note" | "solids" | "photo";
   time: string;
-  loggedAt?: string; // The original logged timestamp
-  timezone?: string; // IANA timezone name where activity was logged
+  loggedAt?: string;
+  timezone?: string;
   details: {
-    // Feed details
     feedType?: "bottle" | "nursing";
     quantity?: string;
     unit?: "oz" | "ml";
@@ -18,21 +15,16 @@ export interface Activity {
     minutesRight?: string;
     solidDescription?: string;
     isDreamFeed?: boolean;
-    // Diaper details
     diaperType?: "wet" | "poopy" | "both";
     hasLeak?: boolean;
     hasCream?: boolean;
-    // Nap details
     startTime?: string;
     endTime?: string;
     isNightSleep?: boolean;
-    // Photo details
     photoUrl?: string;
-    // Solids details
     allergens?: string[];
-    // General
     note?: string;
-    displayTime?: string; // Store the original selected time for consistent display
+    displayTime?: string;
   };
 }
 
@@ -46,65 +38,24 @@ interface ActivityCardProps {
 const getActivityIcon = (type: string) => {
   switch (type) {
     case "feed":
-      return <Milk className="h-4 w-4" />;
+      return <Milk className="h-5 w-5" />;
     case "diaper":
-      return <Droplet className="h-4 w-4" />;
+      return <Droplet className="h-5 w-5" />;
     case "nap":
-      return <Moon className="h-4 w-4" />;
+      return <Moon className="h-5 w-5" />;
     case "note":
-      return <StickyNote className="h-4 w-4" />;
+      return <StickyNote className="h-5 w-5" />;
     case "solids":
-      return <Utensils className="h-4 w-4" />;
+      return <Utensils className="h-5 w-5" />;
     case "photo":
-      return <Camera className="h-4 w-4" />;
+      return <Camera className="h-5 w-5" />;
     default:
-      return <Clock className="h-4 w-4" />;
-  }
-};
-
-// Color tinting for icons based on type - Warm clay-brown family (no clinical mauve)
-const getIconColorClass = (type: string) => {
-  switch (type) {
-    case "nap":
-      return "text-[hsl(18,35%,48%)] dark:text-[hsl(18,40%,65%)]"; // Warm clay for sleep
-    case "feed":
-      return "text-[hsl(12,42%,50%)] dark:text-[hsl(12,45%,62%)]"; // Cinnamon-rose for feeding
-    case "diaper":
-      return "text-[hsl(22,30%,48%)] dark:text-[hsl(22,35%,62%)]"; // Warm taupe for diaper
-    case "solids":
-      return "text-[hsl(20,45%,52%)] dark:text-[hsl(20,48%,62%)]"; // Terracotta for solids
-    case "note":
-      return "text-[hsl(18,22%,48%)] dark:text-[hsl(18,25%,62%)]"; // Clay brown
-    case "photo":
-      return "text-[hsl(15,32%,50%)] dark:text-[hsl(15,35%,62%)]"; // Dusty clay
-    default:
-      return "text-muted-foreground";
-  }
-};
-
-// Background circles for icons - Warm clay-beige tints (archival feel)
-const getIconBackgroundClass = (type: string) => {
-  switch (type) {
-    case "nap":
-      return "bg-[hsl(18,32%,90%)] dark:bg-[hsl(18,25%,18%)]"; // Warm clay tint
-    case "feed":
-      return "bg-[hsl(12,38%,91%)] dark:bg-[hsl(12,30%,18%)]"; // Cinnamon tint
-    case "diaper":
-      return "bg-[hsl(22,28%,90%)] dark:bg-[hsl(22,22%,18%)]"; // Taupe tint
-    case "solids":
-      return "bg-[hsl(20,40%,91%)] dark:bg-[hsl(20,32%,18%)]"; // Terracotta tint
-    case "note":
-      return "bg-[hsl(18,20%,90%)] dark:bg-[hsl(18,15%,18%)]"; // Clay tint
-    case "photo":
-      return "bg-[hsl(15,28%,91%)] dark:bg-[hsl(15,22%,18%)]"; // Dusty clay tint
-    default:
-      return "bg-muted/50";
+      return <Clock className="h-5 w-5" />;
   }
 };
 
 const calculateNapDuration = (startTime: string, endTime: string): string => {
   try {
-    // Parse time strings (assuming format like "2:30 PM")
     const parseTime = (timeStr: string) => {
       const [time, period] = timeStr.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
@@ -126,7 +77,6 @@ const calculateNapDuration = (startTime: string, endTime: string): string => {
     
     let durationMinutes = endMinutes - startMinutes;
     
-    // Handle case where nap goes past midnight
     if (durationMinutes < 0) {
       durationMinutes += 24 * 60;
     }
@@ -143,7 +93,6 @@ const calculateNapDuration = (startTime: string, endTime: string): string => {
   }
 };
 
-// New: Get value (bold) and descriptor (lighter) for smart text formatting
 const getActivityValueAndDescriptor = (activity: Activity, t: (key: string) => string): { value: string; descriptor: string } => {
   switch (activity.type) {
     case "feed":
@@ -205,26 +154,6 @@ const getActivityValueAndDescriptor = (activity: Activity, t: (key: string) => s
       
     case "solids":
       const allergensArray = (activity.details as any)?.allergens || [];
-      let solidsDescriptor = activity.details.solidDescription || "Solids";
-      
-      if (allergensArray.length > 0) {
-        const allergenLabels = allergensArray.map((id: string) => {
-          const allergenMap: Record<string, string> = {
-            'peanut': 'Peanut',
-            'egg': 'Egg',
-            'dairy': 'Dairy',
-            'wheat': 'Wheat',
-            'soy': 'Soy',
-            'tree-nuts': 'Tree nuts',
-            'sesame': 'Sesame',
-            'fish': 'Fish',
-            'shellfish': 'Shellfish',
-          };
-          return allergenMap[id] || id;
-        }).join(', ');
-        solidsDescriptor += ` • ${allergenLabels}`;
-      }
-      
       return {
         value: activity.details.solidDescription || "Solids",
         descriptor: allergensArray.length > 0 ? `Allergens: ${allergensArray.join(', ')}` : "Meal"
@@ -251,46 +180,45 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
     }
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering the edit click
-    if (onDelete) {
-      onDelete(activity.id);
-    }
-  };
-
   return (
-    <div className="relative flex items-center py-px group transition-colors">
-      {/* Icon - warm clay stroke color, uses foreground for dark/dusk */}
-      <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-[hsl(18,28%,52%)] dark:text-foreground/70 dusk:text-foreground/70" style={{ marginLeft: '8px' }}>
-        {getActivityIcon(activity.type)}
-      </div>
-      
-      {/* Content - clickable with smart text formatting, positioned to the right of icon */}
-      <div className="flex-1 flex items-center justify-between min-w-0 gap-3 pl-4">
-        <button
-          onClick={handleClick}
-          className="flex-1 text-left min-w-0 flex items-baseline gap-2 hover:opacity-80 transition-opacity"
-        >
-          {/* Value - Semibold serif, uses foreground for dark/dusk */}
-          <span className="text-sm font-serif font-semibold text-[hsl(18,26%,35%)] dark:text-foreground dusk:text-foreground">
-            {value}
-          </span>
-          {/* Descriptor - Lighter sans-serif, uses muted-foreground for dark/dusk */}
-          {descriptor && (
-            <span className="text-sm font-light truncate text-[hsl(20,18%,52%)] dark:text-muted-foreground dusk:text-muted-foreground">
-              {descriptor}
-            </span>
-          )}
-        </button>
+    <button
+      onClick={handleClick}
+      className="w-full text-left group"
+    >
+      <div className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 active:bg-accent/10 transition-colors border-b border-border last:border-b-0">
+        {/* Left side: Icon + Content */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Icon */}
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary/30 flex items-center justify-center text-primary">
+            {getActivityIcon(activity.type)}
+          </div>
+          
+          {/* Content */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm font-semibold text-foreground">
+                {value}
+              </span>
+              {descriptor && (
+                <span className="text-sm text-muted-foreground truncate">
+                  {descriptor}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
         
-        {/* Timestamp - uses muted-foreground for dark/dusk */}
-        <span className="text-xs font-light whitespace-nowrap tabular-nums text-[hsl(20,18%,55%)] dark:text-muted-foreground dusk:text-muted-foreground">
-          {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
-            ? activity.details.startTime  // Show just start time for ongoing naps
-            : activity.time  // Show full time or time range for completed activities
-          }
-        </span>
+        {/* Right side: Time + Chevron */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
+              ? activity.details.startTime
+              : activity.time
+            }
+          </span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+        </div>
       </div>
-    </div>
+    </button>
   );
 };
