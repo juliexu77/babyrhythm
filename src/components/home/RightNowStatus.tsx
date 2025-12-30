@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Moon, Sun, Utensils, Clock } from "lucide-react";
+import { Moon, Sun, Utensils, ChevronRight, Clock } from "lucide-react";
 
 interface RightNowStatusProps {
   currentActivity: {
@@ -56,10 +55,10 @@ export const RightNowStatus = ({
     
   if (!currentActivity) {
     return (
-      <div className="px-6 py-8">
-        <div className="rounded-3xl bg-card/60 backdrop-blur-sm p-6 shadow-soft">
-          <p className="text-sm text-muted-foreground text-center">
-            No recent activity detected
+      <div className="px-4 py-6">
+        <div className="border-b border-border/30 pb-4">
+          <p className="text-sm text-muted-foreground">
+            No recent activity
           </p>
         </div>
       </div>
@@ -68,72 +67,85 @@ export const RightNowStatus = ({
 
   // Format duration into readable text
   const formatDuration = (minutes: number) => {
-    if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    if (hours === 0) return { value: mins, unit: 'min' };
+    if (mins === 0) return { value: hours, unit: hours === 1 ? 'hr' : 'hrs' };
+    return { value: `${hours}:${mins.toString().padStart(2, '0')}`, unit: 'hrs' };
   };
 
   // Get icon for current activity
   const getActivityIcon = () => {
     if (currentActivity.type === 'napping' || currentActivity.type === 'sleeping') {
-      return <Moon className="w-6 h-6" />;
+      return <Moon className="w-5 h-5" />;
     }
     if (currentActivity.type === 'feeding') {
-      return <Utensils className="w-6 h-6" />;
+      return <Utensils className="w-5 h-5" />;
     }
-    return <Sun className="w-6 h-6" />;
+    return <Sun className="w-5 h-5" />;
   };
 
-  // Get soft gradient based on activity type
-  const getActivityGradient = () => {
-    if (currentActivity.type === 'napping' || currentActivity.type === 'sleeping') {
-      return 'from-secondary/30 via-accent/20 to-transparent';
-    }
-    if (currentActivity.type === 'feeding') {
-      return 'from-primary/20 via-secondary/15 to-transparent';
-    }
-    return 'from-accent/25 via-secondary/20 to-transparent';
+  // Get activity label
+  const getActivityLabel = () => {
+    if (currentActivity.type === 'napping') return 'Nap';
+    if (currentActivity.type === 'sleeping') return 'Night Sleep';
+    if (currentActivity.type === 'feeding') return 'Feeding';
+    return 'Awake';
   };
+
+  const duration = formatDuration(currentActivity.duration);
 
   return (
-    <div className="px-4 py-6 space-y-5">
-      {/* Main Status - Headspace inspired: warm, friendly, spacious */}
-      <div className="rounded-[32px] bg-secondary/40 p-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center text-primary">
+    <div className="px-4 py-2">
+      {/* Main Activity - Strava style: big numbers, clean layout */}
+      <div className="border-b border-border/30 pb-5 mb-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2 text-muted-foreground">
             {getActivityIcon()}
+            <span className="text-sm font-medium uppercase tracking-wide">
+              {getActivityLabel()}
+            </span>
           </div>
-          <div className="flex-1">
-            <p className="text-lg font-medium text-foreground leading-tight">
-              {currentActivity.statusText}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {formatDuration(currentActivity.duration)} · since {currentActivity.startTime}
-            </p>
-          </div>
+          <span className="text-xs text-muted-foreground">
+            Started {currentActivity.startTime}
+          </span>
         </div>
         
-        {/* Action buttons - friendly pill style */}
+        {/* Big stat display */}
+        <div className="flex items-baseline gap-1 mb-4">
+          <span className="text-5xl font-bold tracking-tight text-foreground">
+            {duration.value}
+          </span>
+          <span className="text-lg text-muted-foreground font-medium">
+            {duration.unit}
+          </span>
+        </div>
+
+        {/* Status text */}
+        <p className="text-sm text-muted-foreground mb-4">
+          {currentActivity.statusText}
+        </p>
+        
+        {/* Action buttons - Strava style: bold, full-width options */}
         {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
-          <div className="flex gap-3 mt-5">
+          <div className="flex gap-2">
             <button
               onClick={onWokeEarly}
-              className="flex-1 py-3 px-5 rounded-full bg-card text-foreground text-sm font-medium shadow-sm hover:shadow-md transition-shadow"
+              className="flex-1 py-3 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-semibold"
             >
-              {currentActivity.isPastAnticipatedWake ? 'Mark awake' : 'Woke early'}
+              {currentActivity.isPastAnticipatedWake ? 'Mark Awake' : 'Woke Early'}
             </button>
             <button
               onClick={onStillAsleep}
-              className="flex-1 py-3 px-5 rounded-full bg-card text-foreground text-sm font-medium shadow-sm hover:shadow-md transition-shadow"
+              className="flex-1 py-3 px-4 rounded-lg border border-border text-foreground text-sm font-semibold"
             >
-              Still asleep
+              Still Asleep
             </button>
           </div>
         )}
       </div>
 
-      {/* What's Next - clean, tappable card */}
+      {/* What's Next - Activity feed item style */}
       {nextPrediction && (
         <button
           onClick={() => {
@@ -145,43 +157,52 @@ export const RightNowStatus = ({
               onLogPrediction(activityType);
             }
           }}
-          className="w-full text-left"
+          className="w-full text-left border-b border-border/30 pb-4 mb-4 group"
         >
-          <div className="rounded-[24px] bg-card p-5 shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">
-              Coming up
-            </p>
-            <p className="text-base font-medium text-foreground">
-              {nextPrediction.activity}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {nextPrediction.timeRange} · {nextPrediction.countdown}
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                Up Next
+              </p>
+              <p className="text-base font-semibold text-foreground">
+                {nextPrediction.activity}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {nextPrediction.countdown} · {nextPrediction.timeRange}
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </div>
         </button>
       )}
 
-      {/* Suggestions - simple list style */}
+      {/* Suggestions - Simple list items */}
       {suggestions.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3">
+            Quick Actions
+          </p>
           {suggestions.slice(0, 2).map((suggestion) => (
             <button
               key={suggestion.id}
               onClick={suggestion.onClick}
-              className="w-full text-left"
+              className="w-full text-left group"
             >
-              <div className="flex items-center gap-4 p-4 rounded-[20px] bg-card shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-foreground/70">
-                  {suggestion.icon}
+              <div className="flex items-center justify-between py-3 border-b border-border/20">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground">
+                    {suggestion.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {suggestion.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {suggestion.subtitle}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">
-                    {suggestion.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {suggestion.subtitle}
-                  </p>
-                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
             </button>
           ))}
