@@ -1,15 +1,13 @@
 import { Activity } from "./ActivityCard";
 import { useState, useMemo } from "react";
-import { Moon, Milk, Clock, Sun, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Moon, Milk, Clock, Sun } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { getActivitiesByDate } from "@/utils/activityDateFilters";
 import { normalizeVolume } from "@/utils/unitConversion";
-import { Button } from "@/components/ui/button";
 import { TimelineChart } from "@/components/trends/TimelineChart";
 import { CollectivePulse } from "@/components/home/CollectivePulse";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { subDays, startOfDay, eachDayOfInterval } from "date-fns";
 
 interface TrendsTabProps {
@@ -23,7 +21,6 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
   const { household, loading: householdLoading } = useHousehold();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [timeRange, setTimeRange] = useState<TimeRange>('1week');
-  const [expandedCharts, setExpandedCharts] = useState<Record<string, boolean>>({});
 
   // Helper to check if a date is a travel day
   const isTravelDay = (date: Date): boolean => {
@@ -333,9 +330,6 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
     return narrative;
   };
 
-  const toggleChart = (chartId: string) => {
-    setExpandedCharts(prev => ({ ...prev, [chartId]: !prev[chartId] }));
-  };
 
   // Show loading state while household data is being fetched
   if (householdLoading || !household) {
@@ -350,9 +344,9 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
   }
 
   return (
-    <div className="space-y-0 pb-6 pt-2">
-      {/* Time Range Switcher - compact segmented control */}
-      <div className="flex justify-center px-4 pb-3">
+    <div className="space-y-4 pb-6 pt-2">
+      {/* Time Range Switcher */}
+      <div className="flex justify-center px-4">
         <div className="inline-flex bg-muted rounded-strava-sm p-0.5">
           {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
             <button
@@ -373,177 +367,131 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
           ))}
         </div>
       </div>
+      
+      {/* Strava-style Summary Stats Strip */}
+      <div className="px-4">
+        <h2 className="text-base font-semibold text-foreground mb-2">This week</h2>
+        <div className="flex gap-6">
+          <div>
+            <p className="text-[11px] text-muted-foreground mb-0.5">Night Sleep</p>
+            <p className="text-xl font-bold text-foreground">{overviewMetrics[0].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">h</span></p>
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground mb-0.5">Naps</p>
+            <p className="text-xl font-bold text-foreground">{overviewMetrics[1].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">/day</span></p>
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground mb-0.5">Feeds</p>
+            <p className="text-xl font-bold text-foreground">{overviewMetrics[2].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">oz</span></p>
+          </div>
+        </div>
+      </div>
 
-      {/* Collapsible Chart Sections - tighter spacing */}
-      <div className="space-y-0">
-        {/* Night Sleep */}
-        <div className="bg-card border-y border-border/50 overflow-hidden">
-          <button
-            onClick={() => toggleChart('nightSleep')}
-            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                <Moon className="w-3.5 h-3.5 text-primary" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-xs font-semibold text-foreground">Night Sleep</h3>
-                <p className="text-[10px] text-muted-foreground/70">Hours per night</p>
-              </div>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`} />
-          </button>
-          {expandedCharts['nightSleep'] && (
-            <div className="px-3 pb-3 border-t border-border/30">
-              <TimelineChart
-                title="Night Sleep"
-                icon={<Moon className="w-3.5 h-3.5 text-foreground/70" />}
-                activities={activities}
-                timeRange={timeRange}
-                dataExtractor={extractNightSleep}
-                unit="h"
-                color="hsl(var(--primary))"
-                yAxisFormatter={(v) => `${v.toFixed(0)}h`}
-                tooltipFormatter={(v) => v.toFixed(1)}
-                babyBirthday={household?.baby_birthday}
-                metricType="nightSleep"
-                showBaseline={false}
-                travelDayDates={travelDayDates}
-              />
-            </div>
-          )}
+      {/* Minimal Chart Sections - Strava style */}
+      <div className="space-y-6 px-4">
+        {/* Night Sleep Chart */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Moon className="w-4 h-4 text-primary" />
+            <span className="text-xs font-medium text-foreground">Night Sleep</span>
+          </div>
+          <TimelineChart
+            title="Night Sleep"
+            icon={<Moon className="w-3.5 h-3.5 text-foreground/70" />}
+            activities={activities}
+            timeRange={timeRange}
+            dataExtractor={extractNightSleep}
+            unit="h"
+            color="hsl(var(--primary))"
+            yAxisFormatter={(v) => `${v.toFixed(0)}h`}
+            tooltipFormatter={(v) => v.toFixed(1)}
+            babyBirthday={household?.baby_birthday}
+            metricType="nightSleep"
+            showBaseline={false}
+            travelDayDates={travelDayDates}
+          />
         </div>
 
-        {/* Day Naps */}
-        <div className="bg-card border-b border-border/50 overflow-hidden">
-          <button
-            onClick={() => toggleChart('dayNaps')}
-            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-accent/30 flex items-center justify-center">
-                <Sun className="w-3.5 h-3.5 text-accent-foreground" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-xs font-semibold text-foreground">Day Naps</h3>
-                <p className="text-[10px] text-muted-foreground/70">Naps per day</p>
-              </div>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`} />
-          </button>
-          {expandedCharts['dayNaps'] && (
-            <div className="px-3 pb-3 border-t border-border/30">
-              <TimelineChart
-                title="Day Naps"
-                icon={<Sun className="w-3.5 h-3.5 text-foreground/70" />}
-                activities={activities}
-                timeRange={timeRange}
-                dataExtractor={extractDayNaps}
-                unit="naps"
-                color="hsl(var(--accent-foreground))"
-                yAxisFormatter={(v) => v.toFixed(0)}
-                tooltipFormatter={(v) => v.toFixed(0)}
-                babyBirthday={household?.baby_birthday}
-                metricType="dayNaps"
-                showBaseline={false}
-                travelDayDates={travelDayDates}
-              />
-            </div>
-          )}
+        {/* Day Naps Chart */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Sun className="w-4 h-4 text-accent-foreground" />
+            <span className="text-xs font-medium text-foreground">Day Naps</span>
+          </div>
+          <TimelineChart
+            title="Day Naps"
+            icon={<Sun className="w-3.5 h-3.5 text-foreground/70" />}
+            activities={activities}
+            timeRange={timeRange}
+            dataExtractor={extractDayNaps}
+            unit="naps"
+            color="hsl(var(--accent-foreground))"
+            yAxisFormatter={(v) => v.toFixed(0)}
+            tooltipFormatter={(v) => v.toFixed(0)}
+            babyBirthday={household?.baby_birthday}
+            metricType="dayNaps"
+            showBaseline={false}
+            travelDayDates={travelDayDates}
+          />
         </div>
 
-        {/* Feed Volume */}
-        <div className="bg-card border-b border-border/50 overflow-hidden">
-          <button
-            onClick={() => toggleChart('feedVolume')}
-            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-secondary/50 flex items-center justify-center">
-                <Milk className="w-3.5 h-3.5 text-secondary-foreground" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-xs font-semibold text-foreground">Feed Volume</h3>
-                <p className="text-[10px] text-muted-foreground/70">Daily intake</p>
-              </div>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`} />
-          </button>
-          {expandedCharts['feedVolume'] && (
-            <div className="px-3 pb-3 border-t border-border/30">
-              <TimelineChart
-                title="Feed Volume"
-                icon={<Milk className="w-3.5 h-3.5 text-foreground/70" />}
-                activities={activities}
-                timeRange={timeRange}
-                dataExtractor={extractFeedVolume}
-                unit="oz"
-                color="hsl(var(--secondary-foreground))"
-                yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
-                tooltipFormatter={(v) => v.toFixed(0)}
-                babyBirthday={household?.baby_birthday}
-                metricType="feedVolume"
-                showBaseline={false}
-                travelDayDates={travelDayDates}
-              />
-            </div>
-          )}
+        {/* Feed Volume Chart */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Milk className="w-4 h-4 text-secondary-foreground" />
+            <span className="text-xs font-medium text-foreground">Feed Volume</span>
+          </div>
+          <TimelineChart
+            title="Feed Volume"
+            icon={<Milk className="w-3.5 h-3.5 text-foreground/70" />}
+            activities={activities}
+            timeRange={timeRange}
+            dataExtractor={extractFeedVolume}
+            unit="oz"
+            color="hsl(var(--secondary-foreground))"
+            yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
+            tooltipFormatter={(v) => v.toFixed(0)}
+            babyBirthday={household?.baby_birthday}
+            metricType="feedVolume"
+            showBaseline={false}
+            travelDayDates={travelDayDates}
+          />
         </div>
 
-        {/* Wake Windows */}
-        <div className="bg-card border-b border-border/50 overflow-hidden">
-          <button
-            onClick={() => toggleChart('wakeWindows')}
-            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-xs font-semibold text-foreground">Wake Windows</h3>
-                <p className="text-[10px] text-muted-foreground/70">Avg awake time</p>
-              </div>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`} />
-          </button>
-          {expandedCharts['wakeWindows'] && (
-            <div className="px-3 pb-3 border-t border-border/30">
-              <TimelineChart
-                title="Wake Windows"
-                icon={<Clock className="w-3.5 h-3.5 text-foreground/70" />}
-                activities={activities}
-                timeRange={timeRange}
-                dataExtractor={extractWakeWindows}
-                unit="h"
-                color="hsl(var(--muted-foreground))"
-                yAxisFormatter={(v) => `${v.toFixed(1)}h`}
-                tooltipFormatter={(v) => v.toFixed(1)}
-                babyBirthday={household?.baby_birthday}
-                metricType="wakeWindows"
-                showBaseline={false}
-                travelDayDates={travelDayDates}
-              />
-            </div>
-          )}
+        {/* Wake Windows Chart */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs font-medium text-foreground">Wake Windows</span>
+          </div>
+          <TimelineChart
+            title="Wake Windows"
+            icon={<Clock className="w-3.5 h-3.5 text-foreground/70" />}
+            activities={activities}
+            timeRange={timeRange}
+            dataExtractor={extractWakeWindows}
+            unit="h"
+            color="hsl(var(--muted-foreground))"
+            yAxisFormatter={(v) => `${v.toFixed(1)}h`}
+            tooltipFormatter={(v) => v.toFixed(1)}
+            babyBirthday={household?.baby_birthday}
+            metricType="wakeWindows"
+            showBaseline={false}
+            travelDayDates={travelDayDates}
+          />
         </div>
       </div>
 
       {/* Collective Pulse */}
-      <CollectivePulse babyBirthday={household?.baby_birthday} />
+      <div className="px-4">
+        <CollectivePulse babyBirthday={household?.baby_birthday} />
+      </div>
 
-      {/* Long Term Trends Summary - Compact */}
-      <div className="bg-card border-y border-border/50 overflow-hidden">
-        <div className="px-3 py-2 border-b border-border/30">
-          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            Summary
-          </h3>
-        </div>
-        <div className="px-3 py-2.5">
-          <p className="text-xs text-muted-foreground/80 leading-relaxed">
-            {generateSummary()}
-          </p>
-        </div>
+      {/* Summary - minimal */}
+      <div className="px-4 pt-2">
+        <p className="text-xs text-muted-foreground/70 leading-relaxed">
+          {generateSummary()}
+        </p>
       </div>
     </div>
   );

@@ -198,34 +198,34 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
       onClick={handleClick}
       className="w-full text-left group"
     >
-      <div className="py-2 px-3 hover:bg-accent/5 active:bg-accent/10 transition-colors">
-        {/* Top row: Activity type and time */}
-        <div className="flex items-center justify-between mb-0.5">
-          <div className="flex items-center gap-1.5">
-            <div className="text-primary">
-              {getActivityIcon(activity.type)}
-            </div>
-            <span className="text-[10px] text-muted-foreground/70">
-              {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
-                ? activity.details.startTime
-                : activity.time
-              }
-            </span>
+      <div className="py-1.5 px-3 hover:bg-accent/5 active:bg-accent/10 transition-colors flex items-center justify-between gap-2">
+        {/* Left: Icon + Content */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="text-primary flex-shrink-0">
+            {getActivityIcon(activity.type)}
           </div>
-          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+          <div className="min-w-0 flex-1">
+            {/* Single line: Type + Value */}
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm font-medium text-foreground">{getTypeLabel()}</span>
+              <span className="text-xs text-muted-foreground">{value}</span>
+            </div>
+            {/* Descriptor - truncated */}
+            {descriptor && (
+              <p className="text-[11px] text-muted-foreground/60 truncate">{descriptor}</p>
+            )}
+          </div>
         </div>
         
-        {/* Main content: Title - smaller */}
-        <h3 className="text-sm font-semibold text-foreground leading-tight">
-          {getTypeLabel()}
-        </h3>
-        
-        {/* Stats row - compact */}
-        <div className="flex items-center gap-3 text-xs mt-0.5">
-          <span className="text-foreground font-medium">{value}</span>
-          {descriptor && (
-            <span className="text-muted-foreground/70 truncate">{descriptor}</span>
-          )}
+        {/* Right: Time + Chevron */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="text-[10px] text-muted-foreground/50 tabular-nums">
+            {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
+              ? activity.details.startTime
+              : activity.time
+            }
+          </span>
+          <ChevronRight className="w-3 h-3 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
         </div>
       </div>
     </button>
