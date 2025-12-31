@@ -205,30 +205,12 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   // Empty state - no data yet
   if (!hasAnyData) {
     return (
-      <Card className="bg-card border border-border/40 p-6 rounded-xl">
-        <div className="text-center space-y-4">
-          <div className="inline-flex p-3 bg-primary/10 rounded-full">
-            <Clock className="h-6 w-6 text-primary" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-base font-serif font-semibold text-foreground">
-              Your baby's next rhythm prediction will appear here
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
-              <span className="font-medium">Example:</span> Next feed likely around 1:15 PM
-              <br />
-              <span className="text-xs opacity-80 mt-2 block">
-                Once you log a few activities, these get personalized just for your baby.
-              </span>
-            </p>
-          </div>
-          <div className="pt-2">
-            <p className="text-xs text-muted-foreground">
-              💡 BabyRhythm predicts your baby's next move using recent patterns
-            </p>
-          </div>
-        </div>
-      </Card>
+      <div className="px-4 py-3">
+        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mb-1">What's Next</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Start logging activities to see predictions about what comes next.
+        </p>
+      </div>
     );
   }
 
@@ -278,50 +260,29 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
                         napIntervalMinutes === 150 ? "2½ hours" : "3 hours";
 
     return (
-      <Card className="bg-card border border-border/40 p-4 rounded-xl animate-in fade-in duration-300">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 bg-primary/10 rounded-lg">
-                <Moon className="h-4 w-4 text-primary" />
-              </div>
-              <h3 className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
-                {t('nextActivity')}
-              </h3>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-base text-foreground font-medium leading-relaxed">
-                {ageGuidance} nap about every {hoursDisplay}. Next nap around {timeStr}.
-              </p>
-              
-              {isExpanded && (
-                <div className="pt-3 mt-3 border-t border-border/40">
-                  <p className="text-sm text-muted-foreground">
-                    Keep logging activities — I'll refine this based on {babyName}'s unique patterns.
-                  </p>
-                  <div className="mt-2 flex items-start gap-2">
-                    <span className="text-xs text-muted-foreground/80">
-                      ℹ️ Based on {babyName}'s age ({ageInWeeks} weeks)
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex flex-col gap-2 items-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="h-7 w-7 p-0"
-            >
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-          </div>
+      <div className="px-4 py-3">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
+            {t('nextActivity')}
+          </p>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1 hover:bg-muted rounded"
+          >
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
         </div>
-      </Card>
+        
+        <p className="text-sm text-foreground leading-relaxed">
+          {ageGuidance} nap about every {hoursDisplay}. Next nap around {timeStr}.
+        </p>
+        
+        {isExpanded && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Keep logging — I'll refine this based on {babyName}'s patterns. Based on age ({ageInWeeks} weeks).
+          </p>
+        )}
+      </div>
     );
   }
 
@@ -372,12 +333,12 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   };
 
   return (
-    <div className="next-action-card bg-card rounded-lg border border-border p-4 relative z-10">
-      <div className="flex items-center justify-between mb-4">
+    <div className="px-4 py-3 relative z-10">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <h3 className="font-serif font-medium text-base text-foreground">What's Next</h3>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70">What's Next</p>
           {prediction.isStillLearning && (
-            <span className="text-[10px] px-2 py-0.5 bg-accent/40 text-accent-foreground rounded-full border border-accent/60">
+            <span className="text-[10px] px-2 py-0.5 bg-accent/40 text-accent-foreground rounded-full">
               Still learning
             </span>
           )}
