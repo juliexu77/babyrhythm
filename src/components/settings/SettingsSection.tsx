@@ -7,15 +7,15 @@ interface SettingsSectionProps {
 
 export const SettingsSection = ({ title, children }: SettingsSectionProps) => {
   return (
-    <div className="bg-card rounded-strava border border-border overflow-hidden">
+    <div>
       {title && (
-        <div className="px-4 py-3 border-b border-border">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+        <div className="bg-muted/50 px-4 py-2.5 -mx-4">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {title}
           </h3>
         </div>
       )}
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border/50">
         {children}
       </div>
     </div>

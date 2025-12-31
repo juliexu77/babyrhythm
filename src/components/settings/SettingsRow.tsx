@@ -24,32 +24,32 @@ export const SettingsRow = ({
   
   return (
     <div 
-      className={`flex items-center justify-between py-4 px-4 ${
-        isClickable ? 'cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors' : ''
+      className={`flex items-center justify-between py-4 min-h-[56px] ${
+        isClickable ? 'cursor-pointer active:bg-muted/30 transition-colors' : ''
       }`}
       onClick={onClick}
     >
-      <div className="flex items-center gap-4 flex-1 min-w-0">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         {icon && (
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+          <div className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-foreground/70">
             {icon}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold text-foreground">{title}</div>
+          <div className="text-[15px] font-medium text-foreground">{title}</div>
           {subtitle && (
-            <div className="text-xs text-muted-foreground">{subtitle}</div>
+            <div className="text-[13px] text-muted-foreground mt-0.5">{subtitle}</div>
           )}
         </div>
       </div>
       
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-3 flex-shrink-0">
         {children}
         {value && (
-          <div className="text-muted-foreground text-xs">{value}</div>
+          <div className="text-muted-foreground text-[15px]">{value}</div>
         )}
         {isClickable && showChevron && (
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          <ChevronRight className="w-5 h-5 text-muted-foreground/60" />
         )}
       </div>
     </div>
