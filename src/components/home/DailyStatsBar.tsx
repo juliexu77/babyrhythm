@@ -118,82 +118,72 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
   }, [activities, nightSleepStartHour, nightSleepEndHour]);
 
   return (
-    <div className="mx-4 mb-4">
-      <div className="flex items-center justify-between">
+    <div className="mx-4 mb-6">
+      {/* Section label */}
+      <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-3">
+        Today's Stats
+      </h2>
+      
+      {/* Stats grid - prominent scorecard style */}
+      <div className="grid grid-cols-3 gap-4">
         {/* Day Naps */}
-        <div className="flex-1 text-center">
-          <div className="flex items-center justify-center gap-1 mb-0.5">
-            <Moon className="w-3 h-3 text-muted-foreground/70" />
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-              Day Sleep
-            </span>
+        <div className="text-center py-3 px-2 bg-muted/20 rounded-lg">
+          <div className="flex items-center justify-center gap-1.5 mb-1.5">
+            <Moon className="w-4 h-4 text-muted-foreground/80" />
           </div>
-          <div className="flex items-baseline justify-center gap-0.5">
+          <div className="mb-0.5">
             {stats.daySleep.hasData ? (
-              <>
-                <span className="text-base font-semibold tabular-nums text-foreground">
-                  {stats.daySleep.hours}h {stats.daySleep.mins}m
-                </span>
-                <span className="text-[10px] text-muted-foreground ml-0.5">
-                  ({stats.daySleep.count})
-                </span>
-              </>
+              <span className="text-xl font-bold tabular-nums text-foreground">
+                {stats.daySleep.hours}h {stats.daySleep.mins}m
+              </span>
             ) : (
-              <span className="text-base font-semibold text-muted-foreground/50">—</span>
+              <span className="text-xl font-bold text-muted-foreground/40">—</span>
             )}
+          </div>
+          <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+            Day Sleep {stats.daySleep.count > 0 && `(${stats.daySleep.count})`}
           </div>
         </div>
         
-        {/* Hairline divider */}
-        <div className="w-px h-8 bg-border/50" />
-        
         {/* Feeds */}
-        <div className="flex-1 text-center">
-          <div className="flex items-center justify-center gap-1 mb-0.5">
-            <Milk className="w-3 h-3 text-muted-foreground/70" />
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-              Feeds
-            </span>
+        <div className="text-center py-3 px-2 bg-muted/20 rounded-lg">
+          <div className="flex items-center justify-center gap-1.5 mb-1.5">
+            <Milk className="w-4 h-4 text-muted-foreground/80" />
           </div>
-          <div className="flex items-baseline justify-center gap-0.5">
+          <div className="mb-0.5">
             {stats.feeds.hasVolume ? (
-              <>
-                <span className="text-base font-semibold tabular-nums text-foreground">
-                  {stats.feeds.volume} oz
-                </span>
-                <span className="text-[10px] text-muted-foreground ml-0.5">
-                  ({stats.feeds.count})
-                </span>
-              </>
+              <span className="text-xl font-bold tabular-nums text-foreground">
+                {stats.feeds.volume} oz
+              </span>
             ) : stats.feeds.count > 0 ? (
-              <span className="text-base font-semibold tabular-nums text-foreground">
+              <span className="text-xl font-bold tabular-nums text-foreground">
                 {stats.feeds.count}
               </span>
             ) : (
-              <span className="text-base font-semibold text-muted-foreground/50">—</span>
+              <span className="text-xl font-bold text-muted-foreground/40">—</span>
             )}
+          </div>
+          <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+            Feeds {stats.feeds.count > 0 && stats.feeds.hasVolume && `(${stats.feeds.count})`}
           </div>
         </div>
         
-        {/* Hairline divider */}
-        <div className="w-px h-8 bg-border/50" />
-        
         {/* Night Sleep */}
-        <div className="flex-1 text-center">
-          <div className="flex items-center justify-center gap-1 mb-0.5">
-            <Moon className="w-3 h-3 text-muted-foreground/70" />
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-              Last Night
-            </span>
+        <div className="text-center py-3 px-2 bg-muted/20 rounded-lg">
+          <div className="flex items-center justify-center gap-1.5 mb-1.5">
+            <Moon className="w-4 h-4 text-muted-foreground/80" />
           </div>
-          <div className="flex items-baseline justify-center">
+          <div className="mb-0.5">
             {stats.nightSleep.hasData ? (
-              <span className="text-base font-semibold tabular-nums text-foreground">
+              <span className="text-xl font-bold tabular-nums text-foreground">
                 {stats.nightSleep.hours}h {stats.nightSleep.mins}m
               </span>
             ) : (
-              <span className="text-base font-semibold text-muted-foreground/50">—</span>
+              <span className="text-xl font-bold text-muted-foreground/40">—</span>
             )}
+          </div>
+          <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+            Last Night
           </div>
         </div>
       </div>
