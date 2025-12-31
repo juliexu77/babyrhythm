@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { useTravelDays } from "@/hooks/useTravelDays";
 import { calculateNapStatistics } from "@/utils/napStatistics";
 import { useState } from "react";
 
@@ -43,11 +44,20 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
   const { isNightTime, nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+  const { travelDays } = useTravelDays();
   const [isExpanded, setIsExpanded] = useState(true);
+
+  // Convert travel days to date strings for filtering
+  const travelDayDates = travelDays?.map(td => td.date) || [];
+
+  // Helper to check if a date is a travel day
+  const isTravelDay = (dateStr: string): boolean => {
+    return travelDayDates.includes(dateStr);
+  };
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
-    queryKey: ['baby-metrics', household?.id],
+    queryKey: ['baby-metrics', household?.id, travelDayDates.join(',')],
     queryFn: async () => {
       if (!household?.id) return null;
 
@@ -65,12 +75,24 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
+      // Filter out activities from travel days
+      const filteredActivities = activities?.filter(a => {
+        const details = a.details as any;
+        const dateLocal = details?.date_local;
+        if (dateLocal && isTravelDay(dateLocal)) {
+          return false;
+        }
+        // Fallback to logged_at date
+        const loggedDate = format(new Date(a.logged_at), 'yyyy-MM-dd');
+        return !isTravelDay(loggedDate);
+      }) || [];
+
       // Map to the format expected by calculateNapStatistics
-      const mappedActivities = activities?.map(a => ({
+      const mappedActivities = filteredActivities.map(a => ({
         type: a.type,
         loggedAt: a.logged_at,
         details: a.details as any
-      })) || [];
+      }));
 
       // Use shared utility for consistent calculation
       const stats = calculateNapStatistics(mappedActivities, nightSleepStartHour, nightSleepEndHour);
