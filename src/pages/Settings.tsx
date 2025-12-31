@@ -41,7 +41,6 @@ const ThemeSettingsRow = () => {
 
   return (
     <SettingsRow
-      icon={theme === 'dusk' ? <Sunset className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
       title="Theme"
       subtitle={theme === 'dusk' ? 'Dusk mode' : 'Light mode'}
       showChevron={false}
@@ -178,7 +177,6 @@ export const Settings = () => {
           {user && household && (
             <SettingsSection title="Baby Profile">
               <SettingsRow
-                icon={<Baby className="w-5 h-5" />}
                 title={household.baby_name || "Baby's Name"}
                 subtitle={household.baby_birthday ? `Birthday: ${new Date(household.baby_birthday).toLocaleDateString()}` : "Set birthday"}
                 onClick={() => setShowBabyEdit(true)}
@@ -190,7 +188,6 @@ export const Settings = () => {
           {user && (
             <SettingsSection title="Sleep Schedule">
               <SettingsRow
-                icon={<Moon className="w-5 h-5" />}
                 title="Night starts"
                 subtitle="When sleep begins"
                 showChevron={false}
@@ -233,7 +230,6 @@ export const Settings = () => {
                 </Select>
               </SettingsRow>
               <SettingsRow
-                icon={<Moon className="w-5 h-5" />}
                 title="Night ends"
                 subtitle="When sleep ends"
                 showChevron={false}
@@ -275,7 +271,6 @@ export const Settings = () => {
                 </Select>
               </SettingsRow>
               <SettingsRow
-                icon={<Sunrise className="w-5 h-5" />}
                 title="Auto-log wake up"
                 subtitle="Automatically log morning wake at your set time if forgotten"
                 showChevron={false}
@@ -319,13 +314,11 @@ export const Settings = () => {
           {user && (
             <SettingsSection title="Caregivers">
               <SettingsRow
-                icon={<Share className="w-5 h-5" />}
                 title="Share Invite Link"
                 subtitle="Share tracking with caregivers"
                 onClick={handleInviteClick}
               />
               <SettingsRow
-                icon={<Users className="w-5 h-5" />}
                 title="Manage Caregivers"
                 onClick={() => setShowCaregiverManagement(true)}
               />
@@ -335,7 +328,6 @@ export const Settings = () => {
           <SettingsSection title="App Preferences">
             <ThemeSettingsRow />
             <SettingsRow
-              icon={<Bell className="w-5 h-5" />}
               title="Smart Reminders"
               subtitle="Get notified before naps, feeds, and bedtime"
               showChevron={false}
@@ -351,12 +343,10 @@ export const Settings = () => {
           {user && (
             <SettingsSection title="Account">
               <SettingsRow
-                icon={<Key className="w-5 h-5" />}
                 title="Change Password"
                 onClick={handleChangePassword}
               />
               <SettingsRow
-                icon={<LogOut className="w-5 h-5" />}
                 title="Sign Out"
                 onClick={signOut}
               />
