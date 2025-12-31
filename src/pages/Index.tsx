@@ -19,7 +19,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useActivityPercentile } from "@/hooks/useActivityPercentile";
-import { useToast } from "@/hooks/use-toast";
+
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { useTravelDays } from "@/hooks/useTravelDays";
@@ -60,7 +60,7 @@ const Index = () => {
     addActivity: hookAddActivity,
     updateActivity: hookUpdateActivity
   } = useActivities();
-  const { toast } = useToast();
+  
   const navigate = useNavigate();
   const { trackCreate, trackUpdate, trackDelete, undo, canUndo, undoCount } = useActivityUndo();
   const { travelDayDates, isTravelDay, toggleTravelDay } = useTravelDays();
@@ -567,11 +567,6 @@ const ongoingNap = (() => {
         // Mark as auto-logged today
         localStorage.setItem(autoLogKey, 'true');
         
-        toast({
-          title: "Good morning! ☀️",
-          description: `Auto-logged wake up at ${wakeTimeFormatted}`,
-        });
-        
         console.log('✅ Auto-logged wake up at', wakeTimeFormatted);
       } catch (error) {
         console.error('Failed to auto-log wake:', error);
@@ -579,7 +574,7 @@ const ongoingNap = (() => {
     };
     
     checkAutoLogWake();
-  }, [userProfile, activities, household?.id, user, hookUpdateActivity, toast]);
+  }, [userProfile, activities, household?.id, user, hookUpdateActivity]);
 
   const handleProfileComplete = async () => {
     // Not needed anymore - household auto-created on login
@@ -701,11 +696,6 @@ const ongoingNap = (() => {
       await refetchActivities();
     } catch (error) {
       console.error('Error adding activity:', error);
-      toast({
-        title: "Error adding activity",
-        description: "Please try again",
-        variant: "destructive"
-      });
     }
   };
 
@@ -735,7 +725,6 @@ const ongoingNap = (() => {
         throw error;
       }
       console.log('Successfully updated nap');
-      toast({ title: "Saved", description: `${babyProfile?.name || 'Baby'} woke up at ${endStr}` });
       
       // Refetch activities - optimistic state will be cleared by useEffect when real data arrives
       await refetchActivities();
@@ -749,7 +738,6 @@ const ongoingNap = (() => {
         return next;
       });
       setJustEndedNapId(null);
-      toast({ title: "Error", description: "Could not mark wake-up", variant: "destructive" });
     }
   };
 
@@ -950,19 +938,9 @@ const ongoingNap = (() => {
                                   <button
                                     onClick={async () => {
                                       try {
-                                        const isNowTravel = await toggleTravelDay(dateKey);
-                                        toast({
-                                          title: isNowTravel ? "Marked as travel day" : "Removed travel day",
-                                          description: isNowTravel 
-                                            ? "This day will be excluded from trends and patterns" 
-                                            : "This day will now be included in analytics",
-                                        });
+                                        await toggleTravelDay(dateKey);
                                       } catch (error) {
-                                        toast({
-                                          title: "Error",
-                                          description: "Could not update travel day status",
-                                          variant: "destructive"
-                                        });
+                                        console.error('Could not update travel day status:', error);
                                       }
                                     }}
                                     className="flex items-center gap-2 group"
@@ -1527,11 +1505,6 @@ return (
               setEditingActivity(null);
             } catch (error) {
               console.error('Error updating activity:', error);
-              toast({
-                title: "Error updating activity",
-                description: "Please try again.",
-                variant: "destructive"
-              });
             }
           }}
           onDeleteActivity={async (activityId) => {
@@ -1649,25 +1622,12 @@ return (
 
                           if (error) throw error;
 
-                          toast({
-                            title: 'Sleep Ended',
-                            description: `${babyProfile?.name || 'Baby'} woke up at ${activityTime}`,
-                          });
                           refetchActivities();
                         } catch (error) {
                           console.error('Error ending sleep:', error);
-                          toast({
-                            title: 'Error',
-                            description: 'Could not end sleep',
-                            variant: 'destructive',
-                          });
                         }
                       } else {
-                        toast({
-                          title: 'No Ongoing Sleep',
-                          description: 'Could not find an ongoing sleep to end.',
-                          variant: 'destructive',
-                        });
+                        console.error('No ongoing sleep found to end');
                       }
                     } else {
                       // For nap activities, ensure details.startTime is set
@@ -1685,12 +1645,6 @@ return (
                       );
                     }
                   }
-                  
-                  // Show success toast
-                  toast({
-                    title: 'Activities Logged',
-                    description: `Successfully logged ${parsedActivities.length} ${parsedActivities.length === 1 ? 'activity' : 'activities'}`,
-                  });
                 }}
               />
             </div>

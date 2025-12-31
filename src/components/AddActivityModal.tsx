@@ -10,7 +10,7 @@ import { Activity } from "./ActivityCard";
 import { Plus, Milk, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Utensils, MoreVertical, Trash2, Ruler, Mic, Thermometer } from "lucide-react";
 import { VoiceRecorder } from "./VoiceRecorder";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/hooks/use-toast";
+
 import { supabase } from "@/integrations/supabase/client";
 import { logError } from "@/utils/logger";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -359,21 +359,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         logError('Photo upload', new Error('User not authenticated'));
-        toast({
-          title: t('authenticationRequired'),
-          description: t('pleaseLogInToUpload'),
-          variant: "destructive"
-        });
         throw new Error('User not authenticated');
       }
       
       if (!householdId) {
         logError('Photo upload', new Error('Household ID missing'));
-        toast({
-          title: "Household not found",
-          description: "Unable to upload photo. Please try reloading the page.",
-          variant: "destructive"
-        });
         throw new Error('Household not found');
       }
 
@@ -386,11 +376,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
       if (uploadError) {
         logError('Storage upload', uploadError);
-        toast({
-          title: "Upload failed",
-          description: uploadError.message || "Storage error occurred.",
-          variant: "destructive"
-        });
         throw uploadError;
       }
 
@@ -401,16 +386,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       return publicUrl;
     } catch (error) {
       logError('Photo upload', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo';
-      
-      // Only show toast if we haven't already shown one
-      if (!errorMessage.includes('authenticated') && !errorMessage.includes('Household')) {
-        toast({
-          title: "Upload failed",
-          description: errorMessage,
-          variant: "destructive"
-        });
-      }
       return null;
     }
   };
@@ -421,21 +396,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     if (isSaving) return; // Prevent double submission
     
     if (!activityType) {
-      toast({
-        title: "Activity type required",
-        description: "Please select an activity type.",
-        variant: "destructive",
-      });
       return;
     }
 
     // Validate photo activity
     if (activityType === "photo" && !photo && !photoUrl) {
-      toast({
-        title: "Photo required",
-        description: "Please select a photo to upload.",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -449,39 +414,19 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     if (activityType === "feed" && feedType === "bottle") {
       const quantityNum = parseFloat(quantity);
       if (!quantity || isNaN(quantityNum) || quantityNum <= 0) {
-        toast({
-          title: "Feed amount required",
-          description: "Please enter a valid amount greater than 0.",
-          variant: "destructive",
-        });
         return;
       }
     }
 
     if (activityType === "feed" && feedType === "nursing" && (!minutesLeft && !minutesRight)) {
-      toast({
-        title: "Nursing time required",
-        description: "Please enter minutes for left, right, or both sides.",
-        variant: "destructive",
-      });
       return;
     }
 
     if (activityType === "nap" && !startTime) {
-      toast({
-        title: "Start time required",
-        description: "Please select a start time for the sleep.",
-        variant: "destructive",
-      });
       return;
     }
 
     if (activityType === "nap" && hasEndTime && !endTime) {
-      toast({
-        title: "End time required",
-        description: "Please select an end time or uncheck 'Include end time'.",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -585,16 +530,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           details,
         };
 
-        await onAddActivity(newActivity, selectedDate, activityTime);
-        
-        // Show encouraging toast for early activities
-        if (isEarlyActivity) {
-          toast({
-            title: "Got it!",
-            description: "I'm learning your baby's rhythm.",
-            duration: 3000,
-          });
-        }
       }
       
       resetForm();
@@ -605,11 +540,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       }
     } catch (error) {
       logError('Save activity', error);
-      toast({
-        title: "Save failed",
-        description: "Please try again.",
-        variant: "destructive"
-      });
     } finally {
       setIsSaving(false);
     }
@@ -987,19 +917,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           const file = e.target.files?.[0];
                           if (file) {
                             if (!file.type.startsWith('image/')) {
-                              toast({
-                                title: "Invalid file type",
-                                description: "Please select an image file.",
-                                variant: "destructive"
-                              });
                               return;
                             }
                             if (file.size > 10 * 1024 * 1024) {
-                              toast({
-                                title: "File too large",
-                                description: "Please select an image smaller than 10MB.",
-                                variant: "destructive"
-                              });
                               return;
                             }
                             setPhoto(file);
@@ -1138,19 +1058,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           const file = e.target.files?.[0];
                           if (file) {
                             if (!file.type.startsWith('image/')) {
-                              toast({
-                                title: "Invalid file type",
-                                description: "Please select an image file.",
-                                variant: "destructive"
-                              });
                               return;
                             }
                             if (file.size > 10 * 1024 * 1024) {
-                              toast({
-                                title: "File too large",
-                                description: "Please select an image smaller than 10MB.",
-                                variant: "destructive"
-                              });
                               return;
                             }
                             setPhoto(file);
@@ -1229,11 +1139,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                           if (onClose) onClose();
                         } catch (err) {
                           logError('Delete activity', err);
-                          toast({
-                            title: 'Error deleting activity',
-                            description: 'Please sign in and try again.',
-                            variant: 'destructive'
-                          });
                         }
                       }
                     }}
