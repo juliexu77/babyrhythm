@@ -12,6 +12,7 @@ import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { QuickLogBar } from "@/components/home/QuickLogBar";
+import { DailyStatsBar } from "@/components/home/DailyStatsBar";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { RightNowStatus } from "@/components/home/RightNowStatus";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
@@ -1498,6 +1499,9 @@ const lastDiaper = displayActivities
           }}
           isLoading={isQuickLogging}
         />
+
+        {/* Daily Stats Summary - compact snapshot */}
+        <DailyStatsBar activities={activities} />
 
         {/* Weekly Rhythm - nap bars visualization */}
         {activities.length > 0 && (
