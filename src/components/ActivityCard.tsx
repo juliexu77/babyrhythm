@@ -201,41 +201,42 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete, mi
       onClick={handleClick}
       className="w-full text-left group"
     >
-      <div className="py-1.5 px-3 hover:bg-accent/5 active:bg-accent/10 transition-colors">
-        <div className="flex items-center justify-between gap-2">
+      {/* Flat row - no card background, just a subtle hover state */}
+      <div className="py-2.5 px-4 hover:bg-muted/20 active:bg-muted/30 transition-colors border-b border-border/30 last:border-b-0">
+        <div className="flex items-center justify-between gap-3">
           {/* Left: Icon + Content */}
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="text-primary flex-shrink-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            {/* Minimal icon - just color, no background */}
+            <div className="text-foreground/60 flex-shrink-0">
               {getActivityIcon(activity.type)}
             </div>
+            
             <div className="min-w-0 flex-1">
-              {/* Single line: Type + Value */}
-              <div className="flex items-baseline gap-2">
+              {/* Inline: Type + Value on same line */}
+              <div className="flex items-baseline gap-1.5">
                 <span className="text-sm font-medium text-foreground">{getTypeLabel()}</span>
-                <span className="text-xs text-muted-foreground">{value}</span>
+                <span className="text-sm text-muted-foreground">·</span>
+                <span className="text-sm text-muted-foreground">{value}</span>
               </div>
-              {/* Descriptor - truncated */}
+              {/* Descriptor as secondary text */}
               {descriptor && (
-                <p className="text-[11px] text-muted-foreground/60 truncate">{descriptor}</p>
+                <p className="text-xs text-muted-foreground/50 truncate mt-0.5">{descriptor}</p>
               )}
             </div>
           </div>
           
-          {/* Right: Time + Chevron */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[10px] text-muted-foreground/50 tabular-nums">
-              {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
-                ? activity.details.startTime
-                : activity.time
-              }
-            </span>
-            <ChevronRight className="w-3 h-3 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
-          </div>
+          {/* Right: Time only, no chevron for cleaner look */}
+          <span className="text-xs text-muted-foreground/60 tabular-nums flex-shrink-0">
+            {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
+              ? activity.details.startTime
+              : activity.time
+            }
+          </span>
         </div>
         
-        {/* Milestone badges */}
+        {/* Milestone badges - inline with content */}
         {milestones.length > 0 && (
-          <div className="pl-6">
+          <div className="pl-7 mt-1">
             {milestones.map(milestone => (
               <MilestoneBadge key={milestone.id} milestone={milestone} />
             ))}
