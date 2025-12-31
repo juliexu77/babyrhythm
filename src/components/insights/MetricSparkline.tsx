@@ -36,8 +36,9 @@ export const MetricSparkline = ({ data, color = "hsl(var(--primary))" }: MetricS
           type="monotoneX"
           dataKey="value"
           stroke={color}
-          strokeWidth={2}
-          dot={false}
+          strokeWidth={3}
+          dot={{ r: 2, fill: color, stroke: color, strokeWidth: 0 }}
+          activeDot={{ r: 3, fill: color, stroke: "hsl(var(--background))", strokeWidth: 2 }}
           isAnimationActive={false}
           fill={`url(#sparklineGradient-${color})`}
         />
