@@ -188,37 +188,36 @@ export const RightNowStatus = ({
       )}
 
       {/* Quick Actions - tighter spacing */}
+      {/* Quick Actions - flat text, no cards */}
       {suggestions.length > 0 && (
-        <div className="mt-2 px-4 pb-2">
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mb-1.5">
+        <div className="px-4 py-2">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mb-1">
             Quick actions
           </p>
-          <div className="space-y-1">
-            {suggestions.slice(0, 2).map((suggestion) => (
-              <button
-                key={suggestion.id}
-                onClick={suggestion.onClick}
-                className="w-full text-left group"
-              >
-                <div className="flex items-center justify-between py-2 px-2.5 rounded-strava-sm border border-border/40 hover:bg-accent/5 active:bg-accent/10 transition-colors">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center text-muted-foreground">
-                      {suggestion.icon}
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-foreground leading-tight">
-                        {suggestion.title}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground/70 leading-tight">
-                        {suggestion.subtitle}
-                      </p>
-                    </div>
+          {suggestions.slice(0, 2).map((suggestion) => (
+            <button
+              key={suggestion.id}
+              onClick={suggestion.onClick}
+              className="w-full text-left py-1.5 hover:bg-accent/5 active:bg-accent/10 transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="text-primary">
+                    {suggestion.icon}
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground leading-tight">
+                      {suggestion.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-tight">
+                      {suggestion.subtitle}
+                    </p>
+                  </div>
                 </div>
-              </button>
-            ))}
-          </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+              </div>
+            </button>
+          ))}
         </div>
       )}
     </div>
