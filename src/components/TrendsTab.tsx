@@ -522,6 +522,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 babyBirthday={household?.baby_birthday}
                 metricType="wakeWindows"
                 showBaseline={false}
+                travelDayDates={travelDayDates}
               />
             </div>
           )}
