@@ -29,9 +29,9 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/30 z-50">
       <div className="px-2">
-        <div className="grid grid-cols-5 items-center h-14">
+        <div className="grid grid-cols-5 items-center h-12">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -46,16 +46,16 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
                   tab.isRecord
                     ? "text-primary"
                     : isActive 
-                      ? "text-primary" 
-                      : "text-muted-foreground/60 hover:text-muted-foreground"
+                      ? "text-foreground" 
+                      : "text-muted-foreground/50 hover:text-muted-foreground"
                 }`}
               >
                 <Icon 
-                  className={`w-5 h-5 mb-0.5 ${isActive ? 'fill-current' : ''}`}
-                  strokeWidth={isActive ? 2 : 1.5}
+                  className={`w-[18px] h-[18px] mb-0.5`}
+                  strokeWidth={isActive ? 2 : 1.25}
                   fill={isActive && !tab.isRecord ? 'currentColor' : 'none'}
                 />
-                <span className={`text-[10px] ${isActive ? 'font-semibold' : 'font-medium'}`}>{tab.label}</span>
+                <span className={`text-[9px] ${isActive ? 'font-semibold' : 'font-normal'}`}>{tab.label}</span>
               </button>
             );
           })}

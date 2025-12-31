@@ -40,9 +40,11 @@ export default {
         'stat': '1.0', // Very tight for large numbers
       },
       fontSize: {
-        'stat-xl': ['3.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '800' }],
-        'stat-lg': ['2.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'stat-md': ['1.75rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
+        // Strava-style: moderate but prominent stats (36-48pt range)
+        'stat-xl': ['2.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'stat-lg': ['2rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '600' }],
+        'stat-md': ['1.5rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'stat-sm': ['1.25rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
       },
       opacity: {
         'icon': '0.88',
@@ -150,12 +152,12 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 4px)", 
         sm: "calc(var(--radius) - 8px)",
-        sharp: "4px", // Strava uses sharper corners
-        "3xl": "16px", // Less rounded for Strava aesthetic
-        "4xl": "20px",
-        // Strava-style card radiuses
-        "strava": "12px",
-        "strava-sm": "8px",
+        sharp: "4px",
+        // Strava-style unified radiuses
+        "strava": "8px",
+        "strava-sm": "6px",
+        "strava-lg": "12px",
+        "pill": "9999px",
       },
       keyframes: {
         "accordion-down": {
