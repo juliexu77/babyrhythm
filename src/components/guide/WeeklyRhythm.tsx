@@ -182,10 +182,10 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
   };
 
   return (
-    <div className="mx-2 mb-6 rounded-strava bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+    <div className="mb-0 bg-card border-y border-border overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Header */}
-        <div className="px-4 py-5 border-b border-border/30">
+        <div className="px-4 py-4 border-b border-border/30">
           <CollapsibleTrigger className="w-full" onClick={() => setIsOpen(!isOpen)}>
             <div className="flex items-center justify-between">
               <div className="flex-1 text-left">

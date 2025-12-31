@@ -350,9 +350,9 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
   }
 
   return (
-    <div className="space-y-6 pb-6 pt-4">
+    <div className="space-y-0 pb-6 pt-4">
       {/* Time Range Switcher - Strava-style segmented control */}
-      <div className="flex justify-center px-4">
+      <div className="flex justify-center px-4 pb-4">
         <div className="inline-flex bg-muted rounded-strava p-0.5">
           {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
             <button
@@ -374,10 +374,10 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
       </div>
 
-      {/* Collapsible Chart Sections - Strava-style list items */}
-      <div className="space-y-px px-4">
+      {/* Collapsible Chart Sections - Strava-style full-width list */}
+      <div className="space-y-0">
         {/* Night Sleep */}
-        <div className="bg-card rounded-t-strava border border-border overflow-hidden">
+        <div className="bg-card border-y border-border overflow-hidden">
           <button
             onClick={() => toggleChart('nightSleep')}
             className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
@@ -415,7 +415,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Day Naps */}
-        <div className="bg-card border-x border-border overflow-hidden">
+        <div className="bg-card border-b border-border overflow-hidden">
           <button
             onClick={() => toggleChart('dayNaps')}
             className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
@@ -453,7 +453,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Feed Volume */}
-        <div className="bg-card border-x border-border overflow-hidden">
+        <div className="bg-card border-b border-border overflow-hidden">
           <button
             onClick={() => toggleChart('feedVolume')}
             className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
@@ -491,7 +491,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Wake Windows */}
-        <div className="bg-card rounded-b-strava border border-border overflow-hidden">
+        <div className="bg-card border-b border-border overflow-hidden">
           <button
             onClick={() => toggleChart('wakeWindows')}
             className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
@@ -530,23 +530,19 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
       </div>
 
       {/* Collective Pulse */}
-      <div className="px-4">
-        <CollectivePulse babyBirthday={household?.baby_birthday} />
-      </div>
+      <CollectivePulse babyBirthday={household?.baby_birthday} />
 
-      {/* Long Term Trends Summary - Strava-style card */}
-      <div className="mx-4">
-        <div className="bg-card rounded-strava border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Summary
-            </h3>
-          </div>
-          <div className="px-4 py-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {generateSummary()}
-            </p>
-          </div>
+      {/* Long Term Trends Summary - Full-width */}
+      <div className="bg-card border-y border-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            Summary
+          </h3>
+        </div>
+        <div className="px-4 py-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {generateSummary()}
+          </p>
         </div>
       </div>
     </div>

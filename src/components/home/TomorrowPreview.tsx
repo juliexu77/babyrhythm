@@ -93,25 +93,22 @@ export const TomorrowPreview = ({
   }
 
   return (
-    <div className="mx-4 mb-6">
+    <div className="px-4 py-4 bg-card border-y border-border">
       <button
         onClick={onClick}
         className="group w-full text-left"
       >
         {/* Minimal typographic treatment */}
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
+        <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground mb-2">
           Tomorrow Preview
         </p>
         
         <div className="flex items-center justify-between">
-          <p className="text-base font-serif text-foreground/80 leading-relaxed pr-4">
+          <p className="text-sm text-foreground/80 leading-relaxed pr-4">
             {tomorrowInsight}
           </p>
           <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
         </div>
-        
-        {/* Subtle underline */}
-        <div className="mt-3 h-px bg-gradient-to-r from-border/50 via-border/30 to-transparent" />
       </button>
     </div>
   );

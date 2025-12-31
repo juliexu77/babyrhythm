@@ -108,9 +108,9 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
 
   if (isLoading) {
     return (
-      <div className="rounded-strava bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
-        <div className="px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30">
-          <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
+      <div className="bg-card border-y border-border overflow-hidden">
+        <div className="px-4 py-4 border-b border-border">
+          <h3 className="text-xs font-bold text-foreground/70 uppercase tracking-wider">
             Collective Pulse
           </h3>
         </div>
@@ -126,12 +126,12 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   // Show message when data not yet computed
   if (!cohortStats) {
     return (
-      <div className="rounded-strava bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
+      <div className="bg-card border-y border-border overflow-hidden">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-muted/20 transition-colors"
+          className="w-full px-4 py-4 border-b border-border flex items-center justify-between hover:bg-muted/20 transition-colors"
         >
-          <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-foreground/70 uppercase tracking-wider">
             Collective Pulse
           </h3>
           {isExpanded ? (
@@ -180,13 +180,13 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     (regressionInfo ? ` Note: Your baby is in the ${regressionInfo.name} regression window, where ${regressionInfo.description.toLowerCase()}` : '');
 
   return (
-    <div className="rounded-strava bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
+    <div className="bg-card border-y border-border overflow-hidden">
       {/* Header - Always visible and clickable */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-muted/20 transition-colors"
+        className="w-full px-4 py-4 border-b border-border flex items-center justify-between hover:bg-muted/20 transition-colors"
       >
-        <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
+        <h3 className="text-xs font-bold text-foreground/70 uppercase tracking-wider">
           Collective Pulse
         </h3>
         {isExpanded ? (

@@ -1253,7 +1253,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
         <>
           {/* Birthday Setup Prompt */}
           {needsBirthdaySetup && (
-            <div className="p-4 mx-4 bg-accent/20 border-b border-border/40">
+            <div className="p-4 bg-accent/20 border-y border-border/40">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-5 h-5 text-primary" />
@@ -1280,7 +1280,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
 
           {/* Main Content */}
           <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="pt-4 px-4 space-y-4">
+        <div ref={scrollRef} className="pt-0 space-y-0">
           {/* Today's Pulse - At the very top */}
           {!needsBirthdaySetup && todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
             <>
@@ -1301,7 +1301,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
           
           {/* Tier 1 & 2: Simple confidence message + unlock progress */}
           {!needsBirthdaySetup && hasTier1Data && !hasTier3Data && (
-            <div className="mb-4 p-4 bg-accent/20 rounded-lg border border-border/40 space-y-3">
+            <div className="p-4 bg-accent/20 border-y border-border/40 space-y-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium text-foreground">

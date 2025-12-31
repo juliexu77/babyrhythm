@@ -55,8 +55,8 @@ export const RightNowStatus = ({
     
   if (!currentActivity) {
     return (
-      <div className="mx-4 mb-4">
-        <div className="bg-card border border-border rounded-strava p-4">
+      <div className="mb-4">
+        <div className="bg-card border-y border-border p-4">
           <p className="text-sm text-muted-foreground">
             No recent activity
           </p>
@@ -96,9 +96,9 @@ export const RightNowStatus = ({
   const duration = formatDuration(currentActivity.duration);
 
   return (
-    <div className="mx-4 space-y-3">
-      {/* Main Activity Card - Strava style: big stats, clean layout */}
-      <div className="bg-card border border-border rounded-strava overflow-hidden">
+    <div className="space-y-0">
+      {/* Main Activity Card - Strava style: full-width, edge-to-edge */}
+      <div className="bg-card border-y border-border overflow-hidden">
         {/* Header */}
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -156,7 +156,7 @@ export const RightNowStatus = ({
         )}
       </div>
 
-      {/* What's Next Card - Activity feed item style */}
+      {/* What's Next Card - Full-width feed item style */}
       {nextPrediction && (
         <button
           onClick={() => {
@@ -168,7 +168,7 @@ export const RightNowStatus = ({
               onLogPrediction(activityType);
             }
           }}
-          className="w-full bg-card border border-border rounded-strava p-4 
+          className="w-full bg-card border-y border-border p-4 
                      hover:bg-accent/5 active:bg-accent/10 transition-colors text-left group"
         >
           <div className="flex items-center justify-between">
@@ -188,9 +188,9 @@ export const RightNowStatus = ({
         </button>
       )}
 
-      {/* Quick Actions - Simple list items with chevrons */}
+      {/* Quick Actions - Full-width list */}
       {suggestions.length > 0 && (
-        <div className="bg-card border border-border rounded-strava overflow-hidden">
+        <div className="bg-card border-y border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
               Quick Actions
