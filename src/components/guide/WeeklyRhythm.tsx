@@ -255,14 +255,20 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                   dayLabel = isToday ? 'Today' : 'Day';
                 }
                 const hasNaps = day.naps.length > 0;
+                const dayIsTravelDay = isTravelDay(day.date);
                 
                 return (
                   <div key={day.date} className="flex items-center gap-3">
                     <span className={`text-[11px] font-bold uppercase tracking-wide w-12 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground'}`}>
                       {dayLabel}
                     </span>
-                    <div className="flex-1 relative h-[15px] bg-muted/20 rounded-full">
-                      {hasNaps ? (
+                    <div className={`flex-1 relative h-[15px] rounded-full ${dayIsTravelDay ? 'bg-muted/10' : 'bg-muted/20'}`}>
+                      {dayIsTravelDay ? (
+                        <span className="absolute left-2 top-0 text-[9px] text-muted-foreground/50 leading-[15px] tracking-wide flex items-center gap-1">
+                          <span>✈</span>
+                          <span className="uppercase">Travel</span>
+                        </span>
+                      ) : hasNaps ? (
                         day.naps.map((nap, idx) => {
                           const leftPos = getPositionPercent(nap.startMinutes);
                           const width = getWidthPercent(nap.durationMinutes);
