@@ -1468,7 +1468,10 @@ const lastDiaper = displayActivities
           nightSleepEndHour={nightSleepEndHour}
         />
 
-        {/* Quick Log Bar */}
+        {/* Daily Stats - prominent scorecard (moved up in hierarchy) */}
+        <DailyStatsBar activities={activities} />
+
+        {/* Quick Log Bar - utility buttons */}
         <QuickLogBar
           onLogActivity={async (type, time) => {
             setIsQuickLogging(true);
@@ -1499,9 +1502,6 @@ const lastDiaper = displayActivities
           }}
           isLoading={isQuickLogging}
         />
-
-        {/* Daily Stats Summary - compact snapshot */}
-        <DailyStatsBar activities={activities} />
 
         {/* Weekly Rhythm - nap bars visualization */}
         {activities.length > 0 && (
