@@ -27,18 +27,35 @@ export const MetricOverviewStrip = ({ metrics }: MetricOverviewStripProps) => {
       return `${x},${y}`;
     }).join(' ');
     
+    // Generate circle positions
+    const circles = data.map((value, index) => ({
+      cx: (index / (data.length - 1)) * 100,
+      cy: 100 - ((value - min) / range) * 100
+    }));
+    
     return (
       <svg className="w-full h-6" viewBox="0 0 100 100" preserveAspectRatio="none">
         <polyline
           points={points}
           fill="none"
           stroke="hsl(var(--muted-foreground))"
-          strokeWidth="2"
+          strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
-          opacity="0.4"
+          opacity="0.5"
         />
+        {circles.map((circle, i) => (
+          <circle
+            key={i}
+            cx={circle.cx}
+            cy={circle.cy}
+            r="4"
+            fill="hsl(var(--muted-foreground))"
+            opacity="0.5"
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
       </svg>
     );
   };

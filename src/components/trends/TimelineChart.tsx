@@ -441,10 +441,28 @@ export const TimelineChart = ({
             d={pathData}
             fill="none"
             stroke={color}
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
+          
+          {/* Data point dots */}
+          {chartData.map((d, i) => {
+            if (d.value === 0 || ('isTravelDay' in d && d.isTravelDay)) return null;
+            const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
+            const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
+            return (
+              <circle
+                key={`dot-${i}`}
+                cx={x}
+                cy={y}
+                r="4"
+                fill={color}
+                stroke="hsl(var(--background))"
+                strokeWidth="2"
+              />
+            );
+          })}
 
           {/* Data points with tooltips - only show non-zero values */}
           {chartData.map((d, i) => {
