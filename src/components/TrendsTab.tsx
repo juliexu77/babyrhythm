@@ -350,16 +350,16 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
   }
 
   return (
-    <div className="space-y-0 pb-6 pt-4">
-      {/* Time Range Switcher - Strava-style segmented control */}
-      <div className="flex justify-center px-4 pb-4">
-        <div className="inline-flex bg-muted rounded-strava p-0.5">
+    <div className="space-y-0 pb-6 pt-2">
+      {/* Time Range Switcher - compact segmented control */}
+      <div className="flex justify-center px-4 pb-3">
+        <div className="inline-flex bg-muted rounded-strava-sm p-0.5">
           {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
               className={`
-                px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-strava transition-all duration-200
+                px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wide rounded-strava-sm transition-all duration-200
                 ${timeRange === range 
                   ? 'bg-background text-foreground shadow-sm' 
                   : 'text-muted-foreground hover:text-foreground'
@@ -374,30 +374,30 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
       </div>
 
-      {/* Collapsible Chart Sections - Strava-style full-width list */}
+      {/* Collapsible Chart Sections - tighter spacing */}
       <div className="space-y-0">
         {/* Night Sleep */}
-        <div className="bg-card border-y border-border overflow-hidden">
+        <div className="bg-card border-y border-border/50 overflow-hidden">
           <button
             onClick={() => toggleChart('nightSleep')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Moon className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                <Moon className="w-3.5 h-3.5 text-primary" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Night Sleep</h3>
-                <p className="text-xs text-muted-foreground">Hours per night</p>
+                <h3 className="text-xs font-semibold text-foreground">Night Sleep</h3>
+                <p className="text-[10px] text-muted-foreground/70">Hours per night</p>
               </div>
             </div>
-            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['nightSleep'] && (
-            <div className="px-4 pb-4 border-t border-border">
+            <div className="px-3 pb-3 border-t border-border/30">
               <TimelineChart
                 title="Night Sleep"
-                icon={<Moon className="w-4 h-4 text-foreground/70" />}
+                icon={<Moon className="w-3.5 h-3.5 text-foreground/70" />}
                 activities={activities}
                 timeRange={timeRange}
                 dataExtractor={extractNightSleep}
@@ -415,27 +415,27 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Day Naps */}
-        <div className="bg-card border-b border-border overflow-hidden">
+        <div className="bg-card border-b border-border/50 overflow-hidden">
           <button
             onClick={() => toggleChart('dayNaps')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-accent/50 flex items-center justify-center">
-                <Sun className="w-5 h-5 text-accent-foreground" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-accent/30 flex items-center justify-center">
+                <Sun className="w-3.5 h-3.5 text-accent-foreground" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Day Naps</h3>
-                <p className="text-xs text-muted-foreground">Naps per day</p>
+                <h3 className="text-xs font-semibold text-foreground">Day Naps</h3>
+                <p className="text-[10px] text-muted-foreground/70">Naps per day</p>
               </div>
             </div>
-            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['dayNaps'] && (
-            <div className="px-4 pb-4 border-t border-border">
+            <div className="px-3 pb-3 border-t border-border/30">
               <TimelineChart
                 title="Day Naps"
-                icon={<Sun className="w-4 h-4 text-foreground/70" />}
+                icon={<Sun className="w-3.5 h-3.5 text-foreground/70" />}
                 activities={activities}
                 timeRange={timeRange}
                 dataExtractor={extractDayNaps}
@@ -453,27 +453,27 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Feed Volume */}
-        <div className="bg-card border-b border-border overflow-hidden">
+        <div className="bg-card border-b border-border/50 overflow-hidden">
           <button
             onClick={() => toggleChart('feedVolume')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <Milk className="w-5 h-5 text-secondary-foreground" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-secondary/50 flex items-center justify-center">
+                <Milk className="w-3.5 h-3.5 text-secondary-foreground" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Feed Volume</h3>
-                <p className="text-xs text-muted-foreground">Daily intake</p>
+                <h3 className="text-xs font-semibold text-foreground">Feed Volume</h3>
+                <p className="text-[10px] text-muted-foreground/70">Daily intake</p>
               </div>
             </div>
-            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['feedVolume'] && (
-            <div className="px-4 pb-4 border-t border-border">
+            <div className="px-3 pb-3 border-t border-border/30">
               <TimelineChart
                 title="Feed Volume"
-                icon={<Milk className="w-4 h-4 text-foreground/70" />}
+                icon={<Milk className="w-3.5 h-3.5 text-foreground/70" />}
                 activities={activities}
                 timeRange={timeRange}
                 dataExtractor={extractFeedVolume}
@@ -491,27 +491,27 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Wake Windows */}
-        <div className="bg-card border-b border-border overflow-hidden">
+        <div className="bg-card border-b border-border/50 overflow-hidden">
           <button
             onClick={() => toggleChart('wakeWindows')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+            className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                <Clock className="w-5 h-5 text-muted-foreground" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">Wake Windows</h3>
-                <p className="text-xs text-muted-foreground">Average awake time</p>
+                <h3 className="text-xs font-semibold text-foreground">Wake Windows</h3>
+                <p className="text-[10px] text-muted-foreground/70">Avg awake time</p>
               </div>
             </div>
-            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform duration-200 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`} />
           </button>
           {expandedCharts['wakeWindows'] && (
-            <div className="px-4 pb-4 border-t border-border">
+            <div className="px-3 pb-3 border-t border-border/30">
               <TimelineChart
                 title="Wake Windows"
-                icon={<Clock className="w-4 h-4 text-foreground/70" />}
+                icon={<Clock className="w-3.5 h-3.5 text-foreground/70" />}
                 activities={activities}
                 timeRange={timeRange}
                 dataExtractor={extractWakeWindows}
@@ -532,15 +532,15 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
       {/* Collective Pulse */}
       <CollectivePulse babyBirthday={household?.baby_birthday} />
 
-      {/* Long Term Trends Summary - Full-width */}
-      <div className="bg-card border-y border-border overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+      {/* Long Term Trends Summary - Compact */}
+      <div className="bg-card border-y border-border/50 overflow-hidden">
+        <div className="px-3 py-2 border-b border-border/30">
+          <h3 className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Summary
           </h3>
         </div>
-        <div className="px-4 py-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
+        <div className="px-3 py-2.5">
+          <p className="text-xs text-muted-foreground/80 leading-relaxed">
             {generateSummary()}
           </p>
         </div>

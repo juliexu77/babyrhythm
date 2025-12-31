@@ -38,19 +38,19 @@ interface ActivityCardProps {
 const getActivityIcon = (type: string) => {
   switch (type) {
     case "feed":
-      return <Milk className="h-5 w-5" />;
+      return <Milk className="h-4 w-4" />;
     case "diaper":
-      return <Droplet className="h-5 w-5" />;
+      return <Droplet className="h-4 w-4" />;
     case "nap":
-      return <Moon className="h-5 w-5" />;
+      return <Moon className="h-4 w-4" />;
     case "note":
-      return <StickyNote className="h-5 w-5" />;
+      return <StickyNote className="h-4 w-4" />;
     case "solids":
-      return <Utensils className="h-5 w-5" />;
+      return <Utensils className="h-4 w-4" />;
     case "photo":
-      return <Camera className="h-5 w-5" />;
+      return <Camera className="h-4 w-4" />;
     default:
-      return <Clock className="h-5 w-5" />;
+      return <Clock className="h-4 w-4" />;
   }
 };
 
@@ -198,33 +198,33 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
       onClick={handleClick}
       className="w-full text-left group"
     >
-      <div className="py-3 px-4 hover:bg-accent/5 active:bg-accent/10 transition-colors">
+      <div className="py-2 px-3 hover:bg-accent/5 active:bg-accent/10 transition-colors">
         {/* Top row: Activity type and time */}
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between mb-0.5">
+          <div className="flex items-center gap-1.5">
             <div className="text-primary">
               {getActivityIcon(activity.type)}
             </div>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground/70">
               {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
                 ? activity.details.startTime
                 : activity.time
               }
             </span>
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
         </div>
         
-        {/* Main content: Title */}
-        <h3 className="text-base font-semibold text-foreground mb-0.5">
+        {/* Main content: Title - smaller */}
+        <h3 className="text-sm font-semibold text-foreground leading-tight">
           {getTypeLabel()}
         </h3>
         
-        {/* Stats row - Strava style */}
-        <div className="flex items-center gap-4 text-sm">
+        {/* Stats row - compact */}
+        <div className="flex items-center gap-3 text-xs mt-0.5">
           <span className="text-foreground font-medium">{value}</span>
           {descriptor && (
-            <span className="text-muted-foreground">{descriptor}</span>
+            <span className="text-muted-foreground/70 truncate">{descriptor}</span>
           )}
         </div>
       </div>
