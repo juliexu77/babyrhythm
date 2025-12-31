@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { ActivityCard, Activity } from "./ActivityCard";
+import { Milestone } from "@/utils/milestoneDetection";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +17,7 @@ interface SwipeableActivityCardProps {
   babyName?: string;
   onEdit?: (activity: Activity) => void;
   onDelete?: (activityId: string) => void;
+  milestones?: Milestone[];
 }
 
 export const SwipeableActivityCard = ({
@@ -23,6 +25,7 @@ export const SwipeableActivityCard = ({
   babyName,
   onEdit,
   onDelete,
+  milestones = [],
 }: SwipeableActivityCardProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [translateX, setTranslateX] = useState(0);
@@ -124,6 +127,7 @@ export const SwipeableActivityCard = ({
             babyName={babyName}
             onEdit={handleCardClick}
             onDelete={onDelete}
+            milestones={milestones}
           />
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { Clock, Milk, Droplet, Moon, StickyNote, Utensils, Camera, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { MilestoneBadge } from "./MilestoneBadge";
+import { Milestone } from "@/utils/milestoneDetection";
 
 export interface Activity {
   id: string;
@@ -33,6 +35,7 @@ interface ActivityCardProps {
   babyName?: string;
   onEdit?: (activity: Activity) => void;
   onDelete?: (activityId: string) => void;
+  milestones?: Milestone[];
 }
 
 const getActivityIcon = (type: string) => {
@@ -170,7 +173,7 @@ const getActivityValueAndDescriptor = (activity: Activity, t: (key: string) => s
   }
 };
 
-export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: ActivityCardProps) => {
+export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete, milestones = [] }: ActivityCardProps) => {
   const { t } = useLanguage();
   const { value, descriptor } = getActivityValueAndDescriptor(activity, t);
 
@@ -198,35 +201,46 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
       onClick={handleClick}
       className="w-full text-left group"
     >
-      <div className="py-1.5 px-3 hover:bg-accent/5 active:bg-accent/10 transition-colors flex items-center justify-between gap-2">
-        {/* Left: Icon + Content */}
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div className="text-primary flex-shrink-0">
-            {getActivityIcon(activity.type)}
-          </div>
-          <div className="min-w-0 flex-1">
-            {/* Single line: Type + Value */}
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm font-medium text-foreground">{getTypeLabel()}</span>
-              <span className="text-xs text-muted-foreground">{value}</span>
+      <div className="py-1.5 px-3 hover:bg-accent/5 active:bg-accent/10 transition-colors">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Icon + Content */}
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="text-primary flex-shrink-0">
+              {getActivityIcon(activity.type)}
             </div>
-            {/* Descriptor - truncated */}
-            {descriptor && (
-              <p className="text-[11px] text-muted-foreground/60 truncate">{descriptor}</p>
-            )}
+            <div className="min-w-0 flex-1">
+              {/* Single line: Type + Value */}
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-medium text-foreground">{getTypeLabel()}</span>
+                <span className="text-xs text-muted-foreground">{value}</span>
+              </div>
+              {/* Descriptor - truncated */}
+              {descriptor && (
+                <p className="text-[11px] text-muted-foreground/60 truncate">{descriptor}</p>
+              )}
+            </div>
+          </div>
+          
+          {/* Right: Time + Chevron */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="text-[10px] text-muted-foreground/50 tabular-nums">
+              {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
+                ? activity.details.startTime
+                : activity.time
+              }
+            </span>
+            <ChevronRight className="w-3 h-3 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
           </div>
         </div>
         
-        {/* Right: Time + Chevron */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="text-[10px] text-muted-foreground/50 tabular-nums">
-            {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
-              ? activity.details.startTime
-              : activity.time
-            }
-          </span>
-          <ChevronRight className="w-3 h-3 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
-        </div>
+        {/* Milestone badges */}
+        {milestones.length > 0 && (
+          <div className="pl-6">
+            {milestones.map(milestone => (
+              <MilestoneBadge key={milestone.id} milestone={milestone} />
+            ))}
+          </div>
+        )}
       </div>
     </button>
   );

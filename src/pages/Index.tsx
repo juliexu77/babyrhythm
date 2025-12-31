@@ -25,6 +25,7 @@ import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { useTravelDays } from "@/hooks/useTravelDays";
 import { getTodayActivities } from "@/utils/activityDateFilters";
+import { detectMilestones } from "@/utils/milestoneDetection";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, User, Undo2, Filter, Share, X, Sun, Bell, Settings, Plane } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -1164,11 +1165,14 @@ const ongoingNap = (() => {
                                     
                                     return (
                                       <>
-                                        {dayActivities.map((activity) => (
+                                        {dayActivities.map((activity) => {
+                                          const milestones = detectMilestones(activity, activities);
+                                          return (
                                           <SwipeableActivityCard
                                             key={activity.id}
                                             activity={activity}
                                             babyName={babyProfile?.name}
+                                            milestones={milestones}
                                             onEdit={(clickedActivity) => {
                                               console.log('Clicked activity:', clickedActivity);
                                               setEditingActivity(clickedActivity);
@@ -1200,7 +1204,8 @@ const ongoingNap = (() => {
                                               }
                                             }}
                                           />
-                                        ))}
+                                          );
+                                        })}
                                         
                                          {/* Wake-up indicator - show in the date section where the wake-up happened */}
                                         {showWakeUpHere && nightSleep && wakeTime && (
