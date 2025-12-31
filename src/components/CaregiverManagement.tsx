@@ -182,7 +182,7 @@ const handleAddCaregiver = async () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto">
+      <div className="px-4">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <Button variant="ghost" onClick={onClose} className="text-muted-foreground">

@@ -17,7 +17,8 @@ import {
   Moon,
   Sunrise,
   Sun,
-  Sunset
+  Sunset,
+  Camera
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
@@ -138,23 +139,29 @@ export const Settings = () => {
   return (
     <>
       <div className="min-h-screen bg-background">
-        <div className="max-w-md mx-auto px-4 py-6 space-y-4">
+        <div className="px-4 py-6 space-y-4">
           {/* Profile Header */}
           {user && (
             <div 
               className="flex items-center gap-4 py-4 cursor-pointer active:opacity-70 transition-opacity"
               onClick={() => setShowProfileEdit(true)}
             >
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                {(userProfile as any)?.photo_url ? (
-                  <img 
-                    src={(userProfile as any).photo_url} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-8 h-8 text-muted-foreground" />
-                )}
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                  {(userProfile as any)?.photo_url ? (
+                    <img 
+                      src={(userProfile as any).photo_url} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-8 h-8 text-muted-foreground" />
+                  )}
+                </div>
+                {/* Camera edit indicator */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background">
+                  <Camera className="w-3 h-3 text-primary-foreground" />
+                </div>
               </div>
               <div className="flex-1">
                 <div className="text-lg font-semibold text-foreground">
