@@ -139,7 +139,33 @@ export const Settings = () => {
     <>
       <div className="min-h-screen bg-background">
         <div className="max-w-md mx-auto px-4 py-6 space-y-4">
-          {/* Header removed - using sticky header from Index.tsx */}
+          {/* Profile Header */}
+          {user && (
+            <div 
+              className="flex items-center gap-4 py-4 cursor-pointer active:opacity-70 transition-opacity"
+              onClick={() => setShowProfileEdit(true)}
+            >
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                {(userProfile as any)?.photo_url ? (
+                  <img 
+                    src={(userProfile as any).photo_url} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-8 h-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="text-lg font-semibold text-foreground">
+                  {(userProfile as any)?.full_name || getUserDisplayName()}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {user.email}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Baby Profile Section */}
           {user && household && (
