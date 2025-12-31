@@ -20,7 +20,7 @@ import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 import { LearningProgress } from "@/components/LearningProgress";
 import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
 import { ParentingChat } from "@/components/ParentingChat";
-import { useToast } from "@/hooks/use-toast";
+
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
@@ -63,7 +63,7 @@ interface HomeTabProps {
 
 export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile, addActivity, travelDayDates = [] }: HomeTabProps) => {
   const { t } = useLanguage();
-  const { toast } = useToast();
+  
   const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   const { household } = useHousehold();
   
@@ -1412,17 +1412,9 @@ const lastDiaper = displayActivities
                         // Force a refetch by triggering activity list refresh
                         window.dispatchEvent(new CustomEvent('refetch-activities'));
                         
-                        toast({
-                          title: "Morning wake logged",
-                          description: `Woke up at ${suggestedTime}`,
-                        });
+                        
                       } catch (error) {
                         logError('End sleep', error);
-                        toast({
-                          title: "Error",
-                          description: "Could not log wake time",
-                          variant: "destructive"
-                        });
                       }
                     }
                   } else {
@@ -1430,17 +1422,9 @@ const lastDiaper = displayActivities
                     if (activityType === 'nap') {
                       // Bedtime/first-nap: create nap with startTime set to the suggested time
                       await addActivity?.('nap', { startTime: suggestedTime }, new Date(), suggestedTime);
-                      toast({
-                        title: "Nap started",
-                        description: `Start time set to ${suggestedTime}`,
-                      });
                     } else {
                       // Feeds and others: rely on server to set logged_at from suggestedTime
                       await addActivity?.(activityType, {}, new Date(), suggestedTime);
-                      toast({
-                        title: "Activity logged",
-                        description: `${activityType} recorded at ${suggestedTime}`,
-                      });
                     }
                   }
                 }}
@@ -1492,7 +1476,6 @@ const lastDiaper = displayActivities
             try {
               if (type === 'nap') {
                 await addActivity?.('nap', { startTime: time }, new Date(), time);
-                toast({ title: "Nap started", description: `Started at ${time}` });
               } else if (type === 'feed') {
                 const recentFeed = activities
                   .filter(a => a.type === 'feed' && a.details?.quantity)
@@ -1506,18 +1489,11 @@ const lastDiaper = displayActivities
                 }
                 
                 await addActivity?.('feed', feedDetails, new Date(), time);
-                const amountText = feedDetails.quantity ? ` (${feedDetails.quantity}${feedDetails.unit || 'ml'})` : '';
-                toast({ title: "Feeding logged", description: `Logged at ${time}${amountText}` });
               } else if (type === 'diaper') {
                 await addActivity?.('diaper', {}, new Date(), time);
-                toast({ title: "Diaper change logged", description: `Logged at ${time}` });
               }
             } catch (error) {
-              toast({ 
-                title: "Error", 
-                description: "Could not log activity", 
-                variant: "destructive" 
-              });
+              console.error('Could not log activity:', error);
             } finally {
               setIsQuickLogging(false);
             }
@@ -1599,10 +1575,6 @@ const lastDiaper = displayActivities
             // Add all prefill activities
             prefillActivities.forEach(activity => {
               addActivity?.(activity.type, activity.details, new Date(), activity.time);
-            });
-            toast({
-              title: "Day prefilled!",
-              description: "Sample activities added. Edit or delete any as needed.",
             });
           }}
         />

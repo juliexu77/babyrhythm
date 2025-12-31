@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { useToast } from "@/hooks/use-toast";
+
 import { 
   User, 
   LogOut, 
@@ -31,7 +31,7 @@ export const Settings = () => {
   const { user, signOut } = useAuth();
   const { household, generateInviteLink } = useHousehold();
   const { userProfile, updateUserProfile } = useUserProfile();
-  const { toast } = useToast();
+  
   const navigate = useNavigate();
   
   const [copied, setCopied] = useState(false);
@@ -67,17 +67,8 @@ export const Settings = () => {
       
       if (error) throw error;
       
-      toast({
-        title: "Password reset email sent",
-        description: "Check your email for instructions"
-      });
     } catch (error) {
       console.error('Error sending password change email:', error);
-      toast({
-        title: "Error sending email",
-        description: "Failed to send password reset email",
-        variant: "destructive"
-      });
     }
   };
 
@@ -93,27 +84,13 @@ export const Settings = () => {
         setCurrentInviteLink(inviteData.link);
         const shared = await shareInviteLink(inviteData.link, household?.baby_name);
         
-        if (shared) {
-          toast({
-            title: "Invite shared",
-            description: "Share dialog opened",
-          });
-        } else {
+        if (!shared) {
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
-          
-          toast({
-            title: "Invite link copied",
-            description: "Share with your partner",
-          });
         }
       }
     } catch (err) {
-      toast({
-        title: "Failed to create invite",
-        description: "Please try again",
-        variant: "destructive",
-      });
+      console.error('Failed to create invite:', err);
     }
   };
 
@@ -126,13 +103,6 @@ export const Settings = () => {
     const newValue = !remindersEnabled;
     setRemindersEnabled(newValue);
     localStorage.setItem('smartRemindersEnabled', String(newValue));
-    
-    toast({
-      title: newValue ? "Smart reminders enabled" : "Smart reminders disabled",
-      description: newValue 
-        ? "You'll receive notifications before naps, feeds, and bedtime"
-        : "You won't receive schedule notifications",
-    });
   };
 
   if (showCaregiverManagement) {
@@ -175,16 +145,8 @@ export const Settings = () => {
                         night_sleep_start_hour: hour,
                         night_sleep_start_minute: minute 
                       } as any);
-                      toast({
-                        title: "Updated",
-                        description: "Night sleep start time saved",
-                      });
                     } catch (error) {
                       console.error('Error updating night sleep start:', error);
-                      toast({
-                        title: "Error",
-                        variant: "destructive",
-                      });
                     }
                   }}
                 >
@@ -226,16 +188,8 @@ export const Settings = () => {
                         night_sleep_end_hour: hour,
                         night_sleep_end_minute: minute 
                       } as any);
-                      toast({
-                        title: "Updated",
-                        description: "Night sleep end time saved",
-                      });
                     } catch (error) {
                       console.error('Error updating night sleep end:', error);
-                      toast({
-                        title: "Error",
-                        variant: "destructive",
-                      });
                     }
                   }}
                 >
@@ -272,18 +226,8 @@ export const Settings = () => {
                   onCheckedChange={async (checked) => {
                     try {
                       await updateUserProfile({ auto_log_wake_enabled: checked } as any);
-                      toast({
-                        title: checked ? "Auto-log enabled" : "Auto-log disabled",
-                        description: checked 
-                          ? `Wake will be logged at ${(userProfile as any)?.night_sleep_end_hour ?? 7}:${((userProfile as any)?.night_sleep_end_minute ?? 0).toString().padStart(2, '0')} AM if not manually logged`
-                          : "Wake must be logged manually",
-                      });
                     } catch (error) {
                       console.error('Error updating auto-log wake:', error);
-                      toast({
-                        title: "Error",
-                        variant: "destructive",
-                      });
                     }
                   }}
                 />
