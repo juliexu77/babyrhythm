@@ -15,8 +15,11 @@ import {
   Bell,
   Baby,
   Moon,
-  Sunrise
+  Sunrise,
+  Sun,
+  Sunset
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
 import { EmailInvite } from "@/components/EmailInvite";
@@ -26,6 +29,29 @@ import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { shareInviteLink } from "@/utils/nativeShare";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const ThemeSettingsRow = () => {
+  const { theme, setTheme } = useTheme();
+  
+  const handleThemeChange = () => {
+    localStorage.setItem('theme-manual-override', Date.now().toString());
+    setTheme(theme === 'light' ? 'dusk' : 'light');
+  };
+
+  return (
+    <SettingsRow
+      icon={theme === 'dusk' ? <Sunset className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+      title="Theme"
+      subtitle={theme === 'dusk' ? 'Dusk mode' : 'Light mode'}
+      showChevron={false}
+    >
+      <Switch
+        checked={theme === 'dusk'}
+        onCheckedChange={handleThemeChange}
+      />
+    </SettingsRow>
+  );
+};
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
@@ -273,8 +299,8 @@ export const Settings = () => {
             </SettingsSection>
           )}
 
-          {/* App Preferences Section */}
           <SettingsSection title="App Preferences">
+            <ThemeSettingsRow />
             <SettingsRow
               icon={<Bell className="w-5 h-5" />}
               title="Smart Reminders"
