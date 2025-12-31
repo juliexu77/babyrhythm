@@ -31,7 +31,7 @@ export const SettingsRow = ({
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {icon && (
-          <div className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-foreground/70">
+          <div className="text-foreground/70">
             {icon}
           </div>
         )}
