@@ -530,6 +530,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           details,
         };
 
+        // Call the onAddActivity callback to save the activity
+        await onAddActivity(newActivity, selectedDate, activityType === "nap" ? startTime : time);
       }
       
       resetForm();
