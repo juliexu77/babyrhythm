@@ -35,6 +35,46 @@ const calculateSleepDuration = (startTime: string, endTime: string): number => {
   return (endMinutes - startMinutes) / 60;
 };
 
+// Calculate wake window duration in hours (time between last sleep end and current activity)
+const calculateWakeWindow = (activity: Activity, allActivities: Activity[]): number | null => {
+  const activityTime = new Date(activity.loggedAt || '').getTime();
+  
+  // Find the most recent completed sleep before this activity
+  const previousSleeps = allActivities
+    .filter(a => 
+      a.type === 'nap' && 
+      a.details?.endTime &&
+      new Date(a.loggedAt || '').getTime() < activityTime
+    )
+    .sort((a, b) => new Date(b.loggedAt || '').getTime() - new Date(a.loggedAt || '').getTime());
+  
+  if (previousSleeps.length === 0) return null;
+  
+  const lastSleep = previousSleeps[0];
+  const lastSleepDate = new Date(lastSleep.loggedAt || '');
+  const endTime = lastSleep.details?.endTime;
+  
+  if (!endTime) return null;
+  
+  // Parse end time and combine with date
+  const match = endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) return null;
+  
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const period = match[3].toUpperCase();
+  
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  
+  const sleepEndTime = new Date(lastSleepDate);
+  sleepEndTime.setHours(hours, minutes, 0, 0);
+  
+  // Calculate duration in hours
+  const durationMs = activityTime - sleepEndTime.getTime();
+  return durationMs / (1000 * 60 * 60);
+};
+
 // Get all completed naps before a given activity
 const getCompletedNapsBefore = (activity: Activity, allActivities: Activity[]): Activity[] => {
   const activityTime = new Date(activity.loggedAt || '').getTime();
@@ -232,6 +272,60 @@ export const detectMilestones = (
           emoji: '🎉'
         });
         break;
+      }
+    }
+  }
+  
+  // Wake window milestones - detect when starting a nap after a long wake window
+  if (activity.type === 'nap' && activity.details?.startTime) {
+    const wakeWindow = calculateWakeWindow(activity, allActivities);
+    
+    if (wakeWindow !== null && wakeWindow > 0) {
+      // Calculate all previous wake windows
+      const previousNaps = allActivities.filter(a => 
+        a.type === 'nap' && 
+        a.details?.startTime &&
+        new Date(a.loggedAt || '').getTime() < new Date(activity.loggedAt || '').getTime()
+      );
+      
+      const previousWakeWindows = previousNaps
+        .map(nap => calculateWakeWindow(nap, allActivities))
+        .filter((ww): ww is number => ww !== null && ww > 0);
+      
+      // Wake window thresholds (in hours)
+      const wakeWindowThresholds = [
+        { hours: 5, title: 'First 5+ hour wake window!' },
+        { hours: 4, title: 'First 4+ hour wake window!' },
+        { hours: 3, title: 'First 3+ hour wake window!' },
+        { hours: 2, title: 'First 2+ hour wake window!' },
+      ];
+      
+      for (const threshold of wakeWindowThresholds) {
+        if (wakeWindow >= threshold.hours) {
+          const previousOver = previousWakeWindows.filter(ww => ww >= threshold.hours);
+          if (previousOver.length === 0) {
+            milestones.push({
+              id: `first-wake-window-over-${threshold.hours}`,
+              type: 'wakeWindow',
+              title: threshold.title,
+              emoji: '⏰'
+            });
+            break; // Only show highest threshold
+          }
+        }
+      }
+      
+      // Longest wake window ever (after at least 7 data points)
+      if (previousWakeWindows.length >= 7) {
+        const maxPreviousWW = Math.max(...previousWakeWindows);
+        if (wakeWindow > maxPreviousWW && wakeWindow >= 2) {
+          milestones.push({
+            id: 'longest-wake-window',
+            type: 'wakeWindow',
+            title: 'Longest wake window!',
+            emoji: '🏆'
+          });
+        }
       }
     }
   }
