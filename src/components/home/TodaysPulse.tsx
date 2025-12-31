@@ -1,10 +1,11 @@
 import { useMemo } from "react";
-import { Moon, Milk, Clock, TrendingDown, TrendingUp, Minus, Baby } from "lucide-react";
+import { Moon, Milk, Clock, TrendingDown, TrendingUp, Minus, Baby, Lightbulb } from "lucide-react";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getActivityEventDateString } from "@/utils/activityDate";
-import { differenceInMinutes } from "date-fns";
-
+import { getMilestonesForAge } from "@/data/developmentalMilestones";
+import { getWakeWindowForAge, getFeedingGuidanceForAge } from "@/utils/ageAppropriateBaselines";
+import { differenceInWeeks } from "date-fns";
 interface TodaysPulseProps {
   activities: any[];
   babyName: string;
@@ -153,19 +154,43 @@ export const TodaysPulse = ({
       }
     }
 
-    // Developmental phase
-    const getPhase = (months: number) => {
-      if (months < 3) return { phase: 'Newborn phase', detail: 'Frequent feeds, short wake windows' };
-      if (months < 4) return { phase: '4-month transition', detail: 'Sleep patterns maturing' };
-      if (months < 6) return { phase: 'Infant phase', detail: 'Naps consolidating' };
-      if (months < 9) return { phase: '6-9 month window', detail: 'Transitioning to 2-3 naps' };
-      if (months < 12) return { phase: 'Late infant phase', detail: 'Longer wake windows' };
-      if (months < 15) return { phase: '12-15 month window', detail: 'May drop to 1-2 naps' };
-      if (months < 18) return { phase: 'Toddler transition', detail: 'Consolidating to 1 nap' };
-      return { phase: 'Toddler phase', detail: 'Single nap schedule' };
+    // Developmental phase with detailed guidance
+    const getPhaseWithGuidance = (months: number, birthday?: string) => {
+      const ageWeeks = birthday ? differenceInWeeks(now, new Date(birthday)) : months * 4.33;
+      const wakeWindowData = getWakeWindowForAge(ageWeeks);
+      const feedingData = getFeedingGuidanceForAge(ageWeeks);
+      const milestones = getMilestonesForAge(ageWeeks);
+      
+      // Get phase name
+      let phase = 'Growing';
+      if (months < 3) phase = 'Newborn phase';
+      else if (months < 4) phase = '4-month transition';
+      else if (months < 6) phase = 'Infant phase';
+      else if (months < 9) phase = '6-9 month window';
+      else if (months < 12) phase = 'Late infant phase';
+      else if (months < 15) phase = '12-15 month window';
+      else if (months < 18) phase = 'Toddler transition';
+      else phase = 'Toddler phase';
+
+      // Build guidance from real data
+      const guidance: string[] = [];
+      
+      if (wakeWindowData) {
+        guidance.push(`Wake windows: ${wakeWindowData.wakeWindows[0]}`);
+        guidance.push(`Typical naps: ${wakeWindowData.napCount}`);
+      }
+      
+      if (feedingData) {
+        guidance.push(`Feeds: ${feedingData.dailyTotal}`);
+      }
+
+      // Get tribal tip from milestones if available
+      const tip = milestones?.tribalTip || milestones?.reminder;
+
+      return { phase, guidance, tip, ageWeeks };
     };
 
-    const phase = getPhase(babyAgeMonths);
+    const phase = getPhaseWithGuidance(babyAgeMonths, babyBirthday);
 
     return {
       napTrend,
@@ -261,17 +286,38 @@ export const TodaysPulse = ({
             </span>
           </div>
 
-          {/* Developmental phase */}
-          <div className="flex items-center justify-between px-3 py-2.5 bg-accent/5">
-            <div className="flex items-center gap-2">
+          {/* Developmental phase - expanded */}
+          <div className="px-3 py-3 bg-accent/5">
+            <div className="flex items-center gap-2 mb-2">
               <div className="text-primary">
                 <Baby className="w-4 h-4" />
               </div>
-              <span className="text-sm text-foreground">{rhythmAnalysis.phase.phase}</span>
+              <span className="text-sm font-medium text-foreground">{rhythmAnalysis.phase.phase}</span>
+              <span className="text-xs text-muted-foreground ml-auto">
+                ~{Math.round(rhythmAnalysis.phase.ageWeeks)} weeks
+              </span>
             </div>
-            <span className="text-xs text-muted-foreground">
-              {rhythmAnalysis.phase.detail}
-            </span>
+            
+            {/* Guidance grid */}
+            {rhythmAnalysis.phase.guidance.length > 0 && (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-2 ml-6">
+                {rhythmAnalysis.phase.guidance.map((item, idx) => (
+                  <span key={idx} className="text-xs text-muted-foreground">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            )}
+            
+            {/* Tip from milestones */}
+            {rhythmAnalysis.phase.tip && (
+              <div className="flex items-start gap-2 mt-2 ml-6 p-2 bg-primary/5 rounded-md">
+                <Lightbulb className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {rhythmAnalysis.phase.tip}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
