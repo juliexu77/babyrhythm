@@ -1282,15 +1282,13 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
           <ScrollArea className="flex-1">
         <div ref={scrollRef} className="pt-0 space-y-0">
           {/* Today's Pulse - At the very top */}
-          {!needsBirthdaySetup && todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
+          {!needsBirthdaySetup && (
             <>
               <TodaysPulse
-                deviations={todaysPulse.deviations}
-                biggestDeviation={todaysPulse.biggestDeviation}
+                activities={activities}
                 babyName={babyName}
                 babyAge={babyAgeInWeeks}
-                activities={activities}
-                transitionInfo={transitionInfo}
+                babyBirthday={household?.baby_birthday}
               />
               <GrowthIndicators 
                 activities={activities as any} 
