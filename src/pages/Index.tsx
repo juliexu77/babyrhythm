@@ -1322,15 +1322,15 @@ return (
     <ErrorBoundary onRetry={() => { refetchHousehold(); refetchActivities(); }}>
       <div className="min-h-screen pb-16 overflow-x-hidden w-full bg-background">
         {/* Fixed Header - Strava-inspired */}
-        <header className="fixed top-0 left-0 right-0 z-40 bg-background border-b border-border">
-          <div className="flex items-center justify-between h-14 px-4 pt-safe">
+        <header className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50">
+          <div className="flex items-center justify-between h-12 px-4 pt-safe">
             {/* Left side - Empty for balance */}
             <div className="w-10" />
             
-            {/* Center - Tab name in bold uppercase */}
-            <h1 className="text-sm font-bold uppercase tracking-wider text-foreground">
-              {activeTab === 'home' && 'Today'}
-              {activeTab === 'rhythm' && 'Rhythm'}
+            {/* Center - Tab name */}
+            <h1 className="text-base font-semibold text-foreground">
+              {activeTab === 'home' && 'Home'}
+              {activeTab === 'rhythm' && 'Guide'}
               {activeTab === 'trends' && 'Trends'}
               {activeTab === 'history' && 'History'}
               {activeTab === 'settings' && 'Settings'}
@@ -1350,13 +1350,13 @@ return (
               }}
               className="w-10 h-10"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-5 w-5" strokeWidth={1.5} />
             </Button>
           </div>
         </header>
         
         {/* Spacer to prevent content from going under fixed header */}
-        <div className="h-14 pt-safe" />
+        <div className="h-12 pt-safe" />
 
         {activeTab === 'home' && recentCollaboratorActivity && (
           <div className="fixed top-14 left-0 right-0 z-30 bg-accent/80 text-foreground border-b border-border px-4 py-2 text-sm text-center animate-in slide-in-from-top">

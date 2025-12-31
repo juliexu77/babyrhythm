@@ -182,18 +182,18 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
   };
 
   return (
-    <div className="mb-0 border-b border-border overflow-hidden">
+    <div className="mb-0 overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        {/* Header */}
-        <div className="px-4 py-4 border-b border-border/30">
+        {/* Header - Strava style */}
+        <div className="px-4 py-4">
           <CollapsibleTrigger className="w-full" onClick={() => setIsOpen(!isOpen)}>
             <div className="flex items-center justify-between">
               <div className="flex-1 text-left">
-                <h3 className="text-[11px] font-bold text-foreground/70 uppercase tracking-wider">
-                  This Week's Rhythm
+                <h3 className="text-base font-semibold text-foreground">
+                  This Week
                 </h3>
                 {subtitle && (
-                  <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>
                 )}
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />

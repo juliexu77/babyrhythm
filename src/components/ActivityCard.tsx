@@ -180,43 +180,52 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
     }
   };
 
+  // Get activity type label
+  const getTypeLabel = () => {
+    switch (activity.type) {
+      case "feed": return "Feed";
+      case "diaper": return "Diaper";
+      case "nap": return activity.details?.isNightSleep ? "Night Sleep" : "Nap";
+      case "note": return "Note";
+      case "solids": return "Solids";
+      case "photo": return "Photo";
+      default: return "Activity";
+    }
+  };
+
   return (
     <button
       onClick={handleClick}
       className="w-full text-left group"
     >
-      <div className="flex items-center justify-between py-3 px-4 hover:bg-accent/5 active:bg-accent/10 transition-colors border-b border-border last:border-b-0">
-        {/* Left side: Icon + Content */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          {/* Icon */}
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary/30 flex items-center justify-center text-primary">
-            {getActivityIcon(activity.type)}
-          </div>
-          
-          {/* Content */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm font-semibold text-foreground">
-                {value}
-              </span>
-              {descriptor && (
-                <span className="text-sm text-muted-foreground truncate">
-                  {descriptor}
-                </span>
-              )}
+      <div className="py-3 px-4 hover:bg-accent/5 active:bg-accent/10 transition-colors">
+        {/* Top row: Activity type and time */}
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <div className="text-primary">
+              {getActivityIcon(activity.type)}
             </div>
+            <span className="text-xs text-muted-foreground">
+              {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
+                ? activity.details.startTime
+                : activity.time
+              }
+            </span>
           </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
         </div>
         
-        {/* Right side: Time + Chevron */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
-              ? activity.details.startTime
-              : activity.time
-            }
-          </span>
-          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+        {/* Main content: Title */}
+        <h3 className="text-base font-semibold text-foreground mb-0.5">
+          {getTypeLabel()}
+        </h3>
+        
+        {/* Stats row - Strava style */}
+        <div className="flex items-center gap-4 text-sm">
+          <span className="text-foreground font-medium">{value}</span>
+          {descriptor && (
+            <span className="text-muted-foreground">{descriptor}</span>
+          )}
         </div>
       </div>
     </button>
