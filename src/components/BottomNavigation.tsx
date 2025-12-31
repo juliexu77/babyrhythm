@@ -30,7 +30,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-50">
-      <div className="max-w-md mx-auto px-2">
+      <div className="px-2">
         <div className="grid grid-cols-5 items-center h-16">
           {tabs.map((tab) => {
             const Icon = tab.icon;

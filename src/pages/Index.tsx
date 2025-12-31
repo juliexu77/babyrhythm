@@ -793,7 +793,7 @@ const ongoingNap = (() => {
         return (
           <div className="min-h-screen bg-background">
             {/* Action buttons - Strava-style */}
-            <div className="mx-4 pt-4 pb-2">
+            <div className="px-4 pt-4 pb-2">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
