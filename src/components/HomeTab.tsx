@@ -1382,12 +1382,11 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="pt-2 space-y-6">
+      <div className="space-y-0">
 
         {/* Missed Activity Prompt - at top of home */}
         {missedActivitySuggestion && (
-            <div className="px-4">
-              <MissedActivityPrompt
+            <MissedActivityPrompt
                 suggestion={missedActivitySuggestion}
                 onAccept={async () => {
                   const { activityType, subType, suggestedTime } = missedActivitySuggestion;
@@ -1448,7 +1447,6 @@ const lastDiaper = displayActivities
                   window.dispatchEvent(new CustomEvent('refetch-activities'));
                 }}
               />
-            </div>
         )}
 
         {/* Right Now / What's Next Status */}
@@ -1541,7 +1539,7 @@ const lastDiaper = displayActivities
 
         {/* Learning Progress Chip */}
         {!isRhythmUnlocked && activities.length > 0 && (
-          <div className="px-4">
+          <div className="px-4 py-3 border-y border-border bg-card">
             <LearningProgress 
               activities={activities}
               babyName={babyName}

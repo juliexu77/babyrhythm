@@ -29,7 +29,7 @@ export const MissedActivityPrompt = ({
   };
 
   return (
-    <div className="p-4 bg-accent/30 border border-border rounded-strava">
+    <div className="p-4 bg-accent/30 border-y border-border">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 mt-0.5">
           <Clock className="h-5 w-5 text-primary" />
