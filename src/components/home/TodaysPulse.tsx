@@ -151,7 +151,7 @@ export const TodaysPulse = ({
   ];
 
   return (
-    <div className="mx-4 mb-4">
+    <div className="mb-4">
       <div className="bg-card border border-border rounded-strava overflow-hidden">
         {/* Header - Strava style */}
         <div className="px-4 py-3 border-b border-border">
