@@ -92,9 +92,11 @@ export const SwipeableActivityCard = ({
   return (
     <>
       <div ref={containerRef} className="relative overflow-hidden">
-        {/* Delete action background */}
+        {/* Delete action background - only visible when swiped */}
         <div 
-          className="absolute inset-y-0 right-0 flex items-center justify-end bg-destructive"
+          className={`absolute inset-y-0 right-0 flex items-center justify-end bg-destructive transition-opacity ${
+            translateX < 0 ? 'opacity-100' : 'opacity-0'
+          }`}
           style={{ width: DELETE_THRESHOLD }}
         >
           <button
