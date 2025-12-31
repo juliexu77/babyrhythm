@@ -182,7 +182,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
   };
 
   return (
-    <div className="mb-0 bg-card border-y border-border overflow-hidden">
+    <div className="mb-0 border-b border-border overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Header */}
         <div className="px-4 py-4 border-b border-border/30">

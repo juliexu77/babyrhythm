@@ -17,7 +17,7 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
   return (
     <div className="mb-0">
       {/* Strava-style action bar - full-width, no gaps */}
-      <div className="flex items-center border-y border-border bg-card">
+      <div className="flex items-center border-b border-border">
         <button
           onClick={() => handleQuickLog('feed')}
           disabled={isLoading}

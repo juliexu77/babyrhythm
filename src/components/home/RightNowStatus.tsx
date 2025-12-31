@@ -56,7 +56,7 @@ export const RightNowStatus = ({
   if (!currentActivity) {
     return (
       <div className="mb-4">
-        <div className="bg-card border-y border-border p-4">
+        <div className="border-b border-border p-4">
           <p className="text-sm text-muted-foreground">
             No recent activity
           </p>
@@ -97,8 +97,8 @@ export const RightNowStatus = ({
 
   return (
     <div className="space-y-0">
-      {/* Main Activity Card - Strava style: full-width, edge-to-edge */}
-      <div className="bg-card border-y border-border overflow-hidden">
+      {/* Main Activity Section - Strava style: full-width, edge-to-edge */}
+      <div className="border-b border-border overflow-hidden">
         {/* Header */}
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export const RightNowStatus = ({
               onLogPrediction(activityType);
             }
           }}
-          className="w-full bg-card border-y border-border p-4 
+          className="w-full border-b border-border p-4 
                      hover:bg-accent/5 active:bg-accent/10 transition-colors text-left group"
         >
           <div className="flex items-center justify-between">
@@ -190,7 +190,7 @@ export const RightNowStatus = ({
 
       {/* Quick Actions - Full-width list */}
       {suggestions.length > 0 && (
-        <div className="bg-card border-y border-border overflow-hidden">
+        <div className="border-b border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
               Quick Actions
