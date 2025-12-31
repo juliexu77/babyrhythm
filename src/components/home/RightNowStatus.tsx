@@ -156,7 +156,7 @@ export const RightNowStatus = ({
         )}
       </div>
 
-      {/* What's Next - Compact card */}
+      {/* What's Next - Flat text, no card */}
       {nextPrediction && (
         <button
           onClick={() => {
@@ -168,15 +168,13 @@ export const RightNowStatus = ({
               onLogPrediction(activityType);
             }
           }}
-          className="w-full p-3 mt-1 mx-4 rounded-strava border border-border/50
-                     hover:bg-accent/5 active:bg-accent/10 transition-colors text-left group"
-          style={{ width: 'calc(100% - 2rem)' }}
+          className="w-full px-4 py-2 hover:bg-accent/5 active:bg-accent/10 transition-colors text-left group"
         >
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mb-0.5">
+            Up next
+          </p>
           <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
-                Up next
-              </p>
+            <div>
               <p className="text-sm font-semibold text-foreground leading-tight">
                 {nextPrediction.activity}
               </p>
