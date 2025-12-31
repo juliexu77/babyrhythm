@@ -118,72 +118,50 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
   }, [activities, nightSleepStartHour, nightSleepEndHour]);
 
   return (
-    <div className="mx-4 mb-6">
-      {/* Section label */}
-      <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-3">
-        Today's Stats
-      </h2>
-      
-      {/* Stats grid - prominent scorecard style */}
-      <div className="grid grid-cols-3 gap-4">
+    <div className="px-4 mb-8">
+      {/* Stats row - Strava style: label on top, big value below, left-aligned */}
+      <div className="flex gap-8">
         {/* Day Naps */}
-        <div className="text-center py-3 px-2 bg-muted/20 rounded-lg">
-          <div className="flex items-center justify-center gap-1.5 mb-1.5">
-            <Moon className="w-4 h-4 text-muted-foreground/80" />
+        <div>
+          <div className="text-xs text-muted-foreground mb-1">
+            Day Sleep
           </div>
-          <div className="mb-0.5">
+          <div className="text-2xl font-bold tabular-nums text-foreground">
             {stats.daySleep.hasData ? (
-              <span className="text-xl font-bold tabular-nums text-foreground">
-                {stats.daySleep.hours}h {stats.daySleep.mins}m
-              </span>
+              <>{stats.daySleep.hours}h {stats.daySleep.mins}m</>
             ) : (
-              <span className="text-xl font-bold text-muted-foreground/40">—</span>
+              <span className="text-muted-foreground/40">—</span>
             )}
-          </div>
-          <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-            Day Sleep {stats.daySleep.count > 0 && `(${stats.daySleep.count})`}
           </div>
         </div>
         
         {/* Feeds */}
-        <div className="text-center py-3 px-2 bg-muted/20 rounded-lg">
-          <div className="flex items-center justify-center gap-1.5 mb-1.5">
-            <Milk className="w-4 h-4 text-muted-foreground/80" />
+        <div>
+          <div className="text-xs text-muted-foreground mb-1">
+            Feeds
           </div>
-          <div className="mb-0.5">
+          <div className="text-2xl font-bold tabular-nums text-foreground">
             {stats.feeds.hasVolume ? (
-              <span className="text-xl font-bold tabular-nums text-foreground">
-                {stats.feeds.volume} oz
-              </span>
+              <>{stats.feeds.volume} oz</>
             ) : stats.feeds.count > 0 ? (
-              <span className="text-xl font-bold tabular-nums text-foreground">
-                {stats.feeds.count}
-              </span>
+              <>{stats.feeds.count}</>
             ) : (
-              <span className="text-xl font-bold text-muted-foreground/40">—</span>
+              <span className="text-muted-foreground/40">—</span>
             )}
-          </div>
-          <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-            Feeds {stats.feeds.count > 0 && stats.feeds.hasVolume && `(${stats.feeds.count})`}
           </div>
         </div>
         
         {/* Night Sleep */}
-        <div className="text-center py-3 px-2 bg-muted/20 rounded-lg">
-          <div className="flex items-center justify-center gap-1.5 mb-1.5">
-            <Moon className="w-4 h-4 text-muted-foreground/80" />
-          </div>
-          <div className="mb-0.5">
-            {stats.nightSleep.hasData ? (
-              <span className="text-xl font-bold tabular-nums text-foreground">
-                {stats.nightSleep.hours}h {stats.nightSleep.mins}m
-              </span>
-            ) : (
-              <span className="text-xl font-bold text-muted-foreground/40">—</span>
-            )}
-          </div>
-          <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+        <div>
+          <div className="text-xs text-muted-foreground mb-1">
             Last Night
+          </div>
+          <div className="text-2xl font-bold tabular-nums text-foreground">
+            {stats.nightSleep.hasData ? (
+              <>{stats.nightSleep.hours}h {stats.nightSleep.mins}m</>
+            ) : (
+              <span className="text-muted-foreground/40">—</span>
+            )}
           </div>
         </div>
       </div>
