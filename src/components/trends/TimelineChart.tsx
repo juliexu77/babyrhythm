@@ -448,10 +448,50 @@ export const TimelineChart = ({
 
           {/* Data points with tooltips - only show non-zero values */}
           {chartData.map((d, i) => {
+            const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
+            
+            // Show travel day indicator
+            if ('isTravelDay' in d && d.isTravelDay) {
+              return (
+                <Tooltip key={`point-${i}`}>
+                  <TooltipTrigger asChild>
+                    <g className="cursor-pointer">
+                      {/* Dashed vertical line to indicate excluded day */}
+                      <line
+                        x1={x}
+                        y1={chartHeight * 0.3}
+                        x2={x}
+                        y2={chartHeight * 0.7}
+                        stroke="hsl(var(--muted-foreground))"
+                        strokeWidth="1.5"
+                        strokeDasharray="3,3"
+                        opacity="0.4"
+                      />
+                      {/* Small airplane icon */}
+                      <text
+                        x={x}
+                        y={chartHeight * 0.5 + 4}
+                        textAnchor="middle"
+                        className="text-[10px] fill-muted-foreground"
+                        opacity="0.5"
+                      >
+                        ✈
+                      </text>
+                    </g>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-sm">
+                      <div className="font-semibold">{d.label}</div>
+                      <div className="text-muted-foreground">Travel day (excluded)</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+            
             // Skip rendering if no data
             if (d.value === 0) return null;
             
-            const x = yAxisLabelWidth + (i / (chartData.length - 1)) * chartWidth;
             const y = (1 - (d.value - yAxisMin) / (yAxisMax - yAxisMin)) * chartHeight;
             const isHovered = hoveredPoint === i;
 
