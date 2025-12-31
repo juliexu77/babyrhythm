@@ -1,11 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Moon, Milk, Sun, ChevronDown, Lightbulb } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useMemo } from "react";
+import { Moon, Milk, Clock, TrendingDown, TrendingUp, Minus, Baby } from "lucide-react";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
-import { getTodayActivities } from "@/utils/activityDateFilters";
 import { getActivityEventDateString } from "@/utils/activityDate";
+import { differenceInMinutes } from "date-fns";
 
 interface TodaysPulseProps {
   activities: any[];
@@ -21,15 +19,10 @@ export const TodaysPulse = ({
   babyBirthday
 }: TodaysPulseProps) => {
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
-  const [explanation, setExplanation] = useState<string>('');
-  const [explanationLoading, setExplanationLoading] = useState(false);
-  const [meaningOpen, setMeaningOpen] = useState(false);
 
-  // Calculate comparative stats with variance from averages
-  const comparativeStats = useMemo(() => {
+  // Calculate pattern trends and stability over past 7 days
+  const rhythmAnalysis = useMemo(() => {
     const now = new Date();
-    const currentHour = now.getHours();
-    const todayActivities = getTodayActivities(activities);
     
     // Get baby age in months
     let babyAgeMonths = babyAge || 0;
@@ -38,18 +31,7 @@ export const TodaysPulse = ({
       babyAgeMonths = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
     }
 
-    // Age-appropriate baselines
-    const getExpectedRanges = (ageMonths: number) => {
-      if (ageMonths < 1) return { feeds: [8, 12], naps: [4, 6] };
-      if (ageMonths < 3) return { feeds: [7, 10], naps: [4, 5] };
-      if (ageMonths < 6) return { feeds: [6, 8], naps: [3, 4] };
-      if (ageMonths < 9) return { feeds: [5, 7], naps: [3, 3] };
-      if (ageMonths < 12) return { feeds: [4, 6], naps: [2, 3] };
-      return { feeds: [3, 5], naps: [1, 2] };
-    };
-    const expected = getExpectedRanges(babyAgeMonths);
-
-    // Get last 7 days for averages
+    // Get last 7 days of activities grouped by day
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
@@ -57,166 +39,167 @@ export const TodaysPulse = ({
       new Date(a.loggedAt) >= sevenDaysAgo
     );
 
-    // Calculate 7-day averages
-    const last7DaysNaps = last7DaysActivities.filter(a => 
-      a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
-    );
-    const last7DaysFeeds = last7DaysActivities.filter(a => a.type === 'feed');
-    
-    // Count days with data
-    const daysWithNapData = new Set<string>();
-    last7DaysActivities.filter(a => a.type === 'nap').forEach(a => {
+    // Group activities by date
+    const byDate: Record<string, any[]> = {};
+    last7DaysActivities.forEach(a => {
       const date = getActivityEventDateString(a as any);
-      if (date) daysWithNapData.add(date);
-    });
-    const numDaysForNaps = Math.max(1, daysWithNapData.size);
-    
-    const daysWithFeedData = new Set<string>();
-    last7DaysActivities.filter(a => a.type === 'feed').forEach(a => {
-      const date = getActivityEventDateString(a as any);
-      if (date) daysWithFeedData.add(date);
-    });
-    const numDaysForFeeds = Math.max(1, daysWithFeedData.size);
-    
-    const avgNaps = last7DaysNaps.length / numDaysForNaps;
-    const avgFeeds = last7DaysFeeds.length / numDaysForFeeds;
-
-    // Today's counts
-    const napsToday = todayActivities.filter(a => 
-      a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)
-    );
-    const feedsToday = todayActivities.filter(a => a.type === 'feed');
-    
-    const napCount = napsToday.length;
-    const feedCount = feedsToday.length;
-
-    // Calculate time-adjusted expected counts
-    // Assume waking hours: 7am-7pm = 12 hours
-    const wakeHour = 7;
-    const sleepHour = 19;
-    const totalWakingHours = sleepHour - wakeHour;
-    const wakingHoursPassed = Math.max(0, Math.min(currentHour - wakeHour, totalWakingHours));
-    const dayProgress = wakingHoursPassed / totalWakingHours;
-
-    // Expected by now based on time of day
-    const expectedNapsByNow = Math.round(avgNaps * dayProgress);
-    const expectedFeedsByNow = Math.round(avgFeeds * dayProgress);
-
-    // Determine status for each metric
-    const getStatus = (actual: number, expectedByNow: number, avg: number): 'on-track' | 'ahead' | 'behind' => {
-      if (currentHour < 10) return 'on-track'; // Too early to judge
-      const tolerance = 1;
-      if (actual >= expectedByNow) return actual > expectedByNow + tolerance ? 'ahead' : 'on-track';
-      if (actual < expectedByNow - tolerance) return 'behind';
-      return 'on-track';
-    };
-
-    const napStatus = getStatus(napCount, expectedNapsByNow, avgNaps);
-    const feedStatus = getStatus(feedCount, expectedFeedsByNow, avgFeeds);
-
-    // Schedule timing - based on pattern consistency
-    let scheduleStatus: 'on-track' | 'ahead' | 'behind' = 'on-track';
-    
-    // Check if activities are spread evenly or clustered
-    if (feedsToday.length >= 2) {
-      const sortedFeeds = [...feedsToday].sort((a, b) => 
-        new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime()
-      );
-      
-      const gaps = [];
-      for (let i = 1; i < sortedFeeds.length; i++) {
-        const gap = (new Date(sortedFeeds[i].loggedAt).getTime() - 
-                    new Date(sortedFeeds[i - 1].loggedAt).getTime()) / (1000 * 60);
-        gaps.push(gap);
+      if (date) {
+        if (!byDate[date]) byDate[date] = [];
+        byDate[date].push(a);
       }
+    });
+
+    const dates = Object.keys(byDate).sort();
+    const numDays = dates.length;
+
+    // Calculate daily nap counts
+    const dailyNapCounts = dates.map(date => 
+      byDate[date].filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length
+    );
+
+    // Calculate daily feed counts
+    const dailyFeedCounts = dates.map(date => 
+      byDate[date].filter(a => a.type === 'feed').length
+    );
+
+    // Analyze nap trend (consolidating/expanding/stable)
+    let napTrend: 'consolidating' | 'expanding' | 'stable' = 'stable';
+    let napTrendText = 'Naps: Stable pattern';
+    
+    if (dailyNapCounts.length >= 3) {
+      const firstHalf = dailyNapCounts.slice(0, Math.ceil(dailyNapCounts.length / 2));
+      const secondHalf = dailyNapCounts.slice(Math.ceil(dailyNapCounts.length / 2));
       
-      // Detect cluster feeding (many feeds close together)
-      if (gaps.filter(g => g < 60).length >= 2) {
-        scheduleStatus = 'behind';
+      const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+      const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+      
+      if (secondAvg < firstAvg - 0.5) {
+        napTrend = 'consolidating';
+        napTrendText = 'Consolidating to fewer naps';
+      } else if (secondAvg > firstAvg + 0.5) {
+        napTrend = 'expanding';
+        napTrendText = 'Taking more naps lately';
       }
     }
 
+    // Calculate sleep timing consistency (variance in first nap start times)
+    const parseTimeToMinutes = (timeStr: string): number | null => {
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!match) return null;
+      let hours = parseInt(match[1]);
+      const minutes = parseInt(match[2]);
+      const period = match[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+
+    // Get first nap start time for each day
+    const firstNapTimes: number[] = [];
+    dates.forEach(date => {
+      const naps = byDate[date]
+        .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.startTime)
+        .sort((a, b) => {
+          const aTime = parseTimeToMinutes(a.details.startTime) || 0;
+          const bTime = parseTimeToMinutes(b.details.startTime) || 0;
+          return aTime - bTime;
+        });
+      
+      if (naps[0]?.details?.startTime) {
+        const mins = parseTimeToMinutes(naps[0].details.startTime);
+        if (mins !== null) firstNapTimes.push(mins);
+      }
+    });
+
+    // Calculate variance in first nap times
+    let sleepConsistency: 'consistent' | 'variable' | 'emerging' = 'emerging';
+    let sleepConsistencyText = 'Sleep timing: Building pattern';
+    
+    if (firstNapTimes.length >= 3) {
+      const avg = firstNapTimes.reduce((a, b) => a + b, 0) / firstNapTimes.length;
+      const variance = firstNapTimes.reduce((sum, t) => sum + Math.pow(t - avg, 2), 0) / firstNapTimes.length;
+      const stdDev = Math.sqrt(variance);
+      
+      if (stdDev <= 30) { // Within 30 mins
+        sleepConsistency = 'consistent';
+        sleepConsistencyText = 'Sleep timing: Consistent';
+      } else if (stdDev <= 60) {
+        sleepConsistency = 'variable';
+        sleepConsistencyText = 'Sleep timing: Somewhat variable';
+      } else {
+        sleepConsistency = 'variable';
+        sleepConsistencyText = 'Sleep timing: Variable';
+      }
+    }
+
+    // Calculate feeding pattern stability
+    let feedingConsistency: 'consistent' | 'variable' | 'emerging' = 'emerging';
+    let feedingConsistencyText = 'Feeding: Building pattern';
+    
+    if (dailyFeedCounts.length >= 3) {
+      const avg = dailyFeedCounts.reduce((a, b) => a + b, 0) / dailyFeedCounts.length;
+      const variance = dailyFeedCounts.reduce((sum, c) => sum + Math.pow(c - avg, 2), 0) / dailyFeedCounts.length;
+      const stdDev = Math.sqrt(variance);
+      
+      if (stdDev <= 1) {
+        feedingConsistency = 'consistent';
+        feedingConsistencyText = 'Feeding: Consistent';
+      } else if (stdDev <= 2) {
+        feedingConsistency = 'variable';
+        feedingConsistencyText = 'Feeding: Somewhat variable';
+      } else {
+        feedingConsistency = 'variable';
+        feedingConsistencyText = 'Feeding: Variable';
+      }
+    }
+
+    // Developmental phase
+    const getPhase = (months: number) => {
+      if (months < 3) return { phase: 'Newborn phase', detail: 'Frequent feeds, short wake windows' };
+      if (months < 4) return { phase: '4-month transition', detail: 'Sleep patterns maturing' };
+      if (months < 6) return { phase: 'Infant phase', detail: 'Naps consolidating' };
+      if (months < 9) return { phase: '6-9 month window', detail: 'Transitioning to 2-3 naps' };
+      if (months < 12) return { phase: 'Late infant phase', detail: 'Longer wake windows' };
+      if (months < 15) return { phase: '12-15 month window', detail: 'May drop to 1-2 naps' };
+      if (months < 18) return { phase: 'Toddler transition', detail: 'Consolidating to 1 nap' };
+      return { phase: 'Toddler phase', detail: 'Single nap schedule' };
+    };
+
+    const phase = getPhase(babyAgeMonths);
+
     return {
-      sleep: {
-        count: napCount,
-        avg: avgNaps,
-        status: napStatus,
-        icon: <Moon className="w-4 h-4" />
-      },
-      feeding: {
-        count: feedCount,
-        avg: avgFeeds,
-        status: feedStatus,
-        icon: <Milk className="w-4 h-4" />
-      },
-      schedule: {
-        status: scheduleStatus,
-        icon: <Sun className="w-4 h-4" />
-      },
-      hasDeviations: napStatus !== 'on-track' || feedStatus !== 'on-track' || scheduleStatus !== 'on-track',
-      biggestDeviation: napStatus !== 'on-track' 
-        ? { description: `Sleep: ${napCount} naps vs avg ${avgNaps.toFixed(1)}`, normal: `${expected.naps[0]}-${expected.naps[1]} naps`, actual: `${napCount} naps` }
-        : feedStatus !== 'on-track'
-          ? { description: `Feeding: ${feedCount} feeds vs avg ${avgFeeds.toFixed(1)}`, normal: `${expected.feeds[0]}-${expected.feeds[1]} feeds`, actual: `${feedCount} feeds` }
-          : null
+      napTrend,
+      napTrendText,
+      sleepConsistency,
+      sleepConsistencyText,
+      feedingConsistency,
+      feedingConsistencyText,
+      phase,
+      numDays,
+      babyAgeMonths
     };
   }, [activities, babyAge, babyBirthday, nightSleepStartHour, nightSleepEndHour]);
 
-  // Fetch AI explanation for deviations
-  useEffect(() => {
-    if (!comparativeStats.hasDeviations || !comparativeStats.biggestDeviation) return;
-
-    const today = new Date().toDateString();
-    const cacheKey = `deviation-explanation-${today}`;
-    const cached = sessionStorage.getItem(cacheKey);
-    
-    if (cached) {
-      setExplanation(cached);
-      return;
-    }
-
-    const fetchExplanation = async () => {
-      setExplanationLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke('generate-home-insights', {
-          body: {
-            insightType: 'deviation-explanation',
-            activities: activities.slice(-50),
-            babyName,
-            babyAge,
-            deviation: comparativeStats.biggestDeviation
-          }
-        });
-
-        if (!error && data?.insight) {
-          setExplanation(data.insight);
-          sessionStorage.setItem(cacheKey, data.insight);
-        }
-      } catch (err) {
-        console.error('Failed to fetch explanation:', err);
-      } finally {
-        setExplanationLoading(false);
-      }
-    };
-
-    fetchExplanation();
-  }, [comparativeStats.hasDeviations, comparativeStats.biggestDeviation?.description, babyName, babyAge, activities]);
-
-  const getStatusText = (status: 'on-track' | 'ahead' | 'behind') => {
-    switch (status) {
-      case 'ahead': return 'Ahead';
-      case 'behind': return 'Behind';
-      default: return 'On track';
+  const getTrendIcon = (trend: 'consolidating' | 'expanding' | 'stable') => {
+    switch (trend) {
+      case 'consolidating': return <TrendingDown className="w-3.5 h-3.5" />;
+      case 'expanding': return <TrendingUp className="w-3.5 h-3.5" />;
+      default: return <Minus className="w-3.5 h-3.5" />;
     }
   };
 
-  const getStatusColor = (status: 'on-track' | 'ahead' | 'behind') => {
-    switch (status) {
-      case 'ahead': return 'text-primary';
-      case 'behind': return 'text-amber-600 dark:text-amber-400';
+  const getConsistencyColor = (consistency: 'consistent' | 'variable' | 'emerging') => {
+    switch (consistency) {
+      case 'consistent': return 'text-primary';
+      case 'variable': return 'text-amber-600 dark:text-amber-400';
       default: return 'text-muted-foreground';
     }
   };
+
+  // Don't show if not enough data
+  if (rhythmAnalysis.numDays < 2) {
+    return null;
+  }
 
   return (
     <div className="mb-4">
@@ -224,87 +207,73 @@ export const TodaysPulse = ({
         {/* Header */}
         <div className="px-3 py-2 border-b border-border">
           <h3 className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
-            Today's Pulse
+            Rhythm Status
           </h3>
         </div>
 
-        {/* Compact comparative stats */}
+        {/* Pattern insights */}
         <div className="divide-y divide-border">
-          {/* Sleep */}
-          <div className="flex items-center justify-between px-3 py-2">
+          {/* Recent trend */}
+          <div className="flex items-center justify-between px-3 py-2.5">
             <div className="flex items-center gap-2">
-              <div className="text-primary">{comparativeStats.sleep.icon}</div>
-              <span className="text-sm text-foreground">Sleep</span>
+              <div className="text-primary">
+                <Moon className="w-4 h-4" />
+              </div>
+              <span className="text-sm text-foreground">Nap Trend</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {comparativeStats.sleep.count} naps (avg: {comparativeStats.sleep.avg.toFixed(1)})
+            <div className="flex items-center gap-1.5">
+              <span className={`${
+                rhythmAnalysis.napTrend === 'consolidating' ? 'text-primary' :
+                rhythmAnalysis.napTrend === 'expanding' ? 'text-amber-600 dark:text-amber-400' :
+                'text-muted-foreground'
+              }`}>
+                {getTrendIcon(rhythmAnalysis.napTrend)}
               </span>
-              <span className={`text-xs font-medium ${getStatusColor(comparativeStats.sleep.status)}`}>
-                {getStatusText(comparativeStats.sleep.status)}
+              <span className="text-xs text-muted-foreground">
+                {rhythmAnalysis.napTrendText}
               </span>
             </div>
           </div>
 
-          {/* Feeding */}
-          <div className="flex items-center justify-between px-3 py-2">
+          {/* Sleep timing consistency */}
+          <div className="flex items-center justify-between px-3 py-2.5">
             <div className="flex items-center gap-2">
-              <div className="text-primary">{comparativeStats.feeding.icon}</div>
-              <span className="text-sm text-foreground">Feeding</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {comparativeStats.feeding.count} feeds (avg: {comparativeStats.feeding.avg.toFixed(1)})
-              </span>
-              <span className={`text-xs font-medium ${getStatusColor(comparativeStats.feeding.status)}`}>
-                {getStatusText(comparativeStats.feeding.status)}
-              </span>
-            </div>
-          </div>
-
-          {/* Schedule Timing */}
-          <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex items-center gap-2">
-              <div className="text-primary">{comparativeStats.schedule.icon}</div>
+              <div className="text-primary">
+                <Clock className="w-4 h-4" />
+              </div>
               <span className="text-sm text-foreground">Timing</span>
             </div>
-            <span className={`text-xs font-medium ${getStatusColor(comparativeStats.schedule.status)}`}>
-              {getStatusText(comparativeStats.schedule.status)}
+            <span className={`text-xs font-medium ${getConsistencyColor(rhythmAnalysis.sleepConsistency)}`}>
+              {rhythmAnalysis.sleepConsistencyText}
+            </span>
+          </div>
+
+          {/* Feeding pattern */}
+          <div className="flex items-center justify-between px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              <div className="text-primary">
+                <Milk className="w-4 h-4" />
+              </div>
+              <span className="text-sm text-foreground">Feeding</span>
+            </div>
+            <span className={`text-xs font-medium ${getConsistencyColor(rhythmAnalysis.feedingConsistency)}`}>
+              {rhythmAnalysis.feedingConsistencyText}
+            </span>
+          </div>
+
+          {/* Developmental phase */}
+          <div className="flex items-center justify-between px-3 py-2.5 bg-accent/5">
+            <div className="flex items-center gap-2">
+              <div className="text-primary">
+                <Baby className="w-4 h-4" />
+              </div>
+              <span className="text-sm text-foreground">{rhythmAnalysis.phase.phase}</span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {rhythmAnalysis.phase.detail}
             </span>
           </div>
         </div>
-
-        {/* What This Means - Expandable */}
-        {comparativeStats.hasDeviations && (
-          <Collapsible open={meaningOpen} onOpenChange={setMeaningOpen}>
-            <CollapsibleTrigger className="w-full px-3 py-2 hover:bg-accent/5 transition-colors border-t border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Lightbulb className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-xs font-medium text-muted-foreground">
-                    What this means
-                  </span>
-                </div>
-                <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${meaningOpen ? 'rotate-180' : ''}`} />
-              </div>
-            </CollapsibleTrigger>
-            
-            <CollapsibleContent>
-              <div className="px-3 pb-3 pt-1">
-                {explanationLoading ? (
-                  <div className="space-y-1.5 animate-pulse">
-                    <div className="h-3 w-full bg-muted rounded"></div>
-                    <div className="h-3 w-4/5 bg-muted rounded"></div>
-                  </div>
-                ) : explanation ? (
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {explanation}
-                  </p>
-                ) : null}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        )}
       </div>
     </div>
   );
