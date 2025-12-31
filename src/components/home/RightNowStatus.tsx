@@ -98,14 +98,14 @@ export const RightNowStatus = ({
   return (
     <div className="space-y-0">
       {/* Main Activity Section - Strava style: full-width, edge-to-edge */}
-      <div className="border-b border-border overflow-hidden">
+      <div className="overflow-hidden">
         {/* Header */}
         <div className="px-4 pt-4 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="text-primary">
               {getActivityIcon()}
             </div>
-            <span className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
+            <span className="text-xs text-muted-foreground">
               {getActivityLabel()}
             </span>
           </div>
@@ -135,28 +135,28 @@ export const RightNowStatus = ({
           </p>
         </div>
         
-        {/* Action buttons - Strava style: bold, full-width */}
+        {/* Action buttons - Strava style: clean, full-width */}
         {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
-          <div className="border-t border-border flex">
+          <div className="flex mt-4 mx-4 mb-4 gap-3">
             <button
               onClick={onWokeEarly}
-              className="flex-1 py-4 text-sm font-semibold text-primary hover:bg-accent/10 
-                         active:bg-accent/20 transition-colors border-r border-border"
+              className="flex-1 py-3 text-sm font-semibold text-primary rounded-full border border-primary
+                         hover:bg-primary/5 active:bg-primary/10 transition-colors"
             >
-              {currentActivity.isPastAnticipatedWake ? 'MARK AWAKE' : 'WOKE EARLY'}
+              {currentActivity.isPastAnticipatedWake ? 'Mark Awake' : 'Woke Early'}
             </button>
             <button
               onClick={onStillAsleep}
-              className="flex-1 py-4 text-sm font-semibold text-foreground hover:bg-accent/10 
-                         active:bg-accent/20 transition-colors"
+              className="flex-1 py-3 text-sm font-semibold text-foreground rounded-full border border-border
+                         hover:bg-accent/10 active:bg-accent/20 transition-colors"
             >
-              STILL ASLEEP
+              Still Asleep
             </button>
           </div>
         )}
       </div>
 
-      {/* What's Next Card - Full-width feed item style */}
+      {/* What's Next - Clean card style */}
       {nextPrediction && (
         <button
           onClick={() => {
@@ -168,12 +168,13 @@ export const RightNowStatus = ({
               onLogPrediction(activityType);
             }
           }}
-          className="w-full border-b border-border p-4 
+          className="w-full p-4 mt-2 mx-4 rounded-xl border border-border
                      hover:bg-accent/5 active:bg-accent/10 transition-colors text-left group"
+          style={{ width: 'calc(100% - 2rem)' }}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground mb-1">
+              <p className="text-xs text-muted-foreground mb-1">
                 Up Next
               </p>
               <p className="text-base font-semibold text-foreground">
@@ -183,45 +184,43 @@ export const RightNowStatus = ({
                 {nextPrediction.countdown} · {nextPrediction.timeRange}
               </p>
             </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+            <ChevronRight className="w-5 h-5 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
           </div>
         </button>
       )}
 
-      {/* Quick Actions - Full-width list */}
+      {/* Quick Actions */}
       {suggestions.length > 0 && (
-        <div className="border-b border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
-              Quick Actions
-            </p>
-          </div>
-          {suggestions.slice(0, 2).map((suggestion, index) => (
-            <button
-              key={suggestion.id}
-              onClick={suggestion.onClick}
-              className={`w-full text-left group ${
-                index < suggestions.slice(0, 2).length - 1 ? 'border-b border-border' : ''
-              }`}
-            >
-              <div className="flex items-center justify-between p-4 hover:bg-accent/5 active:bg-accent/10 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary/30 flex items-center justify-center text-muted-foreground">
-                    {suggestion.icon}
+        <div className="mt-4 px-4">
+          <p className="text-xs text-muted-foreground mb-2">
+            Quick Actions
+          </p>
+          <div className="space-y-2">
+            {suggestions.slice(0, 2).map((suggestion) => (
+              <button
+                key={suggestion.id}
+                onClick={suggestion.onClick}
+                className="w-full text-left group"
+              >
+                <div className="flex items-center justify-between p-3 rounded-xl border border-border hover:bg-accent/5 active:bg-accent/10 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-secondary/30 flex items-center justify-center text-muted-foreground">
+                      {suggestion.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {suggestion.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {suggestion.subtitle}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {suggestion.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {suggestion.subtitle}
-                    </p>
-                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
