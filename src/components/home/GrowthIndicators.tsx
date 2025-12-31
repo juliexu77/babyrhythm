@@ -99,7 +99,7 @@ export const GrowthIndicators = ({ activities, babyBirthday }: GrowthIndicatorsP
   }
 
   return (
-    <div className="px-6 pb-4 space-y-2">
+    <div className="pb-4 space-y-2">
       {isClusterFeeding && (
         <Badge variant="secondary" className="w-full justify-start gap-2 py-2 text-sm font-normal">
           <TrendingUp className="h-4 w-4 text-orange-500" />

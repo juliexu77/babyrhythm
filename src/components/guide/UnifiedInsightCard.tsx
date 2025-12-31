@@ -44,7 +44,7 @@ export const UnifiedInsightCard = ({
 
   if (loading) {
     return (
-      <div className="mx-2">
+      <div>
         {/* Deeper rose-neutral card with tonal separators and soft matte highlight */}
         <div className="rounded-xl bg-gradient-to-b from-[hsl(18,40%,88%)] via-[hsl(16,38%,86%)] to-[hsl(14,35%,83%)] dark:from-card dark:to-card border border-[hsl(18,28%,78%)]/30 dark:border-border/20 shadow-[0_6px_18px_-4px_hsla(18,40%,45%,0.12)] dark:shadow-none overflow-hidden">
           <div className="px-4 py-4 border-b border-[hsl(18,25%,78%)]/30 dark:border-border/30 bg-gradient-to-b from-[hsl(22,35%,93%)]/60 to-transparent">
@@ -76,7 +76,7 @@ export const UnifiedInsightCard = ({
   };
 
   return (
-    <div className="mx-2">
+    <div>
       {/* Deeper rose-neutral card with tonal separators and soft matte highlight at top */}
       <div className="rounded-xl bg-gradient-to-b from-[hsl(18,40%,88%)] via-[hsl(16,38%,86%)] to-[hsl(14,35%,83%)] dark:from-card dark:to-card border border-[hsl(18,28%,78%)]/30 dark:border-border/20 shadow-[0_6px_18px_-4px_hsla(18,40%,45%,0.12)] dark:shadow-none overflow-hidden">
         {/* Header with soft matte highlight (warm cream > blush gradient at 5-7% opacity) */}
