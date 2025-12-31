@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ActivityCard, Activity } from "@/components/ActivityCard";
+import { Activity } from "@/components/ActivityCard";
+import { SwipeableActivityCard } from "@/components/SwipeableActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { TrendsTab } from "@/components/TrendsTab";
@@ -1164,7 +1165,7 @@ const ongoingNap = (() => {
                                     return (
                                       <>
                                         {dayActivities.map((activity) => (
-                                          <ActivityCard
+                                          <SwipeableActivityCard
                                             key={activity.id}
                                             activity={activity}
                                             babyName={babyProfile?.name}
