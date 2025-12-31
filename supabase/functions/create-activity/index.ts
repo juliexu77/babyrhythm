@@ -30,7 +30,7 @@ function validateInput(data: any): ValidationError[] {
     errors.push({ field: 'time_local', message: 'time_local is required (HH:MM in 24h format) - represents when the ACTIVITY occurred, not when logged' });
   }
 
-  if (!data.offset_minutes || typeof data.offset_minutes !== 'number') {
+  if (data.offset_minutes === undefined || data.offset_minutes === null || typeof data.offset_minutes !== 'number') {
     errors.push({ field: 'offset_minutes', message: 'offset_minutes is required (number)' });
   }
 
