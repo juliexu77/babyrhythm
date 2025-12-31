@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { Trash2 } from "lucide-react";
 import { ActivityCard, Activity } from "./ActivityCard";
 import {
   AlertDialog,
@@ -92,18 +91,20 @@ export const SwipeableActivityCard = ({
   return (
     <>
       <div ref={containerRef} className="relative overflow-hidden">
-        {/* Delete action background - only visible when swiped */}
+        {/* Delete button - iOS style, only visible when swiped */}
         <div 
-          className={`absolute inset-y-0 right-0 flex items-center justify-end bg-destructive transition-opacity ${
-            translateX < 0 ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{ width: DELETE_THRESHOLD }}
+          className="absolute inset-y-0 right-0 flex items-center justify-center pr-2"
+          style={{ 
+            width: DELETE_THRESHOLD,
+            opacity: translateX < 0 ? 1 : 0,
+            transition: isDragging ? 'none' : 'opacity 0.2s ease-out'
+          }}
         >
           <button
             onClick={handleDeleteClick}
-            className="h-full w-full flex items-center justify-center text-destructive-foreground"
+            className="px-4 py-2 bg-destructive text-destructive-foreground text-sm font-semibold rounded-lg active:opacity-80"
           >
-            <Trash2 className="h-5 w-5" />
+            Delete
           </button>
         </div>
 
