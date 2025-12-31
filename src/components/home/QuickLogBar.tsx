@@ -15,18 +15,18 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
   };
 
   return (
-    <div className="mb-0">
-      {/* Strava-style action bar - full-width, no gaps */}
-      <div className="flex items-center border-b border-border">
+    <div className="px-4 py-4">
+      {/* Strava-style pill buttons */}
+      <div className="flex items-center gap-3">
         <button
           onClick={() => handleQuickLog('feed')}
           disabled={isLoading}
-          className="flex-1 flex items-center justify-center gap-2 py-4 px-3 
-                     border-r border-border
-                     hover:bg-accent/10 active:bg-accent/20 
+          className="flex items-center gap-2 py-2.5 px-4 
+                     rounded-full border border-border
+                     bg-card hover:bg-accent/10 active:bg-accent/20 
                      transition-colors disabled:opacity-50"
         >
-          <Milk className="w-5 h-5 text-primary" />
+          <Milk className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold uppercase tracking-caps text-foreground">
             Feed
           </span>
@@ -35,12 +35,12 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('nap')}
           disabled={isLoading}
-          className="flex-1 flex items-center justify-center gap-2 py-4 px-3 
-                     border-r border-border
-                     hover:bg-accent/10 active:bg-accent/20 
+          className="flex items-center gap-2 py-2.5 px-4 
+                     rounded-full border border-border
+                     bg-card hover:bg-accent/10 active:bg-accent/20 
                      transition-colors disabled:opacity-50"
         >
-          <Moon className="w-5 h-5 text-muted-foreground" />
+          <Moon className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-semibold uppercase tracking-caps text-foreground">
             Sleep
           </span>
@@ -49,11 +49,12 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('diaper')}
           disabled={isLoading}
-          className="flex-1 flex items-center justify-center gap-2 py-4 px-3 
-                     hover:bg-accent/10 active:bg-accent/20 
+          className="flex items-center gap-2 py-2.5 px-4 
+                     rounded-full border border-border
+                     bg-card hover:bg-accent/10 active:bg-accent/20 
                      transition-colors disabled:opacity-50"
         >
-          <Droplet className="w-5 h-5 text-muted-foreground" />
+          <Droplet className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-semibold uppercase tracking-caps text-foreground">
             Diaper
           </span>
