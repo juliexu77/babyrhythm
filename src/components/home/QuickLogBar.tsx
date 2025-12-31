@@ -20,12 +20,12 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('feed')}
           disabled={isLoading}
-          className="flex items-center gap-1.5 py-2 px-4 
-                     rounded-lg bg-muted hover:bg-muted/80 active:bg-muted/60 
+          className="flex items-center gap-1.5 py-2.5 px-4 
+                     rounded-md bg-primary hover:bg-primary/90 active:bg-primary/80 
                      transition-colors disabled:opacity-50"
         >
-          <Milk className="w-4 h-4 text-foreground/80" />
-          <span className="text-sm font-medium text-foreground">
+          <Milk className="w-4 h-4 text-primary-foreground" />
+          <span className="text-sm font-semibold text-primary-foreground">
             Feed
           </span>
         </button>
@@ -33,12 +33,12 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('nap')}
           disabled={isLoading}
-          className="flex items-center gap-1.5 py-2 px-4 
-                     rounded-lg bg-muted hover:bg-muted/80 active:bg-muted/60 
+          className="flex items-center gap-1.5 py-2.5 px-4 
+                     rounded-md bg-primary hover:bg-primary/90 active:bg-primary/80 
                      transition-colors disabled:opacity-50"
         >
-          <Moon className="w-4 h-4 text-foreground/80" />
-          <span className="text-sm font-medium text-foreground">
+          <Moon className="w-4 h-4 text-primary-foreground" />
+          <span className="text-sm font-semibold text-primary-foreground">
             Sleep
           </span>
         </button>
@@ -46,12 +46,12 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('diaper')}
           disabled={isLoading}
-          className="flex items-center gap-1.5 py-2 px-4 
-                     rounded-lg bg-muted hover:bg-muted/80 active:bg-muted/60 
+          className="flex items-center gap-1.5 py-2.5 px-4 
+                     rounded-md bg-primary hover:bg-primary/90 active:bg-primary/80 
                      transition-colors disabled:opacity-50"
         >
-          <Droplet className="w-4 h-4 text-foreground/80" />
-          <span className="text-sm font-medium text-foreground">
+          <Droplet className="w-4 h-4 text-primary-foreground" />
+          <span className="text-sm font-semibold text-primary-foreground">
             Diaper
           </span>
         </button>
