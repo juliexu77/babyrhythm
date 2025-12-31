@@ -118,78 +118,82 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
   }, [activities, nightSleepStartHour, nightSleepEndHour]);
 
   return (
-    <div className="mx-4 mb-3">
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="grid grid-cols-3 divide-x divide-border">
-          {/* Day Naps */}
-          <div className="px-3 py-2.5 text-center">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Moon className="w-3 h-3 text-muted-foreground" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Day Sleep
-              </span>
-            </div>
-            <div className="flex items-baseline justify-center gap-0.5">
-              {stats.daySleep.hasData ? (
-                <>
-                  <span className="text-lg font-semibold tabular-nums text-foreground">
-                    {stats.daySleep.hours}h {stats.daySleep.mins}m
-                  </span>
-                  <span className="text-xs text-muted-foreground ml-1">
-                    ({stats.daySleep.count})
-                  </span>
-                </>
-              ) : (
-                <span className="text-lg font-semibold text-muted-foreground">—</span>
-              )}
-            </div>
+    <div className="mx-4 mb-4">
+      <div className="flex items-center justify-between">
+        {/* Day Naps */}
+        <div className="flex-1 text-center">
+          <div className="flex items-center justify-center gap-1 mb-0.5">
+            <Moon className="w-3 h-3 text-muted-foreground/70" />
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+              Day Sleep
+            </span>
           </div>
-          
-          {/* Feeds */}
-          <div className="px-3 py-2.5 text-center">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Milk className="w-3 h-3 text-muted-foreground" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Feeds
-              </span>
-            </div>
-            <div className="flex items-baseline justify-center gap-0.5">
-              {stats.feeds.hasVolume ? (
-                <>
-                  <span className="text-lg font-semibold tabular-nums text-foreground">
-                    {stats.feeds.volume} oz
-                  </span>
-                  <span className="text-xs text-muted-foreground ml-1">
-                    ({stats.feeds.count})
-                  </span>
-                </>
-              ) : stats.feeds.count > 0 ? (
-                <span className="text-lg font-semibold tabular-nums text-foreground">
-                  {stats.feeds.count}
+          <div className="flex items-baseline justify-center gap-0.5">
+            {stats.daySleep.hasData ? (
+              <>
+                <span className="text-base font-semibold tabular-nums text-foreground">
+                  {stats.daySleep.hours}h {stats.daySleep.mins}m
                 </span>
-              ) : (
-                <span className="text-lg font-semibold text-muted-foreground">—</span>
-              )}
-            </div>
+                <span className="text-[10px] text-muted-foreground ml-0.5">
+                  ({stats.daySleep.count})
+                </span>
+              </>
+            ) : (
+              <span className="text-base font-semibold text-muted-foreground/50">—</span>
+            )}
           </div>
-          
-          {/* Night Sleep */}
-          <div className="px-3 py-2.5 text-center">
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Moon className="w-3 h-3 text-muted-foreground" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                Last Night
-              </span>
-            </div>
-            <div className="flex items-baseline justify-center">
-              {stats.nightSleep.hasData ? (
-                <span className="text-lg font-semibold tabular-nums text-foreground">
-                  {stats.nightSleep.hours}h {stats.nightSleep.mins}m
+        </div>
+        
+        {/* Hairline divider */}
+        <div className="w-px h-8 bg-border/50" />
+        
+        {/* Feeds */}
+        <div className="flex-1 text-center">
+          <div className="flex items-center justify-center gap-1 mb-0.5">
+            <Milk className="w-3 h-3 text-muted-foreground/70" />
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+              Feeds
+            </span>
+          </div>
+          <div className="flex items-baseline justify-center gap-0.5">
+            {stats.feeds.hasVolume ? (
+              <>
+                <span className="text-base font-semibold tabular-nums text-foreground">
+                  {stats.feeds.volume} oz
                 </span>
-              ) : (
-                <span className="text-lg font-semibold text-muted-foreground">—</span>
-              )}
-            </div>
+                <span className="text-[10px] text-muted-foreground ml-0.5">
+                  ({stats.feeds.count})
+                </span>
+              </>
+            ) : stats.feeds.count > 0 ? (
+              <span className="text-base font-semibold tabular-nums text-foreground">
+                {stats.feeds.count}
+              </span>
+            ) : (
+              <span className="text-base font-semibold text-muted-foreground/50">—</span>
+            )}
+          </div>
+        </div>
+        
+        {/* Hairline divider */}
+        <div className="w-px h-8 bg-border/50" />
+        
+        {/* Night Sleep */}
+        <div className="flex-1 text-center">
+          <div className="flex items-center justify-center gap-1 mb-0.5">
+            <Moon className="w-3 h-3 text-muted-foreground/70" />
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+              Last Night
+            </span>
+          </div>
+          <div className="flex items-baseline justify-center">
+            {stats.nightSleep.hasData ? (
+              <span className="text-base font-semibold tabular-nums text-foreground">
+                {stats.nightSleep.hours}h {stats.nightSleep.mins}m
+              </span>
+            ) : (
+              <span className="text-base font-semibold text-muted-foreground/50">—</span>
+            )}
           </div>
         </div>
       </div>
