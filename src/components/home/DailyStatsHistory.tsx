@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { format, subDays } from "date-fns";
-import { Triangle } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -11,6 +10,7 @@ interface DailyStatsHistoryProps {
   activities: Activity[];
   nightSleepStartHour: number;
   nightSleepEndHour: number;
+  travelDayDates: string[];
 }
 
 interface DayStats {
@@ -25,7 +25,8 @@ export const DailyStatsHistory = ({
   onOpenChange, 
   activities,
   nightSleepStartHour,
-  nightSleepEndHour
+  nightSleepEndHour,
+  travelDayDates
 }: DailyStatsHistoryProps) => {
   
   const parseTime = (timeStr: string) => {
@@ -80,9 +81,21 @@ export const DailyStatsHistory = ({
 
   const historyDays = useMemo(() => {
     const days: DayStats[] = [];
+    let daysChecked = 0;
+    let i = 0;
     
-    for (let i = 0; i < 7; i++) {
+    // Get up to 7 non-travel days
+    while (days.length < 7 && daysChecked < 30) {
       const date = subDays(new Date(), i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      i++;
+      daysChecked++;
+      
+      // Skip travel days
+      if (travelDayDates.includes(dateStr)) {
+        continue;
+      }
+      
       const dayActivities = getActivitiesForDate(date);
       const prevDayActivities = getActivitiesForDate(subDays(date, 1));
       
@@ -136,7 +149,7 @@ export const DailyStatsHistory = ({
     }
     
     return days;
-  }, [activities, nightSleepStartHour, nightSleepEndHour]);
+  }, [activities, nightSleepStartHour, nightSleepEndHour, travelDayDates]);
 
   const formatDateLabel = (date: Date, index: number) => {
     if (index === 0) return "Today";

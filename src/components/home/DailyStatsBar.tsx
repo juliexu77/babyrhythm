@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Activity } from "@/components/ActivityCard";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { useTravelDays } from "@/hooks/useTravelDays";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
 import { DailyStatsHistory } from "./DailyStatsHistory";
 
@@ -11,6 +12,7 @@ interface DailyStatsBarProps {
 
 export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+  const { travelDayDates } = useTravelDays();
   const [showHistory, setShowHistory] = useState(false);
   
   const stats = useMemo(() => {
@@ -194,6 +196,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
         activities={activities}
         nightSleepStartHour={nightSleepStartHour}
         nightSleepEndHour={nightSleepEndHour}
+        travelDayDates={travelDayDates}
       />
     </>
   );
