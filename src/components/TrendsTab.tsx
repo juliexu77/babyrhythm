@@ -1,6 +1,5 @@
 import { Activity } from "./ActivityCard";
 import { useState, useMemo } from "react";
-import { Moon, Milk, Clock, Sun } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
@@ -387,17 +386,15 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
       </div>
 
-      {/* Minimal Chart Sections - Strava style */}
+      {/* Minimal Chart Sections */}
       <div className="space-y-6 px-4">
         {/* Night Sleep Chart */}
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Moon className="w-4 h-4 text-primary" />
+          <div className="mb-2">
             <span className="text-xs font-medium text-foreground">Night Sleep</span>
           </div>
           <TimelineChart
             title="Night Sleep"
-            icon={<Moon className="w-3.5 h-3.5 text-foreground/70" />}
             activities={activities}
             timeRange={timeRange}
             dataExtractor={extractNightSleep}
@@ -414,13 +411,11 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
 
         {/* Day Naps Chart */}
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Sun className="w-4 h-4 text-accent-foreground" />
+          <div className="mb-2">
             <span className="text-xs font-medium text-foreground">Day Naps</span>
           </div>
           <TimelineChart
             title="Day Naps"
-            icon={<Sun className="w-3.5 h-3.5 text-foreground/70" />}
             activities={activities}
             timeRange={timeRange}
             dataExtractor={extractDayNaps}
@@ -437,13 +432,11 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
 
         {/* Feed Volume Chart */}
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Milk className="w-4 h-4 text-secondary-foreground" />
+          <div className="mb-2">
             <span className="text-xs font-medium text-foreground">Feed Volume</span>
           </div>
           <TimelineChart
             title="Feed Volume"
-            icon={<Milk className="w-3.5 h-3.5 text-foreground/70" />}
             activities={activities}
             timeRange={timeRange}
             dataExtractor={extractFeedVolume}
@@ -460,13 +453,11 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
 
         {/* Wake Windows Chart */}
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-4 h-4 text-muted-foreground" />
+          <div className="mb-2">
             <span className="text-xs font-medium text-foreground">Wake Windows</span>
           </div>
           <TimelineChart
             title="Wake Windows"
-            icon={<Clock className="w-3.5 h-3.5 text-foreground/70" />}
             activities={activities}
             timeRange={timeRange}
             dataExtractor={extractWakeWindows}
