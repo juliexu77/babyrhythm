@@ -5,6 +5,13 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { useTravelDays } from "@/hooks/useTravelDays";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
 import { DailyStatsHistory } from "./DailyStatsHistory";
+import { ChevronLeft } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DailyStatsBarProps {
   activities: Activity[];
@@ -147,11 +154,21 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
                 <span className="text-muted-foreground/50">0h 0m</span>
               )}
             </div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <span className="text-xs text-muted-foreground tabular-nums">
-                Yesterday: {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
-              </span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1 text-muted-foreground cursor-pointer">
+                    <ChevronLeft className="w-3 h-3" />
+                    <span className="text-xs tabular-nums">
+                      {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  Yesterday
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           
           {/* Feeds */}
@@ -166,11 +183,21 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
                 <span className="text-muted-foreground/50">0</span>
               )}
             </div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <span className="text-xs text-muted-foreground tabular-nums">
-                Yesterday: {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
-              </span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1 text-muted-foreground cursor-pointer">
+                    <ChevronLeft className="w-3 h-3" />
+                    <span className="text-xs tabular-nums">
+                      {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  Yesterday
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           
           {/* Night Sleep */}
@@ -183,9 +210,19 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
                 <span className="text-muted-foreground/50">0h 0m</span>
               )}
             </div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <span className="text-xs text-muted-foreground tabular-nums">Yesterday: —</span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1 text-muted-foreground cursor-pointer">
+                    <ChevronLeft className="w-3 h-3" />
+                    <span className="text-xs tabular-nums">—</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  Yesterday
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>
