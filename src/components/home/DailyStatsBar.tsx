@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Triangle } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
@@ -97,20 +97,27 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
       nightSleepMinutes = duration;
     }
     
+    // Calculate differences
+    const daySleepDiff = daySleepMinutes - yesterdayDaySleepMinutes;
+    const feedVolumeDiff = totalFeedVolume - yesterdayFeedVolume;
+    const feedCountDiff = todayFeeds.length - yesterdayFeeds.length;
+
     return {
       daySleep: {
         hours: Math.floor(daySleepMinutes / 60),
         mins: daySleepMinutes % 60,
         hasData: daySleepMinutes > 0 || todayNaps.length > 0,
-        yesterdayHours: Math.floor(yesterdayDaySleepMinutes / 60),
-        yesterdayMins: yesterdayDaySleepMinutes % 60
+        diff: daySleepDiff,
+        diffHours: Math.floor(Math.abs(daySleepDiff) / 60),
+        diffMins: Math.abs(daySleepDiff) % 60
       },
       feeds: {
         volume: Math.round(totalFeedVolume),
         count: todayFeeds.length,
         hasVolume: totalFeedVolume > 0,
-        yesterdayVolume: Math.round(yesterdayFeedVolume),
-        yesterdayCount: yesterdayFeeds.length
+        yesterdayHasVolume: yesterdayFeedVolume > 0,
+        volumeDiff: Math.round(feedVolumeDiff),
+        countDiff: feedCountDiff
       },
       nightSleep: {
         hours: Math.floor(nightSleepMinutes / 60),
@@ -119,6 +126,18 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
       }
     };
   }, [activities, nightSleepStartHour, nightSleepEndHour]);
+
+  const getTrendIcon = (diff: number) => {
+    if (diff > 0) return <TrendingUp className="w-3 h-3" />;
+    if (diff < 0) return <TrendingDown className="w-3 h-3" />;
+    return <Minus className="w-3 h-3" />;
+  };
+
+  const getTrendColor = (diff: number) => {
+    if (diff > 0) return "text-emerald-500";
+    if (diff < 0) return "text-rose-400";
+    return "text-muted-foreground";
+  };
 
   return (
     <>
@@ -146,10 +165,14 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
                 <span className="text-muted-foreground/50">0h 0m</span>
               )}
             </div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
+            <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50 ${getTrendColor(stats.daySleep.diff)}`}>
+              {getTrendIcon(stats.daySleep.diff)}
+              <span className="text-xs tabular-nums">
+                {stats.daySleep.diff !== 0 ? (
+                  <>{stats.daySleep.diff > 0 ? '+' : '-'}{stats.daySleep.diffHours > 0 ? `${stats.daySleep.diffHours}h ` : ''}{stats.daySleep.diffMins}m</>
+                ) : (
+                  "same"
+                )}
               </span>
             </div>
           </div>
@@ -166,12 +189,29 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
                 <span className="text-muted-foreground/50">0</span>
               )}
             </div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
-              </span>
-            </div>
+            {stats.feeds.hasVolume || stats.feeds.yesterdayHasVolume ? (
+              <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50 ${getTrendColor(stats.feeds.volumeDiff)}`}>
+                {getTrendIcon(stats.feeds.volumeDiff)}
+                <span className="text-xs tabular-nums">
+                  {stats.feeds.volumeDiff !== 0 ? (
+                    <>{stats.feeds.volumeDiff > 0 ? '+' : ''}{stats.feeds.volumeDiff} oz</>
+                  ) : (
+                    "same"
+                  )}
+                </span>
+              </div>
+            ) : (
+              <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50 ${getTrendColor(stats.feeds.countDiff)}`}>
+                {getTrendIcon(stats.feeds.countDiff)}
+                <span className="text-xs tabular-nums">
+                  {stats.feeds.countDiff !== 0 ? (
+                    <>{stats.feeds.countDiff > 0 ? '+' : ''}{stats.feeds.countDiff}</>
+                  ) : (
+                    "same"
+                  )}
+                </span>
+              </div>
+            )}
           </div>
           
           {/* Night Sleep */}
@@ -184,9 +224,9 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
                 <span className="text-muted-foreground/50">0h 0m</span>
               )}
             </div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
-              <span className="text-xs text-muted-foreground tabular-nums">—</span>
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50 text-muted-foreground">
+              <Minus className="w-3 h-3" />
+              <span className="text-xs tabular-nums">vs prior</span>
             </div>
           </div>
         </div>
