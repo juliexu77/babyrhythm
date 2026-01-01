@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format, subDays } from "date-fns";
 import { Activity } from "@/components/ActivityCard";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
@@ -28,6 +28,7 @@ export const DailyStatsHistory = ({
   nightSleepEndHour,
   travelDayDates
 }: DailyStatsHistoryProps) => {
+  const [daysToShow, setDaysToShow] = useState(7);
   
   const parseTime = (timeStr: string) => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -84,8 +85,8 @@ export const DailyStatsHistory = ({
     let daysChecked = 0;
     let i = 0;
     
-    // Get up to 7 non-travel days
-    while (days.length < 7 && daysChecked < 30) {
+    // Get up to daysToShow non-travel days, checking up to 60 days back
+    while (days.length < daysToShow && daysChecked < 60) {
       const date = subDays(new Date(), i);
       const dateStr = format(date, 'yyyy-MM-dd');
       i++;
@@ -149,7 +150,11 @@ export const DailyStatsHistory = ({
     }
     
     return days;
-  }, [activities, nightSleepStartHour, nightSleepEndHour, travelDayDates]);
+  }, [activities, nightSleepStartHour, nightSleepEndHour, travelDayDates, daysToShow]);
+
+  const handleShowMore = () => {
+    setDaysToShow(prev => prev + 7);
+  };
 
   const formatDateLabel = (date: Date, index: number) => {
     if (index === 0) return "Today";
@@ -222,6 +227,16 @@ export const DailyStatsHistory = ({
               </div>
             </div>
           ))}
+          
+          {/* Show more button */}
+          {historyDays.length >= daysToShow && (
+            <button
+              onClick={handleShowMore}
+              className="w-full py-4 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Show more days
+            </button>
+          )}
         </div>
       </SheetContent>
     </Sheet>
