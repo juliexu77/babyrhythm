@@ -16,7 +16,6 @@ import { DailyStatsBar } from "@/components/home/DailyStatsBar";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { RightNowStatus } from "@/components/home/RightNowStatus";
 import { StatusCarousel } from "@/components/home/StatusCarousel";
-import { WeeklyStatsPage } from "@/components/home/WeeklyStatsPage";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 
@@ -1455,32 +1454,29 @@ const lastDiaper = displayActivities
             </div>
         )}
 
-        {/* Top Card: Horizontal scroll carousel (Current status → Weekly stats) */}
+        {/* Top Card: Horizontal scroll carousel (Current status → Day stats) */}
         <div className="bg-card">
           <StatusCarousel>
-            {/* Page 1: Current Awake Status + Today's Stats */}
-            <div>
-              <RightNowStatus
-                currentActivity={currentActivity}
-                nextPrediction={nextPrediction}
-                onWokeEarly={() => onEndNap?.()}
-                onStillAsleep={() => {}}
-                onStartNap={() => onAddActivity('nap')}
-                onEndFeed={() => {}}
-                babyName={babyName || 'Baby'}
-                babyAge={babyAgeMonths}
-                activities={activities}
-                suggestions={smartSuggestions}
-                onAddFeed={() => onAddActivity('feed')}
-                onLogPrediction={(type) => onAddActivity(type)}
-                nightSleepStartHour={nightSleepStartHour}
-                nightSleepEndHour={nightSleepEndHour}
-              />
-              <DailyStatsBar activities={activities} />
-            </div>
+            {/* Page 1: Current Awake Status */}
+            <RightNowStatus
+              currentActivity={currentActivity}
+              nextPrediction={nextPrediction}
+              onWokeEarly={() => onEndNap?.()}
+              onStillAsleep={() => {}}
+              onStartNap={() => onAddActivity('nap')}
+              onEndFeed={() => {}}
+              babyName={babyName || 'Baby'}
+              babyAge={babyAgeMonths}
+              activities={activities}
+              suggestions={smartSuggestions}
+              onAddFeed={() => onAddActivity('feed')}
+              onLogPrediction={(type) => onAddActivity(type)}
+              nightSleepStartHour={nightSleepStartHour}
+              nightSleepEndHour={nightSleepEndHour}
+            />
             
-            {/* Page 2: Weekly Stats */}
-            <WeeklyStatsPage activities={activities} babyName={babyName} />
+            {/* Page 2: Day Stats */}
+            <DailyStatsBar activities={activities} />
           </StatusCarousel>
         </div>
 
