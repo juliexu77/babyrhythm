@@ -1,9 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Triangle } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
+import { DailyStatsHistory } from "./DailyStatsHistory";
 
 interface DailyStatsBarProps {
   activities: Activity[];
@@ -11,6 +12,7 @@ interface DailyStatsBarProps {
 
 export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+  const [showHistory, setShowHistory] = useState(false);
   
   const stats = useMemo(() => {
     const todayActivities = getTodayActivities(activities);
@@ -119,69 +121,84 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
   }, [activities, nightSleepStartHour, nightSleepEndHour]);
 
   return (
-    <div className="px-5 py-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-lg font-semibold text-foreground">Today's Snapshot</h3>
-        <button className="text-sm font-semibold text-primary">See More</button>
+    <>
+      <div className="px-5 py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-lg font-semibold text-foreground">Today's Snapshot</h3>
+          <button 
+            className="text-sm font-semibold text-primary"
+            onClick={() => setShowHistory(true)}
+          >
+            See More
+          </button>
+        </div>
+        
+        {/* Stats grid */}
+        <div className="grid grid-cols-3 gap-4">
+          {/* Day Sleep */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">Day Sleep</div>
+            <div className="text-xl font-bold tabular-nums text-foreground mb-2">
+              {stats.daySleep.hasData ? (
+                <>{stats.daySleep.hours}h {stats.daySleep.mins}m</>
+              ) : (
+                <span className="text-muted-foreground/50">0h 0m</span>
+              )}
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
+              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
+              </span>
+            </div>
+          </div>
+          
+          {/* Feeds */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">Feeds</div>
+            <div className="text-xl font-bold tabular-nums text-foreground mb-2">
+              {stats.feeds.hasVolume ? (
+                <>{stats.feeds.volume} oz</>
+              ) : stats.feeds.count > 0 ? (
+                <>{stats.feeds.count}</>
+              ) : (
+                <span className="text-muted-foreground/50">0</span>
+              )}
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
+              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
+              </span>
+            </div>
+          </div>
+          
+          {/* Night Sleep */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1">Last Night</div>
+            <div className="text-xl font-bold tabular-nums text-foreground mb-2">
+              {stats.nightSleep.hasData ? (
+                <>{stats.nightSleep.hours}h {stats.nightSleep.mins}m</>
+              ) : (
+                <span className="text-muted-foreground/50">0h 0m</span>
+              )}
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
+              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
+              <span className="text-xs text-muted-foreground tabular-nums">—</span>
+            </div>
+          </div>
+        </div>
       </div>
       
-      {/* Stats grid */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* Day Sleep */}
-        <div>
-          <div className="text-sm text-muted-foreground mb-1">Day Sleep</div>
-          <div className="text-2xl font-bold tabular-nums text-foreground mb-2">
-            {stats.daySleep.hasData ? (
-              <>{stats.daySleep.hours}h {stats.daySleep.mins}m</>
-            ) : (
-              <span className="text-muted-foreground/50">0h 0m</span>
-            )}
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-            <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
-            </span>
-          </div>
-        </div>
-        
-        {/* Feeds */}
-        <div>
-          <div className="text-sm text-muted-foreground mb-1">Feeds</div>
-          <div className="text-2xl font-bold tabular-nums text-foreground mb-2">
-            {stats.feeds.hasVolume ? (
-              <>{stats.feeds.volume} oz</>
-            ) : stats.feeds.count > 0 ? (
-              <>{stats.feeds.count}</>
-            ) : (
-              <span className="text-muted-foreground/50">0</span>
-            )}
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-            <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
-            </span>
-          </div>
-        </div>
-        
-        {/* Night Sleep */}
-        <div>
-          <div className="text-sm text-muted-foreground mb-1">Last Night</div>
-          <div className="text-2xl font-bold tabular-nums text-foreground mb-2">
-            {stats.nightSleep.hasData ? (
-              <>{stats.nightSleep.hours}h {stats.nightSleep.mins}m</>
-            ) : (
-              <span className="text-muted-foreground/50">0h 0m</span>
-            )}
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-            <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
-            <span className="text-xs text-muted-foreground tabular-nums">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
+      <DailyStatsHistory
+        open={showHistory}
+        onOpenChange={setShowHistory}
+        activities={activities}
+        nightSleepStartHour={nightSleepStartHour}
+        nightSleepEndHour={nightSleepEndHour}
+      />
+    </>
   );
 };
