@@ -343,54 +343,56 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
   }
 
   return (
-    <div className="space-y-4 pb-6 pt-2">
+    <div className="space-y-2 pb-6 pt-2">
       {/* Time Range Switcher */}
-      <div className="flex justify-center px-4">
-        <div className="inline-flex bg-muted rounded-strava-sm p-0.5">
-          {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`
-                px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wide rounded-strava-sm transition-all duration-200
-                ${timeRange === range 
-                  ? 'bg-background text-foreground shadow-sm' 
-                  : 'text-muted-foreground hover:text-foreground'
-                }
-              `}
-            >
-              {range === '1week' && '1W'}
-              {range === '6weeks' && '6W'}
-              {range === '3months' && '3M'}
-            </button>
-          ))}
+      <div className="bg-card py-4">
+        <div className="flex justify-center px-4">
+          <div className="inline-flex bg-muted rounded-strava-sm p-0.5">
+            {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`
+                  px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wide rounded-strava-sm transition-all duration-200
+                  ${timeRange === range 
+                    ? 'bg-background text-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                  }
+                `}
+              >
+                {range === '1week' && '1W'}
+                {range === '6weeks' && '6W'}
+                {range === '3months' && '3M'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       
-      {/* Strava-style Summary Stats Strip */}
-      <div className="px-4">
-        <h2 className="text-base font-semibold text-foreground mb-2">This week</h2>
-        <div className="flex gap-6">
+      {/* Summary Stats Strip */}
+      <div className="bg-card px-5 py-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">This Week</h2>
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-[11px] text-muted-foreground mb-0.5">Night Sleep</p>
-            <p className="text-xl font-bold text-foreground">{overviewMetrics[0].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">h</span></p>
+            <p className="text-xs text-muted-foreground mb-1">Night Sleep</p>
+            <p className="text-xl font-bold tabular-nums text-foreground">{overviewMetrics[0].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">h</span></p>
           </div>
           <div>
-            <p className="text-[11px] text-muted-foreground mb-0.5">Naps</p>
-            <p className="text-xl font-bold text-foreground">{overviewMetrics[1].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">/day</span></p>
+            <p className="text-xs text-muted-foreground mb-1">Naps</p>
+            <p className="text-xl font-bold tabular-nums text-foreground">{overviewMetrics[1].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">/day</span></p>
           </div>
           <div>
-            <p className="text-[11px] text-muted-foreground mb-0.5">Feeds</p>
-            <p className="text-xl font-bold text-foreground">{overviewMetrics[2].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">oz</span></p>
+            <p className="text-xs text-muted-foreground mb-1">Feeds</p>
+            <p className="text-xl font-bold tabular-nums text-foreground">{overviewMetrics[2].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">oz</span></p>
           </div>
         </div>
       </div>
 
-      {/* Minimal Chart Sections */}
-      <div className="space-y-6 px-4">
+      {/* Chart Sections */}
+      <div className="space-y-2">
         {/* Night Sleep Chart */}
-        <div>
-          <div className="mb-2">
+        <div className="bg-card px-5 py-5">
+          <div className="mb-3">
             <span className="text-xs font-medium text-foreground">Night Sleep</span>
           </div>
           <TimelineChart
@@ -410,8 +412,8 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Day Naps Chart */}
-        <div>
-          <div className="mb-2">
+        <div className="bg-card px-5 py-5">
+          <div className="mb-3">
             <span className="text-xs font-medium text-foreground">Day Naps</span>
           </div>
           <TimelineChart
@@ -431,8 +433,8 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Feed Volume Chart */}
-        <div>
-          <div className="mb-2">
+        <div className="bg-card px-5 py-5">
+          <div className="mb-3">
             <span className="text-xs font-medium text-foreground">Feed Volume</span>
           </div>
           <TimelineChart
@@ -452,8 +454,8 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         </div>
 
         {/* Wake Windows Chart */}
-        <div>
-          <div className="mb-2">
+        <div className="bg-card px-5 py-5">
+          <div className="mb-3">
             <span className="text-xs font-medium text-foreground">Wake Windows</span>
           </div>
           <TimelineChart
@@ -474,13 +476,13 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
       </div>
 
       {/* Collective Pulse */}
-      <div className="px-4">
+      <div className="bg-card px-5 py-5">
         <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
-      {/* Summary - minimal */}
-      <div className="px-4 pt-2">
-        <p className="text-xs text-muted-foreground/70 leading-relaxed">
+      {/* Summary */}
+      <div className="bg-card px-5 py-5">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {generateSummary()}
         </p>
       </div>
