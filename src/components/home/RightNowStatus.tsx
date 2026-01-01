@@ -65,7 +65,7 @@ export const RightNowStatus = ({
     );
   }
 
-  // Format duration - Strava style compact
+  // Format duration - Strava style: bold numbers
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -82,62 +82,64 @@ export const RightNowStatus = ({
     return 'Awake';
   };
 
-  // Get icon for current activity - smaller
+  // Get icon for current activity - minimal line style
   const getActivityIcon = () => {
     if (currentActivity.type === 'napping' || currentActivity.type === 'sleeping') {
-      return <Moon className="w-4 h-4" />;
+      return <Moon className="w-4 h-4" strokeWidth={1.5} />;
     }
     if (currentActivity.type === 'feeding') {
-      return <Utensils className="w-4 h-4" />;
+      return <Utensils className="w-4 h-4" strokeWidth={1.5} />;
     }
-    return <Sun className="w-4 h-4" />;
+    return null; // Remove sun icon as per request
   };
 
   const duration = formatDuration(currentActivity.duration);
 
   return (
     <div className="space-y-0">
-      {/* Main Activity Section - Strava style: compact, data-forward */}
+      {/* Main Activity Section - Strava style: left-aligned, bold hierarchy */}
       <div className="overflow-hidden">
-        {/* Header - tighter */}
+        {/* Header row - left-aligned with time on right */}
         <div className="px-4 pt-3 pb-1 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <div className="text-primary">
-              {getActivityIcon()}
-            </div>
-            <span className="text-xs font-medium text-muted-foreground">
+            {getActivityIcon() && (
+              <div className="text-primary">
+                {getActivityIcon()}
+              </div>
+            )}
+            <span className="text-label-xs uppercase tracking-caps text-muted-foreground">
               {getActivityLabel()}
             </span>
           </div>
-          <span className="text-[11px] text-muted-foreground/70">
+          <span className="text-[11px] tabular-nums text-muted-foreground/60">
             {currentActivity.startTime}
           </span>
         </div>
         
-        {/* Stat display - moderate size (36-48pt equivalent) */}
+        {/* Primary stat - large, bold */}
         <div className="px-4 pb-1">
           <div className="flex items-baseline gap-0.5">
-            <span className="text-stat-lg font-semibold text-foreground tracking-tight">
+            <span className="text-stat-lg tabular-nums text-foreground tracking-tight">
               {duration.value}
             </span>
             {duration.unit && (
-              <span className="text-base font-medium text-muted-foreground">
+              <span className="text-lg font-semibold text-muted-foreground">
                 {duration.unit}
               </span>
             )}
           </div>
         </div>
 
-        {/* Status text - smaller, lighter */}
+        {/* Status text - subordinate */}
         <div className="px-4 pb-3">
-          <p className="text-xs text-muted-foreground/80 leading-tight">
+          <p className="text-xs text-muted-foreground/70 leading-tight">
             {currentActivity.statusText}
           </p>
         </div>
         
-        {/* Action buttons - Strava style: compact pills */}
+        {/* Action buttons - Strava style: 8px radius, compact */}
         {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
-          <div className="flex mt-2 mx-4 mb-3 gap-2">
+          <div className="flex mt-1 mx-4 mb-3 gap-2">
             <button
               onClick={onWokeEarly}
               className="flex-1 py-2 text-xs font-semibold text-primary rounded-strava border border-primary
@@ -156,7 +158,7 @@ export const RightNowStatus = ({
         )}
       </div>
 
-      {/* What's Next - Flat text, no card */}
+      {/* What's Next - flat, left-aligned */}
       {nextPrediction && (
         <button
           onClick={() => {
@@ -170,28 +172,27 @@ export const RightNowStatus = ({
           }}
           className="w-full px-4 py-2 hover:bg-accent/5 active:bg-accent/10 transition-colors text-left group"
         >
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mb-0.5">
+          <p className="text-label-xs uppercase tracking-caps text-muted-foreground/60 mb-0.5">
             Up next
           </p>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-foreground leading-tight">
+              <p className="text-sm font-bold text-foreground leading-tight">
                 {nextPrediction.activity}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground/70 tabular-nums">
                 {nextPrediction.countdown} · {nextPrediction.timeRange}
               </p>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" strokeWidth={1.5} />
           </div>
         </button>
       )}
 
-      {/* Quick Actions - tighter spacing */}
-      {/* Quick Actions - flat text, no cards */}
+      {/* Quick Actions - left-aligned, compact */}
       {suggestions.length > 0 && (
         <div className="px-4 py-2">
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mb-1">
+          <p className="text-label-xs uppercase tracking-caps text-muted-foreground/60 mb-1">
             Quick actions
           </p>
           {suggestions.slice(0, 2).map((suggestion) => (
@@ -206,15 +207,15 @@ export const RightNowStatus = ({
                     {suggestion.icon}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground leading-tight">
+                    <p className="text-sm font-semibold text-foreground leading-tight">
                       {suggestion.title}
                     </p>
-                    <p className="text-xs text-muted-foreground leading-tight">
+                    <p className="text-xs text-muted-foreground/70 leading-tight">
                       {suggestion.subtitle}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" strokeWidth={1.5} />
               </div>
             </button>
           ))}

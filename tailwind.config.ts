@@ -40,11 +40,13 @@ export default {
         'stat': '1.0', // Very tight for large numbers
       },
       fontSize: {
-        // Strava-style: moderate but prominent stats (36-48pt range)
-        'stat-xl': ['2.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '700' }],
-        'stat-lg': ['2rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '600' }],
-        'stat-md': ['1.5rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
-        'stat-sm': ['1.25rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '600' }],
+        // Strava-style: bold, prominent stats
+        'stat-xl': ['3rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '800' }],
+        'stat-lg': ['2.5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'stat-md': ['1.75rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '700' }],
+        'stat-sm': ['1.375rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '700' }],
+        // Section labels - small caps style
+        'label-xs': ['0.625rem', { lineHeight: '1.2', letterSpacing: '0.08em', fontWeight: '500' }],
       },
       opacity: {
         'icon': '0.88',
@@ -133,30 +135,20 @@ export default {
         'soft': 'var(--shadow-soft)',
         'card': 'var(--shadow-card)',
         'elevated': 'var(--shadow-elevated)',
-        // Rare Beauty diffused cinematic shadows (8% opacity)
-        'diffused': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 4px 12px -2px hsla(15, 50%, 40%, 0.08)',
-        'diffused-lg': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 6px 16px -3px hsla(15, 50%, 40%, 0.08), 0 12px 32px -6px hsla(15, 50%, 40%, 0.06)',
-        // Glow effects - living interface
-        'glow-soft': '0 0 20px -5px hsla(15, 45%, 60%, 0.15)',
-        'glow-primary': 'var(--glow-primary)',
-        'glow-accent': 'var(--glow-accent)',
-        'glow-warm': 'var(--glow-warm)',
-        // Combined depth + glow for premium feel
-        'alive': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 8px 20px -4px hsla(15, 50%, 40%, 0.1), 0 0 30px -8px hsla(15, 45%, 65%, 0.15)',
-        'alive-hover': '0 4px 8px -2px hsla(15, 50%, 40%, 0.05), 0 12px 28px -6px hsla(15, 50%, 40%, 0.12), 0 0 40px -10px hsla(15, 45%, 60%, 0.2)',
-        // Inner highlight for top-lit feel
-        'inner-highlight': 'inset 0 1px 0 0 hsla(30, 60%, 98%, 0.5)',
-        'inner-glow': 'inset 0 0 20px 0 hsla(30, 50%, 95%, 0.3)',
+        // Strava-clean shadows
+        'strava': '0 2px 8px rgba(0, 0, 0, 0.08)',
+        'strava-hover': '0 4px 12px rgba(0, 0, 0, 0.12)',
+        'strava-btn': '0 1px 3px rgba(0, 0, 0, 0.12)',
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 4px)", 
         sm: "calc(var(--radius) - 8px)",
-        sharp: "4px",
         // Strava-style unified radiuses
         "strava": "8px",
-        "strava-sm": "6px",
+        "strava-sm": "4px",
         "strava-lg": "12px",
+        "sharp": "2px",
         "pill": "9999px",
       },
       keyframes: {
