@@ -22,7 +22,7 @@ import {
 
 interface TimelineChartProps {
   title: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   activities: Activity[];
   timeRange: '1week' | '6weeks' | '3months';
   dataExtractor: (activities: Activity[], date: Date) => number;
@@ -691,21 +691,8 @@ export const TimelineChart = ({
 
   return (
     <>
-      <div className="mx-2 rounded-xl bg-card shadow-sm border border-border overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-          {icon}
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        </div>
+      <div>
         {renderChart(180)}
-        
-        {/* Warm explanation */}
-        {explanation && (
-          <div className="px-4 py-2 border-t border-border/50 bg-muted/20">
-            <p className="text-xs text-muted-foreground italic text-center">
-              {explanation}
-            </p>
-          </div>
-        )}
       </div>
       
       <Popover open={popoverOpen && selectedData !== null} onOpenChange={setPopoverOpen}>
