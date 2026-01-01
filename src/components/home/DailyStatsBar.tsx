@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Triangle } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
@@ -147,9 +146,8 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
               )}
             </div>
             <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
               <span className="text-xs text-muted-foreground tabular-nums">
-                {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
+                Yesterday: {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
               </span>
             </div>
           </div>
@@ -167,9 +165,8 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
               )}
             </div>
             <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
               <span className="text-xs text-muted-foreground tabular-nums">
-                {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
+                Yesterday: {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
               </span>
             </div>
           </div>
@@ -185,8 +182,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
               )}
             </div>
             <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50">
-              <Triangle className="w-3 h-3 text-muted-foreground fill-muted-foreground" />
-              <span className="text-xs text-muted-foreground tabular-nums">—</span>
+              <span className="text-xs text-muted-foreground tabular-nums">Yesterday: —</span>
             </div>
           </div>
         </div>
