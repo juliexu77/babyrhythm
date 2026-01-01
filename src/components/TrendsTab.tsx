@@ -6,7 +6,6 @@ import { isDaytimeNap } from "@/utils/napClassification";
 import { getActivitiesByDate } from "@/utils/activityDateFilters";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { TimelineChart } from "@/components/trends/TimelineChart";
-import { CollectivePulse } from "@/components/home/CollectivePulse";
 import { subDays, startOfDay, eachDayOfInterval } from "date-fns";
 
 interface TrendsTabProps {
@@ -473,11 +472,6 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
             travelDayDates={travelDayDates}
           />
         </div>
-      </div>
-
-      {/* Collective Pulse */}
-      <div className="bg-card px-5 py-5">
-        <CollectivePulse babyBirthday={household?.baby_birthday} />
       </div>
 
       {/* Summary */}
