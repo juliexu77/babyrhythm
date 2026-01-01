@@ -93,13 +93,13 @@ export const TomorrowPreview = ({
   }
 
   return (
-    <div className="px-4 py-4 bg-card border-y border-border">
+    <div className="px-4 py-4">
       <button
         onClick={onClick}
         className="group w-full text-left"
       >
         {/* Minimal typographic treatment */}
-        <p className="text-xs font-semibold uppercase tracking-caps text-muted-foreground mb-2">
+        <p className="text-label-xs uppercase tracking-caps text-muted-foreground/60 mb-2">
           Tomorrow Preview
         </p>
         
@@ -107,7 +107,7 @@ export const TomorrowPreview = ({
           <p className="text-sm text-foreground/80 leading-relaxed pr-4">
             {tomorrowInsight}
           </p>
-          <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" strokeWidth={1.5} />
         </div>
       </button>
     </div>

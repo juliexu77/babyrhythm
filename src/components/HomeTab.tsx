@@ -15,6 +15,8 @@ import { QuickLogBar } from "@/components/home/QuickLogBar";
 import { DailyStatsBar } from "@/components/home/DailyStatsBar";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { RightNowStatus } from "@/components/home/RightNowStatus";
+import { StatusCarousel } from "@/components/home/StatusCarousel";
+import { WeeklyStatsPage } from "@/components/home/WeeklyStatsPage";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 
@@ -1383,10 +1385,12 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="space-y-0">
+      {/* Strava-style layout: full-width cards with tiny gaps */}
+      <div className="flex flex-col gap-[2px] bg-border/30">
 
         {/* Missed Activity Prompt - at top of home */}
         {missedActivitySuggestion && (
+            <div className="bg-card">
             <MissedActivityPrompt
                 suggestion={missedActivitySuggestion}
                 onAccept={async () => {
@@ -1448,102 +1452,86 @@ const lastDiaper = displayActivities
                   window.dispatchEvent(new CustomEvent('refetch-activities'));
                 }}
               />
+            </div>
         )}
 
-        {/* Right Now / What's Next Status */}
-        <RightNowStatus
-          currentActivity={currentActivity}
-          nextPrediction={nextPrediction}
-          onWokeEarly={() => onEndNap?.()}
-          onStillAsleep={() => {}}
-          onStartNap={() => onAddActivity('nap')}
-          onEndFeed={() => {}}
-          babyName={babyName || 'Baby'}
-          babyAge={babyAgeMonths}
-          activities={activities}
-          suggestions={smartSuggestions}
-          onAddFeed={() => onAddActivity('feed')}
-          onLogPrediction={(type) => onAddActivity(type)}
-          nightSleepStartHour={nightSleepStartHour}
-          nightSleepEndHour={nightSleepEndHour}
-        />
-
-        {/* Daily Stats - prominent scorecard (moved up in hierarchy) */}
-        <DailyStatsBar activities={activities} />
+        {/* Top Card: Horizontal scroll carousel (Current status → Weekly stats) */}
+        <div className="bg-card">
+          <StatusCarousel>
+            {/* Page 1: Current Awake Status + Today's Stats */}
+            <div>
+              <RightNowStatus
+                currentActivity={currentActivity}
+                nextPrediction={nextPrediction}
+                onWokeEarly={() => onEndNap?.()}
+                onStillAsleep={() => {}}
+                onStartNap={() => onAddActivity('nap')}
+                onEndFeed={() => {}}
+                babyName={babyName || 'Baby'}
+                babyAge={babyAgeMonths}
+                activities={activities}
+                suggestions={smartSuggestions}
+                onAddFeed={() => onAddActivity('feed')}
+                onLogPrediction={(type) => onAddActivity(type)}
+                nightSleepStartHour={nightSleepStartHour}
+                nightSleepEndHour={nightSleepEndHour}
+              />
+              <DailyStatsBar activities={activities} />
+            </div>
+            
+            {/* Page 2: Weekly Stats */}
+            <WeeklyStatsPage activities={activities} babyName={babyName} />
+          </StatusCarousel>
+        </div>
 
         {/* Quick Log Bar - utility buttons */}
-        <QuickLogBar
-          onLogActivity={async (type, time) => {
-            setIsQuickLogging(true);
-            try {
-              if (type === 'nap') {
-                await addActivity?.('nap', { startTime: time }, new Date(), time);
-              } else if (type === 'feed') {
-                const recentFeed = activities
-                  .filter(a => a.type === 'feed' && a.details?.quantity)
-                  .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
-                
-                const feedDetails: any = {};
-                if (recentFeed?.details?.quantity) {
-                  feedDetails.quantity = recentFeed.details.quantity;
-                  if (recentFeed.details.unit) feedDetails.unit = recentFeed.details.unit;
-                  if (recentFeed.details.feedType) feedDetails.feedType = recentFeed.details.feedType;
+        <div className="bg-card">
+          <QuickLogBar
+            onLogActivity={async (type, time) => {
+              setIsQuickLogging(true);
+              try {
+                if (type === 'nap') {
+                  await addActivity?.('nap', { startTime: time }, new Date(), time);
+                } else if (type === 'feed') {
+                  const recentFeed = activities
+                    .filter(a => a.type === 'feed' && a.details?.quantity)
+                    .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
+                  
+                  const feedDetails: any = {};
+                  if (recentFeed?.details?.quantity) {
+                    feedDetails.quantity = recentFeed.details.quantity;
+                    if (recentFeed.details.unit) feedDetails.unit = recentFeed.details.unit;
+                    if (recentFeed.details.feedType) feedDetails.feedType = recentFeed.details.feedType;
+                  }
+                  
+                  await addActivity?.('feed', feedDetails, new Date(), time);
+                } else if (type === 'diaper') {
+                  await addActivity?.('diaper', {}, new Date(), time);
                 }
-                
-                await addActivity?.('feed', feedDetails, new Date(), time);
-              } else if (type === 'diaper') {
-                await addActivity?.('diaper', {}, new Date(), time);
+              } catch (error) {
+                console.error('Could not log activity:', error);
+              } finally {
+                setIsQuickLogging(false);
               }
-            } catch (error) {
-              console.error('Could not log activity:', error);
-            } finally {
-              setIsQuickLogging(false);
-            }
-          }}
-          isLoading={isQuickLogging}
-        />
+            }}
+            isLoading={isQuickLogging}
+          />
+        </div>
 
         {/* Weekly Rhythm - nap bars visualization */}
         {activities.length > 0 && (
-          <WeeklyRhythm 
-            activities={activities}
-            babyName={babyName || 'Baby'}
-            travelDayDates={travelDayDates}
-          />
+          <div className="bg-card">
+            <WeeklyRhythm 
+              activities={activities}
+              babyName={babyName || 'Baby'}
+              travelDayDates={travelDayDates}
+            />
+          </div>
         )}
-
-
-        {/* Today's Story Modal */}
-        <TodaysStoryModal
-          isOpen={showTodaysStory}
-          onClose={() => {
-            setShowTodaysStory(false);
-            setSelectedStoryDate(null);
-            setSelectedStoryActivities([]);
-          }}
-          activities={activities}
-          babyName={babyName}
-          targetDate={selectedStoryDate || format(new Date(), 'yyyy-MM-dd')}
-          availableDates={(() => {
-            // Generate 5 days: today and 4 prior days (sorted oldest to newest)
-            const dates: string[] = [];
-            const today = new Date();
-            for (let i = 4; i >= 0; i--) {
-              const date = new Date(today);
-              date.setDate(date.getDate() - i);
-              dates.push(format(date, 'yyyy-MM-dd'));
-            }
-            return dates;
-          })()}
-          onNavigate={(newDate, dayActivities) => {
-            setSelectedStoryDate(newDate);
-          }}
-          allActivities={activities}
-        />
 
         {/* Learning Progress Chip */}
         {!isRhythmUnlocked && activities.length > 0 && (
-          <div className="px-4 py-3 border-y border-border bg-card">
+          <div className="bg-card px-4 py-3">
             <LearningProgress 
               activities={activities}
               babyName={babyName}
@@ -1552,50 +1540,72 @@ const lastDiaper = displayActivities
           </div>
         )}
 
-        {/* Rhythm Unlocked Modal */}
-        <RhythmUnlockedModal 
-          isOpen={showRhythmUnlocked}
-          onClose={() => setShowRhythmUnlocked(false)}
-          babyName={babyName}
-          totalLogs={activities.length}
-        />
-
-        {/* P1: First Activity Celebration */}
-        <FirstActivityCelebration
-          open={showFirstActivityCelebration}
-          onClose={() => setShowFirstActivityCelebration(false)}
-          babyName={babyName}
-          activityType={firstActivityType}
-        />
-
-        {/* Prefill Day Modal - shown after first activity */}
-        <PrefillDayModal
-          isOpen={showPrefillModal}
-          onClose={() => setShowPrefillModal(false)}
-          babyAgeMonths={babyAgeMonths}
-          onPrefill={(prefillActivities) => {
-            // Add all prefill activities
-            prefillActivities.forEach(activity => {
-              addActivity?.(activity.type, activity.details, new Date(), activity.time);
-            });
-          }}
-        />
-
-
-
-
-
         {/* Tomorrow Preview */}
-        <TomorrowPreview
-          activities={activities}
-          babyName={babyName}
-          onClick={() => {
-            setSelectedStoryDate(null);
-            setShowTodaysStory(true);
-          }}
-        />
+        <div className="bg-card">
+          <TomorrowPreview
+            activities={activities}
+            babyName={babyName}
+            onClick={() => {
+              setSelectedStoryDate(null);
+              setShowTodaysStory(true);
+            }}
+          />
+        </div>
 
       </div>
+
+      {/* Modals - outside the card stack */}
+      <TodaysStoryModal
+        isOpen={showTodaysStory}
+        onClose={() => {
+          setShowTodaysStory(false);
+          setSelectedStoryDate(null);
+          setSelectedStoryActivities([]);
+        }}
+        activities={activities}
+        babyName={babyName}
+        targetDate={selectedStoryDate || format(new Date(), 'yyyy-MM-dd')}
+        availableDates={(() => {
+          // Generate 5 days: today and 4 prior days (sorted oldest to newest)
+          const dates: string[] = [];
+          const today = new Date();
+          for (let i = 4; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            dates.push(format(date, 'yyyy-MM-dd'));
+          }
+          return dates;
+        })()}
+        onNavigate={(newDate, dayActivities) => {
+          setSelectedStoryDate(newDate);
+        }}
+        allActivities={activities}
+      />
+
+      <RhythmUnlockedModal 
+        isOpen={showRhythmUnlocked}
+        onClose={() => setShowRhythmUnlocked(false)}
+        babyName={babyName}
+        totalLogs={activities.length}
+      />
+
+      <FirstActivityCelebration
+        open={showFirstActivityCelebration}
+        onClose={() => setShowFirstActivityCelebration(false)}
+        babyName={babyName}
+        activityType={firstActivityType}
+      />
+
+      <PrefillDayModal
+        isOpen={showPrefillModal}
+        onClose={() => setShowPrefillModal(false)}
+        babyAgeMonths={babyAgeMonths}
+        onPrefill={(prefillActivities) => {
+          prefillActivities.forEach(activity => {
+            addActivity?.(activity.type, activity.details, new Date(), activity.time);
+          });
+        }}
+      />
 
       {/* Onboarding Tutorial */}
       <OnboardingTutorial
