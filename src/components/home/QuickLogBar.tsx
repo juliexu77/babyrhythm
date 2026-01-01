@@ -20,11 +20,11 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('feed')}
           disabled={isLoading}
-          className="flex items-center gap-1.5 py-2.5 px-4 
-                     rounded-sm bg-primary hover:bg-primary/90 active:bg-primary/80 
-                     transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 py-2 px-4 
+                     rounded-strava bg-primary hover:bg-primary/90 active:bg-primary/80 
+                     shadow-strava-btn transition-colors disabled:opacity-50"
         >
-          <Milk className="w-4 h-4 text-primary-foreground" />
+          <Milk className="w-4 h-4 text-primary-foreground" strokeWidth={1.5} />
           <span className="text-sm font-semibold text-primary-foreground">
             Feed
           </span>
@@ -33,11 +33,11 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('nap')}
           disabled={isLoading}
-          className="flex items-center gap-1.5 py-2.5 px-4 
-                     rounded-sm bg-primary hover:bg-primary/90 active:bg-primary/80 
-                     transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 py-2 px-4 
+                     rounded-strava bg-primary hover:bg-primary/90 active:bg-primary/80 
+                     shadow-strava-btn transition-colors disabled:opacity-50"
         >
-          <Moon className="w-4 h-4 text-primary-foreground" />
+          <Moon className="w-4 h-4 text-primary-foreground" strokeWidth={1.5} />
           <span className="text-sm font-semibold text-primary-foreground">
             Sleep
           </span>
@@ -46,11 +46,11 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
         <button
           onClick={() => handleQuickLog('diaper')}
           disabled={isLoading}
-          className="flex items-center gap-1.5 py-2.5 px-4 
-                     rounded-sm bg-primary hover:bg-primary/90 active:bg-primary/80 
-                     transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 py-2 px-4 
+                     rounded-strava bg-primary hover:bg-primary/90 active:bg-primary/80 
+                     shadow-strava-btn transition-colors disabled:opacity-50"
         >
-          <Droplet className="w-4 h-4 text-primary-foreground" />
+          <Droplet className="w-4 h-4 text-primary-foreground" strokeWidth={1.5} />
           <span className="text-sm font-semibold text-primary-foreground">
             Diaper
           </span>

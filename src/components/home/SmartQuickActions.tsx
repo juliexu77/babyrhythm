@@ -44,48 +44,48 @@ export const SmartQuickActions = ({
   };
 
   return (
-    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/20 overflow-hidden">
-      <div className="px-4 py-5">
-        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
+    <div className="mx-4 mb-4 rounded-strava-lg bg-card shadow-strava border border-border/10 overflow-hidden">
+      <div className="px-4 py-4">
+        <h3 className="text-label-xs uppercase tracking-caps text-muted-foreground/60 mb-3">
           Quick Log
         </h3>
         
-        {/* Icon buttons for quick logging */}
-        <div className="flex items-center gap-2 mb-4">
+        {/* Icon buttons for quick logging - Strava style */}
+        <div className="flex items-center gap-2 mb-3">
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleQuickLog('feed')}
             disabled={isQuickLogging}
-            className="flex-1 h-14 border-0 flex flex-col gap-1"
+            className="flex-1 h-12 rounded-strava border-border/30 flex flex-col gap-0.5 shadow-strava-btn"
           >
-            <Milk className="w-5 h-5" />
-            <span className="text-xs">Feed</span>
+            <Milk className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-xs font-semibold">Feed</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleQuickLog('nap')}
             disabled={isQuickLogging}
-            className="flex-1 h-14 border-0 flex flex-col gap-1"
+            className="flex-1 h-12 rounded-strava border-border/30 flex flex-col gap-0.5 shadow-strava-btn"
           >
-            <Moon className="w-5 h-5" />
-            <span className="text-xs">Sleep</span>
+            <Moon className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-xs font-semibold">Sleep</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleQuickLog('diaper')}
             disabled={isQuickLogging}
-            className="flex-1 h-14 border-0 flex flex-col gap-1"
+            className="flex-1 h-12 rounded-strava border-border/30 flex flex-col gap-0.5 shadow-strava-btn"
           >
-            <Droplet className="w-5 h-5" />
-            <span className="text-xs">Diaper</span>
+            <Droplet className="w-5 h-5" strokeWidth={1.5} />
+            <span className="text-xs font-semibold">Diaper</span>
           </Button>
         </div>
         
-        <p className="text-[10px] text-center text-muted-foreground">
-          Tap to log with current time—adjust details later if needed
+        <p className="text-[10px] text-center text-muted-foreground/50">
+          Tap to log with current time
         </p>
       </div>
     </div>

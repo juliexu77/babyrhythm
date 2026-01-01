@@ -184,27 +184,27 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
   return (
     <div className="mb-0 overflow-hidden">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        {/* Header - compact */}
-        <div className="px-3 py-2.5">
+        {/* Header - Strava style */}
+        <div className="px-4 py-2">
           <CollapsibleTrigger className="w-full" onClick={() => setIsOpen(!isOpen)}>
             <div className="flex items-center justify-between">
               <div className="flex-1 text-left">
-                <h3 className="text-sm font-semibold text-foreground">
+                <h3 className="text-label-xs uppercase tracking-caps text-muted-foreground/60">
                   This Week
                 </h3>
                 {subtitle && (
-                  <p className="text-xs text-muted-foreground/70 mt-0.5 leading-tight">{subtitle}</p>
+                  <p className="text-xs text-muted-foreground/50 mt-0.5 leading-tight">{subtitle}</p>
                 )}
               </div>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground/50 transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-muted-foreground/40 transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
             </div>
           </CollapsibleTrigger>
         </div>
 
         {/* Nap Barcode Visualization - tighter */}
         <CollapsibleContent>
-          <div className="px-3 pb-3 pt-1">
-            {/* Time markers - smaller */}
+          <div className="px-4 pb-3 pt-1">
+            {/* Time markers - subtle grid lines */}
             <div className="flex items-center mb-2">
               <span className="w-10 flex-shrink-0"></span>
               <div className="flex-1 relative h-3">
@@ -218,7 +218,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                   return (
                     <span
                       key={pos}
-                      className="absolute text-[8px] font-medium text-muted-foreground/50 uppercase tracking-wide"
+                      className="absolute text-[8px] font-medium text-muted-foreground/40 uppercase tracking-wide"
                       style={{ left: pos === 1 ? 'auto' : `${pos * 100}%`, right: pos === 1 ? '0' : 'auto' }}
                     >
                       {label}
@@ -228,7 +228,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
               </div>
             </div>
 
-            {/* Days with naps - tighter rows */}
+            {/* Days with naps - tighter rows, sharper bars */}
             <div className="space-y-1.5">
               {weekData.map((day, dayIndex) => {
                 const isToday = dayIndex === 0;
@@ -258,12 +258,16 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                 
                 return (
                   <div key={day.date} className="flex items-center gap-2">
-                    <span className={`text-[9px] font-semibold uppercase tracking-wide w-10 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground/70'}`}>
+                    <span className={`text-[9px] font-semibold uppercase tracking-caps w-10 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground/60'}`}>
                       {dayLabel}
                     </span>
-                    <div className={`flex-1 relative h-[12px] rounded-full ${dayIsTravelDay ? 'bg-muted/10' : 'bg-muted/15'}`}>
+                    {/* Bar track with subtle grid lines */}
+                    <div className={`flex-1 relative h-[10px] rounded-strava-sm ${dayIsTravelDay ? 'bg-muted/10' : 'bg-muted/15'}`}
+                         style={{
+                           backgroundImage: 'linear-gradient(90deg, transparent 24.9%, rgba(0,0,0,0.03) 25%, rgba(0,0,0,0.03) 25.1%, transparent 25.2%, transparent 49.9%, rgba(0,0,0,0.03) 50%, rgba(0,0,0,0.03) 50.1%, transparent 50.2%, transparent 74.9%, rgba(0,0,0,0.03) 75%, rgba(0,0,0,0.03) 75.1%, transparent 75.2%)'
+                         }}>
                       {dayIsTravelDay ? (
-                        <span className="absolute left-1.5 top-0 text-[8px] text-muted-foreground/40 leading-[12px] tracking-wide flex items-center gap-0.5">
+                        <span className="absolute left-1.5 top-0 text-[8px] text-muted-foreground/30 leading-[10px] tracking-wide flex items-center gap-0.5">
                           <span>✈</span>
                           <span className="uppercase">Travel</span>
                         </span>
@@ -276,22 +280,22 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                             <Popover key={idx}>
                               <PopoverTrigger asChild>
                                 <div
-                                  className="absolute h-full bg-primary/70 rounded-full transition-all cursor-pointer hover:bg-primary"
+                                  className="absolute h-full bg-primary/80 rounded-strava-sm transition-all cursor-pointer hover:bg-primary"
                                   style={{ 
                                     left: `${leftPos}%`, 
                                     width: `${width}%`,
-                                    minWidth: '6px'
+                                    minWidth: '4px'
                                   }}
                                   onClick={() => setSelectedNap({ startTime: nap.startTime, endTime: nap.endTime })}
                                 />
                               </PopoverTrigger>
-                              <PopoverContent className="w-auto p-2 rounded-strava-sm">
+                              <PopoverContent className="w-auto p-2 rounded-strava shadow-strava">
                                 <div className="text-xs">
-                                  <div className="text-[9px] font-semibold uppercase tracking-wide text-foreground mb-0.5">Nap</div>
-                                  <div className="text-muted-foreground font-num text-[11px]">
+                                  <div className="text-label-xs uppercase tracking-caps text-foreground mb-0.5">Nap</div>
+                                  <div className="text-muted-foreground tabular-nums text-[11px]">
                                     {nap.startTime} – {nap.endTime}
                                   </div>
-                                  <div className="text-[10px] text-muted-foreground/60 mt-0.5 font-num">
+                                  <div className="text-[10px] text-muted-foreground/50 mt-0.5 tabular-nums">
                                     {Math.round(nap.durationMinutes)}m
                                   </div>
                                 </div>
@@ -300,7 +304,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                           );
                         })
                       ) : (
-                        <span className="absolute left-1.5 top-0 text-[8px] text-muted-foreground/30 leading-[12px] uppercase tracking-wide">No naps</span>
+                        <span className="absolute left-1.5 top-0 text-[8px] text-muted-foreground/25 leading-[10px] uppercase tracking-wide">No naps</span>
                       )}
                     </div>
                   </div>
