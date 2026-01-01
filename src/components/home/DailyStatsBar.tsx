@@ -118,7 +118,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
   }, [activities, nightSleepStartHour, nightSleepEndHour]);
 
   return (
-    <div className="px-4 mb-6">
+    <div className="px-4 pb-3">
       {/* Stats row - Strava style: left-aligned, bold values */}
       <div className="flex gap-6">
         {/* Day Naps */}
