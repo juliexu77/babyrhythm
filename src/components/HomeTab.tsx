@@ -1468,7 +1468,10 @@ const lastDiaper = displayActivities
           nightSleepEndHour={nightSleepEndHour}
         />
 
-        {/* Action Buttons - persistent logging */}
+        {/* Daily Stats - prominent scorecard (moved up in hierarchy) */}
+        <DailyStatsBar activities={activities} />
+
+        {/* Quick Log Bar - utility buttons */}
         <QuickLogBar
           onLogActivity={async (type, time) => {
             setIsQuickLogging(true);
@@ -1500,16 +1503,12 @@ const lastDiaper = displayActivities
           isLoading={isQuickLogging}
         />
 
-        {/* Day Metrics - reference data, demoted below actions */}
-        <DailyStatsBar activities={activities} />
-
-        {/* Weekly Pattern - collapsed by default */}
+        {/* Weekly Rhythm - nap bars visualization */}
         {activities.length > 0 && (
           <WeeklyRhythm 
             activities={activities}
             babyName={babyName || 'Baby'}
             travelDayDates={travelDayDates}
-            defaultCollapsed={true}
           />
         )}
 

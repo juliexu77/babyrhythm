@@ -55,62 +55,61 @@ export function generateRhythmSubtitle(weekData: DayNaps[]): string {
     ? olderNapCounts.reduce((a, b) => a + b, 0) / olderNapCounts.length 
     : recentAvg;
   
-  // Pattern detection logic - confident trajectory statements
+  // Pattern detection logic (in priority order)
   
-  // Nap count transitioning
+  // Nap count changing (transition)
   if (Math.abs(recentAvg - olderAvg) >= 0.5) {
-    const targetNaps = Math.round(recentAvg);
     if (recentAvg < olderAvg) {
-      return `Nap pattern trending toward ${targetNaps} nap${targetNaps !== 1 ? 's' : ''}`;
+      return "Consolidating to fewer naps";
     } else {
-      return `Nap frequency increasing toward ${targetNaps} naps`;
+      return "Adding more frequent naps";
     }
   }
   
   // Nap durations trending
   if (Math.abs(durationChange) >= 20) {
     if (durationChange > 0) {
-      return "Nap duration trending longer";
+      return "Naps lengthening consistently";
     } else {
-      return "Nap duration trending shorter";
+      return "Naps shortening this week";
     }
   }
   
   // Third nap pattern
   if (daysWithThirdNap.length >= 3 && avgThirdNapDuration < 40) {
-    return "Third nap naturally shortening";
+    return "Third nap frequently short";
   }
   
   if (daysWithThirdNap.length >= 4 && avgThirdNapDuration > 60) {
-    return "Solid 3-nap rhythm established";
+    return "Strong three-nap rhythm";
   }
   
   // Variable nap count
   if (napCountVariance >= 2) {
-    return "Nap count adjusting day by day";
+    return "Nap count varies day to day";
   }
   
   // Very consistent
   if (napCountVariance === 0 && Math.abs(durationChange) < 10) {
-    return "Consistent rhythm established";
+    return "Remarkably consistent pattern";
   }
   
   // Consistent nap count
   if (napCountVariance <= 1) {
     const roundedAvg = Math.round(avgNapCount);
-    return `${roundedAvg}-nap rhythm holding steady`;
+    return `Steady ${roundedAvg}-nap rhythm`;
   }
   
   // Long naps
   if (avgDuration > 100) {
-    return "Deep nap pattern established";
+    return "Long, restorative naps";
   }
   
   // Short naps
   if (avgDuration < 45) {
-    return "Catnap rhythm in place";
+    return "Quick catnap pattern";
   }
   
   // Default
-  return "Rhythm taking shape";
+  return "Pattern emerging";
 }

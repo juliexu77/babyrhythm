@@ -17,11 +17,10 @@ interface WeeklyRhythmProps {
   activities: any[];
   babyName: string;
   travelDayDates?: string[];
-  defaultCollapsed?: boolean;
 }
 
-export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [], defaultCollapsed = false }: WeeklyRhythmProps) => {
-  const [isOpen, setIsOpen] = useState(!defaultCollapsed);
+export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: WeeklyRhythmProps) => {
+  const [isOpen, setIsOpen] = useState(true);
   const [selectedNap, setSelectedNap] = useState<{ startTime: string; endTime: string } | null>(null);
   const [subtitle, setSubtitle] = useState<string>("");
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
