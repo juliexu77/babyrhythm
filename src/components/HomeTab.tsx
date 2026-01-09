@@ -10,7 +10,6 @@ import { format, isToday, differenceInMinutes, differenceInHours } from "date-fn
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { Activity } from "@/components/ActivityCard";
-import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { QuickLogBar } from "@/components/home/QuickLogBar";
 import { DailyStatsBar } from "@/components/home/DailyStatsBar";
 import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";

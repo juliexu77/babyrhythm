@@ -6,7 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getWeekCaption } from "@/utils/share/chartShare";
 import { startOfWeek, endOfWeek, eachDayOfInterval, format, differenceInMinutes } from "date-fns";
-import { ReportConfig } from "@/components/ReportConfigModal";
+
+interface ReportConfig {
+  dateRange: 'week' | 'month' | 'custom' | 'last-week';
+  sections: string[];
+  startDate?: Date;
+  endDate?: Date;
+  customStartDate?: Date;
+  customEndDate?: Date;
+  includeFeeds?: boolean;
+  includeSleep?: boolean;
+  includeDiapers?: boolean;
+  hideOutliers?: boolean;
+}
 
 interface WeeklyReportProps {
   config?: ReportConfig;
