@@ -249,7 +249,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       <div className="flex gap-1 rounded-strava bg-muted p-3 items-center justify-center">
         {/* Date - Scrollable */}
         <div className="relative flex flex-col items-center">
-          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40 absolute -top-2 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold tracking-wider text-muted-foreground/40 absolute -top-2 z-10 pointer-events-none">
             {selectedDateIndex > 0 ? formatDateLabel(dates[selectedDateIndex - 1]) : ''}
           </div>
           <div 
@@ -274,7 +274,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {dates.map((date, index) => (
               <div
                 key={index}
-                className={`h-8 flex items-center justify-center text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                className={`h-8 flex items-center justify-center text-xs font-bold tracking-wider cursor-pointer transition-colors snap-center whitespace-nowrap ${
                   selectedDateIndex === index 
                     ? 'text-foreground' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -289,7 +289,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
           </div>
-          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40 absolute -bottom-2 z-10 pointer-events-none">
+          <div className="text-[9px] font-bold tracking-wider text-muted-foreground/40 absolute -bottom-2 z-10 pointer-events-none">
             {selectedDateIndex < dates.length - 1 ? formatDateLabel(dates[selectedDateIndex + 1]) : ''}
           </div>
         </div>
