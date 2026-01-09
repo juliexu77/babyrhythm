@@ -608,11 +608,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 <button
                   key={type}
                   type="button"
-                  className={`h-14 rounded-strava flex flex-col items-center justify-center gap-1 transition-all ${
-                    activityType === type 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
+                  className="btn-select-lg"
+                  data-selected={activityType === type}
                   onClick={() => setActivityType(type as any)}
                 >
                   <Icon className="h-4 w-4" />
@@ -623,9 +620,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
             {/* Feed Details */}
             {activityType === "feed" && (
-              <div className="space-y-4">
+              <div className="form-section">
                 <div>
-                  <Label className="mb-3 block">{t('type')}</Label>
+                  <Label className="form-label">{t('type')}</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                      { type: "bottle", icon: Milk, label: t('bottle') },
@@ -634,11 +631,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       <button
                         key={type}
                         type="button"
-                        className={`h-12 rounded-strava flex items-center justify-center gap-2 transition-all ${
-                          feedType === type 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        }`}
+                        className="btn-select"
+                        data-selected={feedType === type}
                         onClick={() => setFeedType(type as any)}
                       >
                         <Icon className="h-4 w-4" />
@@ -662,10 +656,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <div className="space-y-3">
                     <div className="flex items-end gap-3">
                       <div className="flex-1">
-                        <Label className="mb-2 block">{t('amount')}</Label>
+                        <Label className="form-label">{t('amount')}</Label>
                         <button
                           type="button"
-                          className="w-full h-12 rounded-strava bg-muted text-left px-4 text-sm font-medium hover:bg-muted/80 transition-colors"
+                          className="input-tappable"
                           onClick={() => setShowKeypad(true)}
                         >
                           <span className="text-foreground">
@@ -722,7 +716,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 )}
 
                 <div>
-                  <Label htmlFor="feed-note" className="mb-2 block">{t('notes')}</Label>
+                  <Label htmlFor="feed-note" className="form-label">{t('notes')}</Label>
                   <Textarea
                     id="feed-note"
                     value={note}
@@ -737,7 +731,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
             {/* Diaper Details */}
             {activityType === "diaper" && (
-              <div className="space-y-5">
+              <div className="form-section">
                 {/* Time Picker for Diaper */}
                 <TimeScrollPicker 
                   value={time} 
@@ -748,7 +742,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 />
                 
                 <div>
-                  <Label className="mb-3 block">{t('type')}</Label>
+                  <Label className="form-label">{t('type')}</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { type: "wet", label: t('wet') },
@@ -758,11 +752,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       <button
                         key={type}
                         type="button"
-                        className={`h-12 rounded-strava flex items-center justify-center transition-all ${
-                          diaperType === type 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        }`}
+                        className="btn-select"
+                        data-selected={diaperType === type}
                         onClick={() => setDiaperType(type as any)}
                       >
                         <span className="text-xs font-semibold">{label}</span>
@@ -772,29 +763,23 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between py-3 border-b border-border">
+                  <div className="form-row-bordered">
                     <Label className="text-sm text-foreground">{t('leak')}</Label>
                     <button
                       type="button"
-                      className={`h-8 px-4 rounded-strava text-xs font-semibold transition-all ${
-                        hasLeak 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
+                      className="btn-toggle"
+                      data-active={hasLeak}
                       onClick={() => setHasLeak(!hasLeak)}
                     >
                       {hasLeak ? t('yes') : t('no')}
                     </button>
                   </div>
-                  <div className="flex items-center justify-between py-3 border-b border-border">
+                  <div className="form-row-bordered">
                     <Label className="text-sm text-foreground">{t('diaperingCream')}</Label>
                     <button
                       type="button"
-                      className={`h-8 px-4 rounded-strava text-xs font-semibold transition-all ${
-                        hasCream 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
+                      className="btn-toggle"
+                      data-active={hasCream}
                       onClick={() => setHasCream(!hasCream)}
                     >
                       {hasCream ? t('yes') : t('no')}
@@ -803,7 +788,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 <div>
-                  <Label htmlFor="diaper-note" className="mb-2 block">{t('notes')}</Label>
+                  <Label htmlFor="diaper-note" className="form-label">{t('notes')}</Label>
                   <Textarea
                     id="diaper-note"
                     value={note}
@@ -818,7 +803,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
             {/* Sleep Details */}
             {activityType === "nap" && (
-              <div className="space-y-4">
+              <div className="form-section">
                 <div className="space-y-3">
                   <TimeScrollPicker 
                     value={startTime} 
@@ -861,7 +846,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
             {/* Note Details */}
             {activityType === "note" && (
-              <div className="space-y-4">
+              <div className="form-section">
                 {/* Time Picker */}
                 <TimeScrollPicker 
                   value={time} 
@@ -872,7 +857,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 />
 
                 <div>
-                  <Label htmlFor="note" className="text-sm font-medium mb-2 block">{t('noteText')}</Label>
+                  <Label htmlFor="note" className="form-label">{t('noteText')}</Label>
                   <Textarea
                     id="note"
                     value={note}
@@ -885,15 +870,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {/* Photo Upload for Notes */}
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">{t('photoOptional')}</Label>
+                  <Label className="form-label">{t('photoOptional')}</Label>
                   <div className="space-y-3">
                     {/* Photo Preview */}
                     {(photo || photoUrl) && (
-                      <div className="relative">
+                      <div className="photo-preview">
                         <img
                           src={photo ? URL.createObjectURL(photo) : photoUrl!}
                           alt={t('selectedPhoto')}
-                          className="w-full h-32 object-cover rounded-lg border"
                         />
                         <Button
                           type="button"
@@ -903,7 +887,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                             setPhoto(null);
                             setPhotoUrl(null);
                           }}
-                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm border-0"
+                          className="photo-remove-btn"
                         >
                           {t('remove')}
                         </Button>
@@ -911,41 +895,36 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     )}
                     
                     {/* Upload Area */}
-                    <div className="border-2 border-dashed border-border rounded-lg p-4">
-                      <input
-                        type="file"
-                        accept="image/*"
-                       onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (!file.type.startsWith('image/')) {
-                              return;
-                            }
-                            if (file.size > 10 * 1024 * 1024) {
-                              return;
-                            }
-                            setPhoto(file);
-                            setPhotoUrl(null);
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (!file.type.startsWith('image/')) {
+                            return;
                           }
-                        }}
-                        className="hidden"
-                        id="photo-input"
-                      />
-                      <label
-                        htmlFor="photo-input"
-                        className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <Camera className="h-8 w-8 mb-2" />
-                        {photo || photoUrl ? (
-                          <span className="text-sm font-medium">{t('changePhoto')}</span>
-                        ) : (
-                          <>
-                            <span className="text-sm font-medium">{t('tapToAddPhoto')}</span>
-                            <span className="text-xs mt-1">{t('jpgPngUpTo10mb')}</span>
-                          </>
-                        )}
-                      </label>
-                    </div>
+                          if (file.size > 10 * 1024 * 1024) {
+                            return;
+                          }
+                          setPhoto(file);
+                          setPhotoUrl(null);
+                        }
+                      }}
+                      className="hidden"
+                      id="photo-input"
+                    />
+                    <label htmlFor="photo-input" className="upload-area">
+                      <Camera className="h-8 w-8 mb-2" />
+                      {photo || photoUrl ? (
+                        <span className="text-sm font-medium">{t('changePhoto')}</span>
+                      ) : (
+                        <>
+                          <span className="text-sm font-medium">{t('tapToAddPhoto')}</span>
+                          <span className="text-xs mt-1">{t('jpgPngUpTo10mb')}</span>
+                        </>
+                      )}
+                    </label>
                   </div>
                 </div>
               </div>
@@ -953,7 +932,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
             {/* Solids Details */}
             {activityType === "solids" && (
-              <div className="space-y-4">
+              <div className="form-section">
                 <TimeScrollPicker 
                   value={time} 
                   selectedDate={selectedDate}
@@ -964,7 +943,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {/* What did they eat */}
                 <div>
-                  <Label htmlFor="solids-description" className="text-sm font-medium mb-2 block">Menu</Label>
+                  <Label htmlFor="solids-description" className="form-label">Menu</Label>
                   <Textarea
                     id="solids-description"
                     value={solidsDescription}
@@ -977,7 +956,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {/* Allergen Checklist */}
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Common allergens (optional)</Label>
+                  <Label className="form-label">Common allergens (optional)</Label>
                   <div className="space-y-2">
                     {[
                       { id: 'peanut', label: 'Peanut' },
@@ -1018,7 +997,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
             {/* Photo Activity Details */}
             {activityType === "photo" && (
-              <div className="space-y-4">
+              <div className="form-section">
                 <TimeScrollPicker 
                   value={time} 
                   selectedDate={selectedDate}
@@ -1028,14 +1007,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 />
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">Photo</Label>
+                  <Label className="form-label">Photo</Label>
                   <div className="space-y-3">
                     {(photo || photoUrl) && (
-                      <div className="relative">
+                      <div className="photo-preview">
                         <img
                           src={photo ? URL.createObjectURL(photo) : photoUrl!}
                           alt="Selected photo"
-                          className="w-full h-48 object-cover rounded-lg border"
                         />
                         <Button
                           type="button"
@@ -1045,53 +1023,48 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                             setPhoto(null);
                             setPhotoUrl(null);
                           }}
-                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm border-0"
+                          className="photo-remove-btn"
                         >
                           Remove
                         </Button>
                       </div>
                     )}
                     
-                    <div className="border-2 border-dashed border-border rounded-lg p-6">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            if (!file.type.startsWith('image/')) {
-                              return;
-                            }
-                            if (file.size > 10 * 1024 * 1024) {
-                              return;
-                            }
-                            setPhoto(file);
-                            setPhotoUrl(null);
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (!file.type.startsWith('image/')) {
+                            return;
                           }
-                        }}
-                        className="hidden"
-                        id="photo-activity-input"
-                      />
-                      <label
-                        htmlFor="photo-activity-input"
-                        className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <Camera className="h-10 w-10 mb-2" />
-                        {photo || photoUrl ? (
-                          <span className="text-sm font-medium">Change photo</span>
-                        ) : (
-                          <>
-                            <span className="text-sm font-medium">Tap to add photo</span>
-                            <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
-                          </>
-                        )}
-                      </label>
-                    </div>
+                          if (file.size > 10 * 1024 * 1024) {
+                            return;
+                          }
+                          setPhoto(file);
+                          setPhotoUrl(null);
+                        }
+                      }}
+                      className="hidden"
+                      id="photo-activity-input"
+                    />
+                    <label htmlFor="photo-activity-input" className="upload-area-lg">
+                      <Camera className="h-10 w-10 mb-2" />
+                      {photo || photoUrl ? (
+                        <span className="text-sm font-medium">Change photo</span>
+                      ) : (
+                        <>
+                          <span className="text-sm font-medium">Tap to add photo</span>
+                          <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
+                        </>
+                      )}
+                    </label>
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="photo-caption" className="text-sm font-medium mb-2 block">Caption (optional)</Label>
+                  <Label htmlFor="photo-caption" className="form-label">Caption (optional)</Label>
                   <Textarea
                     id="photo-caption"
                     value={note}
@@ -1108,13 +1081,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             </div>
           </div>
 
-            <div className="space-y-3 pt-4 border-t border-border flex-shrink-0">
-              <div className="flex gap-3">
+            <div className="modal-footer">
+              <div className="modal-actions">
                 <Button 
                   type="button"
                   variant="outline" 
                   onClick={() => onClose ? onClose() : setInternalOpen(false)} 
-                  className="flex-1 h-12"
+                  className="modal-btn"
                 >
                   Cancel
                 </Button>
@@ -1123,7 +1096,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   type="button"
                   onClick={handleSubmit} 
                   disabled={uploadingPhoto || isSaving}
-                  className="flex-1 h-12"
+                  className="modal-btn"
                 >
                   {uploadingPhoto ? 'Uploading…' : isSaving ? 'Saving…' : (editingActivity ? 'Update' : 'Save')}
                 </Button>
@@ -1144,7 +1117,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         }
                       }
                     }}
-                    className="text-xs font-semibold text-destructive hover:opacity-80 transition-opacity"
+                    className="delete-link"
                   >
                     Delete this activity
                   </button>
