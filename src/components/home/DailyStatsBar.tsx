@@ -133,7 +133,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
       <div className="px-5 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-semibold text-foreground">Today's Snapshot</h3>
+          <h3 className="text-label-xs uppercase tracking-caps text-muted-foreground">Today's Snapshot</h3>
           <button 
             className="text-sm font-semibold text-primary"
             onClick={() => setShowHistory(true)}
