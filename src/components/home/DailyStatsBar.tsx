@@ -158,7 +158,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="inline-flex items-center gap-1 text-muted-foreground cursor-pointer">
-                    <Triangle className="w-2.5 h-2.5 rotate-90 fill-current" />
+                    <Triangle className="w-2.5 h-2.5 fill-current" />
                     <span className="text-xs tabular-nums">
                       {stats.daySleep.yesterdayHours}h {stats.daySleep.yesterdayMins}m
                     </span>
@@ -187,7 +187,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="inline-flex items-center gap-1 text-muted-foreground cursor-pointer">
-                    <Triangle className="w-2.5 h-2.5 rotate-90 fill-current" />
+                    <Triangle className="w-2.5 h-2.5 fill-current" />
                     <span className="text-xs tabular-nums">
                       {stats.feeds.yesterdayVolume > 0 ? `${stats.feeds.yesterdayVolume} oz` : stats.feeds.yesterdayCount}
                     </span>
@@ -214,7 +214,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="inline-flex items-center gap-1 text-muted-foreground cursor-pointer">
-                    <Triangle className="w-2.5 h-2.5 rotate-90 fill-current" />
+                    <Triangle className="w-2.5 h-2.5 fill-current" />
                     <span className="text-xs tabular-nums">—</span>
                   </div>
                 </TooltipTrigger>
