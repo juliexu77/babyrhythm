@@ -11,9 +11,6 @@ import { RhythmTab } from "@/components/RhythmTab";
 import { PediatricianReportModal } from "@/components/PediatricianReportModal";
 import { ExportCSVModal } from "@/components/ExportCSVModal";
 
-import { NextActivityPrediction } from "@/components/NextActivityPrediction";
-import { TrendChart } from "@/components/TrendChart";
-import { SleepChart } from "@/components/SleepChart";
 
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
