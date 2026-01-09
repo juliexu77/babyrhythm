@@ -616,7 +616,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   onClick={() => setActivityType(type as any)}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                  <span className="text-[10px] font-semibold">{label}</span>
                 </button>
               ))}
             </div>
@@ -642,7 +642,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         onClick={() => setFeedType(type as any)}
                       >
                         <Icon className="h-4 w-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+                        <span className="text-xs font-semibold">{label}</span>
                       </button>
                     ))}
                   </div>
@@ -765,7 +765,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         }`}
                         onClick={() => setDiaperType(type as any)}
                       >
-                        <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+                        <span className="text-xs font-semibold">{label}</span>
                       </button>
                     ))}
                   </div>
@@ -776,7 +776,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     <Label className="text-sm text-foreground">{t('leak')}</Label>
                     <button
                       type="button"
-                      className={`h-8 px-4 rounded-strava text-xs font-bold uppercase tracking-wider transition-all ${
+                      className={`h-8 px-4 rounded-strava text-xs font-semibold transition-all ${
                         hasLeak 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -790,7 +790,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     <Label className="text-sm text-foreground">{t('diaperingCream')}</Label>
                     <button
                       type="button"
-                      className={`h-8 px-4 rounded-strava text-xs font-bold uppercase tracking-wider transition-all ${
+                      className={`h-8 px-4 rounded-strava text-xs font-semibold transition-all ${
                         hasCream 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -1144,7 +1144,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         }
                       }
                     }}
-                    className="text-xs font-bold uppercase tracking-wider text-destructive hover:opacity-80 transition-opacity"
+                    className="text-xs font-semibold text-destructive hover:opacity-80 transition-opacity"
                   >
                     Delete this activity
                   </button>
