@@ -118,7 +118,7 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <Activity className="w-8 h-8 text-primary" strokeWidth={2.5} />
           </div>
-          <h1 className="text-xl text-strong uppercase tracking-wide">
+          <h1 className="text-app-title">
             BabyRhythm
           </h1>
           <p className="text-body-muted">
