@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { storage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface TodaysStoryProps {
   onClick: () => void;
@@ -7,13 +8,13 @@ interface TodaysStoryProps {
 
 export function TodaysStory({ onClick }: TodaysStoryProps) {
   const [hasClicked, setHasClicked] = useState(() => {
-    return localStorage.getItem('todaysStoryClicked') === 'true';
+    return storage.get(StorageKeys.TODAYS_STORY_CLICKED, false);
   });
 
   const handleClick = () => {
     if (!hasClicked) {
       setHasClicked(true);
-      localStorage.setItem('todaysStoryClicked', 'true');
+      storage.set(StorageKeys.TODAYS_STORY_CLICKED, true);
     }
     onClick();
   };

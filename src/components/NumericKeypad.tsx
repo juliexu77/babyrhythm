@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Delete } from "lucide-react";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface NumericKeypadProps {
   isOpen: boolean;
@@ -26,8 +27,7 @@ export const NumericKeypad = ({
 
   // Auto-populate with last feed amount when modal opens
   const getLastFeedAmount = () => {
-    const lastQuantity = localStorage.getItem('lastFeedQuantity');
-    return lastQuantity || initialValue;
+    return rawStorage.get(StorageKeys.LAST_FEED_QUANTITY, initialValue);
   };
 
 // Set initial value when opened or when initial changes
@@ -103,7 +103,7 @@ useEffect(() => {
                     }`}
                     onClick={() => {
                       onUnitChange?.('oz');
-                      try { localStorage.setItem('lastUsedUnit', 'oz'); } catch (e) {}
+                      rawStorage.set(StorageKeys.LAST_USED_UNIT, 'oz');
                     }}
                   >
                     oz
@@ -116,7 +116,7 @@ useEffect(() => {
                     }`}
                     onClick={() => {
                       onUnitChange?.('ml');
-                      try { localStorage.setItem('lastUsedUnit', 'ml'); } catch (e) {}
+                      rawStorage.set(StorageKeys.LAST_USED_UNIT, 'ml');
                     }}
                   >
                     ml
