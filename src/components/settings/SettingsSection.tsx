@@ -10,7 +10,7 @@ export const SettingsSection = ({ title, children }: SettingsSectionProps) => {
     <div>
       {title && (
         <div className="bg-muted/50 px-4 py-2.5 -mx-4">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3 className="text-[11px] font-semibold text-muted-foreground">
             {title}
           </h3>
         </div>
