@@ -36,8 +36,6 @@ import {
 
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { VoiceRecorder } from "@/components/VoiceRecorder";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
  
 const Index = () => {
   const { user, loading } = useAuth();
@@ -370,7 +368,6 @@ const ongoingNap = (() => {
   const hasActiveFilters = selectedActivityTypes.length !== allActivityTypes.length;
   const [showPediatricianReport, setShowPediatricianReport] = useState(false);
   const [showCSVExport, setShowCSVExport] = useState(false);
-  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [recentCollaboratorActivity, setRecentCollaboratorActivity] = useState<{
     userName: string;
     activityType: string;
@@ -1552,111 +1549,7 @@ return (
           babyName={babyProfile?.name}
         />
 
-        {/* Voice Recorder Modal */}
-        <Dialog open={showVoiceRecorder} onOpenChange={(open) => {
-          setShowVoiceRecorder(open);
-          // Stop any ongoing recording when dialog closes
-          if (!open) {
-            const voiceRecorder = document.querySelector('[data-voice-recorder]');
-            if (voiceRecorder) {
-              // Trigger cleanup by forcing unmount
-              setTimeout(() => {
-                setShowVoiceRecorder(false);
-              }, 100);
-            }
-          }
-        }}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Voice Log Activity</DialogTitle>
-            </DialogHeader>
-            <div className="py-8">
-              <VoiceRecorder
-                autoStart={true}
-                 onActivityParsed={async (parsedActivities) => {
-                  console.log('Activities to log:', parsedActivities);
-                  setShowVoiceRecorder(false);
-                  
-                  // Process each activity
-                  for (const parsedActivity of parsedActivities) {
-                    console.log('Processing activity:', parsedActivity);
-                    
-                    // Parse time components from the local time string
-                    // Format is like "2025-10-26T07:00:00" (no Z suffix)
-                    const timeMatch = parsedActivity.time.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
-                    let activityTime: string;
-                    let activityDate: Date;
-                    
-                    if (timeMatch) {
-                      const [_, year, month, day, hour24, minute] = timeMatch;
-                      const hours = parseInt(hour24);
-                      const mins = parseInt(minute);
-                      
-                      // Convert to 12-hour format for display
-                      const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-                      const period = hours >= 12 ? 'PM' : 'AM';
-                      activityTime = `${hour12}:${minute} ${period}`;
-                      
-                      // Create date object in local timezone
-                      activityDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), hours, mins, 0);
-                    } else {
-                      // Fallback to current time if parsing fails
-                      const now = new Date();
-                      activityDate = now;
-                      activityTime = now.toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      });
-                    }
-                    
-                    // Handle "wake" type - end ongoing sleep
-                    if (parsedActivity.type === 'wake') {
-                      const ongoingSleep = activities.find(a => 
-                        a.type === 'nap' && !a.details?.endTime
-                      );
-                      
-                      if (ongoingSleep) {
-                        try {
-                          const { error } = await supabase
-                            .from('activities')
-                            .update({ details: { ...ongoingSleep.details, endTime: activityTime } })
-                            .eq('id', ongoingSleep.id);
 
-                          if (error) throw error;
-
-                          refetchActivities();
-                        } catch (error) {
-                          console.error('Error ending sleep:', error);
-                        }
-                      } else {
-                        console.error('No ongoing sleep found to end');
-                      }
-                    } else {
-                      // For nap activities, ensure details.startTime is set
-                      const processedDetails = { ...parsedActivity.details };
-                      if (parsedActivity.type === 'nap') {
-                        processedDetails.startTime = activityTime;
-                      }
-                      
-                      // Add the activity normally with timezone from parsed data
-                      await addActivity(
-                        parsedActivity.type,
-                        processedDetails,
-                        activityDate,
-                        activityTime
-                      );
-                    }
-                  }
-                }}
-              />
-            </div>
-            <div className="text-center text-sm text-muted-foreground space-y-1">
-              <p className="text-xs">Recording will start automatically. Say something like:</p>
-              <p className="text-xs font-medium">&ldquo;Fed 120ml bottle&rdquo; • &ldquo;Dirty diaper&rdquo; • &ldquo;Woke up at 7am&rdquo;</p>
-            </div>
-          </DialogContent>
-        </Dialog>
 
       </div>
     </ErrorBoundary>
