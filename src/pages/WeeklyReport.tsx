@@ -600,11 +600,11 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">BabyRhythm</p>
-              <h1 className="text-xl font-semibold mb-1">{babyName} • {ageText}</h1>
+              <h1 className="text-xl text-strong mb-1">{babyName} • {ageText}</h1>
               {babyBirthday && (
                 <p className="text-xs text-gray-500 mb-2">({getBirthContext()})</p>
               )}
-              <h2 className="text-2xl font-serif font-bold mb-2" style={{ color: '#6B4D77' }}>Summary for Pediatrician</h2>
+              <h2 className="text-2xl text-strong mb-2" style={{ color: '#6B4D77' }}>Summary for Pediatrician</h2>
               <p className="text-sm text-gray-700">{weekCaption}</p>
               <p className="text-sm text-gray-600 mt-2 italic">
                 Summary of feeding and sleep patterns logged during the week of {weekCaption.replace('Week of ', '')}.

@@ -163,10 +163,10 @@ export const Settings = () => {
                 </div>
               </div>
               <div className="flex-1">
-                <div className="text-lg font-semibold text-foreground">
+                <div className="text-lg text-strong">
                   {(userProfile as any)?.full_name || getUserDisplayName()}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-body-muted">
                   {user.email}
                 </div>
               </div>

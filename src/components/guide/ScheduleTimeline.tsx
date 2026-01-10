@@ -371,7 +371,7 @@ export const ScheduleTimeline = ({
         <div className="space-y-2 p-3 bg-accent/20 rounded-lg border border-border/40">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Day Progress</span>
-            <span className="text-primary font-semibold">
+            <span className="text-primary text-label-xs">
               {dayProgress.timeUntilBedtime}
             </span>
           </div>
@@ -392,7 +392,7 @@ export const ScheduleTimeline = ({
       {transitionWindow && (
         <div className="flex items-center gap-2.5 px-5 py-2 bg-accent/30 rounded-xl mb-3 border border-border">
           <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
-          <p className="text-xs text-primary font-medium">
+          <p className="text-label-xs text-primary">
             Transitioning between {transitionWindow.from} and {transitionWindow.to} naps
           </p>
         </div>
@@ -428,9 +428,9 @@ export const ScheduleTimeline = ({
                       console.log('🔘 Lower button clicked:', lowerCount);
                       onToggleAlternate(lowerCount);
                     }}
-                    className={`px-4 py-2 text-xs font-medium transition-all border-r border-border ${
+                    className={`px-4 py-2 text-label-xs transition-all border-r border-border ${
                       isLowerActive
-                        ? 'bg-primary text-primary-foreground' 
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
@@ -441,7 +441,7 @@ export const ScheduleTimeline = ({
                       console.log('🔘 Higher button clicked:', higherCount);
                       onToggleAlternate(higherCount);
                     }}
-                    className={`px-4 py-2 text-xs font-medium transition-all ${
+                    className={`px-4 py-2 text-label-xs transition-all ${
                       isHigherActive
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -458,7 +458,7 @@ export const ScheduleTimeline = ({
       
       {schedule.adjustmentNote && !isTransitioning && (
         <div className="flex items-center gap-2 p-2 bg-primary/10 border border-primary/20 rounded-lg animate-fade-in mb-2">
-          <p className="text-xs text-primary font-semibold line-clamp-2">
+          <p className="text-label-xs text-primary line-clamp-2">
             {schedule.adjustmentNote
               .replace(/The baby/g, babyName)
               .replace(/the baby/g, babyName)}
@@ -543,12 +543,12 @@ export const ScheduleTimeline = ({
                       </div>
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-sm font-num font-semibold text-foreground transition-all duration-500 ${
+                          <span className={`text-sm font-num text-stat transition-all duration-500 ${
                             animateWakeTime ? 'scale-110 text-amber-600' : ''
                           }`}>
                             {formatTime(activity.time, 'wake')}
                           </span>
-                          <span className="text-xs font-serif font-medium text-muted-foreground">
+                          <span className="text-label-xs text-muted-foreground">
                             Wake up
                           </span>
                           {isCurrent && (
@@ -609,13 +609,13 @@ export const ScheduleTimeline = ({
                         <div className="flex-1 pb-1 text-left">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-foreground">
+                              <span className="text-sm text-stat">
                                 {(() => {
                                   const { endTime, adjustedDuration } = calculateEndTimeAndDuration(activity.time, activity.napDuration || '1h 30m');
                                   return `${formatTime(activity.time)} - ${endTime}`;
                                 })()}
                               </span>
-                              <span className="text-xs font-medium text-muted-foreground">
+                              <span className="text-label-xs text-muted-foreground">
                                 {activity.title} ({activity.napDuration?.replace('h', 'h ')?.replace('m', 'min') || '1h 30min'})
                               </span>
                               {isCurrent && (
@@ -646,10 +646,10 @@ export const ScheduleTimeline = ({
                       </div>
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-num font-semibold text-foreground">
+                          <span className="text-sm font-num text-stat">
                             {formatTime(activity.time)}
                           </span>
-                          <span className="text-xs font-serif font-medium text-muted-foreground">
+                          <span className="text-label-xs text-muted-foreground">
                             Bedtime
                           </span>
                           {isCurrent && (
@@ -672,7 +672,7 @@ export const ScheduleTimeline = ({
           <div className="flex items-start gap-2">
             <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-medium text-amber-900 dark:text-amber-200 mb-1">
+              <p className="text-label-xs text-amber-900 dark:text-amber-200 mb-1">
                 {dstInfo.transitionType === 'spring-forward' ? '🌸 Spring Forward' : '🍂 Fall Back'} - Daylight Saving Time
               </p>
               <p className="text-xs text-amber-800 dark:text-amber-300">

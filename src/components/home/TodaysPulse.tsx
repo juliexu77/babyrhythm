@@ -231,7 +231,7 @@ export const TodaysPulse = ({
       <div className="bg-card border border-border rounded-lg overflow-hidden">
         {/* Header */}
         <div className="px-3 py-2 border-b border-border">
-          <h3 className="text-xs font-semibold uppercase tracking-caps text-muted-foreground">
+          <h3 className="text-section-header">
             Rhythm Status
           </h3>
         </div>
@@ -268,7 +268,7 @@ export const TodaysPulse = ({
               </div>
               <span className="text-sm text-foreground">Timing</span>
             </div>
-            <span className={`text-xs font-medium ${getConsistencyColor(rhythmAnalysis.sleepConsistency)}`}>
+            <span className={`text-label-xs ${getConsistencyColor(rhythmAnalysis.sleepConsistency)}`}>
               {rhythmAnalysis.sleepConsistencyText}
             </span>
           </div>
@@ -281,7 +281,7 @@ export const TodaysPulse = ({
               </div>
               <span className="text-sm text-foreground">Feeding</span>
             </div>
-            <span className={`text-xs font-medium ${getConsistencyColor(rhythmAnalysis.feedingConsistency)}`}>
+            <span className={`text-label-xs ${getConsistencyColor(rhythmAnalysis.feedingConsistency)}`}>
               {rhythmAnalysis.feedingConsistencyText}
             </span>
           </div>
@@ -292,8 +292,8 @@ export const TodaysPulse = ({
               <div className="text-primary">
                 <Baby className="w-4 h-4" />
               </div>
-              <span className="text-sm font-medium text-foreground">{rhythmAnalysis.phase.phase}</span>
-              <span className="text-xs text-muted-foreground ml-auto">
+              <span className="text-label-sm text-foreground">{rhythmAnalysis.phase.phase}</span>
+              <span className="text-label-xs text-muted-foreground ml-auto">
                 ~{Math.round(rhythmAnalysis.phase.ageWeeks)} weeks
               </span>
             </div>
