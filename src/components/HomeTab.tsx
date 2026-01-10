@@ -1224,7 +1224,7 @@ const lastDiaper = displayActivities
         <div className="space-y-3">
           {/* Welcome Message */}
           <div className="space-y-3">
-            <h2 className="text-xl font-serif text-strong">
+            <h2 className="text-page-header">
               Hi {userName || 'there'} 👋
             </h2>
             <p className="text-body-muted leading-relaxed">
@@ -1236,7 +1236,7 @@ const lastDiaper = displayActivities
           <Card className="p-6 bg-card/50 border border-border/40">
             <div className="space-y-5">
               <div className="space-y-2">
-                <h3 className="text-base font-serif text-strong">
+                <h3 className="text-section-header">
                   Start tracking to unlock predictions
                 </h3>
                 <p className="text-body-muted leading-relaxed">

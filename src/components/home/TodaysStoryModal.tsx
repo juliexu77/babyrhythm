@@ -465,12 +465,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
           )}>
             {/* Headline positioned in safe zone - whispered typography */}
             <div className="relative px-8 pt-[30vh]">
-              <h1 className="text-[24px] font-serif leading-[1.4] font-light tracking-[0.04em] text-foreground/80 animate-story-headline-type drop-shadow-2xl">
+              <h1 className="text-2xl font-serif leading-[1.4] font-light tracking-wide text-foreground/80 animate-story-headline-type drop-shadow-2xl">
                 {headline}
               </h1>
               
               {getPhotoCaption() && (
-                <p className="text-[13px] text-foreground/60 mt-4 font-light tracking-[0.03em] animate-story-headline-fade-up drop-shadow-xl" style={{ animationDelay: '2s' }}>
+                <p className="text-sm text-foreground/60 mt-4 font-light tracking-wide animate-story-headline-fade-up drop-shadow-xl" style={{ animationDelay: '2s' }}>
                   {getPhotoCaption()}
                 </p>
               )}
@@ -491,12 +491,12 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                   style={{ animationDelay: insight.animationDelay }}
                 >
                   <div className="flex items-start gap-2.5">
-                    <span className="text-[18px] flex-shrink-0 mt-0.5">{insight.icon}</span>
+                    <span className="text-lg flex-shrink-0 mt-0.5">{insight.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-medium text-muted-foreground/70 mb-1">
+                      <div className="text-xs font-medium text-muted-foreground/70 mb-1">
                         {insight.label}
                       </div>
-                      <p className="text-[14px] leading-relaxed text-foreground/80">
+                      <p className="text-sm leading-relaxed text-foreground/80">
                         {insight.text}
                       </p>
                     </div>
@@ -511,22 +511,22 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                   style={{ animationDelay: '3s' }}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-[15px] h-[15px] text-primary/70" strokeWidth={1.5} />
-                    <span className="text-[14px] font-medium text-foreground/70">Moments</span>
+                    <Sparkles className="w-4 h-4 text-primary/70" strokeWidth={1.5} />
+                    <span className="text-sm font-medium text-foreground/70">Moments</span>
                   </div>
                   <div className="space-y-1.5">
                     {allSpecialNotes.slice(0, 3).map((activity, idx) => {
                       const time = activity.loggedAt ? format(new Date(activity.loggedAt), "h:mm a") : "";
                       return (
-                        <div key={idx} className="text-[12px] text-foreground/70 leading-relaxed">
-                          <span className="font-num text-muted-foreground/50 italic text-[11px]">{time}</span>
+                        <div key={idx} className="text-xs text-foreground/70 leading-relaxed">
+                          <span className="font-num text-muted-foreground/50 italic text-xs">{time}</span>
                           <span className="mx-1">·</span>
                           {activity.details.note}
                         </div>
                       );
                     })}
                     {allSpecialNotes.length > 3 && (
-                      <div className="text-[11px] text-muted-foreground/50 italic pt-1">
+                      <div className="text-xs text-muted-foreground/50 italic pt-1">
                         +{allSpecialNotes.length - 3} more
                       </div>
                     )}
