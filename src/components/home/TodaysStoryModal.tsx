@@ -437,7 +437,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                 
                 {/* Date subtitle (fixed on photo) - enhanced visibility */}
                 <div className="absolute top-8 left-6 right-6">
-                  <p className="text-sm font-medium text-foreground/90 uppercase tracking-[0.25em] animate-story-headline-fade-up drop-shadow-2xl" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>
+                  <p className="text-sm font-medium text-foreground/90 tracking-[0.05em] animate-story-headline-fade-up drop-shadow-2xl" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>
                     {todayDate}
                   </p>
                 </div>
@@ -450,7 +450,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                 
                 {/* Date subtitle for no-photo state */}
                 <div className="absolute top-8 left-6 right-6">
-                  <p className="text-sm font-medium text-foreground/80 uppercase tracking-[0.25em] animate-story-headline-fade-up">
+                  <p className="text-sm font-medium text-foreground/80 tracking-[0.05em] animate-story-headline-fade-up">
                     {todayDate}
                   </p>
                 </div>
@@ -493,7 +493,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                   <div className="flex items-start gap-2.5">
                     <span className="text-[18px] flex-shrink-0 mt-0.5">{insight.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-medium text-muted-foreground/70 uppercase tracking-wider mb-1">
+                      <div className="text-[12px] font-medium text-muted-foreground/70 mb-1">
                         {insight.label}
                       </div>
                       <p className="text-[14px] leading-relaxed text-foreground/80">
@@ -569,7 +569,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Subtle bottom text only */}
               <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
                 <div 
-                  className="text-xs text-primary-foreground/40 uppercase tracking-widest animate-story-closure-fade"
+                  className="text-xs text-primary-foreground/40 tracking-wide animate-story-closure-fade"
                   style={{ animationDelay: '1s' }}
                 >
                   Tomorrow awaits · rhythm continues

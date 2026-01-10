@@ -352,7 +352,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
                 key={range}
                 onClick={() => setTimeRange(range)}
                 className={`
-                  px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wide rounded-strava-sm transition-all duration-200
+                  px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-strava-sm transition-all duration-200
                   ${timeRange === range 
                     ? 'bg-background text-foreground shadow-sm' 
                     : 'text-muted-foreground hover:text-foreground'

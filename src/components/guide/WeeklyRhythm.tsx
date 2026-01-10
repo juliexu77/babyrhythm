@@ -218,7 +218,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                   return (
                     <span
                       key={pos}
-                      className="absolute text-[8px] font-medium text-muted-foreground/40 uppercase tracking-wide"
+                      className="absolute text-[8px] font-medium text-muted-foreground/40 tracking-wide"
                       style={{ left: pos === 1 ? 'auto' : `${pos * 100}%`, right: pos === 1 ? '0' : 'auto' }}
                     >
                       {label}
@@ -258,7 +258,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                 
                 return (
                   <div key={day.date} className="flex items-center gap-2">
-                    <span className={`text-[9px] font-semibold uppercase tracking-caps w-10 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground/60'}`}>
+                    <span className={`text-[9px] font-semibold tracking-wide w-10 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground/60'}`}>
                       {dayLabel}
                     </span>
                     {/* Bar track with subtle grid lines */}
@@ -291,7 +291,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                               </PopoverTrigger>
                               <PopoverContent className="w-auto p-2 rounded-strava shadow-strava">
                                 <div className="text-xs">
-                                  <div className="text-label-xs uppercase tracking-caps text-foreground mb-0.5">Nap</div>
+                                  <div className="text-[10px] font-medium text-foreground mb-0.5">Nap</div>
                                   <div className="text-muted-foreground tabular-nums text-[11px]">
                                     {nap.startTime} – {nap.endTime}
                                   </div>
@@ -304,7 +304,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                           );
                         })
                       ) : (
-                        <span className="absolute left-1.5 top-0 text-[8px] text-muted-foreground/25 leading-[10px] uppercase tracking-wide">No naps</span>
+                        <span className="absolute left-1.5 top-0 text-[8px] text-muted-foreground/25 leading-[10px] tracking-wide">No naps</span>
                       )}
                     </div>
                   </div>

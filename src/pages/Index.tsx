@@ -795,13 +795,13 @@ const ongoingNap = (() => {
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
-                  className="text-sm font-bold uppercase tracking-wide text-primary hover:opacity-80 transition-opacity"
+                  className="text-sm font-semibold text-primary hover:opacity-80 transition-opacity"
                 >
                   Report
                 </button>
                 <button 
                   onClick={() => setShowCSVExport(true)}
-                  className="text-sm font-bold uppercase tracking-wide text-primary hover:opacity-80 transition-opacity"
+                  className="text-sm font-semibold text-primary hover:opacity-80 transition-opacity"
                 >
                   Export
                 </button>
@@ -944,7 +944,7 @@ const ongoingNap = (() => {
                                     }}
                                     className="flex items-center gap-2 group"
                                   >
-                                    <h3 className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+                                    <h3 className={`text-xs font-semibold transition-colors ${
                                       isTravelDay(dateKey) 
                                         ? "text-primary" 
                                         : "text-foreground group-hover:text-primary"
@@ -1246,7 +1246,7 @@ const ongoingNap = (() => {
                           <div className="text-center pt-4">
                             <button
                               onClick={() => setShowFullTimeline(!showFullTimeline)}
-                              className="text-sm font-bold uppercase tracking-wide text-primary hover:opacity-80 transition-opacity"
+                              className="text-sm font-semibold text-primary hover:opacity-80 transition-opacity"
                             >
                               Show {sortedDates.length - visibleDates.length} more days
                             </button>
@@ -1258,7 +1258,7 @@ const ongoingNap = (() => {
                           <div className="text-center pt-4">
                             <button
                               onClick={() => setShowFullTimeline(false)}
-                              className="text-sm font-bold uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors"
+                              className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
                             >
                               Show less
                             </button>
