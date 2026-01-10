@@ -1604,8 +1604,8 @@
   
   /* App title - Unique class for BabyRhythm branding */
   .text-app-title {
-    font-family: var(--font-app-title);
-    @apply text-2xl text-foreground tracking-wide uppercase;
-    font-weight: 400; /* DM Serif Display is designed to be used at 400 */
+    font-family: "Lato", "Lucida Grande", sans-serif;
+    @apply text-2xl text-foreground tracking-widest uppercase;
+    font-weight: 700;
   }
 }
