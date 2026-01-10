@@ -1547,12 +1547,12 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 @layer utilities {
-  /* App Title - Inter Bold, 28px, 2px letter-spacing */
+  /* App Title - Inter Bold, refined for sans-serif */
   .text-app-title {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     @apply text-foreground;
   }
