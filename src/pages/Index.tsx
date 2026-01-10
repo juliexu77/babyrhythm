@@ -1214,18 +1214,18 @@ const ongoingNap = (() => {
                                             className="relative flex items-center py-0.5 group transition-colors w-full text-left"
                                           >
                                             {/* Icon - matches ActivityCard styling */}
-                                            <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-[hsl(18,28%,52%)] dark:text-foreground/70 dusk:text-foreground/70" style={{ marginLeft: '8px' }}>
+                                            <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-muted-foreground dark:text-foreground/70 dusk:text-foreground/70" style={{ marginLeft: '8px' }}>
                                               <Sun className="h-4 w-4" />
                                             </div>
                                             
                                             {/* Content - matches ActivityCard layout */}
                                             <div className="flex-1 flex items-center justify-between min-w-0 gap-3 pl-4">
                                               <div className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
-                                                <span className="text-sm font-serif font-semibold text-[hsl(18,26%,35%)] dark:text-foreground dusk:text-foreground">
+                                                <span className="text-sm font-semibold text-foreground dark:text-foreground dusk:text-foreground">
                                                   Woke up
                                                 </span>
                                               </div>
-                                              <span className="text-xs font-light whitespace-nowrap tabular-nums text-[hsl(20,18%,55%)] dark:text-muted-foreground dusk:text-muted-foreground">
+                                              <span className="text-xs font-light whitespace-nowrap tabular-nums text-muted-foreground dark:text-muted-foreground dusk:text-muted-foreground">
                                                 {wakeTime}
                                               </span>
                                             </div>

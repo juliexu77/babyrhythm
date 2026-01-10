@@ -410,7 +410,7 @@ export const TimelineChart = ({
                   x={yAxisLabelWidth - 8}
                   y={y + 4}
                   textAnchor="end"
-                  className="text-[10px] font-sans fill-muted-foreground"
+                  className="text-xs fill-muted-foreground"
                   opacity="0.6"
                 >
                   {yAxisFormatter(tick)}

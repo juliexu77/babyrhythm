@@ -58,9 +58,9 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
       case 'parent':
         return 'bg-primary text-primary-foreground';
       case 'partner':
-        return 'bg-[hsl(18,40%,55%)] text-[hsl(30,50%,97%)]';
+        return 'bg-secondary text-secondary-foreground';
       case 'caregiver':
-        return 'bg-[hsl(22,35%,50%)] text-[hsl(30,50%,97%)]';
+        return 'bg-accent text-accent-foreground';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -188,7 +188,7 @@ const handleAddCaregiver = async () => {
           <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
             ← Back
           </Button>
-          <h1 className="text-xl font-serif font-medium">{household?.baby_name || "Baby"}</h1>
+          <h1 className="text-page-header">{household?.baby_name || "Baby"}</h1>
           <Button variant="ghost" className="text-muted-foreground">
             Cancel
           </Button>
@@ -352,7 +352,7 @@ const handleAddCaregiver = async () => {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-serif font-semibold text-lg">
+                  <h3 className="text-card-title">
                     {selectedCollaborator.full_name || selectedCollaborator.profiles?.full_name || "User"}
                   </h3>
                   <Badge className={getRoleColor(selectedCollaborator.role)}>

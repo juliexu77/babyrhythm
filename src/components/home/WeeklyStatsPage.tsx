@@ -129,7 +129,7 @@ export const WeeklyStatsPage = ({ activities, babyName }: WeeklyStatsPageProps) 
         <p className="text-label-xs uppercase tracking-caps text-muted-foreground/60">
           This Week
         </p>
-        <span className="text-[10px] text-muted-foreground/40">
+        <span className="text-xs text-muted-foreground/40">
           {stats.daysTracked} day{stats.daysTracked !== 1 ? 's' : ''} tracked
         </span>
       </div>
@@ -146,7 +146,7 @@ export const WeeklyStatsPage = ({ activities, babyName }: WeeklyStatsPageProps) 
               <span className="text-muted-foreground/30">—</span>
             )}
           </div>
-          <div className="text-[10px] text-muted-foreground/50 tabular-nums">
+          <div className="text-xs text-muted-foreground/50 tabular-nums">
             {stats.napCount} nap{stats.napCount !== 1 ? 's' : ''}
           </div>
         </div>
@@ -165,7 +165,7 @@ export const WeeklyStatsPage = ({ activities, babyName }: WeeklyStatsPageProps) 
               <span className="text-muted-foreground/30">—</span>
             )}
           </div>
-          <div className="text-[10px] text-muted-foreground/50 tabular-nums">
+          <div className="text-xs text-muted-foreground/50 tabular-nums">
             {stats.feedCount} feed{stats.feedCount !== 1 ? 's' : ''}
           </div>
         </div>

@@ -1243,7 +1243,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
               <Compass className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-lg font-serif text-emphasis mb-1">Set up your baby to see Rhythm</h2>
+            <h2 className="text-section-header mb-1">Set up your baby to see Rhythm</h2>
             <p className="text-body-muted mb-4">Add your baby's name and birthday to unlock personalized insights.</p>
             <Button onClick={() => onGoToSettings?.()} className="">Go to Settings</Button>
           </div>

@@ -218,7 +218,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                   return (
                     <span
                       key={pos}
-                      className="absolute text-[8px] font-medium text-muted-foreground/40 tracking-wide"
+                      className="absolute text-xs font-medium text-muted-foreground/40 tracking-wide"
                       style={{ left: pos === 1 ? 'auto' : `${pos * 100}%`, right: pos === 1 ? '0' : 'auto' }}
                     >
                       {label}
@@ -258,7 +258,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                 
                 return (
                   <div key={day.date} className="flex items-center gap-2">
-                    <span className={`text-[9px] font-semibold tracking-wide w-10 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground/60'}`}>
+                    <span className={`text-xs font-semibold tracking-wide w-10 flex-shrink-0 ${isToday ? 'text-foreground' : 'text-muted-foreground/60'}`}>
                       {dayLabel}
                     </span>
                     {/* Bar track with subtle grid lines */}
@@ -267,7 +267,7 @@ export const WeeklyRhythm = ({ activities, babyName, travelDayDates = [] }: Week
                            backgroundImage: 'linear-gradient(90deg, transparent 24.9%, rgba(0,0,0,0.03) 25%, rgba(0,0,0,0.03) 25.1%, transparent 25.2%, transparent 49.9%, rgba(0,0,0,0.03) 50%, rgba(0,0,0,0.03) 50.1%, transparent 50.2%, transparent 74.9%, rgba(0,0,0,0.03) 75%, rgba(0,0,0,0.03) 75.1%, transparent 75.2%)'
                          }}>
                       {dayIsTravelDay ? (
-                        <span className="absolute left-1.5 top-0 text-[8px] text-muted-foreground/30 leading-[10px] tracking-wide flex items-center gap-0.5">
+                        <span className="absolute left-1.5 top-0 text-xs text-muted-foreground/30 leading-[10px] tracking-wide flex items-center gap-0.5">
                           <span>✈</span>
                           <span className="uppercase">Travel</span>
                         </span>

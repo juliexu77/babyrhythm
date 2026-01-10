@@ -8,7 +8,7 @@ export const TypographyGuide = () => {
   return (
     <div className="p-6 space-y-8 bg-background min-h-screen">
       <div className="space-y-2">
-        <h1 className="text-2xl font-serif font-semibold text-foreground">
+        <h1 className="text-page-header">
           Typography System
         </h1>
         <p className="text-body-muted">
