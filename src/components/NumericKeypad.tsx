@@ -96,7 +96,7 @@ useEffect(() => {
               <div className="absolute right-0">
                 <div className="flex rounded-strava overflow-hidden border border-border">
                   <button
-                    className={`h-10 px-4 text-xs font-bold uppercase tracking-wider transition-all ${
+                    className={`h-10 px-4 text-xs font-semibold transition-all ${
                       unit === 'oz' 
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-background text-muted-foreground hover:bg-muted'
@@ -109,7 +109,7 @@ useEffect(() => {
                     oz
                   </button>
                   <button
-                    className={`h-10 px-4 text-xs font-bold uppercase tracking-wider transition-all ${
+                    className={`h-10 px-4 text-xs font-semibold transition-all ${
                       unit === 'ml' 
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-background text-muted-foreground hover:bg-muted'

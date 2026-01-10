@@ -1245,7 +1245,7 @@ const lastDiaper = displayActivities
               </div>
               
               <div className="space-y-3 pt-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <p className="text-xs font-medium text-muted-foreground tracking-wide">
                   What you'll discover:
                 </p>
                 

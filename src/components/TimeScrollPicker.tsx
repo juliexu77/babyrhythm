@@ -374,7 +374,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         {/* AM/PM - Strava style toggle */}
         <div className="flex">
           <button
-            className="px-3 py-1.5 rounded-strava text-xs font-bold uppercase tracking-wider cursor-pointer transition-all bg-primary text-primary-foreground hover:opacity-90"
+            className="px-3 py-1.5 rounded-strava text-xs font-semibold cursor-pointer transition-all bg-primary text-primary-foreground hover:opacity-90"
             onClick={() => {
               const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
               setHasUserInteracted(true);

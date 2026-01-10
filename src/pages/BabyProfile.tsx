@@ -254,7 +254,7 @@ export const BabyProfile = ({ onClose }: { onClose?: () => void }) => {
 
         {/* Sleep Schedule Section */}
         <div className="px-6 py-4 border-t-8 border-muted/50">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-4">
             Sleep Schedule
           </h3>
           

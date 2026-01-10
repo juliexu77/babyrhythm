@@ -118,7 +118,7 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <Activity className="w-8 h-8 text-primary" strokeWidth={2.5} />
           </div>
-          <h1 className="text-xl font-bold uppercase tracking-wider text-foreground mb-3">
+          <h1 className="text-xl font-bold text-foreground mb-3">
             BabyRhythm
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -149,7 +149,7 @@ const Auth = () => {
                     <span className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-2 bg-card text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="px-2 bg-card text-xs font-medium text-muted-foreground">
                       Or continue with email
                     </span>
                   </div>
@@ -214,7 +214,7 @@ const Auth = () => {
                     <span className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-2 bg-card text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    <span className="px-2 bg-card text-xs font-medium text-muted-foreground">
                       Or continue with email
                     </span>
                   </div>
@@ -262,7 +262,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setMode('signin')}
-                className="font-bold uppercase tracking-wider text-primary hover:opacity-80 transition-opacity"
+                className="font-semibold text-primary hover:opacity-80 transition-opacity"
               >
                 Sign in
               </button>
@@ -273,7 +273,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setMode('signup')}
-                className="font-bold uppercase tracking-wider text-primary hover:opacity-80 transition-opacity"
+                className="font-semibold text-primary hover:opacity-80 transition-opacity"
               >
                 Sign up
               </button>

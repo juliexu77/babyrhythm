@@ -163,14 +163,14 @@ const BabySetup = () => {
 
               <div className="space-y-4">
                 <div className="space-y-4">
-                  <Label className="text-xs font-bold tracking-wide uppercase">
+                  <Label className="text-xs font-medium">
                     Sleep Schedule
                   </Label>
                   
                   <div className="bg-accent/20 rounded-strava p-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="text-center flex-1">
-                        <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider font-medium">Bedtime</div>
+                        <div className="text-[10px] text-muted-foreground mb-1 font-medium">Bedtime</div>
                         <div className="text-2xl font-num font-bold text-foreground">
                           {formatTime(bedtimeHour, bedtimeMinute)}
                         </div>
@@ -179,7 +179,7 @@ const BabySetup = () => {
                         <div className="w-12 h-0.5 bg-primary/30"></div>
                       </div>
                       <div className="text-center flex-1">
-                        <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider font-medium">Wake Time</div>
+                        <div className="text-[10px] text-muted-foreground mb-1 font-medium">Wake Time</div>
                         <div className="text-2xl font-num font-bold text-foreground">
                           {formatTime(wakeHour, wakeMinute)}
                         </div>
@@ -188,7 +188,7 @@ const BabySetup = () => {
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Adjust bedtime</div>
+                        <div className="text-[10px] text-muted-foreground font-medium">Adjust bedtime</div>
                         <Slider
                           min={18 * 12}
                           max={23 * 12 + 11}
@@ -204,14 +204,14 @@ const BabySetup = () => {
                           disabled={isLoading}
                           className="w-full"
                         />
-                        <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wide">
+                        <div className="flex justify-between text-[10px] text-muted-foreground">
                           <span>6:00 PM</span>
                           <span>11:55 PM</span>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Adjust wake time</div>
+                        <div className="text-[10px] text-muted-foreground font-medium">Adjust wake time</div>
                         <Slider
                           min={5 * 12}
                           max={10 * 12 + 11}
@@ -227,7 +227,7 @@ const BabySetup = () => {
                           disabled={isLoading}
                           className="w-full"
                         />
-                        <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-wide">
+                        <div className="flex justify-between text-[10px] text-muted-foreground">
                           <span>5:00 AM</span>
                           <span>10:55 AM</span>
                         </div>

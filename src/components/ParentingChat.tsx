@@ -564,7 +564,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
               </div>
               
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+                <p className="text-xs font-medium text-muted-foreground px-1">
                   Popular Questions
                 </p>
                 <div className="grid gap-2">

@@ -107,7 +107,7 @@ export const RightNowStatus = ({
                 {getActivityIcon()}
               </div>
             )}
-            <span className="text-label-xs uppercase tracking-caps text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               {getActivityLabel()}
             </span>
           </div>
