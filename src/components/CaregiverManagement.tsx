@@ -197,10 +197,10 @@ const handleAddCaregiver = async () => {
         {/* Parents / Caregivers Section */}
         <div className="px-4 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-serif font-medium">{t('parentsCaregiversTitle')}</h3>
+            <h3 className="text-lg text-strong">{t('parentsCaregiversTitle')}</h3>
           </div>
           
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-body-muted mb-4">
             {t('eachCaregiverDescription')} {household?.baby_name || "Baby"}
           </p>
 
@@ -229,10 +229,10 @@ const handleAddCaregiver = async () => {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">
+                        <p className="text-label-sm truncate">
                           {userName}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="text-label-xs text-muted-foreground truncate">
                           {collaborator.email || collaborator.role}
                         </p>
                       </div>

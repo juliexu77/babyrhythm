@@ -25,7 +25,7 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
                      shadow-strava-btn transition-colors disabled:opacity-50"
         >
           <Milk className="w-4 h-4 text-primary-foreground" strokeWidth={1.5} />
-          <span className="text-sm font-semibold text-primary-foreground">
+          <span className="text-label-sm text-primary-foreground">
             Feed
           </span>
         </button>
@@ -38,7 +38,7 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
                      shadow-strava-btn transition-colors disabled:opacity-50"
         >
           <Moon className="w-4 h-4 text-primary-foreground" strokeWidth={1.5} />
-          <span className="text-sm font-semibold text-primary-foreground">
+          <span className="text-label-sm text-primary-foreground">
             Sleep
           </span>
         </button>
@@ -51,7 +51,7 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
                      shadow-strava-btn transition-colors disabled:opacity-50"
         >
           <Droplet className="w-4 h-4 text-primary-foreground" strokeWidth={1.5} />
-          <span className="text-sm font-semibold text-primary-foreground">
+          <span className="text-label-sm text-primary-foreground">
             Diaper
           </span>
         </button>

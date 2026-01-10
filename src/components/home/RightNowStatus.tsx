@@ -107,7 +107,7 @@ export const RightNowStatus = ({
                 {getActivityIcon()}
               </div>
             )}
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-label-xs text-muted-foreground">
               {getActivityLabel()}
             </span>
           </div>
@@ -123,7 +123,7 @@ export const RightNowStatus = ({
               {duration.value}
             </span>
             {duration.unit && (
-              <span className="text-lg font-semibold text-muted-foreground">
+              <span className="text-lg text-stat text-muted-foreground">
                 {duration.unit}
               </span>
             )}
@@ -177,7 +177,7 @@ export const RightNowStatus = ({
           </p>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-foreground leading-tight">
+              <p className="text-sm text-strong leading-tight">
                 {nextPrediction.activity}
               </p>
               <p className="text-xs text-muted-foreground/70 tabular-nums">
@@ -207,7 +207,7 @@ export const RightNowStatus = ({
                     {suggestion.icon}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground leading-tight">
+                    <p className="text-label-sm text-foreground leading-tight">
                       {suggestion.title}
                     </p>
                     <p className="text-xs text-muted-foreground/70 leading-tight">

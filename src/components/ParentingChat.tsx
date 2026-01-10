@@ -557,14 +557,14 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                   <Leaf className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-serif font-semibold text-foreground">Ask Me Anything</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-lg text-strong">Ask Me Anything</h3>
+                <p className="text-body-muted">
                   I can help with sleep, feeding, development, and parenting questions
                 </p>
               </div>
               
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground px-1">
+                <p className="text-label-xs text-muted-foreground px-1">
                   Popular Questions
                 </p>
                 <div className="grid gap-2">
@@ -575,7 +575,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                     }}
                     className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
                   >
-                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    <p className="text-label-sm text-foreground group-hover:text-primary transition-colors">
                       Why is my baby waking up more at night?
                     </p>
                   </button>
@@ -587,7 +587,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                     }}
                     className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
                   >
-                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    <p className="text-label-sm text-foreground group-hover:text-primary transition-colors">
                       How do I know if my baby is getting enough milk?
                     </p>
                   </button>
@@ -599,7 +599,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                     }}
                     className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
                   >
-                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    <p className="text-label-sm text-foreground group-hover:text-primary transition-colors">
                       What should my baby's sleep schedule look like?
                     </p>
                   </button>
@@ -611,7 +611,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                     }}
                     className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
                   >
-                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    <p className="text-label-sm text-foreground group-hover:text-primary transition-colors">
                       How can I establish better nap routines?
                     </p>
                   </button>
@@ -623,7 +623,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                     }}
                     className="p-3 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left group"
                   >
-                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                    <p className="text-label-sm text-foreground group-hover:text-primary transition-colors">
                       Is cluster feeding normal?
                     </p>
                   </button>
