@@ -118,7 +118,7 @@ const BabySetup = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-xl font-sans font-bold text-foreground tracking-wide uppercase">
+          <h1 className="text-xl font-sans font-bold text-foreground tracking-wide">
             Let's Meet Your Baby
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -131,7 +131,7 @@ const BabySetup = () => {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="babyName" className="text-xs font-bold tracking-wide uppercase">
+                <Label htmlFor="babyName" className="text-xs font-semibold">
                   Baby's Name
                 </Label>
                 <Input
@@ -147,7 +147,7 @@ const BabySetup = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="babyBirthday" className="text-xs font-bold tracking-wide uppercase">
+                <Label htmlFor="babyBirthday" className="text-xs font-semibold">
                   Birthday
                 </Label>
                 <Input
@@ -247,7 +247,7 @@ const BabySetup = () => {
                 </p>
                 <Button
                   type="submit"
-                  className="w-full font-bold tracking-wide uppercase rounded-strava"
+                  className="w-full font-semibold rounded-strava"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating..." : "Continue"}
