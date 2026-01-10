@@ -15,12 +15,12 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
-        display: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
-        serif: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
-        num: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
-        // Strava-style athletic fonts
-        athletic: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        sans: ["Lato", "Lucida Grande", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        display: ["Merriweather", "Georgia", "serif"],
+        serif: ["Merriweather", "Georgia", "serif"],
+        num: ["Lato", "Lucida Grande", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        // Clean modern font stack
+        athletic: ["Lato", "Lucida Grande", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
       },
       letterSpacing: {
         'rare': '-0.015em',
