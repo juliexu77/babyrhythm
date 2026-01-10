@@ -1,6 +1,7 @@
 import { Sun, Sunset } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface ThemeToggleProps {
   showText?: boolean;
@@ -11,7 +12,7 @@ export function ThemeToggle({ showText = true }: ThemeToggleProps) {
 
   const cycleTheme = () => {
     // Mark as manual override to prevent auto-switching for 1 hour
-    localStorage.setItem('theme-manual-override', Date.now().toString());
+    rawStorage.set(StorageKeys.THEME_MANUAL_OVERRIDE, Date.now().toString());
     
     // Cycle through: light -> dusk -> light (dark theme removed)
     if (theme === 'light') {

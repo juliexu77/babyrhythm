@@ -206,13 +206,21 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [adjustmentContext, setAdjustmentContext] = useState<string>("");
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
-    const stored = localStorage.getItem('smartRemindersEnabled');
-    return stored !== null ? stored === 'true' : true; // Default enabled
+    try {
+      const stored = localStorage.getItem('smartRemindersEnabled');
+      return stored !== null ? stored === 'true' : true;
+    } catch {
+      return true;
+    }
   });
   const scrollRef = useRef<HTMLDivElement>(null);
   const [patternMilestones, setPatternMilestones] = useState<Set<string>>(() => {
-    const stored = localStorage.getItem('patternMilestones');
-    return stored ? new Set(JSON.parse(stored)) : new Set();
+    try {
+      const stored = localStorage.getItem('patternMilestones');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
   });
   const [isChatOpen, setIsChatOpen] = useState(false);
 
