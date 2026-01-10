@@ -17,6 +17,7 @@ import BabySetup from "./pages/BabySetup";
 import VillageInvite from "./pages/VillageInvite";
 import NotFound from "./pages/NotFound";
 import WeeklyReport from "./pages/WeeklyReport";
+import TypographyGuide from "./components/TypographyGuide";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
                     <Route path="/login" element={<Auth />} />
                     <Route path="/invite/:code" element={<InviteAccept />} />
                     <Route path="/report/weekly" element={<WeeklyReport />} />
+                    <Route path="/typography" element={<TypographyGuide />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
