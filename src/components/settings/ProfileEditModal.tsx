@@ -82,7 +82,7 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
           <div className="flex justify-center">
             <PhotoUpload
               currentPhotoUrl={userProfile?.photo_url}
-              bucketName="baby-photos"
+              bucketName="profile-photos"
               folder={user?.id || "unknown"}
               fallbackIcon={<User className="w-10 h-10 text-muted-foreground" />}
               onPhotoUpdate={handleUserPhotoUpdate}
