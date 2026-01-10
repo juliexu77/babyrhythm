@@ -1,48 +1,49 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Milk, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Utensils, MoreVertical, Trash2, Ruler, Mic, Thermometer } from "lucide-react";
-import { VoiceRecorder } from "./VoiceRecorder";
-import { Checkbox } from "@/components/ui/checkbox";
-
+import { Plus, Milk, Droplet, Moon, StickyNote, Camera, Utensils } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { logError } from "@/utils/logger";
 import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { FeedForm, DiaperForm, NapForm, NoteForm, SolidsForm, PhotoForm } from "./activity-forms";
 
 interface AddActivityModalProps {
   onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date, activityTime?: string) => Promise<void> | void;
   isOpen?: boolean;
   onClose?: () => void;
-  showFixedButton?: boolean; // Add prop to control fixed button visibility
-  editingActivity?: Activity | null; // Add editing support
+  showFixedButton?: boolean;
+  editingActivity?: Activity | null;
   onEditActivity?: (activity: Activity, selectedDate: Date, activityTime: string) => Promise<void>;
-  onDeleteActivity?: (activityId: string) => void; // Add delete support
-  householdId?: string; // Add household ID for photo uploads
-  quickAddType?: 'feed' | 'nap' | 'diaper' | null; // Quick add type
-  prefillActivity?: Activity | null; // Activity to prefill from
-  activities?: Activity[]; // Activities for household defaults
+  onDeleteActivity?: (activityId: string) => void;
+  householdId?: string;
+  quickAddType?: 'feed' | 'nap' | 'diaper' | null;
+  prefillActivity?: Activity | null;
+  activities?: Activity[];
 }
 
-export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity, householdId, quickAddType, prefillActivity, activities }: AddActivityModalProps) => {
+type ActivityTypeValue = "feed" | "diaper" | "nap" | "note" | "solids" | "photo" | "";
+
+export const AddActivityModal = ({ 
+  onAddActivity, 
+  isOpen, 
+  onClose, 
+  showFixedButton = false, 
+  editingActivity, 
+  onEditActivity, 
+  onDeleteActivity, 
+  householdId, 
+  quickAddType, 
+  prefillActivity, 
+  activities 
+}: AddActivityModalProps) => {
   const { t } = useLanguage();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
-  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "solids" | "photo" | "">("");
+  const [activityType, setActivityType] = useState<ActivityTypeValue>("");
   
-  // Helper function to get exact current time
   const getCurrentTime = (date: Date = new Date()) => {
     return date.toLocaleTimeString("en-US", { 
       hour: "numeric", 
@@ -57,11 +58,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [feedType, setFeedType] = useState<"bottle" | "nursing">("bottle");
   const [quantity, setQuantity] = useState("");
   
-  // Get last bottle feed unit from household activities
   const getLastBottleUnit = (): "oz" | "ml" => {
     if (!activities || activities.length === 0) return "oz";
-    
-    // Find the most recent bottle feed activity
     const lastBottleFeed = activities
       .filter(a => a.type === 'feed' && a.details?.feedType === 'bottle' && a.details?.unit)
       .sort((a, b) => {
@@ -69,15 +67,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         const timeB = b.loggedAt ? new Date(b.loggedAt).getTime() : 0;
         return timeB - timeA;
       })[0];
-    
     return lastBottleFeed?.details?.unit || "oz";
   };
   
   const [unit, setUnit] = useState<"oz" | "ml">(() => getLastBottleUnit());
   const [minutesLeft, setMinutesLeft] = useState("");
   const [minutesRight, setMinutesRight] = useState("");
-  const [solidDescription, setSolidDescription] = useState("");
-  const [reaction, setReaction] = useState<"happy" | "neutral" | "fussy" | "">("");
   const [isDreamFeed, setIsDreamFeed] = useState(false);
   
   // Diaper state
@@ -88,9 +83,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Sleep state
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [hasEndTime, setHasEndTime] = useState(true); // Controls whether end time is included
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [timerStart, setTimerStart] = useState<Date | null>(null);
+  const [hasEndTime, setHasEndTime] = useState(true);
   
   // General
   const [note, setNote] = useState("");
@@ -99,44 +92,38 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedEndDate, setSelectedEndDate] = useState<Date>(new Date()); // Separate date for sleep end time
-  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [selectedEndDate, setSelectedEndDate] = useState<Date>(new Date());
   
   // Solids state
   const [solidsDescription, setSolidsDescription] = useState("");
   const [allergens, setAllergens] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Load last used settings and handle editing
+  // Parse time to minutes helper
+  const parseTimeToMinutes = (timeStr: string): number => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return 0;
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const period = match[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
+
+  // Load editing activity data
   useEffect(() => {
     if (editingActivity) {
-      // Populate form with editing activity data
       setActivityType(editingActivity.type);
-      
-      // Keep the original time as-is (already rounded when first created)
       setTime(editingActivity.time);
       
-      // Set the selected date based on the original logged date
       if (editingActivity.loggedAt) {
         const loggedDate = new Date(editingActivity.loggedAt);
         setSelectedDate(loggedDate);
         
-        // For naps, check if it's an overnight sleep (end time < start time)
         if (editingActivity.type === "nap" && editingActivity.details.startTime && editingActivity.details.endTime) {
-          const parseTimeToMinutes = (timeStr: string): number => {
-            const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-            if (!match) return 0;
-            let hours = parseInt(match[1], 10);
-            const minutes = parseInt(match[2], 10);
-            const period = match[3].toUpperCase();
-            if (period === 'PM' && hours !== 12) hours += 12;
-            if (period === 'AM' && hours === 12) hours = 0;
-            return hours * 60 + minutes;
-          };
-          
           const startMinutes = parseTimeToMinutes(editingActivity.details.startTime);
           const endMinutes = parseTimeToMinutes(editingActivity.details.endTime);
-          
-          // If end time is before start time, it's an overnight sleep - set end date to next day
           if (endMinutes < startMinutes) {
             const nextDay = new Date(loggedDate);
             nextDay.setDate(nextDay.getDate() + 1);
@@ -145,67 +132,55 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             setSelectedEndDate(loggedDate);
           }
         } else {
-          setSelectedEndDate(loggedDate); // Initialize end date to same day by default
+          setSelectedEndDate(loggedDate);
         }
       }
       
       if (editingActivity.type === "feed") {
         const details = editingActivity.details;
-        const editFeedType = details.feedType;
-        // Only set feedType if it's bottle or nursing (skip solid since it's now a separate type)
-        if (editFeedType === 'bottle' || editFeedType === 'nursing') {
-          setFeedType(editFeedType);
+        if (details.feedType === 'bottle' || details.feedType === 'nursing') {
+          setFeedType(details.feedType);
         }
         setQuantity(details.quantity || "");
         setUnit(details.unit || "oz");
         setMinutesLeft(details.minutesLeft || "");
         setMinutesRight(details.minutesRight || "");
-        setSolidDescription(details.solidDescription || "");
         setIsDreamFeed(details.isDreamFeed || false);
         setNote(details.note || "");
       } else if (editingActivity.type === "diaper") {
-        const details = editingActivity.details;
-        setDiaperType(details.diaperType || "wet");
-        setHasLeak(details.hasLeak || false);
-        setHasCream(details.hasCream || false);
-        setNote(details.note || "");
+        setDiaperType(editingActivity.details.diaperType || "wet");
+        setHasLeak(editingActivity.details.hasLeak || false);
+        setHasCream(editingActivity.details.hasCream || false);
+        setNote(editingActivity.details.note || "");
       } else if (editingActivity.type === "nap") {
-        const details = editingActivity.details;
-        setStartTime(details.startTime || "");
-        setEndTime(details.endTime || "");
-        setHasEndTime(!!details.endTime); // Set checkbox based on whether end time exists
+        setStartTime(editingActivity.details.startTime || "");
+        setEndTime(editingActivity.details.endTime || "");
+        setHasEndTime(!!editingActivity.details.endTime);
       } else if (editingActivity.type === "note") {
         setNote(editingActivity.details.note || "");
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
       } else if (editingActivity.type === "solids") {
-        const details = editingActivity.details;
-        setSolidsDescription(details.solidDescription || "");
-        setAllergens((details as any).allergens || []);
+        setSolidsDescription(editingActivity.details.solidDescription || "");
+        setAllergens((editingActivity.details as any).allergens || []);
       } else if (editingActivity.type === "photo") {
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
         setNote(editingActivity.details.note || "");
       }
     } else {
-      // Load last used settings for new activities only
       const lastUnit = localStorage.getItem('lastUsedUnit') as "oz" | "ml";
-      if (lastUnit) {
-        setUnit(lastUnit);
-      }
+      if (lastUnit) setUnit(lastUnit);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingActivity]); // Only depend on editingActivity, not feedType
+  }, [editingActivity]);
 
-  // Separate effect for loading last quantity only when creating new bottle feeds
+  // Load last quantity for bottle feeds
   useEffect(() => {
     if (!editingActivity && feedType === "bottle" && !quantity) {
       const lastQuantity = localStorage.getItem('lastFeedQuantity');
-      if (lastQuantity) {
-        setQuantity(lastQuantity);
-      }
+      if (lastQuantity) setQuantity(lastQuantity);
     }
   }, [feedType, editingActivity, quantity]);
 
-  // Load last nursing times when creating new nursing feeds
+  // Load last nursing times
   useEffect(() => {
     if (!editingActivity && feedType === "nursing" && !minutesLeft && !minutesRight) {
       const lastLeft = localStorage.getItem('lastNursingLeft');
@@ -215,67 +190,47 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     }
   }, [feedType, editingActivity, minutesLeft, minutesRight]);
 
-  // Ensure new entries default to current local time when opening (but skip for quick add)
+  // Reset time when opening for new activity
   useEffect(() => {
     if (open && !editingActivity && !quickAddType) {
       const current = getCurrentTime();
       setTime(current);
       if (!startTime) setStartTime(current);
-      setSelectedDate(new Date()); // Reset to today when opening for new activity
-      setSelectedEndDate(new Date()); // Reset end date too
-      // Reset unit to household default for new bottle feeds
+      setSelectedDate(new Date());
+      setSelectedEndDate(new Date());
       setUnit(getLastBottleUnit());
     }
   }, [open, editingActivity, quickAddType]);
 
-  // Handle quick add with prefilled data
+  // Handle quick add
   useEffect(() => {
     if (open && quickAddType && !editingActivity) {
-      // Set activity type
       setActivityType(quickAddType);
-      
-      // ALWAYS use current time for quick add (never prefill time)
       const currentTime = getCurrentTime();
       setTime(currentTime);
-      setStartTime(currentTime); // Also set start time
+      setStartTime(currentTime);
       
-      // Pre-fill details based on type only if prefillActivity exists
       if (prefillActivity) {
         if (quickAddType === 'feed' && prefillActivity.type === 'feed') {
           const details = prefillActivity.details;
-          const prefillFeedType = details.feedType;
-          // Only prefill if it's bottle or nursing (skip solid)
-          if (prefillFeedType === 'bottle' || prefillFeedType === 'nursing') {
-            setFeedType(prefillFeedType);
+          if (details.feedType === 'bottle' || details.feedType === 'nursing') {
+            setFeedType(details.feedType);
           }
           setQuantity(details.quantity || "");
           setUnit(details.unit || "oz");
           setMinutesLeft(details.minutesLeft || "");
           setMinutesRight(details.minutesRight || "");
-          setSolidDescription(details.solidDescription || "");
           setIsDreamFeed(details.isDreamFeed || false);
-          // Don't prefill note for quick add
-        } else if (quickAddType === 'nap' && prefillActivity.type === 'nap') {
-          const details = prefillActivity.details;
-          // For naps, set start time to current, don't set end time (they're adding a new nap)
-          setStartTime(currentTime);
-          setEndTime("");
-          setHasEndTime(false);
-          // Don't prefill note for quick add
         } else if (quickAddType === 'diaper' && prefillActivity.type === 'diaper') {
-          const details = prefillActivity.details;
-          setDiaperType(details.diaperType || "wet");
-          setHasLeak(details.hasLeak || false);
-          setHasCream(details.hasCream || false);
-          // Don't prefill note for quick add
+          setDiaperType(prefillActivity.details.diaperType || "wet");
+          setHasLeak(prefillActivity.details.hasLeak || false);
+          setHasCream(prefillActivity.details.hasCream || false);
         }
-      } else {
-        // No prefillActivity - just set defaults for quick add
-        if (quickAddType === 'nap') {
-          setStartTime(currentTime);
-          setEndTime("");
-          setHasEndTime(false);
-        }
+      }
+      
+      if (quickAddType === 'nap') {
+        setEndTime("");
+        setHasEndTime(false);
       }
     }
   }, [open, quickAddType, prefillActivity, editingActivity]);
@@ -284,100 +239,39 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setTime(getCurrentTime());
     setFeedType("bottle");
     setQuantity("");
-    setUnit(getLastBottleUnit()); // Reset to household default unit
+    setUnit(getLastBottleUnit());
     setMinutesLeft("");
     setMinutesRight("");
-    setSolidDescription("");
     setIsDreamFeed(false);
-    setReaction("");
     setDiaperType("wet");
     setHasLeak(false);
     setHasCream(false);
     setStartTime("");
     setEndTime("");
-    setHasEndTime(true); // Reset to default (end time included)
-    setIsTimerActive(false);
-    setTimerStart(null);
+    setHasEndTime(true);
     setSolidsDescription("");
     setAllergens([]);
     setNote("");
-    setSelectedDate(new Date()); // Reset to current date
-    setSelectedEndDate(new Date()); // Reset end date too
-  };
-
-  const startNapTimer = async () => {
-    setIsTimerActive(true);
-    setTimerStart(new Date());
-    const startTime = getCurrentTime();
-    setStartTime(startTime);
-    setHasEndTime(false); // Don't include end time when using timer
-    
-    // Ensure we're using today's date (prevent stale date from previous use)
-    const todaysDate = new Date();
-    
-    console.log('🛏️ Starting nap timer:', {
-      startTime,
-      selectedDate: selectedDate.toLocaleDateString(),
-      todaysDate: todaysDate.toLocaleDateString(),
-      selectedDateISOString: selectedDate.toISOString(),
-      todaysDateISOString: todaysDate.toISOString()
-    });
-    
-    // Save the activity immediately when starting the sleep timer
-    const newActivity: Omit<Activity, "id"> = {
-      type: "nap",
-      time: startTime,
-      details: {
-        startTime: startTime,
-        endTime: "", // Will be filled when timer is stopped
-      },
-    };
-
-    // Use todaysDate to ensure correct date
-    await onAddActivity(newActivity, todaysDate, startTime);
-    
-    // Close the modal after starting the timer
-    resetForm();
-    if (onClose) {
-      onClose();
-    } else {
-      setInternalOpen(false);
-    }
-  };
-
-  const stopNapTimer = () => {
-    setIsTimerActive(false);
-    setEndTime(getCurrentTime());
-  };
-
-  const handleQuantityShortcut = (value: string) => {
-    setQuantity(value);
+    setPhoto(null);
+    setPhotoUrl(null);
+    setSelectedDate(new Date());
+    setSelectedEndDate(new Date());
   };
 
   const uploadPhoto = async (file: File): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        logError('Photo upload', new Error('User not authenticated'));
-        throw new Error('User not authenticated');
-      }
-      
-      if (!householdId) {
-        logError('Photo upload', new Error('Household ID missing'));
-        throw new Error('Household not found');
-      }
+      if (!user) throw new Error('User not authenticated');
+      if (!householdId) throw new Error('Household not found');
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${householdId}/${Date.now()}.${fileExt}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('baby-photos')
         .upload(fileName, file);
 
-      if (uploadError) {
-        logError('Storage upload', uploadError);
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
         .from('baby-photos')
@@ -390,21 +284,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     }
   };
 
-  const [isSaving, setIsSaving] = useState(false);
-
   const handleSubmit = async () => {
-    if (isSaving) return; // Prevent double submission
+    if (isSaving || !activityType) return;
     
-    if (!activityType) {
-      return;
-    }
+    if (activityType === "photo" && !photo && !photoUrl) return;
 
-    // Validate photo activity
-    if (activityType === "photo" && !photo && !photoUrl) {
-      return;
-    }
-
-    // Ensure time has a value, use current time if not set
     let activityTime = time;
     if (!activityTime && activityType !== "nap") {
       activityTime = getCurrentTime();
@@ -413,22 +297,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
     if (activityType === "feed" && feedType === "bottle") {
       const quantityNum = parseFloat(quantity);
-      if (!quantity || isNaN(quantityNum) || quantityNum <= 0) {
-        return;
-      }
+      if (!quantity || isNaN(quantityNum) || quantityNum <= 0) return;
     }
 
-    if (activityType === "feed" && feedType === "nursing" && (!minutesLeft && !minutesRight)) {
-      return;
-    }
-
-    if (activityType === "nap" && !startTime) {
-      return;
-    }
-
-    if (activityType === "nap" && hasEndTime && !endTime) {
-      return;
-    }
+    if (activityType === "feed" && feedType === "nursing" && (!minutesLeft && !minutesRight)) return;
+    if (activityType === "nap" && !startTime) return;
+    if (activityType === "nap" && hasEndTime && !endTime) return;
 
     const details: any = {};
     
@@ -463,8 +337,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         details.startTime = startTime;
         if (hasEndTime && endTime) {
           details.endTime = endTime;
-          // Store end_date_local for overnight sleeps
-          // Format as YYYY-MM-DD in local timezone
           const endYear = selectedEndDate.getFullYear();
           const endMonth = String(selectedEndDate.getMonth() + 1).padStart(2, '0');
           const endDay = String(selectedEndDate.getDate()).padStart(2, '0');
@@ -473,9 +345,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         break;
       case "note":
         details.note = note;
-        if (photoUrl) {
-          details.photoUrl = photoUrl;
-        }
+        if (photoUrl) details.photoUrl = photoUrl;
         break;
       case "solids":
         if (solidsDescription) details.solidDescription = solidsDescription;
@@ -483,13 +353,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         break;
       case "photo":
         if (note) details.note = note;
-        if (photoUrl) {
-          details.photoUrl = photoUrl;
-        }
+        if (photoUrl) details.photoUrl = photoUrl;
         break;
     }
 
-    // Upload photo if new one is selected
     if (photo && !photoUrl) {
       setUploadingPhoto(true);
       const uploadedPhotoUrl = await uploadPhoto(photo);
@@ -498,48 +365,34 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       if (uploadedPhotoUrl) {
         details.photoUrl = uploadedPhotoUrl;
         setPhotoUrl(uploadedPhotoUrl);
-      } else {
-        // If photo upload failed for a photo activity, don't proceed
-        if (activityType === "photo") {
-          return;
-        }
+      } else if (activityType === "photo") {
+        return;
       }
     }
-
-    // Track if this is one of the first few activities
-    const isEarlyActivity = !activities || activities.length < 5;
 
     setIsSaving(true);
     
     try {
       if (editingActivity && onEditActivity) {
-        // Update existing activity
         const updatedActivity: Activity = {
           ...editingActivity,
-          type: activityType as "feed" | "diaper" | "nap" | "note" | "solids" | "photo",
-          time: activityType === "nap" ? startTime : time,
+          type: activityType as any,
+          time: activityType === "nap" ? startTime : activityTime,
           details,
         };
-        
-        await onEditActivity(updatedActivity, selectedDate, activityType === "nap" ? startTime : time);
+        await onEditActivity(updatedActivity, selectedDate, activityType === "nap" ? startTime : activityTime);
       } else {
-        // Create new activity
         const newActivity: Omit<Activity, "id"> = {
-          type: activityType as "feed" | "diaper" | "nap" | "note" | "solids" | "photo",
-          time: activityType === "nap" ? startTime : time,
+          type: activityType as any,
+          time: activityType === "nap" ? startTime : activityTime,
           details,
         };
-
-        // Call the onAddActivity callback to save the activity
-        await onAddActivity(newActivity, selectedDate, activityType === "nap" ? startTime : time);
+        await onAddActivity(newActivity, selectedDate, activityType === "nap" ? startTime : activityTime);
       }
       
       resetForm();
-      if (onClose) {
-        onClose();
-      } else {
-        setInternalOpen(false);
-      }
+      if (onClose) onClose();
+      else setInternalOpen(false);
     } catch (error) {
       logError('Save activity', error);
     } finally {
@@ -547,21 +400,18 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     }
   };
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "feed": return <Milk className="h-4 w-4" />;
-      case "diaper": return <Droplet className="h-4 w-4" />;
-      case "nap": return <Moon className="h-4 w-4" />;
-      case "note": return <StickyNote className="h-4 w-4" />;
-      case "solids": return <Utensils className="h-4 w-4" />;
-      case "photo": return <Camera className="h-4 w-4" />;
-      default: return null;
-    }
-  };
+  const ACTIVITY_TYPES = [
+    { type: "feed", icon: Milk, label: t('feeding') },
+    { type: "solids", icon: Utensils, label: t('solids') },
+    { type: "nap", icon: Moon, label: t('sleep') },
+    { type: "diaper", icon: Droplet, label: t('diaper') },
+    { type: "note", icon: StickyNote, label: t('note') },
+    { type: "photo", icon: Camera, label: t('photo') }
+  ] as const;
 
   return (
     <>
-      <Dialog open={open} onOpenChange={isOpen !== undefined ? (open) => !open && onClose?.() : setInternalOpen}>
+      <Dialog open={open} onOpenChange={isOpen !== undefined ? (o) => !o && onClose?.() : setInternalOpen}>
         {!isOpen && showFixedButton && (
           <DialogTrigger asChild>
             <Button 
@@ -574,581 +424,169 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         )}
         <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col [&>button[data-state]]:hidden">
           <DialogHeader className="pb-4 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <DialogTitle>
-                {editingActivity ? t('editActivity') : 'Log Activity'}
-              </DialogTitle>
-              {!editingActivity && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowVoiceRecorder(true)}
-                  className="h-8 w-8"
-                >
-                  <Mic className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              )}
-            </div>
+            <DialogTitle>
+              {editingActivity ? t('editActivity') : 'Log Activity'}
+            </DialogTitle>
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto px-1 -mx-1">
             <div className="space-y-4">
-            
-            {/* Activity Type Selection - Strava style grid */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { type: "feed", icon: Milk, label: t('feeding') },
-                { type: "solids", icon: Utensils, label: t('solids') },
-                { type: "nap", icon: Moon, label: t('sleep') },
-                { type: "diaper", icon: Droplet, label: t('diaper') },
-                { type: "note", icon: StickyNote, label: t('note') },
-                { type: "photo", icon: Camera, label: t('photo') }
-              ].map(({ type, icon: Icon, label }) => (
-                <button
-                  key={type}
-                  type="button"
-                  className="btn-select-lg"
-                  data-selected={activityType === type}
-                  onClick={() => setActivityType(type as any)}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="text-[10px] font-semibold">{label}</span>
-                </button>
-              ))}
-            </div>
+              {/* Activity Type Selection */}
+              <div className="grid grid-cols-3 gap-2">
+                {ACTIVITY_TYPES.map(({ type, icon: Icon, label }) => (
+                  <button
+                    key={type}
+                    type="button"
+                    className="btn-select-lg"
+                    data-selected={activityType === type}
+                    onClick={() => setActivityType(type)}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="text-[10px] font-semibold">{label}</span>
+                  </button>
+                ))}
+              </div>
 
-            {/* Feed Details */}
-            {activityType === "feed" && (
-              <div className="form-section">
-                <div>
-                  <Label className="form-label">{t('type')}</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                     { type: "bottle", icon: Milk, label: t('bottle') },
-                      { type: "nursing", icon: Milk, label: t('nursing') }
-                    ].map(({ type, icon: Icon, label }) => (
-                      <button
-                        key={type}
-                        type="button"
-                        className="btn-select"
-                        data-selected={feedType === type}
-                        onClick={() => setFeedType(type as any)}
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span className="text-xs font-semibold">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Time Picker - Moved below feed type */}
-                <TimeScrollPicker 
-                  value={time} 
+              {/* Type-specific forms */}
+              {activityType === "feed" && (
+                <FeedForm
+                  time={time}
+                  setTime={setTime}
                   selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
+                  setSelectedDate={setSelectedDate}
+                  feedType={feedType}
+                  setFeedType={setFeedType}
+                  quantity={quantity}
+                  unit={unit}
+                  minutesLeft={minutesLeft}
+                  setMinutesLeft={setMinutesLeft}
+                  minutesRight={minutesRight}
+                  setMinutesRight={setMinutesRight}
+                  isDreamFeed={isDreamFeed}
+                  setIsDreamFeed={setIsDreamFeed}
+                  note={note}
+                  setNote={setNote}
+                  onOpenKeypad={() => setShowKeypad(true)}
                 />
+              )}
 
-                {/* Dynamic amount/details based on feed type */}
-                {feedType === "bottle" && (
-                  <div className="space-y-3">
-                    <div className="flex items-end gap-3">
-                      <div className="flex-1">
-                        <Label className="form-label">{t('amount')}</Label>
-                        <button
-                          type="button"
-                          className="input-tappable"
-                          onClick={() => setShowKeypad(true)}
-                        >
-                          <span className="text-foreground">
-                            {quantity ? `${quantity} ${unit}` : t('tapToEnterAmount')}
-                          </span>
-                        </button>
-                      </div>
-                      <div className="flex items-center space-x-2 pb-2">
-                        <Checkbox
-                          id="dream-feed"
-                          checked={isDreamFeed}
-                          onCheckedChange={(checked) => setIsDreamFeed(checked === true)}
-                        />
-                        <Label 
-                          htmlFor="dream-feed" 
-                          className="text-sm font-medium cursor-pointer whitespace-nowrap"
-                        >
-                          {t('dreamFeed')}
-                        </Label>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {feedType === "nursing" && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label>{t('leftSide')}</Label>
-                        <Input
-                          type="number"
-                          inputMode="numeric"
-                          placeholder="0"
-                          value={minutesLeft}
-                          onChange={(e) => setMinutesLeft(e.target.value)}
-                          className="text-center text-lg font-semibold"
-                        />
-                        <p className="text-xs text-muted-foreground text-center">minutes</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>{t('rightSide')}</Label>
-                        <Input
-                          type="number"
-                          inputMode="numeric"
-                          placeholder="0"
-                          value={minutesRight}
-                          onChange={(e) => setMinutesRight(e.target.value)}
-                          className="text-center text-lg font-semibold"
-                        />
-                        <p className="text-xs text-muted-foreground text-center">minutes</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <Label htmlFor="feed-note" className="form-label">{t('notes')}</Label>
-                  <Textarea
-                    id="feed-note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder={t('additionalNotesFeeding')}
-                    rows={3}
-                    className="resize-none rounded-strava"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Diaper Details */}
-            {activityType === "diaper" && (
-              <div className="form-section">
-                {/* Time Picker for Diaper */}
-                <TimeScrollPicker 
-                  value={time} 
+              {activityType === "diaper" && (
+                <DiaperForm
+                  time={time}
+                  setTime={setTime}
                   selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
+                  setSelectedDate={setSelectedDate}
+                  diaperType={diaperType}
+                  setDiaperType={setDiaperType}
+                  hasLeak={hasLeak}
+                  setHasLeak={setHasLeak}
+                  hasCream={hasCream}
+                  setHasCream={setHasCream}
+                  note={note}
+                  setNote={setNote}
                 />
-                
-                <div>
-                  <Label className="form-label">{t('type')}</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { type: "wet", label: t('wet') },
-                      { type: "poopy", label: t('poopy') },
-                      { type: "both", label: t('both') }
-                    ].map(({ type, label }) => (
-                      <button
-                        key={type}
-                        type="button"
-                        className="btn-select"
-                        data-selected={diaperType === type}
-                        onClick={() => setDiaperType(type as any)}
-                      >
-                        <span className="text-xs font-semibold">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              )}
 
-                <div className="space-y-2">
-                  <div className="form-row-bordered">
-                    <Label className="text-sm text-foreground">{t('leak')}</Label>
-                    <button
-                      type="button"
-                      className="btn-toggle"
-                      data-active={hasLeak}
-                      onClick={() => setHasLeak(!hasLeak)}
-                    >
-                      {hasLeak ? t('yes') : t('no')}
-                    </button>
-                  </div>
-                  <div className="form-row-bordered">
-                    <Label className="text-sm text-foreground">{t('diaperingCream')}</Label>
-                    <button
-                      type="button"
-                      className="btn-toggle"
-                      data-active={hasCream}
-                      onClick={() => setHasCream(!hasCream)}
-                    >
-                      {hasCream ? t('yes') : t('no')}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="diaper-note" className="form-label">{t('notes')}</Label>
-                  <Textarea
-                    id="diaper-note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder={t('additionalNotesDiaper')}
-                    rows={3}
-                    className="resize-none rounded-strava"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Sleep Details */}
-            {activityType === "nap" && (
-              <div className="form-section">
-                <div className="space-y-3">
-                  <TimeScrollPicker 
-                    value={startTime} 
-                    selectedDate={selectedDate}
-                    onChange={setStartTime} 
-                    onDateChange={setSelectedDate}
-                    label={t('startTime')} 
-                  />
-                  
-                  {/* End Time Checkbox */}
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="has-end-time"
-                      checked={hasEndTime}
-                      onCheckedChange={(checked) => {
-                        setHasEndTime(checked as boolean);
-                        if (!checked) {
-                          setEndTime(""); // Clear end time when unchecked
-                        }
-                      }}
-                    />
-                    <Label htmlFor="has-end-time" className="text-sm font-medium">
-                      {t('includeEndTime')}
-                    </Label>
-                  </div>
-
-                  {/* End Time Picker - Only show when checkbox is checked */}
-                  {hasEndTime && (
-                    <TimeScrollPicker 
-                      value={endTime} 
-                      selectedDate={selectedEndDate}
-                      onChange={setEndTime} 
-                      onDateChange={setSelectedEndDate}
-                      label={t('endTime')} 
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Note Details */}
-            {activityType === "note" && (
-              <div className="form-section">
-                {/* Time Picker */}
-                <TimeScrollPicker 
-                  value={time} 
+              {activityType === "nap" && (
+                <NapForm
+                  startTime={startTime}
+                  setStartTime={setStartTime}
+                  endTime={endTime}
+                  setEndTime={setEndTime}
+                  hasEndTime={hasEndTime}
+                  setHasEndTime={setHasEndTime}
                   selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
+                  setSelectedDate={setSelectedDate}
+                  selectedEndDate={selectedEndDate}
+                  setSelectedEndDate={setSelectedEndDate}
                 />
+              )}
 
-                <div>
-                  <Label htmlFor="note" className="form-label">{t('noteText')}</Label>
-                  <Textarea
-                    id="note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder={t('enterNoteHere')}
-                    rows={4}
-                    className="resize-none"
-                  />
-                </div>
-
-                {/* Photo Upload for Notes */}
-                <div>
-                  <Label className="form-label">{t('photoOptional')}</Label>
-                  <div className="space-y-3">
-                    {/* Photo Preview */}
-                    {(photo || photoUrl) && (
-                      <div className="photo-preview">
-                        <img
-                          src={photo ? URL.createObjectURL(photo) : photoUrl!}
-                          alt={t('selectedPhoto')}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setPhoto(null);
-                            setPhotoUrl(null);
-                          }}
-                          className="photo-remove-btn"
-                        >
-                          {t('remove')}
-                        </Button>
-                      </div>
-                    )}
-                    
-                    {/* Upload Area */}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          if (!file.type.startsWith('image/')) {
-                            return;
-                          }
-                          if (file.size > 10 * 1024 * 1024) {
-                            return;
-                          }
-                          setPhoto(file);
-                          setPhotoUrl(null);
-                        }
-                      }}
-                      className="hidden"
-                      id="photo-input"
-                    />
-                    <label htmlFor="photo-input" className="upload-area">
-                      <Camera className="h-8 w-8 mb-2" />
-                      {photo || photoUrl ? (
-                        <span className="text-sm font-medium">{t('changePhoto')}</span>
-                      ) : (
-                        <>
-                          <span className="text-sm font-medium">{t('tapToAddPhoto')}</span>
-                          <span className="text-xs mt-1">{t('jpgPngUpTo10mb')}</span>
-                        </>
-                      )}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Solids Details */}
-            {activityType === "solids" && (
-              <div className="form-section">
-                <TimeScrollPicker 
-                  value={time} 
+              {activityType === "note" && (
+                <NoteForm
+                  time={time}
+                  setTime={setTime}
                   selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label={t('time')} 
+                  setSelectedDate={setSelectedDate}
+                  note={note}
+                  setNote={setNote}
+                  photo={photo}
+                  setPhoto={setPhoto}
+                  photoUrl={photoUrl}
+                  setPhotoUrl={setPhotoUrl}
                 />
+              )}
 
-                {/* What did they eat */}
-                <div>
-                  <Label htmlFor="solids-description" className="form-label">Menu</Label>
-                  <Textarea
-                    id="solids-description"
-                    value={solidsDescription}
-                    onChange={(e) => setSolidsDescription(e.target.value)}
-                    placeholder="Avocado toast, pureed pears..."
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
-
-                {/* Allergen Checklist */}
-                <div>
-                  <Label className="form-label">Common allergens (optional)</Label>
-                  <div className="space-y-2">
-                    {[
-                      { id: 'peanut', label: 'Peanut' },
-                      { id: 'egg', label: 'Egg' },
-                      { id: 'dairy', label: 'Dairy' },
-                      { id: 'wheat', label: 'Wheat' },
-                      { id: 'soy', label: 'Soy' },
-                      { id: 'tree-nuts', label: 'Tree nuts' },
-                      { id: 'sesame', label: 'Sesame' },
-                      { id: 'fish', label: 'Fish' },
-                      { id: 'shellfish', label: 'Shellfish' },
-                    ].map((allergen) => (
-                      <div key={allergen.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`allergen-${allergen.id}`}
-                          checked={allergens.includes(allergen.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setAllergens([...allergens, allergen.id]);
-                            } else {
-                              setAllergens(allergens.filter(a => a !== allergen.id));
-                            }
-                          }}
-                        />
-                        <Label 
-                          htmlFor={`allergen-${allergen.id}`}
-                          className="text-sm font-normal cursor-pointer"
-                        >
-                          {allergen.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-
-            {/* Photo Activity Details */}
-            {activityType === "photo" && (
-              <div className="form-section">
-                <TimeScrollPicker 
-                  value={time} 
+              {activityType === "solids" && (
+                <SolidsForm
+                  time={time}
+                  setTime={setTime}
                   selectedDate={selectedDate}
-                  onChange={setTime} 
-                  onDateChange={setSelectedDate}
-                  label="Time" 
+                  setSelectedDate={setSelectedDate}
+                  description={solidsDescription}
+                  setDescription={setSolidsDescription}
+                  allergens={allergens}
+                  setAllergens={setAllergens}
                 />
+              )}
 
-                <div>
-                  <Label className="form-label">Photo</Label>
-                  <div className="space-y-3">
-                    {(photo || photoUrl) && (
-                      <div className="photo-preview">
-                        <img
-                          src={photo ? URL.createObjectURL(photo) : photoUrl!}
-                          alt="Selected photo"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setPhoto(null);
-                            setPhotoUrl(null);
-                          }}
-                          className="photo-remove-btn"
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    )}
-                    
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          if (!file.type.startsWith('image/')) {
-                            return;
-                          }
-                          if (file.size > 10 * 1024 * 1024) {
-                            return;
-                          }
-                          setPhoto(file);
-                          setPhotoUrl(null);
-                        }
-                      }}
-                      className="hidden"
-                      id="photo-activity-input"
-                    />
-                    <label htmlFor="photo-activity-input" className="upload-area-lg">
-                      <Camera className="h-10 w-10 mb-2" />
-                      {photo || photoUrl ? (
-                        <span className="text-sm font-medium">Change photo</span>
-                      ) : (
-                        <>
-                          <span className="text-sm font-medium">Tap to add photo</span>
-                          <span className="text-xs mt-1">JPG, PNG up to 10MB</span>
-                        </>
-                      )}
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="photo-caption" className="form-label">Caption (optional)</Label>
-                  <Textarea
-                    id="photo-caption"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Add a caption..."
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
-              </div>
-            )}
-
-
+              {activityType === "photo" && (
+                <PhotoForm
+                  time={time}
+                  setTime={setTime}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  note={note}
+                  setNote={setNote}
+                  photo={photo}
+                  setPhoto={setPhoto}
+                  photoUrl={photoUrl}
+                  setPhotoUrl={setPhotoUrl}
+                />
+              )}
             </div>
           </div>
 
-            <div className="modal-footer">
-              <div className="modal-actions">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  onClick={() => onClose ? onClose() : setInternalOpen(false)} 
-                  className="modal-btn"
-                >
-                  Cancel
-                </Button>
-                
-                <Button 
-                  type="button"
-                  onClick={handleSubmit} 
-                  disabled={uploadingPhoto || isSaving}
-                  className="modal-btn"
-                >
-                  {uploadingPhoto ? 'Uploading…' : isSaving ? 'Saving…' : (editingActivity ? 'Update' : 'Save')}
-                </Button>
-              </div>
+          <div className="modal-footer">
+            <div className="modal-actions">
+              <Button 
+                type="button"
+                variant="outline" 
+                onClick={() => onClose ? onClose() : setInternalOpen(false)} 
+                className="modal-btn"
+              >
+                Cancel
+              </Button>
               
-              {/* Delete link when editing */}
-              {editingActivity && onDeleteActivity && (
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (editingActivity && onDeleteActivity) {
-                        try {
-                          await onDeleteActivity(editingActivity.id);
-                          if (onClose) onClose();
-                        } catch (err) {
-                          logError('Delete activity', err);
-                        }
-                      }
-                    }}
-                    className="delete-link"
-                  >
-                    Delete this activity
-                  </button>
-                </div>
-              )}
+              <Button 
+                type="button"
+                onClick={handleSubmit} 
+                disabled={uploadingPhoto || isSaving}
+                className="modal-btn"
+              >
+                {uploadingPhoto ? 'Uploading…' : isSaving ? 'Saving…' : (editingActivity ? 'Update' : 'Save')}
+              </Button>
             </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Voice Recorder Dialog */}
-      <Dialog open={showVoiceRecorder} onOpenChange={setShowVoiceRecorder}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('voiceInput')}</DialogTitle>
-          </DialogHeader>
-          <VoiceRecorder
-            onActivityParsed={(activities) => {
-              // Process parsed activities and add them
-              activities.forEach(async (activity) => {
-                await onAddActivity(activity);
-              });
-              resetForm();
-              setShowVoiceRecorder(false);
-              if (onClose) {
-                onClose();
-              } else {
-                setInternalOpen(false);
-              }
-            }}
-            autoStart={true}
-          />
+            
+            {editingActivity && onDeleteActivity && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await onDeleteActivity(editingActivity.id);
+                      if (onClose) onClose();
+                    } catch (err) {
+                      logError('Delete activity', err);
+                    }
+                  }}
+                  className="delete-link"
+                >
+                  Delete this activity
+                </button>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
       
