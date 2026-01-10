@@ -4,62 +4,14 @@ import { useAuth } from "./useAuth";
 import { useHousehold } from "./useHousehold";
 import { useToast } from "./use-toast";
 import { logger, logActivity, logError } from "@/utils/logger";
+import { parseTimeToMinutes } from "@/utils/timeUtils";
+import { DatabaseActivity, toUIActivity } from "@/types/activity";
+import { storage, StorageKeys } from "./useLocalStorage";
 
-export interface DatabaseActivity {
-  id: string;
-  household_id: string;
-  type: 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo' | 'solids';
-  logged_at: string;
-  timezone?: string; // IANA timezone name (e.g., "America/Los_Angeles")
-  details: {
-    // Feed details
-    feedType?: "bottle" | "nursing";
-    quantity?: string;
-    unit?: "oz" | "ml";
-    // Diaper details
-    diaperType?: "wet" | "poopy" | "both";
-    hasLeak?: boolean;
-    hasCream?: boolean;
-    // Nap details
-    startTime?: string;
-    endTime?: string;
-    duration?: string;
-    // Solids details
-    solidDescription?: string;
-    allergens?: string[];
-    // General
-    note?: string;
-    displayTime?: string; // Store the original selected time for consistent display
-  };
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-}
+// Re-export for backwards compatibility
+export type { DatabaseActivity } from "@/types/activity";
+export { toUIActivity as convertToUIActivity } from "@/types/activity";
 
-// DISPLAY CONVERSION: Convert UTC timestamp to local display time
-// This happens at the edges - storage is UTC, display is local
-export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
-  // Convert UTC timestamp to local display time
-  // UTC is the universal source of truth for ALL activities
-  const utcDate = new Date(dbActivity.logged_at); // PostgreSQL stores as UTC
-  
-  // Convert UTC to current local timezone for display
-  const displayTime = utcDate.toLocaleTimeString("en-US", { 
-    hour: "numeric", 
-    minute: "2-digit",
-    hour12: true,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-  });
-
-  return {
-    id: dbActivity.id,
-    type: dbActivity.type,
-    time: displayTime,
-    loggedAt: dbActivity.logged_at, // Keep UTC timestamp for calculations
-    timezone: dbActivity.timezone,   // Keep IANA timezone
-    details: dbActivity.details
-  };
-};
 
 export function useActivities() {
   const { user } = useAuth();
@@ -71,7 +23,8 @@ export function useActivities() {
   useEffect(() => {
     // If no user, use localStorage for temporary storage
     if (!user) {
-      loadLocalActivities();
+      const stored = storage.get<DatabaseActivity[]>(StorageKeys.TEMP_ACTIVITIES, []);
+      setActivities(stored);
       setLoading(false);
       return;
     }
@@ -104,27 +57,8 @@ export function useActivities() {
     }
   }, [user, household]);
 
-  const loadLocalActivities = () => {
-    try {
-      const stored = localStorage.getItem('temp_activities');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setActivities(parsed);
-      } else {
-        setActivities([]);
-      }
-    } catch (error) {
-      console.error('Error loading local activities:', error);
-      setActivities([]);
-    }
-  };
-
   const saveLocalActivities = (acts: DatabaseActivity[]) => {
-    try {
-      localStorage.setItem('temp_activities', JSON.stringify(acts));
-    } catch (error) {
-      console.error('Error saving local activities:', error);
-    }
+    storage.set(StorageKeys.TEMP_ACTIVITIES, acts);
   };
 
   const fetchActivities = async () => {
@@ -278,9 +212,10 @@ export function useActivities() {
 
     try {
       // RLS handles permissions - any household member can update
+      // Cast updates to any to handle Supabase's stricter JSON types
       const { data, error } = await supabase
         .from('activities')
-        .update(updates)
+        .update(updates as any)
         .eq('id', activityId)
         .select()
         .single();
