@@ -12,6 +12,7 @@
     --font-display: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
     --font-serif: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
     --font-num: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    --font-app-title: "DM Serif Display", Georgia, "Times New Roman", serif;
     
     /* ═══════════════════════════════════════════════════════════════════
        RARE BEAUTY COLOR PALETTE - Rose-Clay-Beige Family
@@ -1599,5 +1600,12 @@
   /* Stat label - Small label for stats */
   .text-stat-label {
     @apply text-[10px] font-medium text-muted-foreground;
+  }
+  
+  /* App title - Unique class for BabyRhythm branding */
+  .text-app-title {
+    font-family: var(--font-app-title);
+    @apply text-2xl text-foreground tracking-normal;
+    font-weight: 400; /* DM Serif Display is designed to be used at 400 */
   }
 }
