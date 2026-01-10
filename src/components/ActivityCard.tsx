@@ -214,13 +214,13 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete, mi
             <div className="min-w-0 flex-1">
               {/* Inline: Type + Value on same line */}
               <div className="flex items-baseline gap-1.5">
-                <span className="text-sm font-medium text-foreground">{getTypeLabel()}</span>
+                <span className="text-label-sm text-foreground">{getTypeLabel()}</span>
                 <span className="text-sm text-muted-foreground">·</span>
-                <span className="text-sm text-muted-foreground">{value}</span>
+                <span className="text-body-muted">{value}</span>
               </div>
               {/* Descriptor as secondary text */}
               {descriptor && (
-                <p className="text-xs text-muted-foreground/50 truncate mt-0.5">{descriptor}</p>
+                <p className="text-label-xs text-muted-foreground/50 truncate mt-0.5">{descriptor}</p>
               )}
             </div>
           </div>

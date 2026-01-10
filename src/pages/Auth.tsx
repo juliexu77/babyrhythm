@@ -118,10 +118,10 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <Activity className="w-8 h-8 text-primary" strokeWidth={2.5} />
           </div>
-          <h1 className="text-xl font-bold text-foreground mb-3 uppercase tracking-wide">
+          <h1 className="text-xl text-strong uppercase tracking-wide">
             BabyRhythm
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body-muted">
             Track your baby's daily rhythm
           </p>
         </div>
@@ -149,7 +149,7 @@ const Auth = () => {
                     <span className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-2 bg-card text-xs font-medium text-muted-foreground">
+                    <span className="px-2 bg-card text-label-xs text-muted-foreground">
                       Or continue with email
                     </span>
                   </div>
@@ -214,7 +214,7 @@ const Auth = () => {
                     <span className="w-full border-t border-border" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-2 bg-card text-xs font-medium text-muted-foreground">
+                    <span className="px-2 bg-card text-label-xs text-muted-foreground">
                       Or continue with email
                     </span>
                   </div>
@@ -255,7 +255,7 @@ const Auth = () => {
         </Card>
         
         {/* Toggle between sign up and sign in */}
-        <p className="text-center text-sm text-muted-foreground mt-6">
+        <p className="text-center text-body-muted mt-6">
           {mode === 'signup' ? (
             <>
               Already have an account?{' '}
