@@ -15,12 +15,12 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Lato", "Lucida Grande", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
-        display: ["Merriweather", "Georgia", "serif"],
-        serif: ["Merriweather", "Georgia", "serif"],
-        num: ["Lato", "Lucida Grande", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        display: ["Lora", "Georgia", "serif"],
+        serif: ["Lora", "Georgia", "serif"],
+        num: ["Lora", "Georgia", "serif"],
         // Clean modern font stack
-        athletic: ["Lato", "Lucida Grande", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        athletic: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
       },
       letterSpacing: {
         'rare': '-0.015em',
