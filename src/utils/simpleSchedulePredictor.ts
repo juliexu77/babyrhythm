@@ -1,4 +1,21 @@
+/**
+ * Simple schedule predictor for nap count analysis.
+ * Uses shared age-based expectations for consistency.
+ * 
+ * NOTE: This is a simplified predictor. For full predictions,
+ * see predictionEngine.ts which handles real-time next-action predictions.
+ */
+
 import { getScheduleForAge, calculateAgeInWeeks } from './ageAppropriateBaselines';
+import { getExpectedNaps, type ExpectedRange } from './ageBasedExpectations';
+
+export interface NapCountAnalysis {
+  total_naps_today: number;
+  confidence: 'high' | 'medium' | 'low';
+  is_transitioning: boolean;
+  transition_note?: string;
+  reasoning: string;
+}
 
 interface Activity {
   type: string;
@@ -7,14 +24,6 @@ interface Activity {
     startTime?: string;
     endTime?: string;
   };
-}
-
-export interface NapCountAnalysis {
-  total_naps_today: number;
-  confidence: 'high' | 'medium' | 'low';
-  is_transitioning: boolean;
-  transition_note?: string;
-  reasoning: string;
 }
 
 function getRecentNapCount(activities: Activity[]): number {
