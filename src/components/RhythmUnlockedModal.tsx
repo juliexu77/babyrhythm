@@ -121,16 +121,16 @@ export const RhythmUnlockedModal = ({ isOpen, onClose, babyName, totalLogs }: Rh
           </div>
           
           <div className="space-y-3">
-            <h2 className="text-2xl font-serif font-bold text-foreground">
+            <h2 className="text-2xl text-strong">
               Rhythm unlocked!
             </h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-body-muted leading-relaxed">
               I've started learning {name}'s patterns from your first nap log. As you continue logging, my predictions will get smarter and more personalized.
             </p>
           </div>
 
           <div className="pt-2">
-            <p className="text-xs text-muted-foreground italic">
+            <p className="text-label-xs text-muted-foreground italic">
               The more you log, the smarter my predictions get.
             </p>
           </div>
