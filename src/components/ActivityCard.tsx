@@ -2,33 +2,11 @@ import { Clock, Milk, Droplet, Moon, StickyNote, Utensils, Camera, ChevronRight 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { MilestoneBadge } from "./MilestoneBadge";
 import { Milestone } from "@/utils/milestoneDetection";
+import { calculateDurationMinutes, formatDuration } from "@/utils/timeUtils";
 
-export interface Activity {
-  id: string;
-  type: "feed" | "diaper" | "nap" | "note" | "solids" | "photo";
-  time: string;
-  loggedAt?: string;
-  timezone?: string;
-  details: {
-    feedType?: "bottle" | "nursing";
-    quantity?: string;
-    unit?: "oz" | "ml";
-    minutesLeft?: string;
-    minutesRight?: string;
-    solidDescription?: string;
-    isDreamFeed?: boolean;
-    diaperType?: "wet" | "poopy" | "both";
-    hasLeak?: boolean;
-    hasCream?: boolean;
-    startTime?: string;
-    endTime?: string;
-    isNightSleep?: boolean;
-    photoUrl?: string;
-    allergens?: string[];
-    note?: string;
-    displayTime?: string;
-  };
-}
+// Re-export Activity from shared types for backwards compatibility
+export type { Activity } from "@/types/activity";
+import type { Activity } from "@/types/activity";
 
 interface ActivityCardProps {
   activity: Activity;
@@ -59,38 +37,8 @@ const getActivityIcon = (type: string) => {
 
 const calculateNapDuration = (startTime: string, endTime: string): string => {
   try {
-    const parseTime = (timeStr: string) => {
-      const [time, period] = timeStr.split(' ');
-      const [hours, minutes] = time.split(':').map(Number);
-      let totalMinutes = minutes;
-      let adjustedHours = hours;
-      
-      if (period === 'PM' && hours !== 12) {
-        adjustedHours += 12;
-      } else if (period === 'AM' && hours === 12) {
-        adjustedHours = 0;
-      }
-      
-      totalMinutes += adjustedHours * 60;
-      return totalMinutes;
-    };
-
-    const startMinutes = parseTime(startTime);
-    const endMinutes = parseTime(endTime);
-    
-    let durationMinutes = endMinutes - startMinutes;
-    
-    if (durationMinutes < 0) {
-      durationMinutes += 24 * 60;
-    }
-    
-    if (durationMinutes >= 60) {
-      const hours = Math.floor(durationMinutes / 60);
-      const minutes = durationMinutes % 60;
-      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-    }
-    
-    return `${durationMinutes}m`;
+    const durationMinutes = calculateDurationMinutes(startTime, endTime);
+    return formatDuration(durationMinutes);
   } catch (error) {
     return 'unknown duration';
   }
