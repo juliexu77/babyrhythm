@@ -9,6 +9,7 @@ import { calculateBabyAge } from "@/hooks/useBabyAge";
 import { detectTransitionWindow } from "@/utils/ageBasedExpectations";
 import { useHousehold } from "@/hooks/useHousehold";
 import { isDaytimeNap } from "@/utils/napClassification";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface UseHomeTabStateProps {
   activities: Activity[];
@@ -78,23 +79,23 @@ export const useHomeTabState = ({
 
   // First activity celebration
   useEffect(() => {
-    const hasShownCelebration = localStorage.getItem('first_activity_celebrated') === 'true';
+    const hasShownCelebration = rawStorage.get(StorageKeys.FIRST_ACTIVITY_CELEBRATED, '') === 'true';
     
     if (!hasShownCelebration && activities.length === 1) {
       const firstActivity = activities[0];
       setFirstActivityType(firstActivity.type as 'feed' | 'nap' | 'diaper');
       setShowFirstActivityCelebration(true);
-      localStorage.setItem('first_activity_celebrated', 'true');
+      rawStorage.set(StorageKeys.FIRST_ACTIVITY_CELEBRATED, 'true');
     }
   }, [activities.length]);
 
   // Onboarding for new users
   useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem('onboarding_completed') === 'true';
+    const hasSeenOnboarding = rawStorage.get(StorageKeys.ONBOARDING_COMPLETED, '') === 'true';
     
     if (activities.length > 0) {
       if (!hasSeenOnboarding) {
-        localStorage.setItem('onboarding_completed', 'true');
+        rawStorage.set(StorageKeys.ONBOARDING_COMPLETED, 'true');
       }
       setShowOnboarding(false);
       return;

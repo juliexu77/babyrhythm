@@ -9,6 +9,7 @@ import { isDaytimeNap } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { generateStoryHeadline } from "@/utils/storyHeadlineGenerator";
 import { generateStoryInsights } from "@/utils/storyInsightsGenerator";
+import { storage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface TodaysStoryModalProps {
   isOpen: boolean;
@@ -206,16 +207,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   // Generate template-based headline (instant, no loading)
   const generatedHeadline = useMemo(() => {
     const dateKey = format(dayStart, 'yyyy-MM-dd');
-    const cacheKey = `babyrhythm_story_headline_${dateKey}`;
+    const cacheKey = `${StorageKeys.STORY_HEADLINE_CACHE}${dateKey}` as const;
 
     // Try to load from cache first
     try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.headline && parsed.date === dateKey) {
-          return parsed.headline;
-        }
+      const cached = storage.get(cacheKey as any, null as any);
+      if (cached && cached.headline && cached.date === dateKey) {
+        return cached.headline;
       }
     } catch (err) {
       console.error('Error loading cached headline:', err);
@@ -232,11 +230,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
     // Cache the headline
     try {
-      localStorage.setItem(cacheKey, JSON.stringify({
+      storage.set(cacheKey as any, {
         headline,
         date: dateKey,
         timestamp: new Date().toISOString()
-      }));
+      });
     } catch (err) {
       console.error('Error caching headline:', err);
     }

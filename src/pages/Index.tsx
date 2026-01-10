@@ -10,7 +10,7 @@ import { Settings as SettingsPage } from "@/pages/Settings";
 import { RhythmTab } from "@/components/RhythmTab";
 import { PediatricianReportModal } from "@/components/PediatricianReportModal";
 import { ExportCSVModal } from "@/components/ExportCSVModal";
-
+import { rawStorage } from "@/hooks/useLocalStorage";
 
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
@@ -541,8 +541,8 @@ const ongoingNap = (() => {
       if (!ongoingNightSleep) return;
       
       // Check if we've already auto-logged today (prevent duplicate auto-logs)
-      const autoLogKey = `auto_wake_logged_${household.id}_${now.toDateString()}`;
-      if (localStorage.getItem(autoLogKey)) return;
+      const autoLogKey = `auto_wake_logged_${household.id}_${now.toDateString()}` as const;
+      if (rawStorage.get(autoLogKey as any, '')) return;
       
       // Mark as attempted immediately to prevent re-runs
       autoLogAttemptedRef.current = true;
@@ -561,7 +561,7 @@ const ongoingNap = (() => {
         } as any);
         
         // Mark as auto-logged today
-        localStorage.setItem(autoLogKey, 'true');
+        rawStorage.set(autoLogKey as any, 'true');
         
         console.log('✅ Auto-logged wake up at', wakeTimeFormatted);
       } catch (error) {

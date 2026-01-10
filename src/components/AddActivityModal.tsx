@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logError } from "@/utils/logger";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FeedForm, DiaperForm, NapForm, NoteForm, SolidsForm, PhotoForm } from "./activity-forms";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface AddActivityModalProps {
   onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date, activityTime?: string) => Promise<void> | void;
@@ -167,7 +168,7 @@ export const AddActivityModal = ({
         setNote(editingActivity.details.note || "");
       }
     } else {
-      const lastUnit = localStorage.getItem('lastUsedUnit') as "oz" | "ml";
+      const lastUnit = rawStorage.get(StorageKeys.LAST_USED_UNIT, '') as "oz" | "ml";
       if (lastUnit) setUnit(lastUnit);
     }
   }, [editingActivity]);
@@ -175,7 +176,7 @@ export const AddActivityModal = ({
   // Load last quantity for bottle feeds
   useEffect(() => {
     if (!editingActivity && feedType === "bottle" && !quantity) {
-      const lastQuantity = localStorage.getItem('lastFeedQuantity');
+      const lastQuantity = rawStorage.get(StorageKeys.LAST_FEED_QUANTITY, '');
       if (lastQuantity) setQuantity(lastQuantity);
     }
   }, [feedType, editingActivity, quantity]);
@@ -183,8 +184,8 @@ export const AddActivityModal = ({
   // Load last nursing times
   useEffect(() => {
     if (!editingActivity && feedType === "nursing" && !minutesLeft && !minutesRight) {
-      const lastLeft = localStorage.getItem('lastNursingLeft');
-      const lastRight = localStorage.getItem('lastNursingRight');
+      const lastLeft = rawStorage.get(StorageKeys.LAST_NURSING_LEFT, '');
+      const lastRight = rawStorage.get(StorageKeys.LAST_NURSING_RIGHT, '');
       if (lastLeft) setMinutesLeft(lastLeft);
       if (lastRight) setMinutesRight(lastRight);
     }
@@ -312,16 +313,16 @@ export const AddActivityModal = ({
         if (feedType === "bottle" && quantity) {
           details.quantity = quantity;
           details.unit = unit;
-          localStorage.setItem('lastUsedUnit', unit);
-          localStorage.setItem('lastFeedQuantity', quantity);
+          rawStorage.set(StorageKeys.LAST_USED_UNIT, unit);
+          rawStorage.set(StorageKeys.LAST_FEED_QUANTITY, quantity);
         } else if (feedType === "nursing") {
           if (minutesLeft) {
             details.minutesLeft = minutesLeft;
-            localStorage.setItem('lastNursingLeft', minutesLeft);
+            rawStorage.set(StorageKeys.LAST_NURSING_LEFT, minutesLeft);
           }
           if (minutesRight) {
             details.minutesRight = minutesRight;
-            localStorage.setItem('lastNursingRight', minutesRight);
+            rawStorage.set(StorageKeys.LAST_NURSING_RIGHT, minutesRight);
           }
         }
         details.isDreamFeed = isDreamFeed;

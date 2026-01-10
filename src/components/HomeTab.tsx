@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { Activity } from "@/types/activity";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 // Hooks
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
@@ -143,8 +144,8 @@ export const HomeTab = ({
               onAccept={async () => {
                 const { activityType, subType, suggestedTime } = missedActivitySuggestion;
                 
-                const acceptKey = `accepted-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd-HH:mm')}`;
-                localStorage.setItem(acceptKey, Date.now().toString());
+                const acceptKey = `accepted-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd-HH:mm')}` as const;
+                rawStorage.set(acceptKey as any, Date.now().toString());
                 
                 if (subType === 'morning-wake') {
                   if (ongoingNap && addActivity) {
@@ -181,8 +182,8 @@ export const HomeTab = ({
               }}
               onDismiss={() => {
                 const { activityType, subType } = missedActivitySuggestion;
-                const dismissalKey = `missed-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}`;
-                localStorage.setItem(dismissalKey, 'true');
+                const dismissalKey = `missed-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}` as const;
+                rawStorage.set(dismissalKey as any, 'true');
                 window.dispatchEvent(new CustomEvent('refetch-activities'));
               }}
             />
@@ -336,7 +337,7 @@ export const HomeTab = ({
         isOpen={showOnboarding}
         onComplete={() => {
           setShowOnboarding(false);
-          localStorage.setItem('onboarding_completed', 'true');
+          rawStorage.set(StorageKeys.ONBOARDING_COMPLETED as any, 'true');
         }}
         babyName={babyName}
       />

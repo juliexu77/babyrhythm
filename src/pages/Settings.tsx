@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 import { 
   User, 
@@ -35,7 +36,7 @@ const ThemeSettingsRow = () => {
   const { theme, setTheme } = useTheme();
   
   const handleThemeChange = () => {
-    localStorage.setItem('theme-manual-override', Date.now().toString());
+    rawStorage.set(StorageKeys.THEME_MANUAL_OVERRIDE, Date.now().toString());
     setTheme(theme === 'light' ? 'dusk' : 'light');
   };
 
@@ -66,15 +67,15 @@ export const Settings = () => {
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showBabyEdit, setShowBabyEdit] = useState(false);
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
-    const stored = localStorage.getItem('smartRemindersEnabled');
-    return stored !== null ? stored === 'true' : true;
+    const stored = rawStorage.get(StorageKeys.SMART_REMINDERS_ENABLED, '');
+    return stored !== '' ? stored === 'true' : true;
   });
 
   // Sync reminder state with localStorage changes
   useEffect(() => {
     const handleStorageChange = () => {
-      const stored = localStorage.getItem('smartRemindersEnabled');
-      if (stored !== null) {
+      const stored = rawStorage.get(StorageKeys.SMART_REMINDERS_ENABLED, '');
+      if (stored !== '') {
         setRemindersEnabled(stored === 'true');
       }
     };
@@ -128,7 +129,7 @@ export const Settings = () => {
   const handleReminderToggle = () => {
     const newValue = !remindersEnabled;
     setRemindersEnabled(newValue);
-    localStorage.setItem('smartRemindersEnabled', String(newValue));
+    rawStorage.set(StorageKeys.SMART_REMINDERS_ENABLED, String(newValue));
   };
 
   if (showCaregiverManagement) {
