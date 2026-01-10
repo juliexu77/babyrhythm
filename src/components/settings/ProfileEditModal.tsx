@@ -92,7 +92,7 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
 
           {/* Full Name */}
           <div>
-            <Label htmlFor="fullName" className="text-sm text-muted-foreground">
+            <Label htmlFor="fullName" className="text-form-label">
               {t('fullName')}
             </Label>
             <InputWithStatus
@@ -108,7 +108,7 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
           
           {/* Email - Read only */}
           <div>
-            <Label className="text-sm text-muted-foreground">{t('email')}</Label>
+            <Label className="text-form-label">{t('email')}</Label>
             <Input
               value={user?.email || ""}
               disabled

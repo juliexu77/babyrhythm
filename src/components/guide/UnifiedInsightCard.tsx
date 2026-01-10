@@ -81,7 +81,7 @@ export const UnifiedInsightCard = ({
       <div className="rounded-xl bg-gradient-to-b from-[hsl(18,40%,88%)] via-[hsl(16,38%,86%)] to-[hsl(14,35%,83%)] dark:from-card dark:to-card border border-[hsl(18,28%,78%)]/30 dark:border-border/20 shadow-[0_6px_18px_-4px_hsla(18,40%,45%,0.12)] dark:shadow-none overflow-hidden">
         {/* Header with soft matte highlight (warm cream > blush gradient at 5-7% opacity) */}
         <div className="px-4 py-4 border-b border-[hsl(18,25%,78%)]/30 dark:border-border/30 bg-gradient-to-b from-[hsl(22,35%,93%)]/60 to-transparent">
-          <h3 className="text-xs font-medium text-foreground/70">
+          <h3 className="text-form-label">
             Understanding {babyName}&apos;s Rhythm
           </h3>
         </div>
@@ -101,7 +101,7 @@ export const UnifiedInsightCard = ({
                 <div className="flex items-start gap-2 flex-1 min-w-0">
                   <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-medium text-foreground text-left">
+                    <h4 className="text-card-subtitle text-left">
                       What to Know
                     </h4>
                     {!isExpanded && (
@@ -140,7 +140,7 @@ export const UnifiedInsightCard = ({
                 <div className="flex items-start gap-2 flex-1 min-w-0">
                   <CheckSquare className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-medium text-foreground text-left">
+                    <h4 className="text-card-subtitle text-left">
                       What to Do
                     </h4>
                     {!isExpanded && whatToDo.length > 0 && (
@@ -179,7 +179,7 @@ export const UnifiedInsightCard = ({
                 <div className="flex items-start gap-2 flex-1 min-w-0">
                   <ArrowRight className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-medium text-foreground text-left">
+                    <h4 className="text-card-subtitle text-left">
                       What&apos;s Next
                     </h4>
                     {!isExpanded && (

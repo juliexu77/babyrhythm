@@ -370,19 +370,19 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
       
       {/* Summary Stats Strip */}
       <div className="bg-card px-5 py-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">This Week</h2>
+        <h2 className="text-lg text-strong mb-4">This Week</h2>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Night Sleep</p>
-            <p className="text-xl font-bold tabular-nums text-foreground">{overviewMetrics[0].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">h</span></p>
+            <p className="text-stat-label mb-1">Night Sleep</p>
+            <p className="text-xl text-stat">{overviewMetrics[0].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">h</span></p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Naps</p>
-            <p className="text-xl font-bold tabular-nums text-foreground">{overviewMetrics[1].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">/day</span></p>
+            <p className="text-stat-label mb-1">Naps</p>
+            <p className="text-xl text-stat">{overviewMetrics[1].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">/day</span></p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Feeds</p>
-            <p className="text-xl font-bold tabular-nums text-foreground">{overviewMetrics[2].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">oz</span></p>
+            <p className="text-stat-label mb-1">Feeds</p>
+            <p className="text-xl text-stat">{overviewMetrics[2].currentValue}<span className="text-sm font-normal text-muted-foreground ml-0.5">oz</span></p>
           </div>
         </div>
       </div>
@@ -392,7 +392,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         {/* Night Sleep Chart */}
         <div className="bg-card px-5 py-5">
           <div className="mb-3">
-            <span className="text-xs font-medium text-foreground">Night Sleep</span>
+            <span className="text-card-subtitle">Night Sleep</span>
           </div>
           <TimelineChart
             title="Night Sleep"
@@ -413,7 +413,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         {/* Day Naps Chart */}
         <div className="bg-card px-5 py-5">
           <div className="mb-3">
-            <span className="text-xs font-medium text-foreground">Day Naps</span>
+            <span className="text-card-subtitle">Day Naps</span>
           </div>
           <TimelineChart
             title="Day Naps"
@@ -434,7 +434,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         {/* Feed Volume Chart */}
         <div className="bg-card px-5 py-5">
           <div className="mb-3">
-            <span className="text-xs font-medium text-foreground">Feed Volume</span>
+            <span className="text-card-subtitle">Feed Volume</span>
           </div>
           <TimelineChart
             title="Feed Volume"
@@ -455,7 +455,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
         {/* Wake Windows Chart */}
         <div className="bg-card px-5 py-5">
           <div className="mb-3">
-            <span className="text-xs font-medium text-foreground">Wake Windows</span>
+            <span className="text-card-subtitle">Wake Windows</span>
           </div>
           <TimelineChart
             title="Wake Windows"
@@ -476,7 +476,7 @@ export const TrendsTab = ({ activities, travelDayDates = [] }: TrendsTabProps) =
 
       {/* Summary */}
       <div className="bg-card px-5 py-5">
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-body-muted leading-relaxed">
           {generateSummary()}
         </p>
       </div>

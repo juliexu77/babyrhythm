@@ -133,7 +133,7 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
       <div className="px-5 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-label-xs uppercase tracking-caps text-muted-foreground">Today's Snapshot</h3>
+          <h3 className="text-section-header">Today's Snapshot</h3>
           <button 
             className="text-sm font-semibold text-primary"
             onClick={() => setShowHistory(true)}
@@ -146,8 +146,8 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
         <div className="grid grid-cols-3 gap-4">
           {/* Day Sleep */}
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Day Sleep</div>
-            <div className="text-xl font-bold tabular-nums text-foreground mb-2">
+            <div className="text-stat-label mb-1">Day Sleep</div>
+            <div className="text-xl text-stat mb-2">
               {stats.daySleep.hasData ? (
                 <>{stats.daySleep.hours}h {stats.daySleep.mins}m</>
               ) : (
@@ -173,8 +173,8 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
           
           {/* Feeds */}
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Feeds</div>
-            <div className="text-xl font-bold tabular-nums text-foreground mb-2">
+            <div className="text-stat-label mb-1">Feeds</div>
+            <div className="text-xl text-stat mb-2">
               {stats.feeds.hasVolume ? (
                 <>{stats.feeds.volume} oz</>
               ) : stats.feeds.count > 0 ? (
@@ -202,8 +202,8 @@ export const DailyStatsBar = ({ activities }: DailyStatsBarProps) => {
           
           {/* Night Sleep */}
           <div>
-            <div className="text-xs text-muted-foreground mb-1">Last Night</div>
-            <div className="text-xl font-bold tabular-nums text-foreground mb-2">
+            <div className="text-stat-label mb-1">Last Night</div>
+            <div className="text-xl text-stat mb-2">
               {stats.nightSleep.hasData ? (
                 <>{stats.nightSleep.hours}h {stats.nightSleep.mins}m</>
               ) : (
