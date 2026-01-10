@@ -44,8 +44,8 @@ const Onboarding = () => {
 
           {/* Welcome Message */}
           <div className="space-y-8">
-            <h1 className="text-2xl md:text-4xl font-sans font-bold tracking-tight text-foreground uppercase">
-              Where intuition meets intelligence
+          <h1 className="text-2xl md:text-4xl font-sans font-bold tracking-tight text-foreground">
+            Where intuition meets intelligence
             </h1>
             <p className="text-sm md:text-base leading-relaxed font-normal mt-8 text-muted-foreground">
               BabyRhythm learns your baby's natural patterns from the moment you log your first nap, feed, or diaper — gently predicting what comes next with insights that grow smarter every day.
