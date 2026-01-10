@@ -7,12 +7,11 @@
 
 @layer base {
   :root {
-    /* Font stacks - Clean sans-serif (Rare Beauty aesthetic) */
-    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    --font-display: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-    --font-serif: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-    --font-num: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    --font-app-title: "DM Serif Display", Georgia, "Times New Roman", serif;
+    /* Font stacks - Lato (body) + Merriweather (headings) */
+    --font-sans: "Lato", "Lucida Grande", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-display: "Merriweather", Georgia, serif;
+    --font-serif: "Merriweather", Georgia, serif;
+    --font-num: "Lato", "Lucida Grande", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     
     /* ═══════════════════════════════════════════════════════════════════
        RARE BEAUTY COLOR PALETTE - Rose-Clay-Beige Family
