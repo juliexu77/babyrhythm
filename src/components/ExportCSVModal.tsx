@@ -253,7 +253,7 @@ export const ExportCSVModal = ({ open, onOpenChange, activities, babyName }: Exp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-strong">
             <Download className="w-5 h-5" />
             Export to CSV
           </DialogTitle>
@@ -262,7 +262,7 @@ export const ExportCSVModal = ({ open, onOpenChange, activities, babyName }: Exp
         <div className="space-y-6">
           {/* Date Range Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Date Range</Label>
+            <Label className="text-form-label">Date Range</Label>
             <RadioGroup value={range} onValueChange={(value: any) => setRange(value)}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="this-week" id="csv-this-week" />
@@ -330,7 +330,7 @@ export const ExportCSVModal = ({ open, onOpenChange, activities, babyName }: Exp
 
           {/* Activity Type Selection */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Include Activities</Label>
+            <Label className="text-form-label">Include Activities</Label>
             <div className="space-y-2">
               {[
                 { id: 'feed', label: 'Feeds' },

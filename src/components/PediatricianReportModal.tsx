@@ -389,11 +389,11 @@ export function PediatricianReportModal({
     }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Generate Pediatrician Summary</DialogTitle>
+          <DialogTitle className="text-strong">Generate Pediatrician Summary</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-body-muted">
             PDF is optimized for printing; looks the same for everyone.
           </div>
 

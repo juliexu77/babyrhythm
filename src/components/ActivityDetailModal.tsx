@@ -43,8 +43,8 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type}</h3>
-                <p className="text-sm text-muted-foreground">{activity.time}</p>
+                <h3 className="text-lg text-strong capitalize">{activity.type}</h3>
+                <p className="text-body-muted">{activity.time}</p>
               </div>
             </div>
             
@@ -79,8 +79,8 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type} {t('change')}</h3>
-                <p className="text-sm text-muted-foreground">{activity.time}</p>
+                <h3 className="text-lg text-strong capitalize">{activity.type} {t('change')}</h3>
+                <p className="text-body-muted">{activity.time}</p>
               </div>
             </div>
             
@@ -117,8 +117,8 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type}</h3>
-                <p className="text-sm text-muted-foreground">{activity.time}</p>
+                <h3 className="text-lg text-strong capitalize">{activity.type}</h3>
+                <p className="text-body-muted">{activity.time}</p>
               </div>
             </div>
             
@@ -145,8 +145,8 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-serif font-semibold capitalize">{activity.type}</h3>
-                <p className="text-sm text-muted-foreground">{activity.time}</p>
+                <h3 className="text-lg text-strong capitalize">{activity.type}</h3>
+                <p className="text-body-muted">{activity.time}</p>
               </div>
             </div>
             

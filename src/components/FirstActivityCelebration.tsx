@@ -91,17 +91,17 @@ export const FirstActivityCelebration = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-xl font-serif font-bold text-foreground">
+            <h3 className="text-xl text-strong">
               {message.title}
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-body-muted leading-relaxed">
               {message.description}
             </p>
           </div>
 
           <div className="flex items-center gap-2 px-4 py-3 bg-accent/20 rounded-lg border border-border/40 w-full">
             <TrendingUp className="w-4 h-4 text-primary flex-shrink-0" />
-            <p className="text-xs text-foreground font-medium">
+            <p className="text-label-xs text-foreground">
               {message.benefit}
             </p>
           </div>

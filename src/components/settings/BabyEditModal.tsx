@@ -135,7 +135,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md mx-auto p-0 [&>button[data-state]]:hidden">
         <DialogHeader className="p-6 pb-4">
-          <DialogTitle className="text-center text-lg font-medium">
+          <DialogTitle className="text-center text-lg text-strong">
             {t('babyDetails')}
           </DialogTitle>
         </DialogHeader>
@@ -155,7 +155,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
 
           {/* Baby Name */}
           <div>
-            <Label htmlFor="babyName" className="text-sm text-muted-foreground">
+            <Label htmlFor="babyName" className="text-form-label">
               {t('babyName')}
             </Label>
             <InputWithStatus
@@ -171,7 +171,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
 
           {/* Baby Birthday */}
           <div>
-            <Label htmlFor="babyBirthday" className="text-sm text-muted-foreground">
+            <Label htmlFor="babyBirthday" className="text-form-label">
               {t('birthday')}
             </Label>
             <div className="mt-2">
@@ -197,7 +197,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
 
           {/* Baby Sex */}
           <div>
-            <Label htmlFor="babySex" className="text-sm text-muted-foreground">
+            <Label htmlFor="babySex" className="text-form-label">
               Sex (for growth percentiles)
             </Label>
             <div className="mt-2 flex gap-3">

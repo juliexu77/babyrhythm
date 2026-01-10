@@ -111,17 +111,17 @@ export const PrefillDayModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-serif">Customize Your Sample Day</DialogTitle>
+          <DialogTitle className="text-xl text-strong">Customize Your Sample Day</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-body-muted leading-relaxed">
             Let's prefill today with sample activities tailored to your feeding routine and schedule.
           </p>
 
           {/* Feed Type */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">How do you feed?</Label>
+            <Label className="text-form-label">How do you feed?</Label>
             <RadioGroup value={feedType} onValueChange={(value: any) => setFeedType(value)}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="bottle" id="bottle" />
@@ -141,7 +141,7 @@ export const PrefillDayModal = ({
           {/* Bottle Amount */}
           {(feedType === "bottle" || feedType === "both") && (
             <div className="space-y-2">
-              <Label htmlFor="bottleAmount" className="text-sm font-medium">
+              <Label htmlFor="bottleAmount" className="text-form-label">
                 Typical bottle amount (oz)
               </Label>
               <Input
@@ -159,7 +159,7 @@ export const PrefillDayModal = ({
           {/* Breast Duration */}
           {(feedType === "breast" || feedType === "both") && (
             <div className="space-y-2">
-              <Label htmlFor="breastDuration" className="text-sm font-medium">
+              <Label htmlFor="breastDuration" className="text-form-label">
                 Typical nursing duration (minutes)
               </Label>
               <Input
@@ -176,7 +176,7 @@ export const PrefillDayModal = ({
 
           {/* Feed Count */}
           <div className="space-y-2">
-            <Label htmlFor="feedCount" className="text-sm font-medium">
+            <Label htmlFor="feedCount" className="text-form-label">
               Feeds per day
             </Label>
             <Input
@@ -192,7 +192,7 @@ export const PrefillDayModal = ({
 
           {/* Nap Count */}
           <div className="space-y-2">
-            <Label htmlFor="napCount" className="text-sm font-medium">
+            <Label htmlFor="napCount" className="text-form-label">
               Naps per day
             </Label>
             <Input
