@@ -1224,10 +1224,10 @@ const lastDiaper = displayActivities
         <div className="space-y-3">
           {/* Welcome Message */}
           <div className="space-y-3">
-            <h2 className="text-xl font-serif font-semibold text-foreground">
+            <h2 className="text-xl font-serif text-strong">
               Hi {userName || 'there'} 👋
             </h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-body-muted leading-relaxed">
               Let's discover {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm together. Every activity you log helps me understand what they need next.
             </p>
           </div>
@@ -1236,16 +1236,16 @@ const lastDiaper = displayActivities
           <Card className="p-6 bg-card/50 border border-border/40">
             <div className="space-y-5">
               <div className="space-y-2">
-                <h3 className="text-base font-serif font-semibold text-foreground">
+                <h3 className="text-base font-serif text-strong">
                   Start tracking to unlock predictions
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-body-muted leading-relaxed">
                   With just one activity logged, you'll see your first prediction appear.
                 </p>
               </div>
               
               <div className="space-y-3 pt-2">
-                <p className="text-xs font-medium text-muted-foreground tracking-wide">
+                <p className="text-label-sm">
                   What you'll discover:
                 </p>
                 
