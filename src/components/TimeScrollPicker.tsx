@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface TimeScrollPickerProps {
   value?: string;
@@ -380,7 +381,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               setHasUserInteracted(true);
               setSelectedPeriod(newPeriod);
               try { 
-                localStorage.setItem('lastUsedPeriod', newPeriod); 
+                rawStorage.set(StorageKeys.LAST_USED_PERIOD, newPeriod); 
               } catch (e) {}
             }}
           >

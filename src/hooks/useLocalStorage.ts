@@ -51,6 +51,7 @@ export const StorageKeys = {
   OFFLINE_QUEUE: 'offlineQueue',
   SCHEDULE_CACHE: 'scheduleCache',
   ACTIVE_HOUSEHOLD_ID: 'active_household_id',
+  STORY_HEADLINE_CACHE: 'babyrhythm_story_headline_',
   
   // Baby Profile (for non-authenticated use)
   TEMP_BABY_NAME: 'tempBabyName',

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Activity } from "./ActivityCard";
 import { Progress } from "./ui/progress";
 import { Sparkles } from "lucide-react";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface LearningProgressProps {
   activities: Activity[];
@@ -11,7 +12,7 @@ interface LearningProgressProps {
 
 export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: LearningProgressProps) => {
   const [hasUnlocked, setHasUnlocked] = useState(() => {
-    return localStorage.getItem('rhythm_unlocked') === 'true';
+    return rawStorage.get(StorageKeys.HAS_SEEN_RHYTHM_UNLOCK, '') === 'true';
   });
 
   const naps = activities.filter(a => a.type === 'nap');
@@ -42,7 +43,7 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
   useEffect(() => {
     if (isUnlocked && !hasUnlocked) {
       setHasUnlocked(true);
-      localStorage.setItem('rhythm_unlocked', 'true');
+      rawStorage.set(StorageKeys.HAS_SEEN_RHYTHM_UNLOCK, 'true');
       onRhythmUnlocked?.();
     }
   }, [isUnlocked, hasUnlocked, onRhythmUnlocked]);

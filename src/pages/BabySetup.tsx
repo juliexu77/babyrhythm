@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
 
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -91,7 +92,7 @@ const BabySetup = () => {
       if (profileError) throw profileError;
 
       // Set active household for subsequent queries
-      localStorage.setItem('active_household_id', householdId);
+      rawStorage.set(StorageKeys.ACTIVE_HOUSEHOLD_ID, householdId);
 
       toast({
         title: "Profile created",
