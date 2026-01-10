@@ -7,11 +7,11 @@
 
 @layer base {
   :root {
-    /* Font stacks - Lato (body) + Merriweather (headings) */
-    --font-sans: "Lato", "Lucida Grande", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-display: "Merriweather", Georgia, serif;
-    --font-serif: "Merriweather", Georgia, serif;
-    --font-num: "Lato", "Lucida Grande", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    /* Font stacks - Lora (headings/emotional) + Inter (body/functional) */
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-display: "Lora", Georgia, serif;
+    --font-serif: "Lora", Georgia, serif;
+    --font-num: "Lora", Georgia, serif;
     
     /* ═══════════════════════════════════════════════════════════════════
        RARE BEAUTY COLOR PALETTE - Rose-Clay-Beige Family
@@ -1541,70 +1541,208 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   TYPOGRAPHY HIERARCHY SYSTEM
-   Consistent font-weight classes for labels, headings, and text
+   TYPOGRAPHY HIERARCHY SYSTEM - Lora + Inter
+   Lora (serif) for headers/emotional content
+   Inter (sans-serif) for data/functional UI
    ═══════════════════════════════════════════════════════════════════ */
 
 @layer utilities {
-  /* Section headers - Bold for major sections */
+  /* App Title - Lora Bold, 28px, 2px letter-spacing */
+  .text-app-title {
+    font-family: "Lora", Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    @apply text-foreground;
+  }
+  
+  /* Page Headers - Lora SemiBold, 24px */
+  .text-page-header {
+    font-family: "Lora", Georgia, serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: hsl(22, 30%, 22%);
+  }
+  
+  .dark .text-page-header {
+    color: hsl(var(--foreground));
+  }
+  
+  /* Section Headers - Lora Medium, 20px */
   .text-section-header {
-    @apply text-xs font-semibold text-muted-foreground;
+    font-family: "Lora", Georgia, serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: hsl(22, 30%, 22%);
   }
   
-  /* Form labels - Medium weight for input labels */
-  .text-form-label {
-    @apply text-xs font-medium text-muted-foreground;
+  .dark .text-section-header {
+    color: hsl(var(--foreground));
   }
   
-  /* Small labels - Light emphasis for helper text */
-  .text-label-sm {
-    @apply text-[10px] font-medium text-muted-foreground;
-  }
-  
-  /* Card titles - Semibold for card headers */
+  /* Card Titles - Lora Medium, 18px */
   .text-card-title {
-    @apply text-sm font-semibold text-foreground;
+    font-family: "Lora", Georgia, serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: hsl(22, 30%, 22%);
   }
   
-  /* Card subtitles - Medium weight */
-  .text-card-subtitle {
-    @apply text-xs font-medium text-muted-foreground;
+  .dark .text-card-title {
+    color: hsl(var(--foreground));
   }
   
-  /* Body text - Regular weight */
+  /* Body Text - Inter Regular, 16px */
   .text-body {
-    @apply text-sm font-normal text-foreground;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: hsl(25, 15%, 35%);
   }
   
-  /* Muted body text */
+  .dark .text-body {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Muted Body Text - Inter Regular, 16px */
   .text-body-muted {
-    @apply text-sm font-normal text-muted-foreground;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: hsl(25, 15%, 35%);
   }
   
-  /* Emphasis text - Medium weight */
-  .text-emphasis {
-    @apply font-medium text-foreground;
+  .dark .text-body-muted {
+    color: hsl(var(--muted-foreground));
   }
   
-  /* Strong emphasis - Semibold */
-  .text-strong {
-    @apply font-semibold text-foreground;
+  /* Metadata/Labels - Inter Regular, 14px */
+  .text-label {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: hsl(28, 18%, 43%);
   }
   
-  /* Numeric display - For stats and numbers */
+  .dark .text-label {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Small Text - Inter Regular, 12px (timestamps, chart axes) */
+  .text-small {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: hsl(30, 15%, 58%);
+  }
+  
+  .dark .text-small {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Large Numbers - Timer style - Lora Bold, 48px */
+  .text-stat-xl {
+    font-family: "Lora", Georgia, serif;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    color: hsl(22, 30%, 22%);
+  }
+  
+  .dark .text-stat-xl {
+    color: hsl(var(--foreground));
+  }
+  
+  /* Stats Numbers - Lora Bold, 32px */
   .text-stat {
-    @apply font-num font-bold text-foreground;
+    font-family: "Lora", Georgia, serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    color: hsl(22, 30%, 22%);
+  }
+  
+  .dark .text-stat {
+    color: hsl(var(--foreground));
   }
   
   /* Stat label - Small label for stats */
   .text-stat-label {
-    @apply text-[10px] font-medium text-muted-foreground;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: hsl(28, 18%, 43%);
   }
   
-  /* App title - Unique class for BabyRhythm branding */
-  .text-app-title {
-    font-family: "Lato", "Lucida Grande", sans-serif;
-    @apply text-2xl text-foreground tracking-widest uppercase;
-    font-weight: 700;
+  .dark .text-stat-label {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Buttons - Inter SemiBold, 16px */
+  .text-button {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  /* Form labels - Inter Medium for input labels */
+  .text-form-label {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: hsl(28, 18%, 43%);
+  }
+  
+  .dark .text-form-label {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Small labels - Light emphasis for helper text */
+  .text-label-sm {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: hsl(28, 18%, 43%);
+  }
+  
+  .dark .text-label-sm {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Card subtitles - Medium weight */
+  .text-card-subtitle {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: hsl(28, 18%, 43%);
+  }
+  
+  .dark .text-card-subtitle {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Emphasis text - Medium weight */
+  .text-emphasis {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 500;
+    color: hsl(22, 30%, 22%);
+  }
+  
+  .dark .text-emphasis {
+    color: hsl(var(--foreground));
+  }
+  
+  /* Strong emphasis - Semibold */
+  .text-strong {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 600;
+    color: hsl(22, 30%, 22%);
+  }
+  
+  .dark .text-strong {
+    color: hsl(var(--foreground));
   }
 }
