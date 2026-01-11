@@ -87,7 +87,7 @@
        ═══════════════════════════════════════════════════════════════════ */
     
     --elev-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --card-radius: 12px;
+    --card-radius: 2px;
     
     /* Removed glow effects for Strava-clean aesthetic */
     
@@ -117,7 +117,7 @@
     --border: var(--divider);
     --input: var(--surface-muted);
     --ring: var(--rb-terracotta-rose);
-    --radius: 12px;
+    --radius: 2px;
     
     /* Semantic status colors */
     --success: 142 45% 42%; /* Muted green */
@@ -190,7 +190,7 @@
     
     /* Card elevation - flat design */
     --elev-shadow: none;
-    --card-radius: 8px;
+    --card-radius: 2px;
     
     /* Transitions - Dark Mode: crisp */
     --transition-smooth: all 140ms ease-out;
@@ -215,7 +215,7 @@
     --border: var(--divider);
     --input: var(--surface-muted);
     --ring: var(--pp-mint);
-    --radius: 8px;
+    --radius: 2px;
     
     /* Semantic status colors - dark mode */
     --success: 142 55% 55%;
@@ -294,7 +294,7 @@
     
     /* Card elevation - liquid glass */
     --elev-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03), 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-    --card-radius: 12px;
+    --card-radius: 2px;
     
     /* Transitions - Dusk Mode: smooth */
     --transition-smooth: all 200ms ease-in-out;
@@ -319,7 +319,7 @@
     --border: var(--divider);
     --input: var(--surface-muted);
     --ring: var(--accent-1);
-    --radius: 12px;
+    --radius: 2px;
     
     /* Semantic status colors - dusk mode */
     --success: 142 40% 50%;
