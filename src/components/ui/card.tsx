@@ -3,29 +3,30 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Card Component - Strava-Inspired Athletic Aesthetic
- * - Clean, data-forward containers
- * - Sharp-ish corners (12px radius)
- * - Subtle borders, no heavy shadows
- * - Efficient use of space
+ * Card Component - Clean, Modern Aesthetic
+ * - Sharp shadows for depth/separation
+ * - Clean sans-serif throughout
+ * - Data-forward containers
  */
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div 
     ref={ref} 
     className={cn(
-      // Shape: Strava-style rounded corners
-      "rounded-strava text-card-foreground",
-      // Border: Clean, visible border
-      "border border-border",
+      // Shape: Modern rounded corners
+      "rounded-xl text-card-foreground",
+      // Border: Clean, subtle border
+      "border border-border/50",
       // Background: Solid, clean
       "bg-card",
+      // Shadow: Sharp for depth/separation
+      "shadow-sharp",
       // Transition
-      "transition-colors duration-150",
+      "transition-all duration-150",
       // Dark mode
-      "dark:bg-card dark:border-border/60",
+      "dark:bg-card dark:border-border/40 dark:shadow-none",
       // Dusk mode
-      "dusk:bg-card dusk:border-border/40",
+      "dusk:bg-card dusk:border-border/30 dusk:shadow-none",
       className
     )} 
     {...props} 
@@ -43,8 +44,8 @@ CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    // Strava-style: uppercase, tracking, semibold
-    <h3 ref={ref} className={cn("text-xs font-semibold uppercase tracking-caps text-muted-foreground", className)} {...props} />
+    // Clean sans-serif, semibold
+    <h3 ref={ref} className={cn("text-sm font-semibold tracking-tight text-foreground", className)} {...props} />
   ),
 );
 CardTitle.displayName = "CardTitle";

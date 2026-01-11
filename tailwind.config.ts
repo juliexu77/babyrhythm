@@ -15,11 +15,11 @@ export default {
     },
     extend: {
       fontFamily: {
+        // Clean sans-serif throughout - Inter for everything
         sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
-        display: ["Lora", "Georgia", "serif"],
-        serif: ["Lora", "Georgia", "serif"],
-        num: ["Lora", "Georgia", "serif"],
-        // Clean modern font stack
+        display: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        serif: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        num: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
         athletic: ["Inter", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
       },
       letterSpacing: {
@@ -135,10 +135,11 @@ export default {
         'soft': 'var(--shadow-soft)',
         'card': 'var(--shadow-card)',
         'elevated': 'var(--shadow-elevated)',
-        // Strava-clean shadows
-        'strava': '0 2px 8px rgba(0, 0, 0, 0.08)',
-        'strava-hover': '0 4px 12px rgba(0, 0, 0, 0.12)',
-        'strava-btn': '0 1px 3px rgba(0, 0, 0, 0.12)',
+        // Sharp, modern shadows for depth/separation
+        'sharp': '0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.1)',
+        'sharp-md': '0 2px 4px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.12)',
+        'sharp-lg': '0 4px 8px rgba(0, 0, 0, 0.1), 0 16px 32px rgba(0, 0, 0, 0.15)',
+        'sharp-hover': '0 2px 4px rgba(0, 0, 0, 0.08), 0 12px 24px rgba(0, 0, 0, 0.14)',
       },
       borderRadius: {
         lg: "var(--radius)",
