@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { format } from "date-fns";
 import { Activity } from "@/types/activity";
-import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
+import { rawStorage } from "@/hooks/useLocalStorage";
 
 // Hooks
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
@@ -20,16 +19,16 @@ import { RightNowStatus } from "@/components/home/RightNowStatus";
 import { StatusCarousel } from "@/components/home/StatusCarousel";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
 import { LearningProgress } from "@/components/LearningProgress";
-import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
-import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
 import { TomorrowPreview } from "@/components/home/TomorrowPreview";
-import { FirstActivityCelebration } from "@/components/FirstActivityCelebration";
-import { PrefillDayModal } from "@/components/PrefillDayModal";
-import { OnboardingTutorial } from "@/components/onboarding/OnboardingTutorial";
 import { HomeEmptyState } from "@/components/home/HomeEmptyState";
+import { HomeModals } from "@/components/home/HomeModals";
 
-// Utils
-import { logError } from "@/utils/logger";
+// Handlers
+import { 
+  handleMissedActivityAccept, 
+  handleMissedActivityDismiss,
+  handleQuickLog 
+} from "@/components/home/homeTabHandlers";
 
 interface HomeTabProps {
   activities: Activity[];
@@ -66,14 +65,11 @@ export const HomeTab = ({
   const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   const { household } = useHousehold();
   
-  // Use household baby_birthday as authoritative source
   const effectiveBabyBirthday = household?.baby_birthday || babyBirthday;
 
   // Centralized state management
   const {
-    currentTime,
     babyAgeMonths,
-    babyAgeInWeeks,
     isRhythmUnlocked,
     showEducationalContent,
     showRhythmUnlocked,
@@ -115,7 +111,6 @@ export const HomeTab = ({
     household?.id
   );
 
-  // Use passed ongoing nap for consistency
   const ongoingNap = passedOngoingNap;
 
   // Empty state for new users
@@ -133,7 +128,6 @@ export const HomeTab = ({
 
   return (
     <div className="pb-24">
-      {/* Strava-style layout: full-width cards with tiny gaps */}
       <div className="flex flex-col gap-[2px] bg-border/30">
 
         {/* Missed Activity Prompt */}
@@ -141,51 +135,21 @@ export const HomeTab = ({
           <div className="bg-card">
             <MissedActivityPrompt
               suggestion={missedActivitySuggestion}
-              onAccept={async () => {
-                const { activityType, subType, suggestedTime } = missedActivitySuggestion;
-                
-                const acceptKey = `accepted-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd-HH:mm')}` as const;
-                rawStorage.set(acceptKey as any, Date.now().toString());
-                
-                if (subType === 'morning-wake') {
-                  if (ongoingNap && addActivity) {
-                    try {
-                      const { supabase } = await import('@/integrations/supabase/client');
-                      
-                      const { error } = await supabase
-                        .from('activities')
-                        .update({ details: { ...ongoingNap.details, endTime: suggestedTime } })
-                        .eq('id', ongoingNap.id);
-                      
-                      if (error) throw error;
-                      window.dispatchEvent(new CustomEvent('refetch-activities'));
-                    } catch (error) {
-                      logError('End sleep', error);
-                    }
-                  }
-                } else {
-                  if (activityType === 'nap') {
-                    await addActivity?.('nap', { startTime: suggestedTime }, new Date(), suggestedTime);
-                  } else {
-                    await addActivity?.(activityType, {}, new Date(), suggestedTime);
-                  }
-                }
-              }}
+              onAccept={() => handleMissedActivityAccept({
+                suggestion: missedActivitySuggestion,
+                householdId: household?.id,
+                ongoingNap,
+                addActivity
+              })}
               onEdit={() => {
                 const { activityType, subType } = missedActivitySuggestion;
-                
                 if (subType === 'morning-wake' && ongoingNap) {
                   onEditActivity(ongoingNap);
                 } else {
                   onAddActivity?.(activityType);
                 }
               }}
-              onDismiss={() => {
-                const { activityType, subType } = missedActivitySuggestion;
-                const dismissalKey = `missed-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd')}` as const;
-                rawStorage.set(dismissalKey as any, 'true');
-                window.dispatchEvent(new CustomEvent('refetch-activities'));
-              }}
+              onDismiss={() => handleMissedActivityDismiss(missedActivitySuggestion, household?.id)}
             />
           </div>
         )}
@@ -219,24 +183,7 @@ export const HomeTab = ({
             onLogActivity={async (type, time) => {
               setIsQuickLogging(true);
               try {
-                if (type === 'nap') {
-                  await addActivity?.('nap', { startTime: time }, new Date(), time);
-                } else if (type === 'feed') {
-                  const recentFeed = activities
-                    .filter(a => a.type === 'feed' && a.details?.quantity)
-                    .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
-                  
-                  const feedDetails: any = {};
-                  if (recentFeed?.details?.quantity) {
-                    feedDetails.quantity = recentFeed.details.quantity;
-                    if (recentFeed.details.unit) feedDetails.unit = recentFeed.details.unit;
-                    if (recentFeed.details.feedType) feedDetails.feedType = recentFeed.details.feedType;
-                  }
-                  
-                  await addActivity?.('feed', feedDetails, new Date(), time);
-                } else if (type === 'diaper') {
-                  await addActivity?.('diaper', {}, new Date(), time);
-                }
+                await handleQuickLog({ type, time, activities, addActivity });
               } catch (error) {
                 console.error('Could not log activity:', error);
               } finally {
@@ -283,63 +230,24 @@ export const HomeTab = ({
       </div>
 
       {/* Modals */}
-      <TodaysStoryModal
-        isOpen={showTodaysStory}
-        onClose={() => {
-          setShowTodaysStory(false);
-          setSelectedStoryDate(null);
-        }}
+      <HomeModals
+        showTodaysStory={showTodaysStory}
+        setShowTodaysStory={setShowTodaysStory}
+        selectedStoryDate={selectedStoryDate}
+        setSelectedStoryDate={setSelectedStoryDate}
         activities={activities}
         babyName={babyName}
-        targetDate={selectedStoryDate || format(new Date(), 'yyyy-MM-dd')}
-        availableDates={(() => {
-          const dates: string[] = [];
-          const today = new Date();
-          for (let i = 4; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            dates.push(format(date, 'yyyy-MM-dd'));
-          }
-          return dates;
-        })()}
-        onNavigate={(newDate) => {
-          setSelectedStoryDate(newDate);
-        }}
-        allActivities={activities}
-      />
-
-      <RhythmUnlockedModal 
-        isOpen={showRhythmUnlocked}
-        onClose={() => setShowRhythmUnlocked(false)}
-        babyName={babyName}
-        totalLogs={activities.length}
-      />
-
-      <FirstActivityCelebration
-        open={showFirstActivityCelebration}
-        onClose={() => setShowFirstActivityCelebration(false)}
-        babyName={babyName}
-        activityType={firstActivityType}
-      />
-
-      <PrefillDayModal
-        isOpen={showPrefillModal}
-        onClose={() => setShowPrefillModal(false)}
+        showRhythmUnlocked={showRhythmUnlocked}
+        setShowRhythmUnlocked={setShowRhythmUnlocked}
+        showFirstActivityCelebration={showFirstActivityCelebration}
+        setShowFirstActivityCelebration={setShowFirstActivityCelebration}
+        firstActivityType={firstActivityType}
+        showPrefillModal={showPrefillModal}
+        setShowPrefillModal={setShowPrefillModal}
         babyAgeMonths={babyAgeMonths}
-        onPrefill={(prefillActivities) => {
-          prefillActivities.forEach(activity => {
-            addActivity?.(activity.type, activity.details, new Date(), activity.time);
-          });
-        }}
-      />
-
-      <OnboardingTutorial
-        isOpen={showOnboarding}
-        onComplete={() => {
-          setShowOnboarding(false);
-          rawStorage.set(StorageKeys.ONBOARDING_COMPLETED as any, 'true');
-        }}
-        babyName={babyName}
+        addActivity={addActivity}
+        showOnboarding={showOnboarding}
+        setShowOnboarding={setShowOnboarding}
       />
     </div>
   );
