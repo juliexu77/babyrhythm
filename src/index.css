@@ -105,7 +105,7 @@
     --popover: var(--surface);
     --popover-foreground: var(--text);
     --primary: var(--rb-berry-mauve);
-    --primary-foreground: 30 50% 97%; /* Warm cream instead of pure white */
+    --primary-foreground: 0 0% 100%; /* Pure white for visibility on dark primary */
     --secondary: var(--rb-dusty-blush);
     --secondary-foreground: 350 35% 20%;
     --muted: var(--surface-muted);
