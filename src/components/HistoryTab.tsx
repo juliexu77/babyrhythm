@@ -354,7 +354,7 @@ export const HistoryTab = ({
                         onClick={() => onEditActivity(wakeInfo.nightSleep)}
                         className="relative flex items-center px-4 py-3 group transition-colors w-full text-left hover:bg-muted/50"
                       >
-                        <div className="relative z-10 flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                        <div className="relative z-10 flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground">
                           <Sun className="h-4 w-4" />
                         </div>
                         
