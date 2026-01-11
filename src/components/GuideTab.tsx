@@ -16,7 +16,7 @@ import { GrowthIndicators } from "@/components/home/GrowthIndicators";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { ParentingChat } from "@/components/ParentingChat";
 import { useRhythmAnalysis } from "@/hooks/useRhythmAnalysis";
-import { RhythmEmptyState, UnlockProgress, RhythmLoadingState } from "@/components/rhythm";
+import { GuideEmptyState, UnlockProgress, GuideLoadingState } from "@/components/guide";
 
 import { isNightSleep, isDaytimeNap } from "@/utils/napClassification";
 import { getActivityEventDateString } from "@/utils/activityDate";
@@ -29,7 +29,7 @@ interface Activity {
   details: any;
 }
 
-interface RhythmTabProps {
+interface GuideTabProps {
   activities: Activity[];
   onGoToSettings?: () => void;
 }
@@ -46,7 +46,7 @@ interface RhythmInsights {
   generatedAt?: Date;
 }
 
-export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
+export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // ===== ALL HOOKS FIRST =====
   const { household, loading: householdLoading } = useHousehold();
   const { user } = useAuth();
@@ -473,13 +473,13 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
   return (
     <div className="flex flex-col h-full bg-background pb-24">
       {householdLoading ? (
-        <RhythmLoadingState />
+        <GuideLoadingState />
       ) : !household ? (
-        <RhythmEmptyState type="no-household" onGoToSettings={onGoToSettings} />
+        <GuideEmptyState type="no-household" onGoToSettings={onGoToSettings} />
       ) : (
         <>
           {needsBirthdaySetup && (
-            <RhythmEmptyState type="needs-birthday" onGoToSettings={onGoToSettings} />
+            <GuideEmptyState type="needs-birthday" onGoToSettings={onGoToSettings} />
           )}
 
           <ScrollArea className="flex-1">

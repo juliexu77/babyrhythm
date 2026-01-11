@@ -1,6 +1,6 @@
 import { toZonedTime } from 'date-fns-tz';
 
-export interface RhythmTabActivity {
+export interface GuideActivity {
   id: string;
   type: string;
   logged_at: string;
@@ -31,7 +31,7 @@ export interface PredictedSchedule {
  * Generate a predicted daily schedule based on historical activity patterns
  */
 export function generatePredictedSchedule(
-  activities: RhythmTabActivity[],
+  activities: GuideActivity[],
   babyBirthday?: string,
   timezone: string = 'UTC'
 ): PredictedSchedule {
@@ -224,7 +224,7 @@ export function generatePredictedSchedule(
  */
 export function calculatePredictionAccuracy(
   predictedSchedule: PredictedSchedule,
-  actualActivities: RhythmTabActivity[],
+  actualActivities: GuideActivity[],
   timezone: string = 'UTC'
 ): number {
   const nowLocal = toZonedTime(new Date(), timezone);
@@ -288,7 +288,7 @@ export function calculatePredictionAccuracy(
 
 // Helper functions
 
-function getTimeFromActivity(activity: RhythmTabActivity): string {
+function getTimeFromActivity(activity: GuideActivity): string {
   // Extract time string from logged_at
   const loggedDate = new Date(activity.logged_at);
   return loggedDate.toLocaleTimeString('en-US', { 
@@ -344,7 +344,7 @@ function getAverageBedTime(nightSleeps: Array<{ startTime: number; endTime: numb
   return Math.round(avg);
 }
 
-function calculateAverageWakeWindow(activities: RhythmTabActivity[]): { typical: number; range: string } {
+function calculateAverageWakeWindow(activities: GuideActivity[]): { typical: number; range: string } {
   // Calculate wake windows between naps
   const naps = activities
     .filter(a => a.type === 'nap' && a.details?.endTime && a.details?.startTime)
@@ -378,7 +378,7 @@ function calculateAverageWakeWindow(activities: RhythmTabActivity[]): { typical:
   };
 }
 
-function calculateAverageFeedInterval(activities: RhythmTabActivity[]): { typical: number } {
+function calculateAverageFeedInterval(activities: GuideActivity[]): { typical: number } {
   const feeds = activities
     .filter(a => a.type === 'feed')
     .sort((a, b) => {

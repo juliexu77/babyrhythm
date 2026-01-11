@@ -1,12 +1,12 @@
 import { Compass, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface RhythmEmptyStateProps {
+interface GuideEmptyStateProps {
   type: "no-household" | "needs-birthday";
   onGoToSettings?: () => void;
 }
 
-export const RhythmEmptyState = ({ type, onGoToSettings }: RhythmEmptyStateProps) => {
+export const GuideEmptyState = ({ type, onGoToSettings }: GuideEmptyStateProps) => {
   if (type === "no-household") {
     return (
       <div className="flex-1 flex items-center justify-center">
