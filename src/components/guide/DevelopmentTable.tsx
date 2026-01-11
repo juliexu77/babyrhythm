@@ -33,6 +33,7 @@ interface DomainData {
   stageNumber: number;
   totalStages: number;
   isEmerging: boolean;
+  isAhead: boolean;
   color: string;
 }
 
@@ -63,6 +64,12 @@ export function DevelopmentTable({
       
       if (!stageResult) return null;
 
+      // Check if ahead: user confirmed a stage higher than the default age-based stage
+      const defaultResult = calculateStage(domain.id, ageInWeeks);
+      const isAhead = confirmedStage !== undefined && 
+        defaultResult && 
+        confirmedStage > defaultResult.stageNumber;
+
       return {
         id: domain.id,
         label: domain.label,
@@ -71,10 +78,15 @@ export function DevelopmentTable({
         stageNumber: stageResult.stageNumber,
         totalStages: domain.stages.length,
         isEmerging: stageResult.isEmerging,
+        isAhead,
         color: domain.color
       } as DomainData;
     }).filter(Boolean) as DomainData[];
   }, [ageInWeeks, calibrationFlags]);
+
+  // Separate emerging and ahead domains for summary
+  const emergingDomains = domainData.filter(d => d.isEmerging);
+  const aheadDomains = domainData.filter(d => d.isAhead);
 
   const selectedDomainData = useMemo(() => {
     if (!selectedDomain) return null;
@@ -109,6 +121,57 @@ export function DevelopmentTable({
           Tap any area to explore milestones
         </p>
       </div>
+
+      {/* Summary Strip */}
+      {(emergingDomains.length > 0 || aheadDomains.length > 0) && (
+        <div className="mb-4 space-y-2">
+          {aheadDomains.length > 0 && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <span className="text-xs font-medium">Ahead</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {aheadDomains.map(d => (
+                  <button
+                    key={d.id}
+                    onClick={() => setSelectedDomain(d.id)}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30 transition-colors"
+                  >
+                    {d.icon}
+                    <span>{d.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {emergingDomains.length > 0 && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
+              <div className="flex items-center gap-1.5 text-primary">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                </svg>
+                <span className="text-xs font-medium">Emerging</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {emergingDomains.map(d => (
+                  <button
+                    key={d.id}
+                    onClick={() => setSelectedDomain(d.id)}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    {d.icon}
+                    <span>{d.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Domain Grid */}
       <div className="grid grid-cols-2 gap-3">
