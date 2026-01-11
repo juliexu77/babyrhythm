@@ -158,12 +158,12 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 4px)", 
-        sm: "calc(var(--radius) - 8px)",
-        // Strava-style unified radiuses
-        "strava": "8px",
-        "strava-sm": "4px",
-        "strava-lg": "12px",
+        md: "calc(var(--radius) - 2px)", 
+        sm: "calc(var(--radius) - 4px)",
+        // Sharp unified radiuses
+        "strava": "2px",
+        "strava-sm": "1px",
+        "strava-lg": "2px",
         "sharp": "2px",
         "pill": "9999px",
       },
