@@ -1591,39 +1591,27 @@
     @apply text-foreground;
   }
   
-  /* Page Headers - Lora SemiBold, 24px */
+  /* Page Headers - Inter SemiBold, 24px */
   .text-page-header {
-    font-family: "Lora", Georgia, serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 24px;
     font-weight: 600;
-    color: hsl(22, 30%, 22%);
-  }
-  
-  .dark .text-page-header {
     color: hsl(var(--foreground));
   }
   
-  /* Section Headers - Lora Medium, 20px */
+  /* Section Headers - Inter Medium, 20px */
   .text-section-header {
-    font-family: "Lora", Georgia, serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 20px;
     font-weight: 500;
-    color: hsl(22, 30%, 22%);
-  }
-  
-  .dark .text-section-header {
     color: hsl(var(--foreground));
   }
   
-  /* Card Titles - Lora Medium, 18px */
+  /* Card Titles - Inter Medium, 18px */
   .text-card-title {
-    font-family: "Lora", Georgia, serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 18px;
     font-weight: 500;
-    color: hsl(22, 30%, 22%);
-  }
-  
-  .dark .text-card-title {
     color: hsl(var(--foreground));
   }
   
@@ -1633,11 +1621,7 @@
     font-size: 16px;
     font-weight: 400;
     line-height: 1.5;
-    color: hsl(25, 15%, 35%);
-  }
-  
-  .dark .text-body {
-    color: hsl(var(--muted-foreground));
+    color: hsl(var(--foreground));
   }
   
   /* Muted Body Text - Inter Regular, 16px */
@@ -1646,10 +1630,6 @@
     font-size: 16px;
     font-weight: 400;
     line-height: 1.5;
-    color: hsl(25, 15%, 35%);
-  }
-  
-  .dark .text-body-muted {
     color: hsl(var(--muted-foreground));
   }
   
@@ -1658,10 +1638,6 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 14px;
     font-weight: 400;
-    color: hsl(28, 18%, 43%);
-  }
-  
-  .dark .text-label {
     color: hsl(var(--muted-foreground));
   }
   
@@ -1670,36 +1646,24 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 12px;
     font-weight: 400;
-    color: hsl(30, 15%, 58%);
-  }
-  
-  .dark .text-small {
     color: hsl(var(--muted-foreground));
   }
   
-  /* Large Numbers - Timer style - Lora Bold, 48px */
+  /* Large Numbers - Timer style - Inter Bold, 48px */
   .text-stat-xl {
-    font-family: "Lora", Georgia, serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 48px;
     font-weight: 700;
     line-height: 1;
-    color: hsl(22, 30%, 22%);
-  }
-  
-  .dark .text-stat-xl {
     color: hsl(var(--foreground));
   }
   
-  /* Stats Numbers - Lora Bold, 32px */
+  /* Stats Numbers - Inter Bold, 32px */
   .text-stat {
-    font-family: "Lora", Georgia, serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 32px;
     font-weight: 700;
     line-height: 1;
-    color: hsl(22, 30%, 22%);
-  }
-  
-  .dark .text-stat {
     color: hsl(var(--foreground));
   }
   
@@ -1708,10 +1672,6 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 10px;
     font-weight: 500;
-    color: hsl(28, 18%, 43%);
-  }
-  
-  .dark .text-stat-label {
     color: hsl(var(--muted-foreground));
   }
   
@@ -1727,14 +1687,10 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 12px;
     font-weight: 500;
-    color: hsl(28, 18%, 43%);
-  }
-  
-  .dark .text-form-label {
     color: hsl(var(--muted-foreground));
   }
   
-  /* Small labels - Light emphasis for helper text (no hardcoded color - inherits from parent) */
+  /* Small labels - Light emphasis for helper text (inherits color from parent) */
   .text-label-sm {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 10px;
@@ -1746,10 +1702,6 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-size: 12px;
     font-weight: 500;
-    color: hsl(28, 18%, 43%);
-  }
-  
-  .dark .text-card-subtitle {
     color: hsl(var(--muted-foreground));
   }
   
@@ -1757,10 +1709,6 @@
   .text-emphasis {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-weight: 500;
-    color: hsl(22, 30%, 22%);
-  }
-  
-  .dark .text-emphasis {
     color: hsl(var(--foreground));
   }
   
@@ -1768,10 +1716,6 @@
   .text-strong {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     font-weight: 600;
-    color: hsl(22, 30%, 22%);
-  }
-  
-  .dark .text-strong {
     color: hsl(var(--foreground));
   }
 }
