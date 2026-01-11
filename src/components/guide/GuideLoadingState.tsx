@@ -1,4 +1,4 @@
-export const RhythmLoadingState = () => {
+export const GuideLoadingState = () => {
   return (
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
