@@ -126,8 +126,8 @@ export function DevelopmentTable({
       {(emergingDomains.length > 0 || aheadDomains.length > 0) && (
         <div className="mb-4 space-y-2">
           {aheadDomains.length > 0 && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-success-muted border border-success/20">
+              <div className="flex items-center gap-1.5 text-success">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
@@ -138,7 +138,7 @@ export function DevelopmentTable({
                   <button
                     key={d.id}
                     onClick={() => setSelectedDomain(d.id)}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30 transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-success/20 text-success hover:bg-success/30 transition-colors"
                   >
                     {d.icon}
                     <span>{d.label}</span>

@@ -102,21 +102,21 @@ export const GrowthIndicators = ({ activities, babyBirthday }: GrowthIndicatorsP
     <div className="pb-4 space-y-2">
       {isClusterFeeding && (
         <Badge variant="secondary" className="w-full justify-start gap-2 py-2 text-sm font-normal">
-          <TrendingUp className="h-4 w-4 text-orange-500" />
+          <TrendingUp className="h-4 w-4 text-warning" />
           <span>Cluster feeding detected</span>
         </Badge>
       )}
       
       {isGrowthSpurt && (
         <Badge variant="secondary" className="w-full justify-start gap-2 py-2 text-sm font-normal">
-          <Baby className="h-4 w-4 text-blue-500" />
+          <Baby className="h-4 w-4 text-info" />
           <span>Possible growth spurt - increased feeding</span>
         </Badge>
       )}
       
       {regressionWindow && (
         <Badge variant="secondary" className="w-full justify-start gap-2 py-2 text-sm font-normal">
-          <AlertCircle className="h-4 w-4 text-amber-500" />
+          <AlertCircle className="h-4 w-4 text-warning" />
           <span>Entering {regressionWindow} regression window</span>
         </Badge>
       )}

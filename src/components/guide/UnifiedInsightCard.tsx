@@ -99,7 +99,7 @@ export const UnifiedInsightCard = ({
                 className="flex items-start justify-between w-full group"
               >
                 <div className="flex items-start gap-2 flex-1 min-w-0">
-                  <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <Lightbulb className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-card-subtitle text-left">
                       What to Know
@@ -117,7 +117,7 @@ export const UnifiedInsightCard = ({
                 <div className="space-y-2">
                   {whatToKnow.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full bg-amber-500/60 mt-2 flex-shrink-0"></div>
+                      <div className="w-1 h-1 rounded-full bg-warning/60 mt-2 flex-shrink-0"></div>
                       <p className="text-sm text-muted-foreground leading-relaxed text-left flex-1">{item}</p>
                     </div>
                   ))}
@@ -138,7 +138,7 @@ export const UnifiedInsightCard = ({
                 className="flex items-start justify-between w-full group"
               >
                 <div className="flex items-start gap-2 flex-1 min-w-0">
-                  <CheckSquare className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <CheckSquare className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-card-subtitle text-left">
                       What to Do
@@ -156,7 +156,7 @@ export const UnifiedInsightCard = ({
                 <div className="space-y-2">
                   {whatToDo.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-2">
-                      <div className="w-1 h-1 rounded-full bg-green-500/60 mt-2 flex-shrink-0"></div>
+                      <div className="w-1 h-1 rounded-full bg-success/60 mt-2 flex-shrink-0"></div>
                       <p className="text-sm text-muted-foreground leading-relaxed text-left flex-1">{item}</p>
                     </div>
                   ))}
@@ -177,7 +177,7 @@ export const UnifiedInsightCard = ({
                 className="flex items-start justify-between w-full group"
               >
                 <div className="flex items-start gap-2 flex-1 min-w-0">
-                  <ArrowRight className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <ArrowRight className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-card-subtitle text-left">
                       What&apos;s Next
