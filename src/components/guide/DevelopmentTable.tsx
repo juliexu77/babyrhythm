@@ -16,6 +16,8 @@ import {
   type StageInfo
 } from "@/data/developmentalStages";
 import { DomainDetailModal } from "./DomainDetailModal";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface DevelopmentTableProps {
@@ -179,62 +181,55 @@ export function DevelopmentTable({
           <button
             key={domain.id}
             onClick={() => setSelectedDomain(domain.id)}
-            className={cn(
-              "relative p-4 rounded-xl text-left transition-all",
-              "bg-card/80 hover:bg-card",
-              "border border-border/50 hover:border-border",
-              "shadow-sm hover:shadow-md",
-              "active:scale-[0.98]"
-            )}
+            className="text-left active:scale-[0.98] transition-transform"
           >
-            {/* Emerging indicator */}
-            {domain.isEmerging && (
-              <div className="absolute top-2 right-2">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
-                  Emerging
+            <Card className="relative p-4 h-full hover:border-border transition-colors">
+              {/* Emerging indicator */}
+              {domain.isEmerging && (
+                <div className="absolute top-2 right-2">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary border-0">
+                    Emerging
+                  </Badge>
+                </div>
+              )}
+
+              {/* Icon and Label */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-muted/50">
+                  {domain.icon}
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  {domain.label}
                 </span>
               </div>
-            )}
 
-            {/* Icon and Label */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className={cn(
-                "p-1.5 rounded-lg",
-                "bg-muted/50"
-              )}>
-                {domain.icon}
+              {/* Stage Name */}
+              <div className="mb-2">
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  {domain.currentStage.name}
+                </p>
               </div>
-              <span className="text-sm font-medium text-foreground">
-                {domain.label}
-              </span>
-            </div>
 
-            {/* Stage Name */}
-            <div className="mb-2">
-              <p className="text-xs text-muted-foreground line-clamp-1">
-                {domain.currentStage.name}
+              {/* Progress Dots */}
+              <div className="flex gap-1">
+                {Array.from({ length: domain.totalStages }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "h-1.5 flex-1 rounded-full",
+                      i < domain.stageNumber 
+                        ? "bg-primary" 
+                        : "bg-muted"
+                    )}
+                  />
+                ))}
+              </div>
+
+              {/* Stage Number */}
+              <p className="text-[10px] text-muted-foreground mt-1.5">
+                Stage {domain.stageNumber} of {domain.totalStages}
               </p>
-            </div>
-
-            {/* Progress Dots */}
-            <div className="flex gap-1">
-              {Array.from({ length: domain.totalStages }).map((_, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "h-1.5 flex-1 rounded-full",
-                    i < domain.stageNumber 
-                      ? "bg-primary" 
-                      : "bg-muted"
-                  )}
-                />
-              ))}
-            </div>
-
-            {/* Stage Number */}
-            <p className="text-[10px] text-muted-foreground mt-1.5">
-              Stage {domain.stageNumber} of {domain.totalStages}
-            </p>
+            </Card>
           </button>
         ))}
       </div>
