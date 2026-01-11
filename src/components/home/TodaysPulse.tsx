@@ -216,7 +216,7 @@ export const TodaysPulse = ({
   const getConsistencyColor = (consistency: 'consistent' | 'variable' | 'emerging') => {
     switch (consistency) {
       case 'consistent': return 'text-primary';
-      case 'variable': return 'text-amber-600 dark:text-amber-400';
+      case 'variable': return 'text-warning';
       default: return 'text-muted-foreground';
     }
   };
@@ -249,7 +249,7 @@ export const TodaysPulse = ({
             <div className="flex items-center gap-1.5">
               <span className={`${
                 rhythmAnalysis.napTrend === 'consolidating' ? 'text-primary' :
-                rhythmAnalysis.napTrend === 'expanding' ? 'text-amber-600 dark:text-amber-400' :
+                rhythmAnalysis.napTrend === 'expanding' ? 'text-warning' :
                 'text-muted-foreground'
               }`}>
                 {getTrendIcon(rhythmAnalysis.napTrend)}

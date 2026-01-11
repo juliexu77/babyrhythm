@@ -514,11 +514,11 @@ export const ScheduleTimeline = ({
             const confidenceOpacity = matchingEvent?.confidence === 'high' ? 'opacity-100' : 
                                        matchingEvent?.confidence === 'medium' ? 'opacity-80' : 'opacity-60';
             
-            // Time block background colors
-            const blockBgColor = timeBlock === 'morning' ? 'bg-amber-50/50 dark:bg-amber-950/20' :
-                                timeBlock === 'midday' ? 'bg-orange-50/50 dark:bg-orange-950/20' :
-                                timeBlock === 'afternoon' ? 'bg-blue-50/50 dark:bg-blue-950/20' :
-                                'bg-purple-50/50 dark:bg-purple-950/20';
+            // Time block background colors - using semantic tokens
+            const blockBgColor = timeBlock === 'morning' ? 'bg-warning-muted' :
+                                timeBlock === 'midday' ? 'bg-warning-muted' :
+                                timeBlock === 'afternoon' ? 'bg-info-muted' :
+                                'bg-muted';
             
             return (
               <>
@@ -533,10 +533,10 @@ export const ScheduleTimeline = ({
                   }`}>
                     <div className="w-full flex items-start gap-3">
                       <div className="flex flex-col items-center">
-                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-amber-500/20 border-2 border-amber-500/40' : 'bg-amber-500/10 border-2 border-amber-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm transition-all duration-500 ${
-                          animateWakeTime ? 'animate-pulse scale-110 border-amber-500/70 shadow-lg shadow-amber-500/30' : ''
+                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-warning/20 border-2 border-warning/40' : 'bg-warning/10 border-2 border-warning/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm transition-all duration-500 ${
+                          animateWakeTime ? 'animate-pulse scale-110 border-warning/70 shadow-lg shadow-warning/30' : ''
                         }`}>
-                          <Sun className={`w-4 h-4 text-amber-600 transition-all duration-500 ${
+                          <Sun className={`w-4 h-4 text-warning transition-all duration-500 ${
                             animateWakeTime ? 'scale-125' : ''
                           }`} />
                         </div>
@@ -544,7 +544,7 @@ export const ScheduleTimeline = ({
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
                           <span className={`text-sm font-num text-stat transition-all duration-500 ${
-                            animateWakeTime ? 'scale-110 text-amber-600' : ''
+                            animateWakeTime ? 'scale-110 text-warning' : ''
                           }`}>
                             {formatTime(activity.time, 'wake')}
                           </span>
@@ -602,8 +602,8 @@ export const ScheduleTimeline = ({
                     }`}>
                       <div className="w-full flex items-start gap-3">
                         <div className="flex flex-col items-center">
-                          <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-blue-500/20 border-2 border-blue-500/40' : 'bg-blue-500/10 border-2 border-blue-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
-                            <Moon className="w-4 h-4 text-blue-600" />
+                          <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-info/20 border-2 border-info/40' : 'bg-info/10 border-2 border-info/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
+                            <Moon className="w-4 h-4 text-info" />
                           </div>
                         </div>
                         <div className="flex-1 pb-1 text-left">
@@ -640,8 +640,8 @@ export const ScheduleTimeline = ({
                   }`}>
                     <div className="w-full flex items-start gap-3">
                       <div className="flex flex-col items-center">
-                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-purple-500/20 border-2 border-purple-500/40' : 'bg-purple-500/10 border-2 border-purple-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
-                          <Bed className="w-4 h-4 text-purple-600" />
+                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-secondary/30 border-2 border-secondary/50' : 'bg-secondary/20 border-2 border-secondary/40'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
+                          <Bed className="w-4 h-4 text-secondary-foreground" />
                         </div>
                       </div>
                       <div className="flex-1 pb-1 text-left">
@@ -668,14 +668,14 @@ export const ScheduleTimeline = ({
       
       {/* DST Transition Notice - Below Schedule */}
       {dstInfo.isDSTTransitionPeriod && (
-        <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20 mt-4">
+        <div className="p-3 bg-warning-muted rounded-lg border border-warning/20 mt-4">
           <div className="flex items-start gap-2">
-            <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <Clock className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-label-xs text-amber-900 dark:text-amber-200 mb-1">
+              <p className="text-label-xs text-warning-foreground mb-1">
                 {dstInfo.transitionType === 'spring-forward' ? '🌸 Spring Forward' : '🍂 Fall Back'} - Daylight Saving Time
               </p>
-              <p className="text-xs text-amber-800 dark:text-amber-300">
+              <p className="text-xs text-muted-foreground">
                 {dstInfo.message}
               </p>
             </div>

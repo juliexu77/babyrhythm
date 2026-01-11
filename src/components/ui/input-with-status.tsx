@@ -28,11 +28,11 @@ const InputWithStatus = React.forwardRef<HTMLInputElement, InputWithStatusProps>
         case "saving":
           return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
         case "saved":
-          return <Check className="h-4 w-4 text-green-500" />;
+          return <Check className="h-4 w-4 text-success" />;
         case "error":
           return <AlertCircle className="h-4 w-4 text-destructive" />;
         case "unsaved":
-          return <Circle className="h-4 w-4 fill-amber-500 text-amber-500" />;
+          return <Circle className="h-4 w-4 fill-warning text-warning" />;
         case "idle":
         default:
           return null;
@@ -75,10 +75,10 @@ const InputWithStatus = React.forwardRef<HTMLInputElement, InputWithStatusProps>
         {getStatusText() && (
           <div className={cn(
             "text-xs flex items-center gap-1 transition-all duration-200",
-            saveStatus === "saved" && "text-green-600",
+            saveStatus === "saved" && "text-success",
             saveStatus === "error" && "text-destructive",
             saveStatus === "saving" && "text-muted-foreground",
-            saveStatus === "unsaved" && "text-amber-600"
+            saveStatus === "unsaved" && "text-warning"
           )}>
             <span>{getStatusText()}</span>
           </div>

@@ -119,6 +119,17 @@
     --ring: var(--rb-terracotta-rose);
     --radius: 12px;
     
+    /* Semantic status colors */
+    --success: 142 45% 42%; /* Muted green */
+    --success-foreground: 0 0% 100%;
+    --success-muted: 142 30% 92%; /* Light green background */
+    --warning: 35 80% 50%; /* Warm amber/orange */
+    --warning-foreground: 35 90% 15%;
+    --warning-muted: 35 60% 92%; /* Light amber background */
+    --info: 210 60% 50%; /* Muted blue */
+    --info-foreground: 0 0% 100%;
+    --info-muted: 210 40% 92%; /* Light blue background */
+    
     /* CTA gradient - rich terracotta with glow */
     --cta-gradient-start: 8 45% 55%;
     --cta-gradient-end: 350 40% 42%;
@@ -205,6 +216,17 @@
     --input: var(--surface-muted);
     --ring: var(--pp-mint);
     --radius: 8px;
+    
+    /* Semantic status colors - dark mode */
+    --success: 142 55% 55%;
+    --success-foreground: 0 0% 0%;
+    --success-muted: 142 30% 18%;
+    --warning: 35 85% 60%;
+    --warning-foreground: 35 90% 10%;
+    --warning-muted: 35 40% 18%;
+    --info: 210 70% 60%;
+    --info-foreground: 0 0% 0%;
+    --info-muted: 210 40% 18%;
     
     /* Primary CTA gradient */
     --cta-gradient-start: 315 20% 70%;
@@ -298,6 +320,17 @@
     --input: var(--surface-muted);
     --ring: var(--accent-1);
     --radius: 12px;
+    
+    /* Semantic status colors - dusk mode */
+    --success: 142 40% 50%;
+    --success-foreground: 0 0% 92%;
+    --success-muted: 142 25% 20%;
+    --warning: 35 70% 55%;
+    --warning-foreground: 35 80% 10%;
+    --warning-muted: 35 35% 20%;
+    --info: 210 50% 55%;
+    --info-foreground: 0 0% 92%;
+    --info-muted: 210 35% 20%;
     
     /* Primary CTA gradient */
     --cta-gradient-start: 315 20% 70%;
