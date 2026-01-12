@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { storage, StorageKeys } from "@/hooks/useLocalStorage";
 
 interface FocusThisMonthProps {
   ageInWeeks: number;
@@ -25,6 +26,19 @@ interface FocusDomain {
   stageNumber: number;
   isEmerging: boolean;
 }
+
+interface CachedInsight {
+  insight: string;
+  ageInWeeks: number;
+  stageNumber: number;
+  timestamp: number;
+}
+
+// Cache expires after 7 days
+const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+
+const getInsightCacheKey = (domainId: string): string => 
+  `developmental_insight_${domainId}`;
 
 export function FocusThisMonth({ 
   ageInWeeks, 
@@ -69,9 +83,65 @@ export function FocusThisMonth({
   const milestones = activeDomain?.stage.milestones || [];
   const tips = activeDomain?.stage.supportTips || [];
 
+  // Check if cached insight is still valid
+  const getCachedInsight = useCallback((domain: FocusDomain): string | null => {
+    try {
+      const cacheKey = getInsightCacheKey(domain.id);
+      const cached = localStorage.getItem(cacheKey);
+      if (!cached) return null;
+
+      const parsed: CachedInsight = JSON.parse(cached);
+      const now = Date.now();
+      
+      // Check if cache is expired
+      if (now - parsed.timestamp > CACHE_EXPIRY_MS) {
+        localStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      // Check if stage or age has changed significantly (different week bracket)
+      const weekBracket = Math.floor(ageInWeeks / 4);
+      const cachedWeekBracket = Math.floor(parsed.ageInWeeks / 4);
+      if (parsed.stageNumber !== domain.stageNumber || weekBracket !== cachedWeekBracket) {
+        localStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      return parsed.insight;
+    } catch {
+      return null;
+    }
+  }, [ageInWeeks]);
+
+  // Save insight to cache
+  const cacheInsight = useCallback((domain: FocusDomain, insightText: string) => {
+    try {
+      const cacheKey = getInsightCacheKey(domain.id);
+      const cached: CachedInsight = {
+        insight: insightText,
+        ageInWeeks,
+        stageNumber: domain.stageNumber,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(cached));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [ageInWeeks]);
+
   // Fetch AI insight when domain changes
-  const fetchInsight = async (domain: FocusDomain) => {
+  const fetchInsight = async (domain: FocusDomain, forceRefresh = false) => {
     if (!domain) return;
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh) {
+      const cached = getCachedInsight(domain);
+      if (cached) {
+        setInsight(cached);
+        setInsightDomainId(domain.id);
+        return;
+      }
+    }
     
     setIsLoadingInsight(true);
     setInsight(null);
@@ -103,6 +173,7 @@ export function FocusThisMonth({
       if (data?.insight) {
         setInsight(data.insight);
         setInsightDomainId(domain.id);
+        cacheInsight(domain, data.insight);
       }
     } catch (err) {
       console.error('Failed to fetch insight:', err);
@@ -120,7 +191,7 @@ export function FocusThisMonth({
 
   const handleRefreshInsight = () => {
     if (activeDomain) {
-      fetchInsight(activeDomain);
+      fetchInsight(activeDomain, true);
     }
   };
 
