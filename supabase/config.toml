@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.clear-schedule-cache]
 verify_jwt = false
+
+[functions.generate-developmental-insight]
+verify_jwt = false

@@ -1,14 +1,16 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sparkles, ChevronRight } from "lucide-react";
+import { Sparkles, ChevronRight, RefreshCw } from "lucide-react";
 import { 
   developmentalDomains, 
   calculateStage,
   type StageInfo
 } from "@/data/developmentalStages";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface FocusThisMonthProps {
   ageInWeeks: number;
@@ -32,6 +34,7 @@ export function FocusThisMonth({
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
   const [insight, setInsight] = useState<string | null>(null);
+  const [insightDomainId, setInsightDomainId] = useState<string | null>(null);
 
   // Get domains with emerging stages (priority focus areas)
   const focusDomains = useMemo(() => {
@@ -50,7 +53,7 @@ export function FocusThisMonth({
       .filter(Boolean) as FocusDomain[];
   }, [ageInWeeks]);
 
-  // Prioritize emerging domains, then take top 3
+  // Prioritize emerging domains, then take top 4
   const priorityDomains = useMemo(() => {
     const emerging = focusDomains.filter(d => d.isEmerging);
     const stable = focusDomains.filter(d => !d.isEmerging);
@@ -65,6 +68,61 @@ export function FocusThisMonth({
 
   const milestones = activeDomain?.stage.milestones || [];
   const tips = activeDomain?.stage.supportTips || [];
+
+  // Fetch AI insight when domain changes
+  const fetchInsight = async (domain: FocusDomain) => {
+    if (!domain) return;
+    
+    setIsLoadingInsight(true);
+    setInsight(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-developmental-insight', {
+        body: {
+          domainId: domain.id,
+          domainLabel: domain.label,
+          stageName: domain.stage.name,
+          stageDescription: domain.stage.description,
+          ageInWeeks,
+          babyName,
+          milestones: domain.stage.milestones,
+          supportTips: domain.stage.supportTips
+        }
+      });
+
+      if (error) {
+        console.error('Error fetching insight:', error);
+        if (error.message?.includes('429')) {
+          toast.error('Too many requests. Please wait a moment.');
+        } else if (error.message?.includes('402')) {
+          toast.error('AI credits depleted.');
+        }
+        return;
+      }
+
+      if (data?.insight) {
+        setInsight(data.insight);
+        setInsightDomainId(domain.id);
+      }
+    } catch (err) {
+      console.error('Failed to fetch insight:', err);
+    } finally {
+      setIsLoadingInsight(false);
+    }
+  };
+
+  // Fetch insight when active domain changes
+  useEffect(() => {
+    if (activeDomain && activeDomain.id !== insightDomainId) {
+      fetchInsight(activeDomain);
+    }
+  }, [activeDomain?.id]);
+
+  const handleRefreshInsight = () => {
+    if (activeDomain) {
+      fetchInsight(activeDomain);
+    }
+  };
 
   return (
     <div className="px-4 py-6">
@@ -170,11 +228,11 @@ export function FocusThisMonth({
         </Card>
       )}
 
-      {/* AI Insight Placeholder */}
+      {/* AI Insight */}
       {isLoadingInsight ? (
         <Card className="p-4 mt-3">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
             <Skeleton className="h-3 w-24" />
           </div>
           <Skeleton className="h-3 w-full mb-1.5" />
@@ -182,11 +240,20 @@ export function FocusThisMonth({
         </Card>
       ) : insight && (
         <Card className="p-4 mt-3 bg-primary/5 border-primary/20">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[10px] font-medium tracking-wide text-primary uppercase">
-              AI Insight
-            </span>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[10px] font-medium tracking-wide text-primary uppercase">
+                AI Insight
+              </span>
+            </div>
+            <button
+              onClick={handleRefreshInsight}
+              className="p-1 rounded-full hover:bg-primary/10 transition-colors"
+              aria-label="Refresh insight"
+            >
+              <RefreshCw className="h-3 w-3 text-primary/60" />
+            </button>
           </div>
           <p className="text-xs text-foreground leading-relaxed">
             {insight}
