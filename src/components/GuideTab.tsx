@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHousehold } from "@/hooks/useHousehold";
 import { DevelopmentTable } from "@/components/guide/DevelopmentTable";
-import { GuideEmptyState, GuideLoadingState } from "@/components/guide";
+import { GuideEmptyState, GuideLoadingState, FocusThisMonth } from "@/components/guide";
+import { Separator } from "@/components/ui/separator";
 
 interface Activity {
   id: string;
@@ -26,11 +27,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, [household?.baby_birthday]);
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
+  const [selectedDomainFromFocus, setSelectedDomainFromFocus] = useState<string | null>(null);
 
   // TODO: Store calibration flags in localStorage or DB
   const handleConfirmMilestone = (domainId: string, stageNumber: number) => {
     console.log(`Confirmed milestone for ${domainId}: stage ${stageNumber}`);
     // Future: save to localStorage or Supabase
+  };
+
+  const handleDomainSelect = (domainId: string) => {
+    setSelectedDomainFromFocus(domainId);
+    // This will trigger the modal in DevelopmentTable
   };
 
   if (householdLoading) {
@@ -59,6 +66,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             ageInWeeks={babyAgeInWeeks}
             babyName={babyName}
             onConfirmMilestone={handleConfirmMilestone}
+            onDomainSelect={handleDomainSelect}
+          />
+          
+          <Separator className="mx-4" />
+          
+          <FocusThisMonth
+            ageInWeeks={babyAgeInWeeks}
+            babyName={babyName}
+            onDomainSelect={handleDomainSelect}
           />
         </ScrollArea>
       )}

@@ -25,6 +25,7 @@ interface DevelopmentTableProps {
   babyName: string;
   calibrationFlags?: Record<string, number>;
   onConfirmMilestone?: (domainId: string, stageNumber: number) => void;
+  onDomainSelect?: (domainId: string) => void;
 }
 
 interface DomainData {
@@ -54,7 +55,8 @@ export function DevelopmentTable({
   ageInWeeks, 
   babyName,
   calibrationFlags = {},
-  onConfirmMilestone
+  onConfirmMilestone,
+  onDomainSelect
 }: DevelopmentTableProps) {
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
 
