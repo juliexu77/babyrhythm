@@ -181,6 +181,7 @@ export function DevelopmentTable({
         onPrev={currentIndex > 0 ? handlePrevDomain : undefined}
         onNext={currentIndex < domainData.length - 1 ? handleNextDomain : undefined}
         onConfirmMilestone={onConfirmMilestone}
+        confirmedStage={selectedDomain ? calibrationFlags[selectedDomain] : undefined}
       />
     </div>
   );
