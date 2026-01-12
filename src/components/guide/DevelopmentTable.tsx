@@ -106,7 +106,7 @@ export function DevelopmentTable({
   };
 
   return (
-    <div className="px-4 py-4">
+    <div className="px-4 py-6">
       {/* Header */}
       <h2 className="text-center text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase mb-6">
         {babyName}'s Development
@@ -115,55 +115,55 @@ export function DevelopmentTable({
       {/* Table Layout */}
       <div className="relative flex">
         {/* Left vertical label */}
-        <div className="flex items-center justify-center w-6 shrink-0">
-          <span className="text-[10px] font-medium tracking-[0.15em] text-muted-foreground uppercase -rotate-90 whitespace-nowrap">
+        <div className="flex items-center justify-center w-5 shrink-0">
+          <span className="text-[9px] font-medium tracking-[0.15em] text-muted-foreground/70 uppercase writing-vertical">
             Domains
           </span>
         </div>
 
         {/* Main table */}
-        <div className="flex-1 border-l border-border">
+        <div className="flex-1 rounded-xl border border-border bg-card overflow-hidden">
           {domainData.map((domain, index) => (
             <button
               key={domain.id}
               onClick={() => setSelectedDomain(domain.id)}
               className={cn(
-                "w-full flex items-center text-left transition-colors hover:bg-muted/50 active:bg-muted",
+                "w-full flex items-center text-left transition-colors hover:bg-muted/30 active:bg-muted/50",
                 index !== domainData.length - 1 && "border-b border-border"
               )}
             >
               {/* Domain icon + label column */}
-              <div className="flex items-center gap-2.5 w-28 shrink-0 px-3 py-4 border-r border-border">
+              <div className="flex items-center gap-2 w-[120px] shrink-0 px-3 py-3.5 border-r border-border">
                 <span className="text-muted-foreground">{domain.icon}</span>
-                <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
                   {domain.label}
                 </span>
               </div>
 
               {/* Stage name column */}
-              <div className="flex-1 px-4 py-4">
-                <span className="text-base font-medium text-foreground">
+              <div className="flex-1 px-4 py-3.5 border-r border-border">
+                <span className="text-[15px] font-medium text-foreground">
                   {domain.currentStage.name}
                 </span>
               </div>
 
               {/* Stage number + arrow column */}
-              <div className="flex items-center gap-1.5 px-3 py-4 shrink-0">
+              <div className="flex items-center justify-end gap-1 w-14 shrink-0 px-3 py-3.5">
                 {domain.isEmerging && (
-                  <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                  <TrendingUp className="h-3 w-3 text-primary" />
                 )}
-                <span className="text-base text-muted-foreground tabular-nums">
+                <span className="text-[15px] text-muted-foreground tabular-nums">
                   {domain.stageNumber}
                 </span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
               </div>
             </button>
           ))}
         </div>
 
         {/* Right vertical label */}
-        <div className="flex items-center justify-center w-6 shrink-0 border-l border-border">
-          <span className="text-[10px] font-medium tracking-[0.15em] text-muted-foreground uppercase -rotate-90 whitespace-nowrap">
+        <div className="flex items-center justify-center w-5 shrink-0">
+          <span className="text-[9px] font-medium tracking-[0.15em] text-muted-foreground/70 uppercase writing-vertical">
             Stage
           </span>
         </div>
