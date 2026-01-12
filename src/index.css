@@ -1718,4 +1718,11 @@
     font-weight: 600;
     color: hsl(var(--foreground));
   }
+  
+  /* Vertical writing mode for table labels */
+  .writing-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
 }
