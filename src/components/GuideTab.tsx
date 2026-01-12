@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useMilestoneCalibration } from "@/hooks/useMilestoneCalibration";
 import { DevelopmentTable } from "@/components/guide/DevelopmentTable";
 import { GuideEmptyState, GuideLoadingState, FocusThisMonth } from "@/components/guide";
 import { Separator } from "@/components/ui/separator";
@@ -19,6 +20,11 @@ interface GuideTabProps {
 
 export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
+  const { 
+    calibrationFlags, 
+    confirmMilestone, 
+    isLoading: calibrationLoading 
+  } = useMilestoneCalibration();
 
   const babyName = household?.baby_name || 'Baby';
   const babyAgeInWeeks = useMemo(() => {
@@ -29,18 +35,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
   const [selectedDomainFromFocus, setSelectedDomainFromFocus] = useState<string | null>(null);
 
-  // TODO: Store calibration flags in localStorage or DB
   const handleConfirmMilestone = (domainId: string, stageNumber: number) => {
-    console.log(`Confirmed milestone for ${domainId}: stage ${stageNumber}`);
-    // Future: save to localStorage or Supabase
+    confirmMilestone(domainId, stageNumber);
   };
 
   const handleDomainSelect = (domainId: string) => {
     setSelectedDomainFromFocus(domainId);
-    // This will trigger the modal in DevelopmentTable
   };
 
-  if (householdLoading) {
+  if (householdLoading || calibrationLoading) {
     return (
       <div className="flex flex-col h-full bg-background pb-24">
         <GuideLoadingState />
@@ -65,6 +68,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           <DevelopmentTable
             ageInWeeks={babyAgeInWeeks}
             babyName={babyName}
+            calibrationFlags={calibrationFlags}
             onConfirmMilestone={handleConfirmMilestone}
             onDomainSelect={handleDomainSelect}
           />

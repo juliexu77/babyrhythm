@@ -41,6 +41,7 @@ interface DomainDetailModalProps {
   onPrev?: () => void;
   onNext?: () => void;
   onConfirmMilestone?: (domainId: string, stageNumber: number) => void;
+  confirmedStage?: number;
 }
 
 export function DomainDetailModal({
@@ -51,7 +52,8 @@ export function DomainDetailModal({
   babyName,
   onPrev,
   onNext,
-  onConfirmMilestone
+  onConfirmMilestone,
+  confirmedStage
 }: DomainDetailModalProps) {
   if (!domainData) return null;
 
@@ -211,14 +213,21 @@ export function DomainDetailModal({
 
           {/* Milestone Confirmation */}
           {onConfirmMilestone && domainData.stageNumber < domainData.totalStages && (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => onConfirmMilestone(domainData.id, domainData.stageNumber + 1)}
-            >
-              <Check className="h-4 w-4 mr-2" />
-              I've seen these milestones
-            </Button>
+            confirmedStage && confirmedStage >= domainData.stageNumber ? (
+              <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-primary/10 text-primary text-sm font-medium">
+                <Check className="h-4 w-4" />
+                <span>Stage {confirmedStage} confirmed</span>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => onConfirmMilestone(domainData.id, domainData.stageNumber)}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                I've seen these milestones
+              </Button>
+            )
           )}
         </div>
 
