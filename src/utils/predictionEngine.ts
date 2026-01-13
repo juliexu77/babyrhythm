@@ -861,6 +861,18 @@ export class BabyCarePredictionEngine {
   ): number {
     if (tAwakeNow === null) return 0; // Can't calculate without wake time
     
+    // CRITICAL FIX: Enforce minimum wake window - never suggest sleep if below age-appropriate minimum
+    // This prevents premature wind-down suggestions immediately after waking
+    const minWakeWindow = this.adaptiveParams.wake_window_min;
+    if (tAwakeNow < minWakeWindow) {
+      console.log('🚫 Sleep pressure = 0: Below minimum wake window', {
+        awakeMinutes: tAwakeNow,
+        minRequired: minWakeWindow,
+        ageBasedMin: this.adaptiveParams.wake_window_min
+      });
+      return 0;
+    }
+    
     // Use position-specific wake window if available
     let targetWakeWindow = this.adaptiveParams.wake_window_max;
     
@@ -1218,8 +1230,19 @@ export class BabyCarePredictionEngine {
       };
     }
 
+    // Calculate predicted feed time to determine if it falls in night hours
+    // FIX: Check if PREDICTED feed time is night, not current time
+    let predictedFeedTime: Date | undefined;
+    if (tSinceLastFeed !== null) {
+      const nextFeedMinutes = Math.max(0, this.adaptiveParams.feed_interval_max - tSinceLastFeed);
+      predictedFeedTime = new Date(now.getTime() + nextFeedMinutes * 60000);
+    }
+    
+    // Use predicted feed time for night check, fall back to current time
+    const isNightForFeed = predictedFeedTime ? isNightTime(predictedFeedTime) : isNight;
+    
     // Calculate pressure scores
-    const feedResult = this.calculateFeedPressureScore(tSinceLastFeed, isNight, clusterFeeding);
+    const feedResult = this.calculateFeedPressureScore(tSinceLastFeed, isNightForFeed, clusterFeeding, false, predictedFeedTime);
     const feedScore = feedResult.score;
     const nightFeedSuppressed = feedResult.nightFeedSuppressed;
     const sleepScore = this.calculateSleepPressureScore(tAwakeNow, cumulativeDaySleep, shortNapFlag, isNight, now);
