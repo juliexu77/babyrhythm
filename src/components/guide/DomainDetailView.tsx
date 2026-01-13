@@ -68,9 +68,9 @@ export function DomainDetailView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background overflow-x-hidden w-full max-w-full">
+    <div className="flex flex-col h-full bg-background overflow-hidden w-full" style={{ maxWidth: '100vw' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background sticky top-0 z-10 max-w-full">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background sticky top-0 z-10 w-full box-border">
         <button
           onClick={onBack}
           className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
@@ -124,8 +124,8 @@ export function DomainDetailView({
       </div>
 
       {/* Scrollable Content */}
-      <ScrollArea className="flex-1 w-full overflow-hidden">
-        <div className="px-4 py-5 space-y-6 pb-24 max-w-full overflow-hidden box-border">
+      <ScrollArea className="flex-1">
+        <div className="py-5 space-y-6 pb-24" style={{ paddingLeft: '1rem', paddingRight: '1rem', maxWidth: 'calc(100vw - 2rem)', boxSizing: 'border-box' }}>
           {/* Current Stage */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -138,8 +138,8 @@ export function DomainDetailView({
             </div>
 
             {/* Progress Bar */}
-            <div className="space-y-1.5 w-full max-w-full">
-              <div className="h-2 bg-muted rounded-full overflow-hidden w-full">
+            <div className="space-y-1.5">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-primary transition-all duration-500 rounded-full"
                   style={{ width: `${progressPercent}%` }}
