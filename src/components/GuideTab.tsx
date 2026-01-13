@@ -59,11 +59,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background pb-24">
+    <div className="flex flex-col h-full bg-background pb-24 overflow-x-hidden w-full">
       {needsBirthdaySetup ? (
         <GuideEmptyState type="needs-birthday" onGoToSettings={onGoToSettings} />
       ) : (
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-x-hidden w-full">
           <DevelopmentTable
             ageInWeeks={babyAgeInWeeks}
             babyName={babyName}
@@ -71,7 +71,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             onConfirmMilestone={handleConfirmMilestone}
             onDomainSelect={handleDomainSelect}
           />
-        </ScrollArea>
+        </div>
       )}
     </div>
   );
