@@ -1,21 +1,12 @@
-import { useMemo } from "react";
 import { 
-  ChevronLeft, 
-  ChevronRight, 
+  ArrowLeft,
   Check, 
   Lightbulb,
   Target,
   Sparkles,
   RefreshCw
 } from "lucide-react";
-import { 
-  Drawer, 
-  DrawerContent, 
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose
-} from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   getDomainById,
@@ -33,14 +24,13 @@ interface DomainData {
   color: string;
 }
 
-interface DomainDetailModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  domainData: DomainData | null;
+interface DomainDetailViewProps {
+  domainData: DomainData;
+  allDomains: DomainData[];
   ageInWeeks: number;
   babyName: string;
-  onPrev?: () => void;
-  onNext?: () => void;
+  onBack: () => void;
+  onDomainChange: (domainId: string) => void;
   onConfirmMilestone?: (domainId: string, stageNumber: number) => void;
   confirmedStage?: number;
   insight?: string | null;
@@ -48,72 +38,100 @@ interface DomainDetailModalProps {
   onRefreshInsight?: () => void;
 }
 
-export function DomainDetailModal({
-  open,
-  onOpenChange,
+export function DomainDetailView({
   domainData,
+  allDomains,
   ageInWeeks,
   babyName,
-  onPrev,
-  onNext,
+  onBack,
+  onDomainChange,
   onConfirmMilestone,
   confirmedStage,
   insight,
   isLoadingInsight,
   onRefreshInsight
-}: DomainDetailModalProps) {
-  if (!domainData) return null;
-
+}: DomainDetailViewProps) {
   const domain = getDomainById(domainData.id);
-  const nextStage = domain?.stages[domainData.stageNumber]; // 0-indexed, so stageNumber gives next
+  const nextStage = domain?.stages[domainData.stageNumber];
 
   // Progress calculation
   const progressPercent = (domainData.stageNumber / domainData.totalStages) * 100;
+  
+  // Check if milestone is confirmed
+  const isConfirmed = confirmedStage !== undefined && confirmedStage >= domainData.stageNumber;
+  const canConfirm = onConfirmMilestone && domainData.stageNumber < domainData.totalStages;
+
+  const handleConfirm = () => {
+    if (onConfirmMilestone && !isConfirmed) {
+      onConfirmMilestone(domainData.id, domainData.stageNumber);
+    }
+  };
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85vh]">
-        {/* Navigation Header */}
-        <DrawerHeader className="flex items-center justify-between px-4 py-3 border-b">
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background sticky top-0 z-10">
+        <button
+          onClick={onBack}
+          className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+
+        <h1 className="text-base font-serif text-foreground">
+          {domainData.label}
+        </h1>
+
+        {/* Confirm checkmark in top right */}
+        {canConfirm && (
           <button
-            onClick={onPrev}
-            disabled={!onPrev}
+            onClick={handleConfirm}
+            disabled={isConfirmed}
             className={cn(
-              "p-2 rounded-full transition-colors",
-              onPrev 
-                ? "hover:bg-muted active:bg-muted/80" 
-                : "opacity-30 cursor-not-allowed"
+              "p-2 -mr-2 rounded-full transition-colors",
+              isConfirmed 
+                ? "text-primary bg-primary/10" 
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
+            aria-label={isConfirmed ? "Milestone confirmed" : "Confirm milestone"}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <Check className="h-5 w-5" />
           </button>
+        )}
+        
+        {!canConfirm && <div className="w-9" />}
+      </div>
 
-          <DrawerTitle className="text-base font-serif">
-            {domainData.label}
-          </DrawerTitle>
+      {/* Domain Pills */}
+      <div className="px-4 py-3 border-b border-border bg-background">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+          {allDomains.map((d) => (
+            <button
+              key={d.id}
+              onClick={() => onDomainChange(d.id)}
+              className={cn(
+                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                d.id === domainData.id
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+              )}
+            >
+              {d.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-          <button
-            onClick={onNext}
-            disabled={!onNext}
-            className={cn(
-              "p-2 rounded-full transition-colors",
-              onNext 
-                ? "hover:bg-muted active:bg-muted/80" 
-                : "opacity-30 cursor-not-allowed"
-            )}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </DrawerHeader>
-
-        {/* Content */}
-        <div className="px-4 py-4 overflow-y-auto space-y-5">
+      {/* Scrollable Content */}
+      <ScrollArea className="flex-1">
+        <div className="px-4 py-5 space-y-6 pb-24">
           {/* Current Stage */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-foreground">
+              <h2 className="text-lg font-medium text-foreground">
                 {domainData.currentStage.name}
-              </h3>
+              </h2>
               <span className="text-xs text-muted-foreground">
                 Stage {domainData.stageNumber} of {domainData.totalStages}
               </span>
@@ -139,8 +157,8 @@ export function DomainDetailModal({
             </p>
           </div>
 
-          {/* Milestones */}
-          <div className="space-y-2">
+          {/* What to Look For */}
+          <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Target className="h-4 w-4 text-primary" />
               <span>What to Look For</span>
@@ -158,8 +176,35 @@ export function DomainDetailModal({
             </ul>
           </div>
 
+          {/* Milestone Confirmation - inline after What to Look For */}
+          {canConfirm && (
+            <div className={cn(
+              "p-3 rounded-lg border transition-colors",
+              isConfirmed 
+                ? "bg-primary/5 border-primary/20" 
+                : "bg-muted/30 border-border"
+            )}>
+              {isConfirmed ? (
+                <div className="flex items-center gap-2 text-sm text-primary font-medium">
+                  <Check className="h-4 w-4" />
+                  <span>Stage {confirmedStage} confirmed</span>
+                </div>
+              ) : (
+                <button
+                  onClick={handleConfirm}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
+                >
+                  <div className="w-4 h-4 rounded border border-border flex items-center justify-center">
+                    <Check className="h-3 w-3 opacity-0" />
+                  </div>
+                  <span>I've seen these milestones</span>
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Support Tips */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Lightbulb className="h-4 w-4 text-warning" />
               <span>How to Support {babyName}</span>
@@ -170,7 +215,7 @@ export function DomainDetailModal({
                   key={i}
                   className="flex items-start gap-2 text-sm text-muted-foreground"
                 >
-                  <span className="text-primary">•</span>
+                  <span className="text-primary mt-1.5">•</span>
                   <span>{tip}</span>
                 </li>
               ))}
@@ -179,7 +224,7 @@ export function DomainDetailModal({
 
           {/* Next Stage Preview */}
           {nextStage && (
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2">
+            <div className="p-4 rounded-lg bg-muted/30 border border-border/50 space-y-2">
               <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span>Coming Next: {nextStage.name}</span>
@@ -187,7 +232,7 @@ export function DomainDetailModal({
               <p className="text-xs text-muted-foreground">
                 Typically around {nextStage.ageRange[0]} weeks
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-1 mt-2">
                 {nextStage.milestones.slice(0, 2).map((milestone, i) => (
                   <li 
                     key={i}
@@ -203,7 +248,7 @@ export function DomainDetailModal({
 
           {/* Emerging Badge */}
           {domainData.isEmerging && (
-            <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
+            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
               <p className="text-sm font-medium text-primary">
                 🌱 Emerging Skills Ahead
               </p>
@@ -213,35 +258,16 @@ export function DomainDetailModal({
             </div>
           )}
 
-          {/* Milestone Confirmation */}
-          {onConfirmMilestone && domainData.stageNumber < domainData.totalStages && (
-            confirmedStage && confirmedStage >= domainData.stageNumber ? (
-              <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-primary/10 text-primary text-sm font-medium">
-                <Check className="h-4 w-4" />
-                <span>Stage {confirmedStage} confirmed</span>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => onConfirmMilestone(domainData.id, domainData.stageNumber)}
-              >
-                <Check className="h-4 w-4 mr-2" />
-                I've seen these milestones
-              </Button>
-            )
-          )}
-
-          {/* AI Insight Section - at the bottom */}
+          {/* AI Insight Section */}
           {(isLoadingInsight || insight) && (
-            <div className="pt-4 border-t border-border">
+            <div className="pt-2">
               {isLoadingInsight ? (
                 <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
                     <Skeleton className="h-3 w-24" />
                   </div>
-                  <Skeleton className="h-3 w-full mb-1.5" />
+                  <Skeleton className="h-3 w-full mb-2" />
                   <Skeleton className="h-3 w-3/4" />
                 </div>
               ) : insight && (
@@ -256,10 +282,10 @@ export function DomainDetailModal({
                     {onRefreshInsight && (
                       <button
                         onClick={onRefreshInsight}
-                        className="p-1 rounded-full hover:bg-primary/10 transition-colors"
+                        className="p-1.5 rounded-full hover:bg-primary/10 transition-colors"
                         aria-label="Refresh insight"
                       >
-                        <RefreshCw className="h-3 w-3 text-primary/60" />
+                        <RefreshCw className="h-3.5 w-3.5 text-primary/60" />
                       </button>
                     )}
                   </div>
@@ -271,16 +297,7 @@ export function DomainDetailModal({
             </div>
           )}
         </div>
-
-        {/* Close area for mobile */}
-        <div className="px-4 py-3 border-t">
-          <DrawerClose asChild>
-            <Button variant="ghost" className="w-full">
-              Close
-            </Button>
-          </DrawerClose>
-        </div>
-      </DrawerContent>
-    </Drawer>
+      </ScrollArea>
+    </div>
   );
 }

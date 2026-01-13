@@ -1,12 +1,11 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { ChevronRight, RefreshCw, Sparkles } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { 
   developmentalDomains, 
   calculateStage,
-  type DomainConfig,
   type StageInfo
 } from "@/data/developmentalStages";
-import { DomainDetailModal } from "./DomainDetailModal";
+import { DomainDetailView } from "./DomainDetailView";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -43,19 +42,17 @@ const getInsightCacheKey = (domainId: string): string =>
   `developmental_insight_${domainId}`;
 
 // Custom geometric icons for each domain - editorial feel
-const DomainIcon = ({ domainId, className }: { domainId: string; className?: string }) => {
+export const DomainIcon = ({ domainId, className }: { domainId: string; className?: string }) => {
   const baseClass = cn("w-5 h-5", className);
   
   switch (domainId) {
     case "sleep":
-      // Half moon shape
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
         </svg>
       );
     case "feeding":
-      // Grid dots pattern
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="currentColor">
           <circle cx="6" cy="6" r="2" />
@@ -70,14 +67,12 @@ const DomainIcon = ({ domainId, className }: { domainId: string; className?: str
         </svg>
       );
     case "physical":
-      // Circle outline
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="12" cy="12" r="9" />
         </svg>
       );
     case "fine-motor":
-      // Hand/palm simplified
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M12 21c-3.5 0-6-2.5-6-6V9c0-1.5 1-3 2.5-3s2.5 1.5 2.5 3v5" />
@@ -86,7 +81,6 @@ const DomainIcon = ({ domainId, className }: { domainId: string; className?: str
         </svg>
       );
     case "language":
-      // Half circle (speech bubble essence)
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M12 3a9 9 0 0 1 0 18" />
@@ -94,7 +88,6 @@ const DomainIcon = ({ domainId, className }: { domainId: string; className?: str
         </svg>
       );
     case "social":
-      // Two overlapping circles
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="9" cy="12" r="5" />
@@ -102,14 +95,12 @@ const DomainIcon = ({ domainId, className }: { domainId: string; className?: str
         </svg>
       );
     case "cognitive":
-      // Diamond/rhombus
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M12 2L22 12L12 22L2 12L12 2Z" />
         </svg>
       );
     case "emotional":
-      // Heart simplified
       return (
         <svg viewBox="0 0 24 24" className={baseClass} fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M12 20c-4-4-8-6.5-8-10a4.5 4.5 0 0 1 8-2.5 4.5 4.5 0 0 1 8 2.5c0 3.5-4 6-8 10z" />
@@ -165,22 +156,6 @@ export function DevelopmentTable({
     if (!selectedDomain) return null;
     return domainData.find((d) => d.id === selectedDomain) || null;
   }, [selectedDomain, domainData]);
-
-  const currentIndex = selectedDomain 
-    ? domainData.findIndex((d) => d.id === selectedDomain) 
-    : -1;
-
-  const handlePrevDomain = () => {
-    if (currentIndex > 0) {
-      setSelectedDomain(domainData[currentIndex - 1].id);
-    }
-  };
-
-  const handleNextDomain = () => {
-    if (currentIndex < domainData.length - 1) {
-      setSelectedDomain(domainData[currentIndex + 1].id);
-    }
-  };
 
   // AI Insight logic
   const getCachedInsight = useCallback((domain: DomainData): string | null => {
@@ -278,7 +253,7 @@ export function DevelopmentTable({
     }
   }, [selectedDomainData?.id]);
 
-  // Reset insight when modal closes
+  // Reset insight when view closes
   useEffect(() => {
     if (!selectedDomain) {
       setInsight(null);
@@ -291,6 +266,29 @@ export function DevelopmentTable({
       fetchInsight(selectedDomainData, true);
     }
   };
+
+  const handleDomainChange = (domainId: string) => {
+    setSelectedDomain(domainId);
+  };
+
+  // Show full-screen detail view when a domain is selected
+  if (selectedDomain && selectedDomainData) {
+    return (
+      <DomainDetailView
+        domainData={selectedDomainData}
+        allDomains={domainData}
+        ageInWeeks={ageInWeeks}
+        babyName={babyName}
+        onBack={() => setSelectedDomain(null)}
+        onDomainChange={handleDomainChange}
+        onConfirmMilestone={onConfirmMilestone}
+        confirmedStage={calibrationFlags[selectedDomain]}
+        insight={insight}
+        isLoadingInsight={isLoadingInsight}
+        onRefreshInsight={handleRefreshInsight}
+      />
+    );
+  }
 
   return (
     <div className="px-4 py-6">
@@ -313,7 +311,7 @@ export function DevelopmentTable({
             className={cn(
               "w-full flex items-center gap-4 p-4",
               "bg-card border border-border/60",
-              "rounded-sm", // Sharp corners - minimal radius
+              "rounded-sm",
               "transition-all duration-150",
               "hover:border-border hover:shadow-sm",
               "active:scale-[0.99]",
@@ -328,16 +326,13 @@ export function DevelopmentTable({
             {/* Domain Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-3">
-                {/* Domain name - serif */}
                 <span className="font-serif text-sm text-foreground">
                   {domain.label}
                 </span>
-                {/* Stage name - sans-serif */}
                 <span className="text-sm text-muted-foreground truncate">
                   {domain.currentStage.name}
                 </span>
               </div>
-              {/* Stage info underneath */}
               <p className="text-[11px] text-muted-foreground/60 mt-0.5">
                 Stage {domain.stageNumber} of {domain.totalStages}
               </p>
@@ -348,22 +343,6 @@ export function DevelopmentTable({
           </button>
         ))}
       </div>
-
-      {/* Domain Detail Modal with AI Insight */}
-      <DomainDetailModal
-        open={!!selectedDomain}
-        onOpenChange={(open) => !open && setSelectedDomain(null)}
-        domainData={selectedDomainData}
-        ageInWeeks={ageInWeeks}
-        babyName={babyName}
-        onPrev={currentIndex > 0 ? handlePrevDomain : undefined}
-        onNext={currentIndex < domainData.length - 1 ? handleNextDomain : undefined}
-        onConfirmMilestone={onConfirmMilestone}
-        confirmedStage={selectedDomain ? calibrationFlags[selectedDomain] : undefined}
-        insight={insight}
-        isLoadingInsight={isLoadingInsight}
-        onRefreshInsight={handleRefreshInsight}
-      />
     </div>
   );
 }
