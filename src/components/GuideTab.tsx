@@ -3,8 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useMilestoneCalibration } from "@/hooks/useMilestoneCalibration";
 import { DevelopmentTable } from "@/components/guide/DevelopmentTable";
-import { GuideEmptyState, GuideLoadingState, FocusThisMonth } from "@/components/guide";
-import { Separator } from "@/components/ui/separator";
+import { GuideEmptyState, GuideLoadingState } from "@/components/guide";
 
 interface Activity {
   id: string;
@@ -70,14 +69,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             babyName={babyName}
             calibrationFlags={calibrationFlags}
             onConfirmMilestone={handleConfirmMilestone}
-            onDomainSelect={handleDomainSelect}
-          />
-          
-          <Separator className="mx-4" />
-          
-          <FocusThisMonth
-            ageInWeeks={babyAgeInWeeks}
-            babyName={babyName}
             onDomainSelect={handleDomainSelect}
           />
         </ScrollArea>
