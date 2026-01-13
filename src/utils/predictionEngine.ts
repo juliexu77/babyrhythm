@@ -56,6 +56,7 @@ export interface PredictionRationale {
     illness?: boolean;
     data_gap?: boolean;
     tz_change?: boolean;
+    night_feed_suppressed?: boolean; // True if night feed was suppressed because baby sleeps through
   };
 }
 
@@ -159,6 +160,78 @@ function getAgeParams(ageInMonths: number): PersonalizedParams {
 function isNightTime(timestamp: Date): boolean {
   const hour = timestamp.getHours(); // Gets local hour from Date object
   return hour >= 19 || hour < 7; // 7PM to 7AM (default fallback)
+}
+
+/**
+ * Check if a time falls within the night window (typically bedtime to morning wake)
+ * Handles cases where the window crosses midnight
+ */
+function isWithinNightWindow(
+  time: Date, 
+  bedtimeHour: number = 19, 
+  wakeHour: number = 7
+): boolean {
+  const hour = time.getHours();
+  
+  if (bedtimeHour > wakeHour) {
+    // Night crosses midnight: e.g., 7pm (19) to 7am (7)
+    return hour >= bedtimeHour || hour < wakeHour;
+  } else {
+    // Night doesn't cross midnight (unusual, but handle it)
+    return hour >= bedtimeHour && hour < wakeHour;
+  }
+}
+
+/**
+ * Analyze historical data to determine if baby has a pattern of night feeds
+ * @param feedEvents - Array of feed events
+ * @param ageInMonths - Baby's age in months
+ * @param bedtimeHour - Hour when night starts (default 19 = 7PM)
+ * @param wakeHour - Hour when morning starts (default 7 = 7AM)
+ * @returns true if baby has a night feeding pattern, false if they sleep through
+ */
+function hasNightFeedPattern(
+  feedEvents: FeedEvent[],
+  ageInMonths: number,
+  bedtimeHour: number = 19,
+  wakeHour: number = 7
+): boolean {
+  // Newborns (under 3 months / ~12 weeks) always need night feeds
+  if (ageInMonths < 3) {
+    console.log('🍼 Night feed pattern: Always true for newborns under 3 months');
+    return true;
+  }
+  
+  // Check last 7 days of feeds
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  
+  const recentFeeds = feedEvents.filter(f => f.timestamp >= sevenDaysAgo);
+  
+  // Count feeds during night window
+  const nightFeeds = recentFeeds.filter(f => {
+    const feedHour = f.timestamp.getHours();
+    return isWithinNightWindow(f.timestamp, bedtimeHour, wakeHour);
+  });
+  
+  // Pattern exists if 2+ night feeds in last 7 days
+  const hasPattern = nightFeeds.length >= 2;
+  
+  console.log('🌙 Night feed pattern analysis:', {
+    ageInMonths,
+    recentFeedsTotal: recentFeeds.length,
+    nightFeedsCount: nightFeeds.length,
+    hasPattern,
+    threshold: 2,
+    bedtimeHour,
+    wakeHour,
+    nightFeedTimes: nightFeeds.slice(0, 5).map(f => ({
+      time: f.timestamp.toLocaleTimeString(),
+      date: f.timestamp.toLocaleDateString()
+    }))
+  });
+  
+  return hasPattern;
 }
 
 function sigmoid(x: number): number {
@@ -736,13 +809,22 @@ export class BabyCarePredictionEngine {
     return shortIntervals >= 2;
   }
 
+  /**
+   * Check if baby has a night feeding pattern
+   * Uses learned data from the engine's feed events
+   */
+  private hasNightFeedPattern(): boolean {
+    return hasNightFeedPattern(this.feedEvents, this.ageInMonths);
+  }
+
   private calculateFeedPressureScore(
     tSinceLastFeed: number | null,
     isNight: boolean,
     clusterFeeding: boolean,
-    illness: boolean = false
-  ): number {
-    if (tSinceLastFeed === null) return 0.8; // High pressure if no feed data
+    illness: boolean = false,
+    predictedFeedTime?: Date
+  ): { score: number; nightFeedSuppressed: boolean } {
+    if (tSinceLastFeed === null) return { score: 0.8, nightFeedSuppressed: false }; // High pressure if no feed data
     
     const base = sigmoid((tSinceLastFeed - this.adaptiveParams.feed_interval_min) / 30);
     
@@ -751,7 +833,23 @@ export class BabyCarePredictionEngine {
     if (isNight) modifiers *= 0.9;
     if (illness) modifiers *= 1.15;
     
-    return clamp(base * modifiers, 0, 1);
+    let score = clamp(base * modifiers, 0, 1);
+    let nightFeedSuppressed = false;
+    
+    // Night feed suppression: Don't predict night feeds if baby doesn't have that pattern
+    // Only suppress if we're actually predicting a feed during night hours
+    if (isNight && score >= 0.4) {
+      const nightPattern = this.hasNightFeedPattern();
+      
+      if (!nightPattern) {
+        // Baby sleeps through the night - suppress night feed predictions
+        console.log('🌙 Suppressing night feed prediction - baby sleeps through the night');
+        score = 0.15; // Very low score - won't trigger feed suggestion
+        nightFeedSuppressed = true;
+      }
+    }
+    
+    return { score, nightFeedSuppressed };
   }
 
   private calculateSleepPressureScore(
@@ -1121,7 +1219,9 @@ export class BabyCarePredictionEngine {
     }
 
     // Calculate pressure scores
-    const feedScore = this.calculateFeedPressureScore(tSinceLastFeed, isNight, clusterFeeding);
+    const feedResult = this.calculateFeedPressureScore(tSinceLastFeed, isNight, clusterFeeding);
+    const feedScore = feedResult.score;
+    const nightFeedSuppressed = feedResult.nightFeedSuppressed;
     const sleepScore = this.calculateSleepPressureScore(tAwakeNow, cumulativeDaySleep, shortNapFlag, isNight, now);
     
     // Track current wake window position in internals
@@ -1209,7 +1309,8 @@ export class BabyCarePredictionEngine {
       flags: {
         cluster_feeding: clusterFeeding,
         short_nap: shortNapFlag,
-        data_gap: dataGap
+        data_gap: dataGap,
+        night_feed_suppressed: nightFeedSuppressed
       }
     };
 
