@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Activity } from "@/types/activity";
 import { Button } from "@/components/ui/button";
-import { Filter, Plane, Sun } from "lucide-react";
+import { Filter, Plane, Sun, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,10 @@ import { detectMilestones } from "@/utils/milestoneDetection";
 import { supabase } from "@/integrations/supabase/client";
 
 const allActivityTypes = ['feed', 'diaper', 'nap', 'note', 'solids', 'photo'];
+
+// Progressive loading constants
+const INITIAL_DAYS = 7;
+const LOAD_MORE_INCREMENT = 14;
 
 interface HistoryTabProps {
   activities: Activity[];
@@ -42,90 +46,116 @@ export const HistoryTab = ({
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(allActivityTypes);
   const [pendingActivityTypes, setPendingActivityTypes] = useState<string[]>(allActivityTypes);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [showFullTimeline, setShowFullTimeline] = useState(false);
+  const [visibleDaysCount, setVisibleDaysCount] = useState(INITIAL_DAYS);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const hasActiveFilters = selectedActivityTypes.length !== allActivityTypes.length;
 
   // Filter activities by selected types
-  const filteredActivities = activities.filter(activity => 
-    selectedActivityTypes.includes(activity.type)
+  const filteredActivities = useMemo(() => 
+    activities.filter(activity => selectedActivityTypes.includes(activity.type)),
+    [activities, selectedActivityTypes]
   );
 
   // Group activities by date
-  const activityGroups: { [date: string]: typeof filteredActivities } = {};
-  
-  filteredActivities.forEach(activity => {
-    const activityDate = new Date(activity.loggedAt!);
-    const y = activityDate.getFullYear();
-    const m = String(activityDate.getMonth() + 1).padStart(2, '0');
-    const d = String(activityDate.getDate()).padStart(2, '0');
-    const localDateString = `${y}-${m}-${d}`;
+  const activityGroups = useMemo(() => {
+    const groups: { [date: string]: Activity[] } = {};
     
-    if (!activityGroups[localDateString]) {
-      activityGroups[localDateString] = [];
-    }
-    activityGroups[localDateString].push(activity);
-  });
-
-  // Generate date keys for the last 14 days
-  const nowDate = new Date();
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(nowDate);
-    d.setDate(d.getDate() - i);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    if (!activityGroups[key]) {
-      activityGroups[key] = [];
-    }
-  }
-
-  // Sort activities within each date group
-  Object.keys(activityGroups).forEach(dateKey => {
-    activityGroups[dateKey].sort((a, b) => {
-      const getActivityTime = (activity: any) => {
-        try {
-          const parseUI12hToMinutes = (timeStr?: string | null): number | null => {
-            if (!timeStr) return null;
-            const first = timeStr.includes(' - ') ? timeStr.split(' - ')[0] : timeStr;
-            const match = first.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-            if (!match) return null;
-            let h = parseInt(match[1], 10);
-            const mins = parseInt(match[2], 10);
-            const period = match[3].toUpperCase();
-            if (period === 'PM' && h !== 12) h += 12;
-            if (period === 'AM' && h === 12) h = 0;
-            return h * 60 + mins;
-          };
-          
-          const base = new Date(activity.loggedAt!);
-          let minutes: number | null = null;
-          
-          if (activity.type === 'nap' && activity.details?.startTime) {
-            minutes = parseUI12hToMinutes(activity.details.startTime);
-          } else if (activity.details?.displayTime) {
-            minutes = parseUI12hToMinutes(activity.details.displayTime);
-          }
-          
-          if (minutes !== null) {
-            base.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-          }
-          return base.getTime();
-        } catch (error) {
-          return new Date(activity.loggedAt!).getTime();
-        }
-      };
-
-      return getActivityTime(b) - getActivityTime(a);
+    filteredActivities.forEach(activity => {
+      const activityDate = new Date(activity.loggedAt!);
+      const y = activityDate.getFullYear();
+      const m = String(activityDate.getMonth() + 1).padStart(2, '0');
+      const d = String(activityDate.getDate()).padStart(2, '0');
+      const localDateString = `${y}-${m}-${d}`;
+      
+      if (!groups[localDateString]) {
+        groups[localDateString] = [];
+      }
+      groups[localDateString].push(activity);
     });
-  });
 
-  const sortedDates = Object.keys(activityGroups).sort((a, b) => b.localeCompare(a));
+    // Generate date keys for visible days (ensure we have entries for recent dates even if empty)
+    const nowDate = new Date();
+    for (let i = 0; i < Math.min(visibleDaysCount, 14); i++) {
+      const d = new Date(nowDate);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+    }
+
+    // Sort activities within each date group
+    Object.keys(groups).forEach(dateKey => {
+      groups[dateKey].sort((a, b) => {
+        const getActivityTime = (activity: any) => {
+          try {
+            const parseUI12hToMinutes = (timeStr?: string | null): number | null => {
+              if (!timeStr) return null;
+              const first = timeStr.includes(' - ') ? timeStr.split(' - ')[0] : timeStr;
+              const match = first.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+              if (!match) return null;
+              let h = parseInt(match[1], 10);
+              const mins = parseInt(match[2], 10);
+              const period = match[3].toUpperCase();
+              if (period === 'PM' && h !== 12) h += 12;
+              if (period === 'AM' && h === 12) h = 0;
+              return h * 60 + mins;
+            };
+            
+            const base = new Date(activity.loggedAt!);
+            let minutes: number | null = null;
+            
+            if (activity.type === 'nap' && activity.details?.startTime) {
+              minutes = parseUI12hToMinutes(activity.details.startTime);
+            } else if (activity.details?.displayTime) {
+              minutes = parseUI12hToMinutes(activity.details.displayTime);
+            }
+            
+            if (minutes !== null) {
+              base.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+            }
+            return base.getTime();
+          } catch (error) {
+            return new Date(activity.loggedAt!).getTime();
+          }
+        };
+
+        return getActivityTime(b) - getActivityTime(a);
+      });
+    });
+
+    return groups;
+  }, [filteredActivities, visibleDaysCount]);
+
+  // Get all sorted dates and limit to visible count
+  const { visibleDates, totalDaysWithData, hasMoreDays } = useMemo(() => {
+    const allDates = Object.keys(activityGroups).sort((a, b) => b.localeCompare(a));
+    
+    // Find the oldest date with activities
+    const oldestActivityDate = activities.length > 0 
+      ? activities.reduce((oldest, activity) => {
+          const date = new Date(activity.loggedAt!);
+          return date < oldest ? date : oldest;
+        }, new Date())
+      : new Date();
+    
+    // Calculate total possible days from today to oldest activity
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - oldestActivityDate.getTime());
+    const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    
+    return {
+      visibleDates: allDates.slice(0, visibleDaysCount),
+      totalDaysWithData: totalDays,
+      hasMoreDays: visibleDaysCount < totalDays
+    };
+  }, [activityGroups, visibleDaysCount, activities]);
 
   const today = new Date();
   const yesterday = new Date(Date.now() - 86400000);
   const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-
-  const visibleDates = showFullTimeline ? sortedDates : sortedDates.slice(0, 2);
 
   const getDisplayDate = (dateKey: string) => {
     if (dateKey === todayKey) return 'Today';
@@ -188,6 +218,23 @@ export const HistoryTab = ({
     return showWakeUpHere ? { nightSleep, wakeTime } : null;
   };
 
+  const handleLoadMore = () => {
+    setIsLoadingMore(true);
+    // Simulate a brief delay for smooth UX
+    setTimeout(() => {
+      setVisibleDaysCount(prev => prev + LOAD_MORE_INCREMENT);
+      setIsLoadingMore(false);
+    }, 150);
+  };
+
+  const handleShowLess = () => {
+    setVisibleDaysCount(INITIAL_DAYS);
+    // Scroll to top of history
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const remainingDays = totalDaysWithData - visibleDaysCount;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Action buttons */}
@@ -217,7 +264,7 @@ export const HistoryTab = ({
         <div className="space-y-4">
           {visibleDates.map((dateKey, index) => {
             const wakeInfo = getWakeUpInfo(dateKey);
-            const dayActivities = activityGroups[dateKey];
+            const dayActivities = activityGroups[dateKey] || [];
 
             return (
               <div key={dateKey} className="mb-4">
@@ -311,42 +358,48 @@ export const HistoryTab = ({
                   
                   {/* Activities for this date */}
                   <div className="divide-y divide-border">
-                    {dayActivities.map((activity) => {
-                      const milestones = detectMilestones(activity, activities);
-                      return (
-                        <SwipeableActivityCard
-                          key={activity.id}
-                          activity={activity}
-                          babyName={babyName}
-                          milestones={milestones}
-                          onEdit={onEditActivity}
-                          onDelete={async (activityId) => {
-                            try {
-                              const { data: activityToDelete } = await supabase
-                                .from('activities')
-                                .select('*')
-                                .eq('id', activityId)
-                                .single();
+                    {dayActivities.length === 0 ? (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-sm text-muted-foreground">No activities logged</p>
+                      </div>
+                    ) : (
+                      dayActivities.map((activity) => {
+                        const milestones = detectMilestones(activity, activities);
+                        return (
+                          <SwipeableActivityCard
+                            key={activity.id}
+                            activity={activity}
+                            babyName={babyName}
+                            milestones={milestones}
+                            onEdit={onEditActivity}
+                            onDelete={async (activityId) => {
+                              try {
+                                const { data: activityToDelete } = await supabase
+                                  .from('activities')
+                                  .select('*')
+                                  .eq('id', activityId)
+                                  .single();
 
-                              await onDeleteActivity(activityId);
+                                await onDeleteActivity(activityId);
 
-                              if (activityToDelete) {
-                                trackDelete({
-                                  id: activityToDelete.id,
-                                  type: activityToDelete.type,
-                                  logged_at: activityToDelete.logged_at,
-                                  details: activityToDelete.details,
-                                  household_id: activityToDelete.household_id,
-                                  created_by: activityToDelete.created_by
-                                });
+                                if (activityToDelete) {
+                                  trackDelete({
+                                    id: activityToDelete.id,
+                                    type: activityToDelete.type,
+                                    logged_at: activityToDelete.logged_at,
+                                    details: activityToDelete.details,
+                                    household_id: activityToDelete.household_id,
+                                    created_by: activityToDelete.created_by
+                                  });
+                                }
+                              } catch (error) {
+                                console.error('Error deleting activity:', error);
                               }
-                            } catch (error) {
-                              console.error('Error deleting activity:', error);
-                            }
-                          }}
-                        />
-                      );
-                    })}
+                            }}
+                          />
+                        );
+                      })
+                    )}
                     
                     {/* Wake-up indicator */}
                     {wakeInfo && (
@@ -374,28 +427,41 @@ export const HistoryTab = ({
             );
           })}
 
-          {/* Show More/Less Button */}
-          {sortedDates.length > visibleDates.length && !showFullTimeline && (
-            <div className="text-center pt-4">
+          {/* Load More / Show Less Buttons */}
+          <div className="text-center pt-4 space-y-2">
+            {hasMoreDays && (
               <button
-                onClick={() => setShowFullTimeline(true)}
-                className="text-sm font-semibold text-primary hover:opacity-80 transition-opacity"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="text-sm font-semibold text-primary hover:opacity-80 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 mx-auto"
               >
-                Show {sortedDates.length - visibleDates.length} more days
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  `Load ${Math.min(remainingDays, LOAD_MORE_INCREMENT)} more days`
+                )}
               </button>
-            </div>
-          )}
-          
-          {showFullTimeline && sortedDates.length > 2 && (
-            <div className="text-center pt-4">
+            )}
+            
+            {visibleDaysCount > INITIAL_DAYS && (
               <button
-                onClick={() => setShowFullTimeline(false)}
-                className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                onClick={handleShowLess}
+                className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors block mx-auto"
               >
                 Show less
               </button>
-            </div>
-          )}
+            )}
+            
+            {/* Progress indicator */}
+            {totalDaysWithData > INITIAL_DAYS && (
+              <p className="text-xs text-muted-foreground/60 pt-2">
+                Showing {visibleDaysCount} of {totalDaysWithData} days
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
