@@ -5,7 +5,8 @@ import {
   Check, 
   Lightbulb,
   Target,
-  Sparkles
+  Sparkles,
+  RefreshCw
 } from "lucide-react";
 import { 
   Drawer, 
@@ -15,6 +16,7 @@ import {
   DrawerClose
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   getDomainById,
   type StageInfo 
@@ -24,7 +26,6 @@ import { cn } from "@/lib/utils";
 interface DomainData {
   id: string;
   label: string;
-  icon: React.ReactNode;
   currentStage: StageInfo;
   stageNumber: number;
   totalStages: number;
@@ -42,6 +43,9 @@ interface DomainDetailModalProps {
   onNext?: () => void;
   onConfirmMilestone?: (domainId: string, stageNumber: number) => void;
   confirmedStage?: number;
+  insight?: string | null;
+  isLoadingInsight?: boolean;
+  onRefreshInsight?: () => void;
 }
 
 export function DomainDetailModal({
@@ -53,7 +57,10 @@ export function DomainDetailModal({
   onPrev,
   onNext,
   onConfirmMilestone,
-  confirmedStage
+  confirmedStage,
+  insight,
+  isLoadingInsight,
+  onRefreshInsight
 }: DomainDetailModalProps) {
   if (!domainData) return null;
 
@@ -81,14 +88,9 @@ export function DomainDetailModal({
             <ChevronLeft className="h-5 w-5" />
           </button>
 
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-muted/50">
-              {domainData.icon}
-            </div>
-            <DrawerTitle className="text-base font-serif">
-              {domainData.label}
-            </DrawerTitle>
-          </div>
+          <DrawerTitle className="text-base font-serif">
+            {domainData.label}
+          </DrawerTitle>
 
           <button
             onClick={onNext}
@@ -228,6 +230,45 @@ export function DomainDetailModal({
                 I've seen these milestones
               </Button>
             )
+          )}
+
+          {/* AI Insight Section - at the bottom */}
+          {(isLoadingInsight || insight) && (
+            <div className="pt-4 border-t border-border">
+              {isLoadingInsight ? (
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-3 w-full mb-1.5" />
+                  <Skeleton className="h-3 w-3/4" />
+                </div>
+              ) : insight && (
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-[10px] font-medium tracking-wide text-primary uppercase">
+                        AI Insight
+                      </span>
+                    </div>
+                    {onRefreshInsight && (
+                      <button
+                        onClick={onRefreshInsight}
+                        className="p-1 rounded-full hover:bg-primary/10 transition-colors"
+                        aria-label="Refresh insight"
+                      >
+                        <RefreshCw className="h-3 w-3 text-primary/60" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {insight}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
