@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -337,6 +337,7 @@ const ongoingNap = (() => {
 
   // Get current user's role from collaborators
   const currentUserRole = collaborators.find(c => c.user_id === user?.id)?.role;
+  const location = useLocation();
   
   const [activeTab, setActiveTab] = useState("home");
   
@@ -346,6 +347,15 @@ const ongoingNap = (() => {
       setActiveTab("history");
     }
   }, [currentUserRole]);
+
+  // Handle navigation state from domain detail page
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);

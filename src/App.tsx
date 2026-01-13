@@ -17,6 +17,7 @@ import BabySetup from "./pages/BabySetup";
 import VillageInvite from "./pages/VillageInvite";
 import NotFound from "./pages/NotFound";
 import WeeklyReport from "./pages/WeeklyReport";
+import GuideDomain from "./pages/GuideDomain";
 
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/login" element={<Auth />} />
                     <Route path="/invite/:code" element={<InviteAccept />} />
+                    <Route path="/guide/:domainId" element={<GuideDomain />} />
                     <Route path="/report/weekly" element={<WeeklyReport />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

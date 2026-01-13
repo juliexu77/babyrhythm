@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useMilestoneCalibration } from "@/hooks/useMilestoneCalibration";
@@ -19,11 +19,7 @@ interface GuideTabProps {
 
 export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
-  const { 
-    calibrationFlags, 
-    confirmMilestone, 
-    isLoading: calibrationLoading 
-  } = useMilestoneCalibration();
+  const { calibrationFlags, isLoading: calibrationLoading } = useMilestoneCalibration();
 
   const babyName = household?.baby_name || 'Baby';
   const babyAgeInWeeks = useMemo(() => {
@@ -32,15 +28,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, [household?.baby_birthday]);
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
-  const [selectedDomainFromFocus, setSelectedDomainFromFocus] = useState<string | null>(null);
-
-  const handleConfirmMilestone = (domainId: string, stageNumber: number) => {
-    confirmMilestone(domainId, stageNumber);
-  };
-
-  const handleDomainSelect = (domainId: string) => {
-    setSelectedDomainFromFocus(domainId);
-  };
 
   if (householdLoading || calibrationLoading) {
     return (
@@ -59,19 +46,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background pb-24 overflow-x-hidden w-full">
+    <div className="flex flex-col h-full bg-background pb-24">
       {needsBirthdaySetup ? (
         <GuideEmptyState type="needs-birthday" onGoToSettings={onGoToSettings} />
       ) : (
-        <div className="flex-1 overflow-x-hidden w-full">
+        <ScrollArea className="flex-1">
           <DevelopmentTable
             ageInWeeks={babyAgeInWeeks}
             babyName={babyName}
             calibrationFlags={calibrationFlags}
-            onConfirmMilestone={handleConfirmMilestone}
-            onDomainSelect={handleDomainSelect}
           />
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

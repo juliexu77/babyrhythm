@@ -1,3 +1,14 @@
+import { useMemo, useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useHousehold } from "@/hooks/useHousehold";
+import { useMilestoneCalibration } from "@/hooks/useMilestoneCalibration";
+import { 
+  developmentalDomains, 
+  calculateStage,
+  getDomainById,
+  type StageInfo 
+} from "@/data/developmentalStages";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   ArrowLeft,
   Check, 
@@ -8,10 +19,6 @@ import {
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  getDomainById,
-  type StageInfo 
-} from "@/data/developmentalStages";
 import { cn } from "@/lib/utils";
 
 interface DomainData {
@@ -24,55 +31,197 @@ interface DomainData {
   color: string;
 }
 
-interface DomainDetailViewProps {
-  domainData: DomainData;
-  allDomains: DomainData[];
+interface CachedInsight {
+  insight: string;
   ageInWeeks: number;
-  babyName: string;
-  onBack: () => void;
-  onDomainChange: (domainId: string) => void;
-  onConfirmMilestone?: (domainId: string, stageNumber: number) => void;
-  confirmedStage?: number;
-  insight?: string | null;
-  isLoadingInsight?: boolean;
-  onRefreshInsight?: () => void;
+  stageNumber: number;
+  timestamp: number;
 }
 
-export function DomainDetailView({
-  domainData,
-  allDomains,
-  ageInWeeks,
-  babyName,
-  onBack,
-  onDomainChange,
-  onConfirmMilestone,
-  confirmedStage,
-  insight,
-  isLoadingInsight,
-  onRefreshInsight
-}: DomainDetailViewProps) {
-  const domain = getDomainById(domainData.id);
-  const nextStage = domain?.stages[domainData.stageNumber];
+const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+
+const getInsightCacheKey = (domainId: string): string => 
+  `developmental_insight_${domainId}`;
+
+export default function GuideDomain() {
+  const { domainId } = useParams<{ domainId: string }>();
+  const navigate = useNavigate();
+  const { household, loading: householdLoading } = useHousehold();
+  const { calibrationFlags, confirmMilestone } = useMilestoneCalibration();
+  
+  const [insight, setInsight] = useState<string | null>(null);
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+
+  const babyName = household?.baby_name || 'Baby';
+  const ageInWeeks = useMemo(() => {
+    if (!household?.baby_birthday) return 0;
+    return Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7));
+  }, [household?.baby_birthday]);
+
+  // Calculate all domain data
+  const allDomains = useMemo(() => {
+    return developmentalDomains.map((domain) => {
+      const confirmedStage = calibrationFlags[domain.id];
+      const stageResult = calculateStage(domain.id, ageInWeeks, confirmedStage);
+      
+      if (!stageResult) return null;
+
+      return {
+        id: domain.id,
+        label: domain.label,
+        currentStage: stageResult.stage,
+        stageNumber: stageResult.stageNumber,
+        totalStages: domain.stages.length,
+        isEmerging: stageResult.isEmerging,
+        color: domain.color
+      } as DomainData;
+    }).filter(Boolean) as DomainData[];
+  }, [ageInWeeks, calibrationFlags]);
+
+  const currentDomain = useMemo(() => {
+    return allDomains.find(d => d.id === domainId) || null;
+  }, [allDomains, domainId]);
+
+  const domain = getDomainById(domainId || '');
+  const nextStage = domain?.stages[(currentDomain?.stageNumber || 0)];
 
   // Progress calculation
-  const progressPercent = (domainData.stageNumber / domainData.totalStages) * 100;
+  const progressPercent = currentDomain 
+    ? (currentDomain.stageNumber / currentDomain.totalStages) * 100 
+    : 0;
   
   // Check if milestone is confirmed
-  const isConfirmed = confirmedStage !== undefined && confirmedStage >= domainData.stageNumber;
-  const canConfirm = onConfirmMilestone && domainData.stageNumber < domainData.totalStages;
+  const confirmedStage = domainId ? calibrationFlags[domainId] : undefined;
+  const isConfirmed = confirmedStage !== undefined && currentDomain && confirmedStage >= currentDomain.stageNumber;
+  const canConfirm = currentDomain && currentDomain.stageNumber < currentDomain.totalStages;
+
+  // Insight caching
+  const getCachedInsight = useCallback((domainData: DomainData): string | null => {
+    try {
+      const cacheKey = getInsightCacheKey(domainData.id);
+      const cached = localStorage.getItem(cacheKey);
+      if (!cached) return null;
+
+      const parsed: CachedInsight = JSON.parse(cached);
+      const now = Date.now();
+      
+      if (now - parsed.timestamp > CACHE_EXPIRY_MS) {
+        localStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      const weekBracket = Math.floor(ageInWeeks / 4);
+      const cachedWeekBracket = Math.floor(parsed.ageInWeeks / 4);
+      if (parsed.stageNumber !== domainData.stageNumber || weekBracket !== cachedWeekBracket) {
+        localStorage.removeItem(cacheKey);
+        return null;
+      }
+      
+      return parsed.insight;
+    } catch {
+      return null;
+    }
+  }, [ageInWeeks]);
+
+  const cacheInsight = useCallback((domainData: DomainData, insightText: string) => {
+    try {
+      const cacheKey = getInsightCacheKey(domainData.id);
+      const cached: CachedInsight = {
+        insight: insightText,
+        ageInWeeks,
+        stageNumber: domainData.stageNumber,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(cached));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [ageInWeeks]);
+
+  const fetchInsight = useCallback(async (domainData: DomainData, forceRefresh = false) => {
+    if (!forceRefresh) {
+      const cached = getCachedInsight(domainData);
+      if (cached) {
+        setInsight(cached);
+        return;
+      }
+    }
+    
+    setIsLoadingInsight(true);
+    setInsight(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-developmental-insight', {
+        body: {
+          domainId: domainData.id,
+          domainLabel: domainData.label,
+          stageName: domainData.currentStage.name,
+          stageDescription: domainData.currentStage.description,
+          ageInWeeks,
+          babyName,
+          milestones: domainData.currentStage.milestones,
+          supportTips: domainData.currentStage.supportTips
+        }
+      });
+
+      if (!error && data?.insight) {
+        setInsight(data.insight);
+        cacheInsight(domainData, data.insight);
+      }
+    } catch (err) {
+      console.error('Failed to fetch insight:', err);
+    } finally {
+      setIsLoadingInsight(false);
+    }
+  }, [ageInWeeks, babyName, getCachedInsight, cacheInsight]);
+
+  // Fetch insight when domain changes
+  useEffect(() => {
+    if (currentDomain) {
+      setInsight(null);
+      fetchInsight(currentDomain);
+    }
+  }, [currentDomain?.id]);
 
   const handleConfirm = () => {
-    if (onConfirmMilestone && !isConfirmed) {
-      onConfirmMilestone(domainData.id, domainData.stageNumber);
+    if (domainId && currentDomain && !isConfirmed) {
+      confirmMilestone(domainId, currentDomain.stageNumber);
     }
   };
 
+  const handleDomainChange = (newDomainId: string) => {
+    navigate(`/guide/${newDomainId}`, { replace: true });
+  };
+
+  const handleBack = () => {
+    navigate('/', { state: { activeTab: 'rhythm' } });
+  };
+
+  if (householdLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Skeleton className="h-8 w-32" />
+      </div>
+    );
+  }
+
+  if (!currentDomain) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        <p className="text-muted-foreground mb-4">Domain not found</p>
+        <button onClick={handleBack} className="text-primary underline">
+          Go back
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full bg-background overflow-hidden w-full" style={{ maxWidth: '100vw' }}>
+    <div className="min-h-screen bg-background flex flex-col w-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background sticky top-0 z-10 w-full box-border">
+      <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background sticky top-0 z-10">
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
           aria-label="Go back"
         >
@@ -80,11 +229,10 @@ export function DomainDetailView({
         </button>
 
         <h1 className="text-base font-serif text-foreground">
-          {domainData.label}
+          {currentDomain.label}
         </h1>
 
-        {/* Confirm checkmark in top right */}
-        {canConfirm && (
+        {canConfirm ? (
           <button
             onClick={handleConfirm}
             disabled={isConfirmed}
@@ -98,21 +246,21 @@ export function DomainDetailView({
           >
             <Check className="h-5 w-5" />
           </button>
+        ) : (
+          <div className="w-9" />
         )}
-        
-        {!canConfirm && <div className="w-9" />}
-      </div>
+      </header>
 
       {/* Domain Pills */}
-      <div className="px-4 py-3 border-b border-border bg-background overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-background">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
           {allDomains.map((d) => (
             <button
               key={d.id}
-              onClick={() => onDomainChange(d.id)}
+              onClick={() => handleDomainChange(d.id)}
               className={cn(
                 "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-                d.id === domainData.id
+                d.id === domainId
                   ? "bg-primary text-primary-foreground"
                   : "bg-card border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
               )}
@@ -125,15 +273,15 @@ export function DomainDetailView({
 
       {/* Scrollable Content */}
       <ScrollArea className="flex-1">
-        <div className="py-5 space-y-6 pb-24" style={{ paddingLeft: '1rem', paddingRight: '1rem', maxWidth: 'calc(100vw - 2rem)', boxSizing: 'border-box' }}>
+        <div className="px-4 py-5 space-y-6 pb-24">
           {/* Current Stage */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium text-foreground">
-                {domainData.currentStage.name}
+                {currentDomain.currentStage.name}
               </h2>
               <span className="text-xs text-muted-foreground">
-                Stage {domainData.stageNumber} of {domainData.totalStages}
+                Stage {currentDomain.stageNumber} of {currentDomain.totalStages}
               </span>
             </div>
 
@@ -153,7 +301,7 @@ export function DomainDetailView({
 
             {/* Description */}
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {domainData.currentStage.description}
+              {currentDomain.currentStage.description}
             </p>
           </div>
 
@@ -164,7 +312,7 @@ export function DomainDetailView({
               <span>What to Look For</span>
             </div>
             <ul className="space-y-2">
-              {domainData.currentStage.milestones.map((milestone, i) => (
+              {currentDomain.currentStage.milestones.map((milestone, i) => (
                 <li 
                   key={i}
                   className="flex items-start gap-2 text-sm text-muted-foreground"
@@ -176,7 +324,7 @@ export function DomainDetailView({
             </ul>
           </div>
 
-          {/* Milestone Confirmation - inline after What to Look For */}
+          {/* Milestone Confirmation */}
           {canConfirm && (
             <div className={cn(
               "p-3 rounded-lg border transition-colors",
@@ -210,7 +358,7 @@ export function DomainDetailView({
               <span>How to Support {babyName}</span>
             </div>
             <ul className="space-y-2">
-              {domainData.currentStage.supportTips.map((tip, i) => (
+              {currentDomain.currentStage.supportTips.map((tip, i) => (
                 <li 
                   key={i}
                   className="flex items-start gap-2 text-sm text-muted-foreground"
@@ -247,7 +395,7 @@ export function DomainDetailView({
           )}
 
           {/* Emerging Badge */}
-          {domainData.isEmerging && (
+          {currentDomain.isEmerging && (
             <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-1">
               <p className="text-sm font-medium text-primary">
                 🌱 Emerging Skills Ahead
@@ -279,15 +427,13 @@ export function DomainDetailView({
                         AI Insight
                       </span>
                     </div>
-                    {onRefreshInsight && (
-                      <button
-                        onClick={onRefreshInsight}
-                        className="p-1.5 rounded-full hover:bg-primary/10 transition-colors"
-                        aria-label="Refresh insight"
-                      >
-                        <RefreshCw className="h-3.5 w-3.5 text-primary/60" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => currentDomain && fetchInsight(currentDomain, true)}
+                      className="p-1.5 rounded-full hover:bg-primary/10 transition-colors"
+                      aria-label="Refresh insight"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5 text-primary/60" />
+                    </button>
                   </div>
                   <p className="text-sm text-foreground leading-relaxed">
                     {insight}

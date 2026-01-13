@@ -1,20 +1,17 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { 
   developmentalDomains, 
   calculateStage,
   type StageInfo
 } from "@/data/developmentalStages";
-import { DomainDetailView } from "./DomainDetailView";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 
 interface DevelopmentTableProps {
   ageInWeeks: number;
   babyName: string;
   calibrationFlags?: Record<string, number>;
-  onConfirmMilestone?: (domainId: string, stageNumber: number) => void;
-  onDomainSelect?: (domainId: string) => void;
 }
 
 interface DomainData {
@@ -27,19 +24,6 @@ interface DomainData {
   isAhead: boolean;
   color: string;
 }
-
-interface CachedInsight {
-  insight: string;
-  ageInWeeks: number;
-  stageNumber: number;
-  timestamp: number;
-}
-
-// Cache expires after 7 days
-const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
-
-const getInsightCacheKey = (domainId: string): string => 
-  `developmental_insight_${domainId}`;
 
 // Custom geometric icons for each domain - editorial feel
 export const DomainIcon = ({ domainId, className }: { domainId: string; className?: string }) => {
@@ -118,14 +102,9 @@ export const DomainIcon = ({ domainId, className }: { domainId: string; classNam
 export function DevelopmentTable({ 
   ageInWeeks, 
   babyName,
-  calibrationFlags = {},
-  onConfirmMilestone,
-  onDomainSelect
+  calibrationFlags = {}
 }: DevelopmentTableProps) {
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
-  const [insight, setInsight] = useState<string | null>(null);
-  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
-  const [insightDomainId, setInsightDomainId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const domainData = useMemo(() => {
     return developmentalDomains.map((domain) => {
@@ -152,145 +131,9 @@ export function DevelopmentTable({
     }).filter(Boolean) as DomainData[];
   }, [ageInWeeks, calibrationFlags]);
 
-  const selectedDomainData = useMemo(() => {
-    if (!selectedDomain) return null;
-    return domainData.find((d) => d.id === selectedDomain) || null;
-  }, [selectedDomain, domainData]);
-
-  // AI Insight logic
-  const getCachedInsight = useCallback((domain: DomainData): string | null => {
-    try {
-      const cacheKey = getInsightCacheKey(domain.id);
-      const cached = localStorage.getItem(cacheKey);
-      if (!cached) return null;
-
-      const parsed: CachedInsight = JSON.parse(cached);
-      const now = Date.now();
-      
-      if (now - parsed.timestamp > CACHE_EXPIRY_MS) {
-        localStorage.removeItem(cacheKey);
-        return null;
-      }
-      
-      const weekBracket = Math.floor(ageInWeeks / 4);
-      const cachedWeekBracket = Math.floor(parsed.ageInWeeks / 4);
-      if (parsed.stageNumber !== domain.stageNumber || weekBracket !== cachedWeekBracket) {
-        localStorage.removeItem(cacheKey);
-        return null;
-      }
-      
-      return parsed.insight;
-    } catch {
-      return null;
-    }
-  }, [ageInWeeks]);
-
-  const cacheInsight = useCallback((domain: DomainData, insightText: string) => {
-    try {
-      const cacheKey = getInsightCacheKey(domain.id);
-      const cached: CachedInsight = {
-        insight: insightText,
-        ageInWeeks,
-        stageNumber: domain.stageNumber,
-        timestamp: Date.now()
-      };
-      localStorage.setItem(cacheKey, JSON.stringify(cached));
-    } catch {
-      // Ignore storage errors
-    }
-  }, [ageInWeeks]);
-
-  const fetchInsight = async (domain: DomainData, forceRefresh = false) => {
-    if (!domain) return;
-    
-    if (!forceRefresh) {
-      const cached = getCachedInsight(domain);
-      if (cached) {
-        setInsight(cached);
-        setInsightDomainId(domain.id);
-        return;
-      }
-    }
-    
-    setIsLoadingInsight(true);
-    setInsight(null);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-developmental-insight', {
-        body: {
-          domainId: domain.id,
-          domainLabel: domain.label,
-          stageName: domain.currentStage.name,
-          stageDescription: domain.currentStage.description,
-          ageInWeeks,
-          babyName,
-          milestones: domain.currentStage.milestones,
-          supportTips: domain.currentStage.supportTips
-        }
-      });
-
-      if (error) {
-        console.error('Error fetching insight:', error);
-        return;
-      }
-
-      if (data?.insight) {
-        setInsight(data.insight);
-        setInsightDomainId(domain.id);
-        cacheInsight(domain, data.insight);
-      }
-    } catch (err) {
-      console.error('Failed to fetch insight:', err);
-    } finally {
-      setIsLoadingInsight(false);
-    }
+  const handleDomainClick = (domainId: string) => {
+    navigate(`/guide/${domainId}`);
   };
-
-  // Fetch insight when domain is selected
-  useEffect(() => {
-    if (selectedDomainData && selectedDomainData.id !== insightDomainId) {
-      fetchInsight(selectedDomainData);
-    }
-  }, [selectedDomainData?.id]);
-
-  // Reset insight when view closes
-  useEffect(() => {
-    if (!selectedDomain) {
-      setInsight(null);
-      setInsightDomainId(null);
-    }
-  }, [selectedDomain]);
-
-  const handleRefreshInsight = () => {
-    if (selectedDomainData) {
-      fetchInsight(selectedDomainData, true);
-    }
-  };
-
-  const handleDomainChange = (domainId: string) => {
-    setSelectedDomain(domainId);
-  };
-
-  // Show full-screen detail view when a domain is selected
-  if (selectedDomain && selectedDomainData) {
-    return (
-      <div className="w-full max-w-full overflow-hidden">
-        <DomainDetailView
-        domainData={selectedDomainData}
-        allDomains={domainData}
-        ageInWeeks={ageInWeeks}
-        babyName={babyName}
-        onBack={() => setSelectedDomain(null)}
-        onDomainChange={handleDomainChange}
-        onConfirmMilestone={onConfirmMilestone}
-        confirmedStage={calibrationFlags[selectedDomain]}
-        insight={insight}
-        isLoadingInsight={isLoadingInsight}
-        onRefreshInsight={handleRefreshInsight}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="px-4 py-6">
@@ -309,7 +152,7 @@ export function DevelopmentTable({
         {domainData.map((domain) => (
           <button
             key={domain.id}
-            onClick={() => setSelectedDomain(domain.id)}
+            onClick={() => handleDomainClick(domain.id)}
             className={cn(
               "w-full flex items-center gap-4 p-4",
               "bg-card border border-border/60",
