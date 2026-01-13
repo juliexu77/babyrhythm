@@ -68,7 +68,7 @@ export function DomainDetailView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background overflow-x-hidden w-full max-w-full">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background sticky top-0 z-10">
         <button
@@ -104,7 +104,7 @@ export function DomainDetailView({
       </div>
 
       {/* Domain Pills */}
-      <div className="px-4 py-3 border-b border-border bg-background">
+      <div className="px-4 py-3 border-b border-border bg-background overflow-hidden">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
           {allDomains.map((d) => (
             <button
@@ -124,7 +124,7 @@ export function DomainDetailView({
       </div>
 
       {/* Scrollable Content */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 w-full">
         <div className="px-4 py-5 space-y-6 pb-24">
           {/* Current Stage */}
           <div className="space-y-3">
