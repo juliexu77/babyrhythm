@@ -41,6 +41,7 @@ export const StorageKeys = {
   HAS_SEEN_RHYTHM_UNLOCK: 'hasSeenRhythmUnlock',
   MISSED_ACTIVITY_DISMISSED: 'missedActivityDismissed',
   PATTERN_MILESTONES: 'patternMilestones',
+  REVIEWED_DOMAINS: 'reviewed_domains',
   
   // Debug
   DEBUG_LOGGING_ENABLED: 'debug_logging_enabled',

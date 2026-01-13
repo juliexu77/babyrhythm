@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Check } from "lucide-react";
 import { 
   developmentalDomains, 
   calculateStage,
   type StageInfo
 } from "@/data/developmentalStages";
+import { useLocalStorage, StorageKeys } from "@/hooks/useLocalStorage";
 import { cn } from "@/lib/utils";
 
 interface DevelopmentTableProps {
@@ -105,6 +106,7 @@ export function DevelopmentTable({
   calibrationFlags = {}
 }: DevelopmentTableProps) {
   const navigate = useNavigate();
+  const [reviewedDomains] = useLocalStorage<string[]>(StorageKeys.REVIEWED_DOMAINS, []);
 
   const domainData = useMemo(() => {
     return developmentalDomains.map((domain) => {
@@ -149,44 +151,52 @@ export function DevelopmentTable({
 
       {/* Domain Cards */}
       <div className="space-y-3 mt-6">
-        {domainData.map((domain) => (
-          <button
-            key={domain.id}
-            onClick={() => handleDomainClick(domain.id)}
-            className={cn(
-              "w-full flex items-center gap-4 p-4",
-              "bg-card border border-border/60",
-              "rounded-sm",
-              "transition-all duration-150",
-              "hover:border-border hover:shadow-sm",
-              "active:scale-[0.99]",
-              "text-left"
-            )}
-          >
-            {/* Geometric Icon */}
-            <div className="shrink-0 text-muted-foreground">
-              <DomainIcon domainId={domain.id} />
-            </div>
+          {domainData.map((domain) => {
+            const isReviewed = reviewedDomains.includes(domain.id);
+            return (
+              <button
+                key={domain.id}
+                onClick={() => handleDomainClick(domain.id)}
+                className={cn(
+                  "w-full flex items-center gap-4 p-4",
+                  "bg-card border border-border/60",
+                  "rounded-sm",
+                  "transition-all duration-150",
+                  "hover:border-border hover:shadow-sm",
+                  "active:scale-[0.99]",
+                  "text-left"
+                )}
+              >
+                {/* Geometric Icon */}
+                <div className="shrink-0 text-muted-foreground">
+                  <DomainIcon domainId={domain.id} />
+                </div>
 
-            {/* Domain Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-3">
-                <span className="font-serif text-sm text-foreground">
-                  {domain.label}
-                </span>
-                <span className="text-sm text-muted-foreground truncate">
-                  {domain.currentStage.name}
-                </span>
-              </div>
-              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-                Stage {domain.stageNumber} of {domain.totalStages}
-              </p>
-            </div>
+                {/* Domain Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-serif text-sm text-foreground">
+                      {domain.label}
+                    </span>
+                    <span className="text-sm text-muted-foreground truncate">
+                      {domain.currentStage.name}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                    Stage {domain.stageNumber} of {domain.totalStages}
+                  </p>
+                </div>
 
-            {/* Chevron */}
-            <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-          </button>
-        ))}
+                {/* Reviewed Checkmark */}
+                {isReviewed && (
+                  <Check className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                )}
+
+                {/* Chevron */}
+                <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+              </button>
+            );
+          })}
       </div>
     </div>
   );

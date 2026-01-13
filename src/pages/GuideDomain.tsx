@@ -1,7 +1,8 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useMilestoneCalibration } from "@/hooks/useMilestoneCalibration";
+import { useLocalStorage, StorageKeys } from "@/hooks/useLocalStorage";
 import { 
   developmentalDomains, 
   calculateStage,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
 interface DomainData {
@@ -48,9 +50,12 @@ export default function GuideDomain() {
   const navigate = useNavigate();
   const { household, loading: householdLoading } = useHousehold();
   const { calibrationFlags, confirmMilestone } = useMilestoneCalibration();
+  const [reviewedDomains, setReviewedDomains] = useLocalStorage<string[]>(StorageKeys.REVIEWED_DOMAINS, []);
   
   const [insight, setInsight] = useState<string | null>(null);
   const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+  
+  const pillsContainerRef = useRef<HTMLDivElement>(null);
 
   const babyName = household?.baby_name || 'Baby';
   const ageInWeeks = useMemo(() => {
@@ -90,10 +95,24 @@ export default function GuideDomain() {
     ? (currentDomain.stageNumber / currentDomain.totalStages) * 100 
     : 0;
   
-  // Check if milestone is confirmed
-  const confirmedStage = domainId ? calibrationFlags[domainId] : undefined;
-  const isConfirmed = confirmedStage !== undefined && currentDomain && confirmedStage >= currentDomain.stageNumber;
-  const canConfirm = currentDomain && currentDomain.stageNumber < currentDomain.totalStages;
+  // Check if current domain is reviewed
+  const isReviewed = domainId ? reviewedDomains.includes(domainId) : false;
+
+  // Scroll active pill into view
+  useEffect(() => {
+    if (pillsContainerRef.current && domainId) {
+      const activeButton = pillsContainerRef.current.querySelector(`[data-domain="${domainId}"]`) as HTMLElement;
+      if (activeButton) {
+        const container = pillsContainerRef.current;
+        const containerRect = container.getBoundingClientRect();
+        const buttonRect = activeButton.getBoundingClientRect();
+        
+        // Calculate scroll position to center the active pill
+        const scrollLeft = activeButton.offsetLeft - (containerRect.width / 2) + (buttonRect.width / 2);
+        container.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'smooth' });
+      }
+    }
+  }, [domainId]);
 
   // Insight caching
   const getCachedInsight = useCallback((domainData: DomainData): string | null => {
@@ -183,9 +202,13 @@ export default function GuideDomain() {
     }
   }, [currentDomain?.id]);
 
-  const handleConfirm = () => {
-    if (domainId && currentDomain && !isConfirmed) {
-      confirmMilestone(domainId, currentDomain.stageNumber);
+  const handleReviewedChange = (checked: boolean) => {
+    if (!domainId) return;
+    
+    if (checked) {
+      setReviewedDomains(prev => [...prev.filter(id => id !== domainId), domainId]);
+    } else {
+      setReviewedDomains(prev => prev.filter(id => id !== domainId));
     }
   };
 
@@ -232,31 +255,26 @@ export default function GuideDomain() {
           {currentDomain.label}
         </h1>
 
-        {canConfirm ? (
-          <button
-            onClick={handleConfirm}
-            disabled={isConfirmed}
-            className={cn(
-              "p-2 -mr-2 rounded-full transition-colors",
-              isConfirmed 
-                ? "text-primary bg-primary/10" 
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-            aria-label={isConfirmed ? "Milestone confirmed" : "Confirm milestone"}
-          >
-            <Check className="h-5 w-5" />
-          </button>
-        ) : (
-          <div className="w-9" />
-        )}
+        {/* Back/Exit button (checkmark icon) */}
+        <button
+          onClick={handleBack}
+          className="p-2 -mr-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          aria-label="Done"
+        >
+          <Check className="h-5 w-5" />
+        </button>
       </header>
 
       {/* Domain Pills */}
       <div className="px-4 py-3 border-b border-border bg-background">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+        <div 
+          ref={pillsContainerRef}
+          className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1"
+        >
           {allDomains.map((d) => (
             <button
               key={d.id}
+              data-domain={d.id}
               onClick={() => handleDomainChange(d.id)}
               className={cn(
                 "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
@@ -323,33 +341,6 @@ export default function GuideDomain() {
               ))}
             </ul>
           </div>
-
-          {/* Milestone Confirmation */}
-          {canConfirm && (
-            <div className={cn(
-              "p-3 rounded-lg border transition-colors",
-              isConfirmed 
-                ? "bg-primary/5 border-primary/20" 
-                : "bg-muted/30 border-border"
-            )}>
-              {isConfirmed ? (
-                <div className="flex items-center gap-2 text-sm text-primary font-medium">
-                  <Check className="h-4 w-4" />
-                  <span>Stage {confirmedStage} confirmed</span>
-                </div>
-              ) : (
-                <button
-                  onClick={handleConfirm}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
-                >
-                  <div className="w-4 h-4 rounded border border-border flex items-center justify-center">
-                    <Check className="h-3 w-3 opacity-0" />
-                  </div>
-                  <span>I've seen these milestones</span>
-                </button>
-              )}
-            </div>
-          )}
 
           {/* Support Tips */}
           <div className="space-y-3">
@@ -442,6 +433,20 @@ export default function GuideDomain() {
               )}
             </div>
           )}
+
+          {/* Reviewed Checkbox - At the very bottom */}
+          <div className="pt-6 pb-12">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <Checkbox
+                checked={isReviewed}
+                onCheckedChange={(checked) => handleReviewedChange(checked === true)}
+                className="h-5 w-5"
+              />
+              <span className="text-sm text-muted-foreground">
+                I've seen these milestones
+              </span>
+            </label>
+          </div>
         </div>
       </ScrollArea>
     </div>
