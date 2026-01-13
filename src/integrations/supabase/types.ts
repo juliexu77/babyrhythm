@@ -439,6 +439,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          auto_log_bedtime_enabled: boolean | null
           auto_log_wake_enabled: boolean | null
           baby_birth_date: string | null
           baby_name: string | null
@@ -457,6 +458,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_log_bedtime_enabled?: boolean | null
           auto_log_wake_enabled?: boolean | null
           baby_birth_date?: string | null
           baby_name?: string | null
@@ -475,6 +477,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_log_bedtime_enabled?: boolean | null
           auto_log_wake_enabled?: boolean | null
           baby_birth_date?: string | null
           baby_name?: string | null

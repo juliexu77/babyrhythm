@@ -287,6 +287,22 @@ export const Settings = () => {
                   }}
                 />
               </SettingsRow>
+              <SettingsRow
+                title="Auto-log bedtime"
+                subtitle="Automatically log night sleep start at your set time if forgotten"
+                showChevron={false}
+              >
+                <Switch
+                  checked={(userProfile as any)?.auto_log_bedtime_enabled ?? false}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await updateUserProfile({ auto_log_bedtime_enabled: checked } as any);
+                    } catch (error) {
+                      console.error('Error updating auto-log bedtime:', error);
+                    }
+                  }}
+                />
+              </SettingsRow>
             </SettingsSection>
           )}
 
