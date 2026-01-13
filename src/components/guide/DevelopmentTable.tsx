@@ -274,7 +274,8 @@ export function DevelopmentTable({
   // Show full-screen detail view when a domain is selected
   if (selectedDomain && selectedDomainData) {
     return (
-      <DomainDetailView
+      <div className="w-full max-w-full overflow-hidden">
+        <DomainDetailView
         domainData={selectedDomainData}
         allDomains={domainData}
         ageInWeeks={ageInWeeks}
@@ -286,7 +287,8 @@ export function DevelopmentTable({
         insight={insight}
         isLoadingInsight={isLoadingInsight}
         onRefreshInsight={handleRefreshInsight}
-      />
+        />
+      </div>
     );
   }
 
