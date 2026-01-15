@@ -568,6 +568,92 @@ const ongoingNap = (() => {
     checkAutoLogWake();
   }, [userProfile, activities, household?.id, user, hookUpdateActivity]);
 
+  // Auto-log bedtime if enabled and it's past bedtime with no night sleep logged
+  const autoLogBedtimeAttemptedRef = useRef(false);
+  
+  useEffect(() => {
+    // Reset the ref when household changes
+    autoLogBedtimeAttemptedRef.current = false;
+  }, [household?.id]);
+  
+  useEffect(() => {
+    const checkAutoLogBedtime = async () => {
+      // Only attempt once per session to avoid loops
+      if (autoLogBedtimeAttemptedRef.current) return;
+      
+      // Need user profile and household loaded
+      if (!userProfile || !household?.id || !user) return;
+      
+      const profile = userProfile as any;
+      
+      // Check if auto-log bedtime is enabled
+      if (!profile.auto_log_bedtime_enabled) return;
+      
+      // Get bedtime from profile (default 7:00 PM / 19:00)
+      const bedtimeHour = profile.night_sleep_start_hour ?? 19;
+      const bedtimeMinute = profile.night_sleep_start_minute ?? 0;
+      
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      
+      // Check if it's past bedtime today
+      const isPastBedtime = currentHour > bedtimeHour || (currentHour === bedtimeHour && currentMinute >= bedtimeMinute);
+      if (!isPastBedtime) return;
+      
+      // Check if there's already an ongoing night sleep or one logged today at/after bedtime
+      const hasNightSleepToday = activities.some(a => {
+        if (a.type !== 'nap') return false;
+        if (a.details?.isNightSleep !== true) return false;
+        
+        // Check if this night sleep was logged today
+        const activityDate = new Date(a.loggedAt);
+        const isToday = activityDate.toDateString() === now.toDateString();
+        
+        // Also check for ongoing night sleep from today
+        if (isToday) return true;
+        
+        // Check for ongoing (no end time) night sleep
+        if (!a.details?.endTime) return true;
+        
+        return false;
+      });
+      
+      if (hasNightSleepToday) return;
+      
+      // Check if we've already auto-logged bedtime today (prevent duplicate auto-logs)
+      const autoLogKey = `auto_bedtime_logged_${household.id}_${now.toDateString()}` as const;
+      if (rawStorage.get(autoLogKey as any, '')) return;
+      
+      // Mark as attempted immediately to prevent re-runs
+      autoLogBedtimeAttemptedRef.current = true;
+      
+      // Format bedtime for display
+      const bedtimeFormatted = `${bedtimeHour > 12 ? bedtimeHour - 12 : bedtimeHour || 12}:${bedtimeMinute.toString().padStart(2, '0')} ${bedtimeHour >= 12 ? 'PM' : 'AM'}`;
+      
+      // Create a new night sleep activity
+      try {
+        await hookAddActivity({
+          type: 'nap',
+          time: bedtimeFormatted,
+          details: {
+            isNightSleep: true,
+            autoLogged: true
+          }
+        });
+        
+        // Mark as auto-logged today
+        rawStorage.set(autoLogKey as any, 'true');
+        
+        console.log('✅ Auto-logged bedtime at', bedtimeFormatted);
+      } catch (error) {
+        console.error('Failed to auto-log bedtime:', error);
+      }
+    };
+    
+    checkAutoLogBedtime();
+  }, [userProfile, activities, household?.id, user, hookAddActivity]);
+
   const handleProfileComplete = async () => {
     // Not needed anymore - household auto-created on login
     window.location.reload();
