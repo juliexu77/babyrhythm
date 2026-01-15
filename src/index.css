@@ -763,12 +763,18 @@
   
   /* Selection button - used for activity types, feed types, diaper types */
   .btn-select {
-    @apply h-12 rounded-strava flex items-center justify-center gap-2 transition-all;
+    @apply h-12 rounded-strava flex items-center justify-center gap-2;
     @apply bg-muted text-muted-foreground;
+    transition: background-color 100ms ease-out, color 100ms ease-out;
+    -webkit-tap-highlight-color: transparent;
   }
   
   .btn-select:hover {
     @apply bg-muted/80;
+  }
+  
+  .btn-select:active {
+    transform: scale(0.98);
   }
   
   .btn-select[data-selected="true"],
@@ -778,12 +784,18 @@
   
   /* Large selection button - for main activity type grid */
   .btn-select-lg {
-    @apply h-14 rounded-strava flex flex-col items-center justify-center gap-1 transition-all;
+    @apply h-14 rounded-strava flex flex-col items-center justify-center gap-1;
     @apply bg-muted text-muted-foreground;
+    transition: background-color 100ms ease-out, color 100ms ease-out;
+    -webkit-tap-highlight-color: transparent;
   }
   
   .btn-select-lg:hover {
     @apply bg-muted/80;
+  }
+  
+  .btn-select-lg:active {
+    transform: scale(0.98);
   }
   
   .btn-select-lg[data-selected="true"],

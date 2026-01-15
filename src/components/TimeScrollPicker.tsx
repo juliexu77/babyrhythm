@@ -269,7 +269,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           }}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y'
+          }}
         >
           <div className="flex flex-col">
             {dates.map((date, index) => (
@@ -307,7 +312,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y'
+          }}
         >
           <div className="flex flex-col">
             {hours.map((hour, index) => (
@@ -346,7 +356,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y'
+          }}
         >
           <div className="flex flex-col">
             {minutes.map((minute, index) => (
