@@ -1008,7 +1008,7 @@ return (
           quickAddType={quickAddType}
           prefillActivity={prefillActivity}
           householdId={household?.id}
-          activities={activities.slice(0, 50)}
+          
           onAddActivity={async (activity, activityDate, activityTime) => {
             await addActivity(activity.type, activity.details, activityDate, activityTime);
             setShowAddActivity(false);
