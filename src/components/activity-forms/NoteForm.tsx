@@ -1,36 +1,58 @@
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { TimeScrollPicker } from "@/components/TimeScrollPicker";
 import { Camera } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ActivityFormRef, NoteFormData, EditingData, getCurrentTime } from "./types";
 
 interface NoteFormProps {
-  time: string;
-  setTime: (time: string) => void;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  note: string;
-  setNote: (note: string) => void;
-  photo: File | null;
-  setPhoto: (file: File | null) => void;
-  photoUrl: string | null;
-  setPhotoUrl: (url: string | null) => void;
+  editingData?: EditingData | null;
 }
 
-export const NoteForm = ({
-  time,
-  setTime,
-  selectedDate,
-  setSelectedDate,
-  note,
-  setNote,
-  photo,
-  setPhoto,
-  photoUrl,
-  setPhotoUrl,
-}: NoteFormProps) => {
+export const NoteForm = forwardRef<ActivityFormRef, NoteFormProps>(({
+  editingData,
+}, ref) => {
   const { t } = useLanguage();
+  
+  const [time, setTime] = useState(() => getCurrentTime());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [note, setNote] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  // Load editing data
+  useEffect(() => {
+    if (editingData) {
+      setTime(editingData.time);
+      if (editingData.loggedAt) {
+        setSelectedDate(new Date(editingData.loggedAt));
+      }
+      setNote(editingData.details.note || '');
+      setPhotoUrl(editingData.details.photoUrl || null);
+    }
+  }, [editingData]);
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    getValues: (): NoteFormData => ({
+      type: 'note',
+      time,
+      selectedDate,
+      note,
+      photo,
+      photoUrl,
+    }),
+    validate: () => true, // Note always valid
+    reset: () => {
+      setTime(getCurrentTime());
+      setSelectedDate(new Date());
+      setNote('');
+      setPhoto(null);
+      setPhotoUrl(null);
+    },
+  }));
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,4 +132,6 @@ export const NoteForm = ({
       </div>
     </div>
   );
-};
+});
+
+NoteForm.displayName = 'NoteForm';
