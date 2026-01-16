@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { NumericKeypad } from "./NumericKeypad";
@@ -59,19 +59,17 @@ export const AddActivityModal = ({
   const [feedType, setFeedType] = useState<"bottle" | "nursing">("bottle");
   const [quantity, setQuantity] = useState("");
   
-  const getLastBottleUnit = (): "oz" | "ml" => {
+  // Memoize last bottle unit to avoid recalculating on every render
+  const lastBottleUnit = useMemo((): "oz" | "ml" => {
     if (!activities || activities.length === 0) return "oz";
-    const lastBottleFeed = activities
-      .filter(a => a.type === 'feed' && a.details?.feedType === 'bottle' && a.details?.unit)
-      .sort((a, b) => {
-        const timeA = a.loggedAt ? new Date(a.loggedAt).getTime() : 0;
-        const timeB = b.loggedAt ? new Date(b.loggedAt).getTime() : 0;
-        return timeB - timeA;
-      })[0];
+    // Activities are already sorted by logged_at desc, just find first bottle feed
+    const lastBottleFeed = activities.find(
+      a => a.type === 'feed' && a.details?.feedType === 'bottle' && a.details?.unit
+    );
     return lastBottleFeed?.details?.unit || "oz";
-  };
+  }, [activities]);
   
-  const [unit, setUnit] = useState<"oz" | "ml">(() => getLastBottleUnit());
+  const [unit, setUnit] = useState<"oz" | "ml">(lastBottleUnit);
   const [minutesLeft, setMinutesLeft] = useState("");
   const [minutesRight, setMinutesRight] = useState("");
   const [isDreamFeed, setIsDreamFeed] = useState(false);
@@ -199,7 +197,7 @@ export const AddActivityModal = ({
       if (!startTime) setStartTime(current);
       setSelectedDate(new Date());
       setSelectedEndDate(new Date());
-      setUnit(getLastBottleUnit());
+      setUnit(lastBottleUnit);
     }
   }, [open, editingActivity, quickAddType]);
 
@@ -240,7 +238,7 @@ export const AddActivityModal = ({
     setTime(getCurrentTime());
     setFeedType("bottle");
     setQuantity("");
-    setUnit(getLastBottleUnit());
+    setUnit(lastBottleUnit);
     setMinutesLeft("");
     setMinutesRight("");
     setIsDreamFeed(false);
