@@ -1,8 +1,10 @@
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TimeScrollPicker } from "@/components/TimeScrollPicker";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ActivityFormRef, SolidsFormData, EditingData, getCurrentTime } from "./types";
 
 const ALLERGENS = [
   { id: 'peanut', label: 'Peanut' },
@@ -17,27 +19,48 @@ const ALLERGENS = [
 ];
 
 interface SolidsFormProps {
-  time: string;
-  setTime: (time: string) => void;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  description: string;
-  setDescription: (desc: string) => void;
-  allergens: string[];
-  setAllergens: (allergens: string[]) => void;
+  editingData?: EditingData | null;
 }
 
-export const SolidsForm = ({
-  time,
-  setTime,
-  selectedDate,
-  setSelectedDate,
-  description,
-  setDescription,
-  allergens,
-  setAllergens,
-}: SolidsFormProps) => {
+export const SolidsForm = forwardRef<ActivityFormRef, SolidsFormProps>(({
+  editingData,
+}, ref) => {
   const { t } = useLanguage();
+  
+  const [time, setTime] = useState(() => getCurrentTime());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [description, setDescription] = useState('');
+  const [allergens, setAllergens] = useState<string[]>([]);
+
+  // Load editing data
+  useEffect(() => {
+    if (editingData) {
+      setTime(editingData.time);
+      if (editingData.loggedAt) {
+        setSelectedDate(new Date(editingData.loggedAt));
+      }
+      setDescription(editingData.details.solidDescription || '');
+      setAllergens(editingData.details.allergens || []);
+    }
+  }, [editingData]);
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    getValues: (): SolidsFormData => ({
+      type: 'solids',
+      time,
+      selectedDate,
+      description,
+      allergens,
+    }),
+    validate: () => true, // Solids always valid
+    reset: () => {
+      setTime(getCurrentTime());
+      setSelectedDate(new Date());
+      setDescription('');
+      setAllergens([]);
+    },
+  }));
 
   const toggleAllergen = (id: string, checked: boolean) => {
     if (checked) {
@@ -91,4 +114,6 @@ export const SolidsForm = ({
       </div>
     </div>
   );
-};
+});
+
+SolidsForm.displayName = 'SolidsForm';

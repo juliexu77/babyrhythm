@@ -1,38 +1,67 @@
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "@/components/TimeScrollPicker";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ActivityFormRef, DiaperFormData, EditingData, getCurrentTime } from "./types";
 
 interface DiaperFormProps {
-  time: string;
-  setTime: (time: string) => void;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  diaperType: "wet" | "poopy" | "both";
-  setDiaperType: (type: "wet" | "poopy" | "both") => void;
-  hasLeak: boolean;
-  setHasLeak: (hasLeak: boolean) => void;
-  hasCream: boolean;
-  setHasCream: (hasCream: boolean) => void;
-  note: string;
-  setNote: (note: string) => void;
+  editingData?: EditingData | null;
+  prefillData?: EditingData | null;
 }
 
-export const DiaperForm = ({
-  time,
-  setTime,
-  selectedDate,
-  setSelectedDate,
-  diaperType,
-  setDiaperType,
-  hasLeak,
-  setHasLeak,
-  hasCream,
-  setHasCream,
-  note,
-  setNote,
-}: DiaperFormProps) => {
+export const DiaperForm = forwardRef<ActivityFormRef, DiaperFormProps>(({
+  editingData,
+  prefillData,
+}, ref) => {
   const { t } = useLanguage();
+  
+  const [time, setTime] = useState(() => getCurrentTime());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [diaperType, setDiaperType] = useState<'wet' | 'poopy' | 'both'>('wet');
+  const [hasLeak, setHasLeak] = useState(false);
+  const [hasCream, setHasCream] = useState(false);
+  const [note, setNote] = useState('');
+
+  // Load editing data
+  useEffect(() => {
+    if (editingData) {
+      setTime(editingData.time);
+      if (editingData.loggedAt) {
+        setSelectedDate(new Date(editingData.loggedAt));
+      }
+      setDiaperType(editingData.details.diaperType || 'wet');
+      setHasLeak(editingData.details.hasLeak || false);
+      setHasCream(editingData.details.hasCream || false);
+      setNote(editingData.details.note || '');
+    } else if (prefillData) {
+      setDiaperType(prefillData.details.diaperType || 'wet');
+      setHasLeak(prefillData.details.hasLeak || false);
+      setHasCream(prefillData.details.hasCream || false);
+    }
+  }, [editingData, prefillData]);
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    getValues: (): DiaperFormData => ({
+      type: 'diaper',
+      time,
+      selectedDate,
+      diaperType,
+      hasLeak,
+      hasCream,
+      note,
+    }),
+    validate: () => true, // Diaper always valid if type selected
+    reset: () => {
+      setTime(getCurrentTime());
+      setSelectedDate(new Date());
+      setDiaperType('wet');
+      setHasLeak(false);
+      setHasCream(false);
+      setNote('');
+    },
+  }));
 
   return (
     <div className="form-section">
@@ -57,7 +86,7 @@ export const DiaperForm = ({
               type="button"
               className="btn-select"
               data-selected={diaperType === type}
-              onClick={() => setDiaperType(type as "wet" | "poopy" | "both")}
+              onClick={() => setDiaperType(type as 'wet' | 'poopy' | 'both')}
             >
               <span className="text-xs font-semibold">{label}</span>
             </button>
@@ -103,4 +132,6 @@ export const DiaperForm = ({
       </div>
     </div>
   );
-};
+});
+
+DiaperForm.displayName = 'DiaperForm';

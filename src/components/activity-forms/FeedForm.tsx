@@ -1,3 +1,4 @@
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -5,47 +6,129 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { TimeScrollPicker } from "@/components/TimeScrollPicker";
 import { Milk } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
+import { ActivityFormRef, FeedFormData, EditingData, getCurrentTime } from "./types";
 
 interface FeedFormProps {
-  time: string;
-  setTime: (time: string) => void;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  feedType: "bottle" | "nursing";
-  setFeedType: (type: "bottle" | "nursing") => void;
-  quantity: string;
-  unit: "oz" | "ml";
-  minutesLeft: string;
-  setMinutesLeft: (minutes: string) => void;
-  minutesRight: string;
-  setMinutesRight: (minutes: string) => void;
-  isDreamFeed: boolean;
-  setIsDreamFeed: (isDream: boolean) => void;
-  note: string;
-  setNote: (note: string) => void;
-  onOpenKeypad: () => void;
+  editingData?: EditingData | null;
+  prefillData?: EditingData | null;
+  onOpenKeypad: (currentValue: string, unit: 'oz' | 'ml', onSubmit: (value: string) => void, onUnitChange: (unit: 'oz' | 'ml') => void) => void;
 }
 
-export const FeedForm = ({
-  time,
-  setTime,
-  selectedDate,
-  setSelectedDate,
-  feedType,
-  setFeedType,
-  quantity,
-  unit,
-  minutesLeft,
-  setMinutesLeft,
-  minutesRight,
-  setMinutesRight,
-  isDreamFeed,
-  setIsDreamFeed,
-  note,
-  setNote,
+export const FeedForm = forwardRef<ActivityFormRef, FeedFormProps>(({
+  editingData,
+  prefillData,
   onOpenKeypad,
-}: FeedFormProps) => {
+}, ref) => {
   const { t } = useLanguage();
+  
+  // Initialize state from localStorage or defaults
+  const getInitialUnit = (): 'oz' | 'ml' => {
+    const lastUnit = rawStorage.get(StorageKeys.LAST_USED_UNIT, '') as 'oz' | 'ml';
+    return lastUnit || 'oz';
+  };
+  
+  const [time, setTime] = useState(() => getCurrentTime());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [feedType, setFeedType] = useState<'bottle' | 'nursing'>('bottle');
+  const [quantity, setQuantity] = useState('');
+  const [unit, setUnit] = useState<'oz' | 'ml'>(getInitialUnit);
+  const [minutesLeft, setMinutesLeft] = useState('');
+  const [minutesRight, setMinutesRight] = useState('');
+  const [isDreamFeed, setIsDreamFeed] = useState(false);
+  const [note, setNote] = useState('');
+
+  // Load editing data
+  useEffect(() => {
+    if (editingData) {
+      setTime(editingData.time);
+      if (editingData.loggedAt) {
+        setSelectedDate(new Date(editingData.loggedAt));
+      }
+      const details = editingData.details;
+      if (details.feedType === 'bottle' || details.feedType === 'nursing') {
+        setFeedType(details.feedType);
+      }
+      setQuantity(details.quantity || '');
+      setUnit(details.unit || 'oz');
+      setMinutesLeft(details.minutesLeft || '');
+      setMinutesRight(details.minutesRight || '');
+      setIsDreamFeed(details.isDreamFeed || false);
+      setNote(details.note || '');
+    } else if (prefillData) {
+      const details = prefillData.details;
+      if (details.feedType === 'bottle' || details.feedType === 'nursing') {
+        setFeedType(details.feedType);
+      }
+      setQuantity(details.quantity || '');
+      setUnit(details.unit || getInitialUnit());
+      setMinutesLeft(details.minutesLeft || '');
+      setMinutesRight(details.minutesRight || '');
+      setIsDreamFeed(details.isDreamFeed || false);
+    }
+  }, [editingData, prefillData]);
+
+  // Load last used values for new entries
+  useEffect(() => {
+    if (!editingData && !prefillData) {
+      if (feedType === 'bottle' && !quantity) {
+        const lastQuantity = rawStorage.get(StorageKeys.LAST_FEED_QUANTITY, '');
+        if (lastQuantity) setQuantity(lastQuantity);
+      }
+      if (feedType === 'nursing' && !minutesLeft && !minutesRight) {
+        const lastLeft = rawStorage.get(StorageKeys.LAST_NURSING_LEFT, '');
+        const lastRight = rawStorage.get(StorageKeys.LAST_NURSING_RIGHT, '');
+        if (lastLeft) setMinutesLeft(lastLeft);
+        if (lastRight) setMinutesRight(lastRight);
+      }
+    }
+  }, [feedType, editingData, prefillData, quantity, minutesLeft, minutesRight]);
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    getValues: (): FeedFormData => ({
+      type: 'feed',
+      time,
+      selectedDate,
+      feedType,
+      quantity,
+      unit,
+      minutesLeft,
+      minutesRight,
+      isDreamFeed,
+      note,
+    }),
+    validate: () => {
+      if (feedType === 'bottle') {
+        const quantityNum = parseFloat(quantity);
+        return !(!quantity || isNaN(quantityNum) || quantityNum <= 0);
+      }
+      if (feedType === 'nursing') {
+        return !!(minutesLeft || minutesRight);
+      }
+      return true;
+    },
+    reset: () => {
+      setTime(getCurrentTime());
+      setSelectedDate(new Date());
+      setFeedType('bottle');
+      setQuantity('');
+      setUnit(getInitialUnit());
+      setMinutesLeft('');
+      setMinutesRight('');
+      setIsDreamFeed(false);
+      setNote('');
+    },
+  }));
+
+  const handleOpenKeypad = () => {
+    onOpenKeypad(
+      quantity,
+      unit,
+      (value) => setQuantity(value),
+      (newUnit) => setUnit(newUnit)
+    );
+  };
 
   return (
     <div className="form-section">
@@ -61,7 +144,7 @@ export const FeedForm = ({
               type="button"
               className="btn-select"
               data-selected={feedType === type}
-              onClick={() => setFeedType(type as "bottle" | "nursing")}
+              onClick={() => setFeedType(type as 'bottle' | 'nursing')}
             >
               <Icon className="h-4 w-4" />
               <span className="text-xs font-semibold">{label}</span>
@@ -86,7 +169,7 @@ export const FeedForm = ({
               <button
                 type="button"
                 className="input-tappable"
-                onClick={onOpenKeypad}
+                onClick={handleOpenKeypad}
               >
                 <span className="text-foreground">
                   {quantity ? `${quantity} ${unit}` : t('tapToEnterAmount')}
@@ -154,4 +237,6 @@ export const FeedForm = ({
       </div>
     </div>
   );
-};
+});
+
+FeedForm.displayName = 'FeedForm';

@@ -1,34 +1,56 @@
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { TimeScrollPicker } from "@/components/TimeScrollPicker";
 import { Camera } from "lucide-react";
+import { ActivityFormRef, PhotoFormData, EditingData, getCurrentTime } from "./types";
 
 interface PhotoFormProps {
-  time: string;
-  setTime: (time: string) => void;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  note: string;
-  setNote: (note: string) => void;
-  photo: File | null;
-  setPhoto: (file: File | null) => void;
-  photoUrl: string | null;
-  setPhotoUrl: (url: string | null) => void;
+  editingData?: EditingData | null;
 }
 
-export const PhotoForm = ({
-  time,
-  setTime,
-  selectedDate,
-  setSelectedDate,
-  note,
-  setNote,
-  photo,
-  setPhoto,
-  photoUrl,
-  setPhotoUrl,
-}: PhotoFormProps) => {
+export const PhotoForm = forwardRef<ActivityFormRef, PhotoFormProps>(({
+  editingData,
+}, ref) => {
+  const [time, setTime] = useState(() => getCurrentTime());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [note, setNote] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  // Load editing data
+  useEffect(() => {
+    if (editingData) {
+      setTime(editingData.time);
+      if (editingData.loggedAt) {
+        setSelectedDate(new Date(editingData.loggedAt));
+      }
+      setPhotoUrl(editingData.details.photoUrl || null);
+      setNote(editingData.details.note || '');
+    }
+  }, [editingData]);
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    getValues: (): PhotoFormData => ({
+      type: 'photo',
+      time,
+      selectedDate,
+      note,
+      photo,
+      photoUrl,
+    }),
+    validate: () => !!(photo || photoUrl), // Photo required
+    reset: () => {
+      setTime(getCurrentTime());
+      setSelectedDate(new Date());
+      setNote('');
+      setPhoto(null);
+      setPhotoUrl(null);
+    },
+  }));
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -107,4 +129,6 @@ export const PhotoForm = ({
       </div>
     </div>
   );
-};
+});
+
+PhotoForm.displayName = 'PhotoForm';
