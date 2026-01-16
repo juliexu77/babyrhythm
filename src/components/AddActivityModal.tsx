@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { NumericKeypad } from "./NumericKeypad";
@@ -21,7 +21,6 @@ interface AddActivityModalProps {
   householdId?: string;
   quickAddType?: 'feed' | 'nap' | 'diaper' | null;
   prefillActivity?: Activity | null;
-  activities?: Activity[];
 }
 
 type ActivityTypeValue = "feed" | "diaper" | "nap" | "note" | "solids" | "photo" | "";
@@ -36,8 +35,7 @@ export const AddActivityModal = ({
   onDeleteActivity, 
   householdId, 
   quickAddType, 
-  prefillActivity, 
-  activities 
+  prefillActivity
 }: AddActivityModalProps) => {
   const { t } = useLanguage();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -58,18 +56,13 @@ export const AddActivityModal = ({
   // Feed state
   const [feedType, setFeedType] = useState<"bottle" | "nursing">("bottle");
   const [quantity, setQuantity] = useState("");
+  // Get last bottle unit from localStorage (already saved when user logs a feed)
+  const getLastBottleUnit = (): "oz" | "ml" => {
+    const lastUnit = rawStorage.get(StorageKeys.LAST_USED_UNIT, '') as "oz" | "ml";
+    return lastUnit || "oz";
+  };
   
-  // Memoize last bottle unit to avoid recalculating on every render
-  const lastBottleUnit = useMemo((): "oz" | "ml" => {
-    if (!activities || activities.length === 0) return "oz";
-    // Activities are already sorted by logged_at desc, just find first bottle feed
-    const lastBottleFeed = activities.find(
-      a => a.type === 'feed' && a.details?.feedType === 'bottle' && a.details?.unit
-    );
-    return lastBottleFeed?.details?.unit || "oz";
-  }, [activities]);
-  
-  const [unit, setUnit] = useState<"oz" | "ml">(lastBottleUnit);
+  const [unit, setUnit] = useState<"oz" | "ml">(getLastBottleUnit);
   const [minutesLeft, setMinutesLeft] = useState("");
   const [minutesRight, setMinutesRight] = useState("");
   const [isDreamFeed, setIsDreamFeed] = useState(false);
@@ -197,7 +190,7 @@ export const AddActivityModal = ({
       if (!startTime) setStartTime(current);
       setSelectedDate(new Date());
       setSelectedEndDate(new Date());
-      setUnit(lastBottleUnit);
+      setUnit(getLastBottleUnit());
     }
   }, [open, editingActivity, quickAddType]);
 
@@ -238,7 +231,7 @@ export const AddActivityModal = ({
     setTime(getCurrentTime());
     setFeedType("bottle");
     setQuantity("");
-    setUnit(lastBottleUnit);
+    setUnit(getLastBottleUnit());
     setMinutesLeft("");
     setMinutesRight("");
     setIsDreamFeed(false);
