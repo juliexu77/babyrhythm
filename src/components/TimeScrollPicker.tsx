@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, memo } from "react";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { rawStorage, StorageKeys } from "@/hooks/useLocalStorage";
@@ -38,19 +38,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   const [selectedMinute, setSelectedMinute] = useState(initial.minute);
   const [selectedPeriod, setSelectedPeriod] = useState<"AM" | "PM">(initial.period);
 
-  // Generate dates array (past 90 days, today, next 3 days)
-  const generateDates = () => {
-    const dates = [];
+  // Generate dates array (past 90 days, today, next 3 days) - memoized
+  const dates = useMemo(() => {
+    const result = [];
     const today = new Date();
     for (let i = -90; i <= 3; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      dates.push(date);
+      result.push(date);
     }
-    return dates;
-  };
-
-  const [dates] = useState(generateDates());
+    return result;
+  }, []);
   const [selectedDateIndex, setSelectedDateIndex] = useState(() => {
     if (selectedDate) {
       const index = dates.findIndex(date => 
@@ -97,18 +95,18 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   const isProgrammaticMinuteScroll = useRef(false);
   const isProgrammaticDateScroll = useRef(false);
 
-  // Create extended arrays for infinite scrolling
-  const hours = [
-    ...Array.from({ length: 12 }, (_, i) => i + 1), // Original 1-12
-    ...Array.from({ length: 12 }, (_, i) => i + 1), // Duplicate for continuity
-    ...Array.from({ length: 12 }, (_, i) => i + 1)  // Another duplicate
-  ];
-  const minutes = [
-    ...Array.from({ length: 60 }, (_, i) => i), // Original 0-59
-    ...Array.from({ length: 60 }, (_, i) => i), // Duplicate for continuity  
-    ...Array.from({ length: 60 }, (_, i) => i)  // Another duplicate
-  ];
-  const periods = ["AM", "PM"];
+  // Create extended arrays for infinite scrolling - memoized
+  const hours = useMemo(() => [
+    ...Array.from({ length: 12 }, (_, i) => i + 1),
+    ...Array.from({ length: 12 }, (_, i) => i + 1),
+    ...Array.from({ length: 12 }, (_, i) => i + 1)
+  ], []);
+  
+  const minutes = useMemo(() => [
+    ...Array.from({ length: 60 }, (_, i) => i),
+    ...Array.from({ length: 60 }, (_, i) => i),
+    ...Array.from({ length: 60 }, (_, i) => i)
+  ], []);
 
   // Call onChange once on mount with initial values
   useEffect(() => {
@@ -276,14 +274,14 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             touchAction: 'pan-y'
           }}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col" style={{ willChange: 'transform' }}>
             {dates.map((date, index) => (
               <div
                 key={index}
-                className={`h-8 flex items-center justify-center text-xs font-bold tracking-wider cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                className={`h-8 flex items-center justify-center text-xs font-bold tracking-wider cursor-pointer snap-center whitespace-nowrap ${
                   selectedDateIndex === index 
                     ? 'text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    : 'text-muted-foreground'
                 }`}
                 onClick={() => {
                   setHasUserInteracted(true);
@@ -319,14 +317,14 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             touchAction: 'pan-y'
           }}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col" style={{ willChange: 'transform' }}>
             {hours.map((hour, index) => (
               <div
                 key={`hour-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-bold cursor-pointer snap-center ${
                   selectedHour === hour 
                     ? 'text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    : 'text-muted-foreground'
                 }`}
                 onClick={() => {
                   setHasUserInteracted(true);
@@ -363,14 +361,14 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             touchAction: 'pan-y'
           }}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col" style={{ willChange: 'transform' }}>
             {minutes.map((minute, index) => (
               <div
                 key={`minute-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-bold cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-bold cursor-pointer snap-center ${
                   selectedMinute === minute 
                     ? 'text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    : 'text-muted-foreground'
                 }`}
                 onClick={() => {
                   setHasUserInteracted(true);
