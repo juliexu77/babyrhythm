@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { NumericKeypad } from "./NumericKeypad";
@@ -60,10 +60,15 @@ export const AddActivityModal = ({
   const { t } = useLanguage();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
-  const [activityType, setActivityType] = useState<ActivityTypeValue>(
-    editingActivity?.type || quickAddType || ""
-  );
+  const [activityType, setActivityType] = useState<ActivityTypeValue>("");
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Sync activity type when editing/quickAdd changes
+  useEffect(() => {
+    if (open) {
+      setActivityType(editingActivity?.type || quickAddType || "");
+    }
+  }, [open, editingActivity, quickAddType]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   
   // Keypad state
